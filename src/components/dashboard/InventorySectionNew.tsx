@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useInventory } from '@/context/InventoryContext';
 import { useNavigation } from '@/context/NavigationContext';
+import { useBackground } from '@/context/BackgroundContext';
 
 const inventoryCategories = [
   { key: 'backgrounds', name: 'Backgrounds', icon: '🖼️', color: 'linear-gradient(135deg, #667eea, #764ba2)' },
@@ -13,12 +14,6 @@ const inventoryCategories = [
 ];
 
 const mockItems = {
-  backgrounds: [
-    { id: 1, name: 'All For Glory', preview: '/backgrounds/All For Glory.jpg', rarity: 'epic' },
-    { id: 2, name: 'New Day', preview: '/backgrounds/New Day.mp4', rarity: 'rare' },
-    { id: 3, name: 'Relax', preview: '/backgrounds/Relax.png', rarity: 'common' },
-    { id: 4, name: 'Underwater', preview: '/backgrounds/Underwater.mp4', rarity: 'legendary' }
-  ],
   dice: [
     { id: 1, name: 'Golden Dice', preview: '🎯', rarity: 'legendary' },
     { id: 2, name: 'Crystal Dice', preview: '💎', rarity: 'epic' },
@@ -49,9 +44,55 @@ const rarityColors = {
 export const InventorySection: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('backgrounds');
   const { setCurrentSection } = useNavigation();
+  const { 
+    availableBackgrounds, 
+    DisplayBackgroundEquip, 
+    MatchBackgroundEquip,
+    setDisplayBackgroundEquip,
+    setMatchBackgroundEquip
+  } = useBackground();
 
   const handleBackToDashboard = () => {
     setCurrentSection('dashboard');
+  };
+
+  // Convert backgrounds to inventory format with rarity
+  const backgroundItems = availableBackgrounds.map((bg, index) => ({
+    id: index + 1,
+    name: bg.name,
+    preview: bg.file,
+    rarity: index === 0 ? 'epic' : index === 1 ? 'rare' : index === 2 ? 'common' : 'legendary',
+    background: bg
+  }));
+
+  // Get current items based on category
+  const getCurrentItems = () => {
+    if (selectedCategory === 'backgrounds') {
+      return backgroundItems;
+    }
+    return mockItems[selectedCategory as keyof typeof mockItems] || [];
+  };
+
+  const handleEquipDisplay = (item: any) => {
+    if (selectedCategory === 'backgrounds' && item.background) {
+      setDisplayBackgroundEquip(item.background);
+    }
+  };
+
+  const handleEquipMatch = (item: any) => {
+    if (selectedCategory === 'backgrounds' && item.background) {
+      setMatchBackgroundEquip(item.background);
+    }
+  };
+
+  const isEquippedDisplay = (item: any) => {
+    return selectedCategory === 'backgrounds' && 
+           DisplayBackgroundEquip?.file === item.background?.file;
+  };
+
+  const isEquippedMatch = (item: any) => {
+    return selectedCategory === 'backgrounds' && 
+           MatchBackgroundEquip?.file === item.background?.file;
   };
 
   return (
@@ -118,7 +159,7 @@ export const InventorySection: React.FC = () => {
 
       {/* Items Grid */}
       <div className="w-full max-w-[80rem] flex flex-row items-start justify-center flex-wrap gap-[2rem]">
-        {mockItems[selectedCategory as keyof typeof mockItems]?.map((item) => (
+        {getCurrentItems().map((item) => (
           <motion.div
             key={item.id}
             className="flex flex-col items-center justify-start gap-4 p-6 rounded-[20px] transition-all duration-300"
@@ -126,7 +167,7 @@ export const InventorySection: React.FC = () => {
               background: "linear-gradient(rgba(37, 37, 37, 0.12), rgba(37, 37, 37, 0.12)), linear-gradient(242.59deg, #192e39 30%, rgba(153, 153, 153, 0))",
               boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
               minWidth: "200px",
-              minHeight: "250px",
+              minHeight: "320px",
               border: `2px solid ${rarityColors[item.rarity as keyof typeof rarityColors]}`
             }}
             whileHover={{ 
@@ -189,35 +230,72 @@ export const InventorySection: React.FC = () => {
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-2 mt-auto">
-              <motion.button
-                className="px-4 py-2 rounded-[10px] text-sm font-bold"
-                style={{
-                  background: "linear-gradient(135deg, #00FF80, #00A855)",
-                  color: "#FFF",
-                  fontFamily: "Orbitron",
-                  textTransform: "uppercase",
-                }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Equip
-              </motion.button>
-              <motion.button
-                className="px-4 py-2 rounded-[10px] text-sm font-bold"
-                style={{
-                  background: "rgba(255, 255, 255, 0.2)",
-                  color: "#FFF",
-                  fontFamily: "Orbitron",
-                  textTransform: "uppercase",
-                }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Details
-              </motion.button>
-            </div>
+            {/* Action Buttons - Only show for backgrounds */}
+            {selectedCategory === 'backgrounds' ? (
+              <div className="flex flex-col gap-2 mt-auto w-full">
+                <motion.button
+                  onClick={() => handleEquipDisplay(item)}
+                  className="px-4 py-2 rounded-[10px] text-sm font-bold w-full"
+                  style={{
+                    background: isEquippedDisplay(item) 
+                      ? "linear-gradient(135deg, #FFD700, #FFA500)" 
+                      : "linear-gradient(135deg, #00FF80, #00A855)",
+                    color: "#FFF",
+                    fontFamily: "Orbitron",
+                    textTransform: "uppercase",
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {isEquippedDisplay(item) ? 'Equipped Display' : 'Equip Display'}
+                </motion.button>
+                <motion.button
+                  onClick={() => handleEquipMatch(item)}
+                  className="px-4 py-2 rounded-[10px] text-sm font-bold w-full"
+                  style={{
+                    background: isEquippedMatch(item) 
+                      ? "linear-gradient(135deg, #FFD700, #FFA500)" 
+                      : "linear-gradient(135deg, #FF0080, #FF4DB8)",
+                    color: "#FFF",
+                    fontFamily: "Orbitron",
+                    textTransform: "uppercase",
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {isEquippedMatch(item) ? 'Equipped Match' : 'Equip Match'}
+                </motion.button>
+              </div>
+            ) : (
+              <div className="flex gap-2 mt-auto">
+                <motion.button
+                  className="px-4 py-2 rounded-[10px] text-sm font-bold"
+                  style={{
+                    background: "linear-gradient(135deg, #00FF80, #00A855)",
+                    color: "#FFF",
+                    fontFamily: "Orbitron",
+                    textTransform: "uppercase",
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Equip
+                </motion.button>
+                <motion.button
+                  className="px-4 py-2 rounded-[10px] text-sm font-bold"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.2)",
+                    color: "#FFF",
+                    fontFamily: "Orbitron",
+                    textTransform: "uppercase",
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Details
+                </motion.button>
+              </div>
+            )}
           </motion.div>
         ))}
       </div>
