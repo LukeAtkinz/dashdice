@@ -60,11 +60,16 @@ export const DashboardSection: React.FC = () => {
   const { user } = useAuth();
   const { setCurrentSection } = useNavigation();
   const [hoveredGameMode, setHoveredGameMode] = useState<string | null>(null);
+  const [isExiting, setIsExiting] = useState(false);
 
   const handleGameModeAction = (gameMode: string, action: string) => {
     console.log(`${gameMode} - ${action} clicked`);
-    // Navigate to match section with game mode and action type
-    setCurrentSection('match', { gameMode, actionType: action as 'live' | 'custom' });
+    setIsExiting(true);
+    // Add delay for exit animation before navigation
+    setTimeout(() => {
+      // Navigate to match section with game mode and action type
+      setCurrentSection('match', { gameMode, actionType: action as 'live' | 'custom' });
+    }, 600);
   };
 
   const handleNavigation = (section: string) => {
@@ -72,7 +77,16 @@ export const DashboardSection: React.FC = () => {
   };
 
   return (
-    <div className="w-full flex flex-col items-center justify-center gap-[2rem] py-[2rem]">
+    <motion.div 
+      className="w-full flex flex-col items-center justify-center gap-[2rem] py-[2rem]"
+      initial={{ opacity: 1, scale: 1 }}
+      animate={{ 
+        opacity: isExiting ? 0.7 : 1, 
+        scale: isExiting ? 0.95 : 1,
+        filter: isExiting ? "blur(2px)" : "blur(0px)"
+      }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
       {/* Custom CSS for animations */}
       <style jsx>{`
         @keyframes fadeIn {
@@ -99,7 +113,7 @@ export const DashboardSection: React.FC = () => {
             onMouseLeave={() => setHoveredGameMode(null)}
             className="h-[15.625rem] w-[31.25rem] rounded-[30px] overflow-hidden shrink-0 flex flex-row items-center justify-start relative text-right text-[4rem] text-gainsboro font-audiowide cursor-pointer hover:scale-105 transition-all duration-300"
             style={{
-              background: "linear-gradient(rgba(37, 37, 37, 0.12), rgba(37, 37, 37, 0.12)), linear-gradient(242.59deg, #192e39 30%, rgba(153, 153, 153, 0))"
+              background: `var(--ui-game-mode-bg, linear-gradient(rgba(37, 37, 37, 0.12), rgba(37, 37, 37, 0.12)), linear-gradient(242.59deg, #192e39 30%, rgba(153, 153, 153, 0)))`
             }}
           >
             {hoveredGameMode === mode ? (
@@ -115,7 +129,7 @@ export const DashboardSection: React.FC = () => {
                       className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
                       style={{
                         borderRadius: '30px',
-                        background: 'linear-gradient(243deg, #192E39 25.17%, rgba(153, 153, 153, 0.00) 109.89%)',
+                        background: 'var(--ui-background-container)',
                         height: '100px',
                         alignContent: 'center',
                         justifyContent: 'center',
@@ -147,7 +161,7 @@ export const DashboardSection: React.FC = () => {
                       className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
                       style={{
                         borderRadius: '30px',
-                        background: 'linear-gradient(243deg, #FF0080 25.17%, rgba(153, 153, 153, 0.00) 109.89%)',
+                        background: 'var(--ui-button-bg)',
                         height: '100px',
                         alignContent: 'center',
                         justifyContent: 'center',
@@ -256,6 +270,6 @@ export const DashboardSection: React.FC = () => {
           </div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 };
