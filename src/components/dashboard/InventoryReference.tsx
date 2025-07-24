@@ -38,7 +38,7 @@ export const InventorySection: React.FC = () => {
     setCurrentSection('dashboard');
   };
 
-  // Set selected background when switching tabs
+  // Set selected background when switching tabs and check equipped state
   useEffect(() => {
     if (activeTab === 'display' && DisplayBackgroundEquip && !selectedBackground) {
       const found = ownedDisplayBackgrounds.find(bg => bg.background.file === DisplayBackgroundEquip.file);
@@ -48,6 +48,15 @@ export const InventorySection: React.FC = () => {
       if (found) setSelectedBackground(found);
     }
   }, [activeTab, DisplayBackgroundEquip, MatchBackgroundEquip, selectedBackground]);
+
+  // Check if background is equipped
+  const isBackgroundEquipped = (background: any) => {
+    if (activeTab === 'display') {
+      return DisplayBackgroundEquip && DisplayBackgroundEquip.file === background.background.file;
+    } else {
+      return MatchBackgroundEquip && MatchBackgroundEquip.file === background.background.file;
+    }
+  };
 
   const handleEquipBackground = async (background: any) => {
     console.log('Equip Button Clicked:', { tab: activeTab, background });
@@ -115,9 +124,11 @@ export const InventorySection: React.FC = () => {
         .nav-button:hover {
           animation: navPulse 0.6s ease-in-out;
           box-shadow: 0 8px 25px rgba(255, 0, 128, 0.3);
+          transform: scale(1.05);
         }
         .nav-button:active {
           animation: navClick 0.2s ease-in-out;
+          transform: scale(0.95);
         }
         .nav-button.active {
           box-shadow: 0 6px 20px rgba(255, 0, 128, 0.4);
@@ -131,10 +142,46 @@ export const InventorySection: React.FC = () => {
           50% { transform: scale(0.95); }
           100% { transform: scale(1); }
         }
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.3s ease-out forwards;
+        }
+        .card-fade-in {
+          animation: fadeIn 0.5s ease-out forwards;
+        }
       `}</style>
 
+      {/* Title Section */}
+      <div className="w-full flex flex-col items-center justify-center gap-[1rem] py-[3rem] pb-[2rem]">
+        <h1
+          style={{
+            color: "#FFF",
+            fontFamily: "Audiowide",
+            fontSize: "64px",
+            fontStyle: "normal",
+            fontWeight: 400,
+            lineHeight: "60px",
+            textTransform: "uppercase",
+            textAlign: "center",
+            margin: 0,
+            textShadow: "0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4), 0 0 60px rgba(255, 215, 0, 0.2)"
+          }}
+        >
+          VAULT
+        </h1>
+      </div>
+
       {/* Navigation */}
-      <div className="w-full px-8 py-6">
+      <div className="w-full px-8 py-8 pb-[3rem]">
         <div className="flex items-center justify-center gap-4" style={{ gap: '20px' }}>
           <button
             onClick={() => handleTabChange('display')}
@@ -160,7 +207,7 @@ export const InventorySection: React.FC = () => {
               fontWeight: 400, 
               textTransform: 'uppercase' 
             }}>
-              Display Background
+              For the Visuals
             </span>
           </button>
           <button
@@ -187,19 +234,19 @@ export const InventorySection: React.FC = () => {
               fontWeight: 400, 
               textTransform: 'uppercase' 
             }}>
-              Match Background
+              For Flexin
             </span>
           </button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 px-8 flex justify-center" style={{ paddingTop: '20px' }}>
+      <div className="flex-1 px-8 flex justify-center" style={{ paddingTop: '30px' }}>
         <div className="flex h-full" style={{ maxHeight: '410px', height: '410px', width: '1600px', gap: '20px' }}>
           
           {/* Items List */}
           <div 
-            className="rounded-lg overflow-hidden" 
+            className="rounded-lg overflow-hidden card-fade-in" 
             style={{ 
               width: '50%', 
               borderRadius: '20px', 
@@ -302,7 +349,7 @@ export const InventorySection: React.FC = () => {
                               alignItems: 'center', 
                               gap: '10px', 
                               borderRadius: '18px', 
-                              background: getEquippedBackground()?.file === background.background.file ? '#4CAF50' : '#FF0080', 
+                              background: isBackgroundEquipped(background) ? '#4CAF50' : '#FF0080', 
                               border: 'none', 
                               cursor: 'pointer' 
                             }}
@@ -314,21 +361,36 @@ export const InventorySection: React.FC = () => {
                               fontWeight: 400, 
                               textTransform: 'uppercase' 
                             }}>
-                              {getEquippedBackground()?.file === background.background.file ? 'EQUIPPED' : 'EQUIP'}
+                              {isBackgroundEquipped(background) ? 'EQUIPPED' : 'EQUIP'}
                             </span>
                           </button>
                         )}
                         
-                        {getEquippedBackground()?.file === background.background.file && selectedBackground?.id !== background.id && (
+                        {isBackgroundEquipped(background) && selectedBackground?.id !== background.id && (
                           <div 
-                            className="px-2 py-1 rounded text-xs font-bold flex-shrink-0" 
+                            className="relative transition-all duration-300" 
                             style={{ 
+                              display: 'flex', 
+                              width: 'fit-content', 
+                              height: '56px', 
+                              padding: '4px 30px', 
+                              justifyContent: 'center', 
+                              alignItems: 'center', 
+                              gap: '10px', 
+                              borderRadius: '18px', 
                               background: '#4CAF50', 
-                              color: '#FFF', 
-                              fontFamily: 'Audiowide' 
+                              border: 'none'
                             }}
                           >
-                            EQUIPPED
+                            <span style={{ 
+                              color: '#FFF', 
+                              fontFamily: 'Audiowide', 
+                              fontSize: '20px', 
+                              fontWeight: 400, 
+                              textTransform: 'uppercase' 
+                            }}>
+                              EQUIPPED
+                            </span>
                           </div>
                         )}
                       </div>
@@ -348,7 +410,7 @@ export const InventorySection: React.FC = () => {
           {/* Display Panel */}
           <div 
             key={`display-panel-${selectedBackground?.id || 'none'}`} 
-            className="rounded-lg overflow-hidden" 
+            className="rounded-lg overflow-hidden card-fade-in" 
             style={{ 
               width: '775px', 
               background: 'linear-gradient(180deg, rgba(25, 46, 57, 0.8) 0%, rgba(25, 46, 57, 0.4) 100%)', 

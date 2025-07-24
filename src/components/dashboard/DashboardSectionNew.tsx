@@ -6,12 +6,54 @@ import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
 
 const gameConfig = {
-  quickfire: { name: 'Quick Fire', icon: '🔥', description: 'Fast-paced rounds' },
-  classic: { name: 'Classic', icon: '🎯', description: 'Traditional gameplay' },
-  zerohour: { name: 'Zero Hour', icon: '⏰', description: 'Last chance mode' },
-  lastline: { name: 'Last Line', icon: '🎲', description: 'Final roll counts' },
-  truegrit: { name: 'True Grit', icon: '💪', description: 'No banking allowed' },
-  tagteam: { name: 'Tag Team', icon: '👥', description: 'Team-based play' }
+  quickfire: { 
+    name: 'QUICK\nFIRE', 
+    icon: '/Design Elements/finance startup.webp', 
+    description: 'Speed Over Strategy',
+    rotation: '-70deg',
+    position: { top: '3rem', left: '-2rem' },
+    available: true
+  },
+  classic: { 
+    name: 'CLASSIC\nMODE', 
+    icon: '/Design Elements/Crown Mode.webp', 
+    description: 'Traditional Gameplay',
+    rotation: '0deg',
+    position: { top: '-2rem', left: '-2rem' },
+    available: false
+  },
+  zerohour: { 
+    name: 'ZERO\nHOUR', 
+    icon: '/Design Elements/time out.webp', 
+    description: 'Last Chance Wins',
+    rotation: '0deg',
+    position: { top: '-2rem', left: '-2rem' },
+    available: false
+  },
+  lastline: { 
+    name: 'LAST\nLINE', 
+    icon: '/Design Elements/skull.webp', 
+    description: 'Final Roll Counts',
+    rotation: '15deg',
+    position: { top: '-1rem', left: '-2rem' },
+    available: false
+  },
+  truegrit: { 
+    name: 'TRUE\nGRIT', 
+    icon: '/Design Elements/Sword.webp', 
+    description: 'No Banking Allowed',
+    rotation: '45deg',
+    position: { top: '2rem', left: '-2rem' },
+    available: false
+  },
+  tagteam: { 
+    name: 'TAG\nTEAM', 
+    icon: '/Design Elements/friends.webp', 
+    description: 'Team-Based Play',
+    rotation: '0deg',
+    position: { top: '-2rem', left: '-2rem' },
+    available: false
+  }
 };
 
 export const DashboardSection: React.FC = () => {
@@ -21,7 +63,8 @@ export const DashboardSection: React.FC = () => {
 
   const handleGameModeAction = (gameMode: string, action: string) => {
     console.log(`${gameMode} - ${action} clicked`);
-    setCurrentSection('match');
+    // Navigate to match section with game mode and action type
+    setCurrentSection('match', { gameMode, actionType: action as 'live' | 'custom' });
   };
 
   const handleNavigation = (section: string) => {
@@ -30,107 +73,137 @@ export const DashboardSection: React.FC = () => {
 
   return (
     <div className="w-full flex flex-col items-center justify-center gap-[2rem] py-[2rem]">
-      {/* Welcome Section */}
-      <div className="text-center mb-8">
-        <h1 
-          className="text-6xl font-bold text-white mb-4"
-          style={{
-            fontFamily: "Orbitron",
-            textTransform: "uppercase",
-            textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
-          }}
-        >
-          Welcome Back
-        </h1>
-        <p 
-          className="text-2xl text-white/80"
-          style={{
-            fontFamily: "Orbitron",
-          }}
-        >
-          Ready for your next game?
-        </p>
-      </div>
+      {/* Custom CSS for animations */}
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.3s ease-out forwards;
+        }
+      `}</style>
 
-      {/* Game Modes Grid */}
-      <div className="w-full flex flex-row items-center justify-center flex-wrap gap-[1rem] max-w-[80rem]">
+      {/* Game Mode Container - Match reference exactly */}
+      <div className="w-[100%] overflow-hidden flex flex-row items-center justify-center flex-wrap content-center gap-x-[0.687rem] gap-y-[0.625rem]">
         {Object.entries(gameConfig).map(([mode, config]) => (
-          <motion.div
+          <div
             key={mode}
             onMouseEnter={() => setHoveredGameMode(mode)}
             onMouseLeave={() => setHoveredGameMode(null)}
-            className="h-[15.625rem] w-[31.25rem] rounded-[30px] overflow-hidden shrink-0 flex flex-row items-center justify-start relative cursor-pointer transition-all duration-300"
+            className="h-[15.625rem] w-[31.25rem] rounded-[30px] overflow-hidden shrink-0 flex flex-row items-center justify-start relative text-right text-[4rem] text-gainsboro font-audiowide cursor-pointer hover:scale-105 transition-all duration-300"
             style={{
-              background: "linear-gradient(rgba(37, 37, 37, 0.12), rgba(37, 37, 37, 0.12)), linear-gradient(242.59deg, #192e39 30%, rgba(153, 153, 153, 0))",
-              border: hoveredGameMode === mode ? "2px solid #FFD700" : "2px solid transparent",
-              boxShadow: hoveredGameMode === mode 
-                ? "0 0 30px rgba(255, 215, 0, 0.3)" 
-                : "0 4px 15px rgba(0, 0, 0, 0.2)"
+              background: "linear-gradient(rgba(37, 37, 37, 0.12), rgba(37, 37, 37, 0.12)), linear-gradient(242.59deg, #192e39 30%, rgba(153, 153, 153, 0))"
             }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
           >
             {hoveredGameMode === mode ? (
-              <div className="w-full h-full flex flex-col justify-center items-center gap-[10px] p-[20px]">
-                <motion.button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleGameModeAction(mode, 'live');
-                  }}
-                  className="w-full flex flex-col justify-center items-center transition-all duration-300"
-                  style={{
-                    borderRadius: '30px',
-                    background: 'linear-gradient(243deg, #192E39 25.17%, rgba(153, 153, 153, 0.00) 109.89%)',
-                    height: '100px',
-                    border: 0,
-                    boxShadow: '0 4px 15px rgba(25, 46, 57, 0.3)'
-                  }}
-                  whileHover={{ scale: 1.05, boxShadow: '0 6px 20px rgba(25, 46, 57, 0.4)' }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span
-                    style={{
-                      color: '#E2E2E2',
-                      textAlign: 'center',
-                      fontFamily: 'Orbitron',
-                      fontSize: '24px',
-                      fontWeight: 400,
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    QUICK MATCH
-                  </span>
-                </motion.button>
-                
-                <motion.button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleGameModeAction(mode, 'custom');
-                  }}
-                  className="w-full flex flex-col justify-center items-center transition-all duration-300"
-                  style={{
-                    borderRadius: '30px',
-                    background: 'linear-gradient(243deg, #FF0080 25.17%, rgba(153, 153, 153, 0.00) 109.89%)',
-                    height: '100px',
-                    border: 0,
-                    boxShadow: '0 4px 15px rgba(255, 0, 128, 0.3)'
-                  }}
-                  whileHover={{ scale: 1.05, boxShadow: '0 6px 20px rgba(255, 0, 128, 0.4)' }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span
-                    style={{
-                      color: '#E2E2E2',
-                      textAlign: 'center',
-                      fontFamily: 'Orbitron',
-                      fontSize: '24px',
-                      fontWeight: 400,
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    CUSTOM GAME
-                  </span>
-                </motion.button>
+              <div className="w-full h-full flex flex-col justify-center items-center gap-[10px] p-[20px] animate-fade-in">
+                {config.available ? (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log(`🎮 ${mode.toUpperCase()} LIVE BUTTON CLICKED!`);
+                        handleGameModeAction(mode, 'live');
+                      }}
+                      className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
+                      style={{
+                        borderRadius: '30px',
+                        background: 'linear-gradient(243deg, #192E39 25.17%, rgba(153, 153, 153, 0.00) 109.89%)',
+                        height: '100px',
+                        alignContent: 'center',
+                        justifyContent: 'center',
+                        border: 0,
+                        boxShadow: '0 4px 15px rgba(25, 46, 57, 0.3)'
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: '#E2E2E2',
+                          textAlign: 'center',
+                          fontFamily: 'Audiowide',
+                          fontSize: '28px',
+                          fontStyle: 'normal',
+                          fontWeight: 400,
+                          lineHeight: '40px',
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        LIVE PLAY
+                      </span>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log(`🎮 ${mode.toUpperCase()} CUSTOM BUTTON CLICKED!`);
+                        handleGameModeAction(mode, 'custom');
+                      }}
+                      className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
+                      style={{
+                        borderRadius: '30px',
+                        background: 'linear-gradient(243deg, #FF0080 25.17%, rgba(153, 153, 153, 0.00) 109.89%)',
+                        height: '100px',
+                        alignContent: 'center',
+                        justifyContent: 'center',
+                        border: 0,
+                        boxShadow: '0 4px 15px rgba(255, 0, 128, 0.3)'
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: '#E2E2E2',
+                          textAlign: 'center',
+                          fontFamily: 'Audiowide',
+                          fontSize: '28px',
+                          fontStyle: 'normal',
+                          fontWeight: 400,
+                          lineHeight: '40px',
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        CUSTOM GAME
+                      </span>
+                    </button>
+                  </>
+                ) : (
+                  <div className="w-full h-full flex flex-col justify-center items-center">
+                    <div
+                      className="w-full flex flex-col justify-center items-center"
+                      style={{
+                        borderRadius: '30px',
+                        background: 'linear-gradient(243deg, rgba(128, 128, 128, 0.6) 25.17%, rgba(153, 153, 153, 0.00) 109.89%)',
+                        height: '210px',
+                        alignContent: 'center',
+                        justifyContent: 'center',
+                        border: 0,
+                        boxShadow: '0 4px 15px rgba(128, 128, 128, 0.3)',
+                        cursor: 'not-allowed'
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: '#E2E2E2',
+                          textAlign: 'center',
+                          fontFamily: 'Audiowide',
+                          fontSize: '32px',
+                          fontStyle: 'normal',
+                          fontWeight: 400,
+                          lineHeight: '40px',
+                          textTransform: 'uppercase',
+                          opacity: 0.8
+                        }}
+                      >
+                        Coming Soon!
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <>
@@ -139,132 +212,49 @@ export const DashboardSection: React.FC = () => {
                     className="m-0 self-stretch relative text-white uppercase font-normal"
                     style={{
                       color: "#FFF",
-                      fontFamily: "Orbitron",
-                      fontSize: "48px",
+                      fontFamily: "Audiowide",
+                      fontSize: "64px",
+                      fontStyle: "normal",
                       fontWeight: 400,
-                      lineHeight: "50px",
+                      lineHeight: "60px",
                       textTransform: "uppercase",
-                      marginTop: "1rem",
-                      marginBottom: "0.5rem",
+                      whiteSpace: "pre-line"
                     }}
                   >
                     {config.name}
                   </h2>
                   <div
-                    className="w-[80%] relative text-white font-light opacity-80"
+                    className="w-[50%] relative font-light inline-block"
                     style={{
-                      fontFamily: "Orbitron",
-                      fontSize: "18px",
+                      color: "#FFF",
+                      fontFamily: "Montserrat",
+                      fontSize: "24px",
+                      fontStyle: "normal",
                       fontWeight: 300,
-                      textAlign: "right",
+                      lineHeight: "24px",
                       textTransform: "uppercase",
+                      textAlign: "right",
+                      opacity: 0.8,
                     }}
                   >
                     {config.description}
                   </div>
                 </div>
-                <div
-                  className="text-8xl absolute top-[-1rem] left-[-1rem] z-[1] opacity-[0.6] transition-all duration-300"
+                <img
+                  className="w-[25.256rem] absolute max-h-none object-contain z-[1] transition-all duration-300"
+                  alt={mode}
+                  src={config.icon}
                   style={{
-                    filter: "drop-shadow(0 0 10px rgba(255, 215, 0, 0.3))"
+                    top: config.position.top,
+                    left: config.position.left,
+                    transform: `rotate(${config.rotation})`,
+                    opacity: config.available ? 0.8 : 0.4
                   }}
-                >
-                  {config.icon}
-                </div>
+                />
               </>
             )}
-          </motion.div>
+          </div>
         ))}
-      </div>
-
-      {/* Quick Access Section */}
-      <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[2rem] mt-8">
-        <motion.button
-          onClick={() => handleNavigation('inventory')}
-          className="flex flex-col items-center justify-center gap-2 p-6 rounded-[20px] transition-all duration-300"
-          style={{
-            background: "linear-gradient(135deg, #FF0080, #FF4DB8)",
-            boxShadow: "0 4px 15px rgba(255, 0, 128, 0.3)",
-            minWidth: "160px",
-            minHeight: "120px"
-          }}
-          whileHover={{ 
-            scale: 1.05, 
-            boxShadow: "0 6px 20px rgba(255, 0, 128, 0.4)" 
-          }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <div className="text-4xl mb-2">🎒</div>
-          <span
-            style={{
-              color: "#FFF",
-              fontFamily: "Orbitron",
-              fontSize: "16px",
-              fontWeight: 400,
-              textTransform: "uppercase",
-            }}
-          >
-            Inventory
-          </span>
-        </motion.button>
-
-        <motion.button
-          onClick={() => handleNavigation('profile')}
-          className="flex flex-col items-center justify-center gap-2 p-6 rounded-[20px] transition-all duration-300"
-          style={{
-            background: "linear-gradient(135deg, #667eea, #764ba2)",
-            boxShadow: "0 4px 15px rgba(102, 126, 234, 0.3)",
-            minWidth: "160px",
-            minHeight: "120px"
-          }}
-          whileHover={{ 
-            scale: 1.05, 
-            boxShadow: "0 6px 20px rgba(102, 126, 234, 0.4)" 
-          }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <div className="text-4xl mb-2">👤</div>
-          <span
-            style={{
-              color: "#FFF",
-              fontFamily: "Orbitron",
-              fontSize: "16px",
-              fontWeight: 400,
-              textTransform: "uppercase",
-            }}
-          >
-            Profile
-          </span>
-        </motion.button>
-
-        <motion.button
-          onClick={() => handleNavigation('settings')}
-          className="flex flex-col items-center justify-center gap-2 p-6 rounded-[20px] transition-all duration-300"
-          style={{
-            background: "linear-gradient(135deg, #00FF80, #00A855)",
-            boxShadow: "0 4px 15px rgba(0, 255, 128, 0.3)",
-            minWidth: "160px",
-            minHeight: "120px"
-          }}
-          whileHover={{ 
-            scale: 1.05, 
-            boxShadow: "0 6px 20px rgba(0, 255, 128, 0.4)" 
-          }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <div className="text-4xl mb-2">⚙️</div>
-          <span
-            style={{
-              color: "#FFF",
-              fontFamily: "Orbitron",
-              fontSize: "16px",
-              fontWeight: 400,
-              textTransform: "uppercase",
-            }}
-          >
-            Settings
-          </span>
-        </motion.button>
       </div>
     </div>
   );
