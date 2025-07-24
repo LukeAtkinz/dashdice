@@ -74,19 +74,23 @@ body {
 
 /* UI Theme System - Colors defined by backgrounds */
 :root {
-  /* Default theme colors */
-  --ui-background-primary: #ffffff;
-  --ui-background-secondary: #f8fafc;
-  --ui-background-container: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #cbd5e1 100%);
-  --ui-text-primary: #1e293b;
-  --ui-text-secondary: #64748b;
-  --ui-border: #e2e8f0;
-  --ui-button-bg: #3b82f6;
+  /* Default theme colors (same as New Day) */
+  --ui-background-primary: #fef3c7;
+  --ui-background-secondary: #fef9e5;
+  --ui-background-container: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  --ui-text-primary: #92400e;
+  --ui-text-secondary: #b45309;
+  --ui-border: #f59e0b;
+  --ui-button-bg: #d97706;
   --ui-button-text: #ffffff;
-  --ui-button-hover: #2563eb;
+  --ui-button-hover: #b45309;
+  --ui-navbar-bg: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  --ui-game-mode-bg: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  --ui-waiting-room-border: #f59e0b;
+  --ui-waiting-room-bg: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
 }
 
-/* New Day Theme */
+/* New Day Theme (default settings) */
 [data-theme="new-day"] {
   --ui-background-primary: #fef3c7;
   --ui-background-secondary: #fef9e5;
@@ -97,19 +101,27 @@ body {
   --ui-button-bg: #d97706;
   --ui-button-text: #ffffff;
   --ui-button-hover: #b45309;
+  --ui-navbar-bg: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  --ui-game-mode-bg: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  --ui-waiting-room-border: #f59e0b;
+  --ui-waiting-room-bg: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
 }
 
-/* On A Mission Theme */
+/* On A Mission Theme - Light blue to transparent with red accents */
 [data-theme="on-a-mission"] {
   --ui-background-primary: #e0f2fe;
   --ui-background-secondary: #f0f9ff;
-  --ui-background-container: linear-gradient(135deg, rgba(14, 165, 233, 0.3) 0%, rgba(2, 132, 199, 0.5) 50%, rgba(3, 105, 161, 0.7) 100%);
+  --ui-background-container: linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.0) 100%);
   --ui-text-primary: #0c4a6e;
   --ui-text-secondary: #0369a1;
   --ui-border: #0ea5e9;
-  --ui-button-bg: #0284c7;
-  --ui-button-text: #ffffff;
-  --ui-button-hover: #0369a1;
+  --ui-button-bg: #dc2626;
+  --ui-button-text: rgba(255, 255, 255, 0.0);
+  --ui-button-hover: #b91c1c;
+  --ui-navbar-bg: linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.0) 100%);
+  --ui-game-mode-bg: linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.0) 100%);
+  --ui-waiting-room-border: #dc2626;
+  --ui-waiting-room-bg: linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.0) 100%);
 }
 
 /* Underwater Theme */
@@ -123,9 +135,13 @@ body {
   --ui-button-bg: #0e7490;
   --ui-button-text: #ffffff;
   --ui-button-hover: #155e75;
+  --ui-navbar-bg: linear-gradient(135deg, #0891b2 0%, #0e7490 50%, #155e75 100%);
+  --ui-game-mode-bg: linear-gradient(135deg, #0891b2 0%, #0e7490 50%, #155e75 100%);
+  --ui-waiting-room-border: #06b6d4;
+  --ui-waiting-room-bg: linear-gradient(135deg, #0891b2 0%, #0e7490 50%, #155e75 100%);
 }
 
-/* Relax Theme - White and Blue Beautiful Gradient */
+/* Relax Theme - White and blue beautiful gradient with black cards */
 [data-theme="relax"] {
   --ui-background-primary: #f8fafc;
   --ui-background-secondary: #e0f2fe;
@@ -136,6 +152,13 @@ body {
   --ui-button-bg: #3b82f6;
   --ui-button-text: #ffffff;
   --ui-button-hover: #2563eb;
+  --ui-navbar-bg: linear-gradient(135deg, #ffffff 0%, #dbeafe 25%, #bfdbfe 50%, #93c5fd 75%, #60a5fa 100%);
+  --ui-game-mode-bg: #000000;
+  --ui-waiting-room-border: #93c5fd;
+  --ui-waiting-room-bg: linear-gradient(135deg, #ffffff 0%, #dbeafe 25%, #bfdbfe 50%, #93c5fd 75%, #60a5fa 100%);
+  --ui-inventory-bg: linear-gradient(135deg, #8B1538 0%, #ffffff 50%, #1e3a8a 100%);
+  --ui-inventory-button-bg: #8B1538;
+  --ui-inventory-button-text: #f5f5f5;
 }
 
 /* All For Glory Theme - Red, Blue, and White Gradients */
@@ -149,9 +172,13 @@ body {
   --ui-button-bg: #dc2626;
   --ui-button-text: #ffffff;
   --ui-button-hover: #b91c1c;
+  --ui-navbar-bg: linear-gradient(135deg, #dc2626 0%, #ffffff 50%, #1e40af 100%);
+  --ui-game-mode-bg: linear-gradient(135deg, #dc2626 0%, #ffffff 50%, #1e40af 100%);
+  --ui-waiting-room-border: #dc2626;
+  --ui-waiting-room-bg: linear-gradient(135deg, #dc2626 0%, #ffffff 50%, #1e40af 100%);
 }
 
-/* Long Road Ahead Theme - Purple, Light Black, and Blue Gradients */
+/* Long Road Ahead Theme - Beautiful Purple, Light Black, and Blue Gradients */
 [data-theme="long-road-ahead"] {
   --ui-background-primary: #faf5ff;
   --ui-background-secondary: #f3e8ff;
@@ -162,4 +189,8 @@ body {
   --ui-button-bg: #7c3aed;
   --ui-button-text: #ffffff;
   --ui-button-hover: #6d28d9;
+  --ui-navbar-bg: linear-gradient(135deg, #7c3aed 0%, #4c1d95 25%, #1e1b4b 50%, #1e3a8a 75%, #3b82f6 100%);
+  --ui-game-mode-bg: linear-gradient(135deg, #7c3aed 0%, #4c1d95 25%, #1e1b4b 50%, #1e3a8a 75%, #3b82f6 100%);
+  --ui-waiting-room-border: #8b5cf6;
+  --ui-waiting-room-bg: linear-gradient(135deg, #7c3aed 0%, #4c1d95 25%, #1e1b4b 50%, #1e3a8a 75%, #3b82f6 100%);
 }

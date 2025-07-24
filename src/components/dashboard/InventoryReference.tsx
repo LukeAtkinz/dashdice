@@ -196,12 +196,12 @@ export const InventorySection: React.FC = () => {
               gap: '10px',
               borderRadius: '18px',
               border: 0,
-              background: activeTab === 'display' ? 'var(--ui-button-bg)' : 'rgba(255, 255, 255, 0.1)',
+              background: activeTab === 'display' ? 'var(--ui-inventory-button-bg, var(--ui-button-bg))' : 'rgba(255, 255, 255, 0.1)',
               cursor: 'pointer',
             }}
           >
             <span style={{ 
-              color: activeTab === 'display' ? 'var(--ui-button-text)' : '#FFF', 
+              color: activeTab === 'display' ? 'var(--ui-inventory-button-text, var(--ui-button-text))' : '#FFF', 
               fontFamily: 'Audiowide', 
               fontSize: '32px', 
               fontWeight: 400, 
@@ -223,12 +223,12 @@ export const InventorySection: React.FC = () => {
               gap: '10px',
               border: 0,
               borderRadius: '18px',
-              background: activeTab === 'match' ? 'var(--ui-button-bg)' : 'rgba(255, 255, 255, 0.1)',
+              background: activeTab === 'match' ? 'var(--ui-inventory-button-bg, var(--ui-button-bg))' : 'rgba(255, 255, 255, 0.1)',
               cursor: 'pointer',
             }}
           >
             <span style={{ 
-              color: activeTab === 'match' ? 'var(--ui-button-text)' : '#FFF', 
+              color: activeTab === 'match' ? 'var(--ui-inventory-button-text, var(--ui-button-text))' : '#FFF', 
               fontFamily: 'Audiowide', 
               fontSize: '32px', 
               fontWeight: 400, 
@@ -250,7 +250,7 @@ export const InventorySection: React.FC = () => {
             style={{ 
               width: '50%', 
               borderRadius: '20px', 
-              background: 'var(--ui-background-container)', 
+              background: 'var(--ui-inventory-bg, var(--ui-background-container))', 
               padding: '20px' 
             }}
           >
@@ -413,7 +413,7 @@ export const InventorySection: React.FC = () => {
             className="rounded-lg overflow-hidden card-fade-in" 
             style={{ 
               width: '775px', 
-              background: 'var(--ui-background-container)', 
+              background: 'var(--ui-inventory-bg, var(--ui-background-container))', 
               backdropFilter: 'blur(10px)', 
               overflow: 'hidden', 
               borderRadius: '20px' 

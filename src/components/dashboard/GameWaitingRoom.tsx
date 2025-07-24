@@ -351,7 +351,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               gap: '20px',
               flex: '1 0 0',
               borderRadius: '20px',
-              border: '1px solid #FFF'
+              border: `1px solid var(--ui-waiting-room-border)`
             }}
           >
             {/* Host Display Background */}
@@ -414,7 +414,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 gridRow: '1 / span 1', 
                 gridColumn: '1 / span 1', 
                 borderRadius: '18px', 
-                background: 'linear-gradient(318deg, #574E78 0.08%, rgba(89, 89, 89, 0.02) 50.25%)', 
+                background: 'var(--ui-waiting-room-bg)', 
                 backdropFilter: 'blur(20px)' 
               }}>
                 <div style={{ textAlign: 'center' }}>
@@ -457,7 +457,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 gridRow: '1 / span 1', 
                 gridColumn: '2 / span 1', 
                 borderRadius: '18px', 
-                background: 'linear-gradient(41deg, #6497C8 0.22%, rgba(89, 89, 89, 0.00) 50.11%)', 
+                background: 'var(--ui-waiting-room-bg)', 
                 backdropFilter: 'blur(20px)' 
               }}>
                 <div style={{ textAlign: 'center' }}>
@@ -500,7 +500,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 gridRow: '2 / span 1', 
                 gridColumn: '1 / span 1', 
                 borderRadius: '18px', 
-                background: 'linear-gradient(222deg, #3A57A5 -0.22%, rgba(89, 89, 89, 0.02) 49.96%)', 
+                background: 'var(--ui-waiting-room-bg)', 
                 backdropFilter: 'blur(20px)' 
               }}>
                 <div style={{ textAlign: 'center' }}>
@@ -543,7 +543,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 gridRow: '2 / span 1', 
                 gridColumn: '2 / span 1', 
                 borderRadius: '18px', 
-                background: 'linear-gradient(139deg, #AB7076 -0.08%, rgba(123, 123, 123, 0.02) 49.82%)', 
+                background: 'var(--ui-waiting-room-bg)', 
                 backdropFilter: 'blur(20px)' 
               }}>
                 <div style={{ textAlign: 'center' }}>

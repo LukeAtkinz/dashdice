@@ -72,7 +72,7 @@ const DashboardContent: React.FC = () => {
       <div className="relative z-20 h-screen flex flex-col">
         {/* Top Navigation Header */}
         <header className="flex-shrink-0 w-full flex flex-row items-center justify-center gap-[1.25rem] relative z-30 px-[2rem] md:px-[4rem] py-[2rem]">
-          <div className="flex-1 flex flex-row items-center justify-between bg-gradient-to-br from-[#192E39] to-[#99999900] rounded-[30px] px-[20px] md:px-[30px] py-[15px]">
+          <div className="flex-1 flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px]" style={{ background: "var(--ui-navbar-bg)" }}>
             
             {/* Left Navigation */}
             <div className="flex flex-row items-center justify-start gap-[1rem] md:gap-[2rem]">
@@ -108,7 +108,7 @@ const DashboardContent: React.FC = () => {
                     alignItems: "center",
                     gap: "10px",
                     borderRadius: "18px",
-                    background: "linear-gradient(135deg, #FF0080, #FF4DB8)",
+                    background: "var(--ui-button-bg)",
                     boxShadow: "0 4px 15px rgba(255, 0, 128, 0.3)",
                   }}
                 >
@@ -116,7 +116,7 @@ const DashboardContent: React.FC = () => {
                   <div
                     className="relative font-medium text-white text-sm"
                     style={{
-                      color: "#FFF",
+                      color: "var(--ui-button-text)",
                       fontFamily: "Audiowide",
                       fontSize: "16px",
                       fontWeight: 400,
@@ -138,7 +138,7 @@ const DashboardContent: React.FC = () => {
                     alignItems: "center",
                     gap: "10px",
                     borderRadius: "18px",
-                    background: "linear-gradient(135deg, #667eea, #764ba2)",
+                    background: "var(--ui-button-bg)",
                     boxShadow: "0 4px 15px rgba(102, 126, 234, 0.3)",
                   }}
                 >
