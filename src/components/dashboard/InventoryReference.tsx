@@ -196,12 +196,12 @@ export const InventorySection: React.FC = () => {
               gap: '10px',
               borderRadius: '18px',
               border: 0,
-              background: activeTab === 'display' ? '#FF0080' : 'rgba(255, 255, 255, 0.1)',
+              background: activeTab === 'display' ? 'var(--ui-button-bg)' : 'rgba(255, 255, 255, 0.1)',
               cursor: 'pointer',
             }}
           >
             <span style={{ 
-              color: '#FFF', 
+              color: activeTab === 'display' ? 'var(--ui-button-text)' : '#FFF', 
               fontFamily: 'Audiowide', 
               fontSize: '32px', 
               fontWeight: 400, 
@@ -223,12 +223,12 @@ export const InventorySection: React.FC = () => {
               gap: '10px',
               border: 0,
               borderRadius: '18px',
-              background: activeTab === 'match' ? '#FF0080' : 'rgba(255, 255, 255, 0.1)',
+              background: activeTab === 'match' ? 'var(--ui-button-bg)' : 'rgba(255, 255, 255, 0.1)',
               cursor: 'pointer',
             }}
           >
             <span style={{ 
-              color: '#FFF', 
+              color: activeTab === 'match' ? 'var(--ui-button-text)' : '#FFF', 
               fontFamily: 'Audiowide', 
               fontSize: '32px', 
               fontWeight: 400, 
@@ -250,7 +250,7 @@ export const InventorySection: React.FC = () => {
             style={{ 
               width: '50%', 
               borderRadius: '20px', 
-              background: 'linear-gradient(243deg, #192E39 25.17%, rgba(153, 153, 153, 0.00) 109.89%)', 
+              background: 'var(--ui-background-container)', 
               padding: '20px' 
             }}
           >
@@ -349,13 +349,13 @@ export const InventorySection: React.FC = () => {
                               alignItems: 'center', 
                               gap: '10px', 
                               borderRadius: '18px', 
-                              background: isBackgroundEquipped(background) ? '#4CAF50' : '#FF0080', 
+                              background: isBackgroundEquipped(background) ? '#4CAF50' : 'var(--ui-button-bg)', 
                               border: 'none', 
                               cursor: 'pointer' 
                             }}
                           >
                             <span style={{ 
-                              color: '#FFF', 
+                              color: 'var(--ui-button-text)', 
                               fontFamily: 'Audiowide', 
                               fontSize: '20px', 
                               fontWeight: 400, 
@@ -383,7 +383,7 @@ export const InventorySection: React.FC = () => {
                             }}
                           >
                             <span style={{ 
-                              color: '#FFF', 
+                              color: 'var(--ui-button-text)', 
                               fontFamily: 'Audiowide', 
                               fontSize: '20px', 
                               fontWeight: 400, 
@@ -413,7 +413,7 @@ export const InventorySection: React.FC = () => {
             className="rounded-lg overflow-hidden card-fade-in" 
             style={{ 
               width: '775px', 
-              background: 'linear-gradient(180deg, rgba(25, 46, 57, 0.8) 0%, rgba(25, 46, 57, 0.4) 100%)', 
+              background: 'var(--ui-background-container)', 
               backdropFilter: 'blur(10px)', 
               overflow: 'hidden', 
               borderRadius: '20px' 

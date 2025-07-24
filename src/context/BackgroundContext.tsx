@@ -41,9 +41,31 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
     { name: "Long Road Ahead", file: "/backgrounds/Long Road Ahead.jpg", type: "image" }
   ];
 
+  // Theme mapping for backgrounds
+  const getThemeFromBackground = (background: Background | null): string => {
+    if (!background) return 'default';
+    
+    const themeMap: Record<string, string> = {
+      'New Day': 'new-day',
+      'On A Mission': 'on-a-mission', 
+      'Underwater': 'underwater',
+      'Relax': 'relax',
+      'All For Glory': 'all-for-glory',
+      'Long Road Ahead': 'long-road-ahead'
+    };
+    
+    return themeMap[background.name] || 'default';
+  };
+
   // State for equipped backgrounds
   const [DisplayBackgroundEquip, setDisplayBackgroundEquip] = useState<Background | null>(null);
   const [MatchBackgroundEquip, setMatchBackgroundEquip] = useState<Background | null>(null);
+
+  // Apply theme to document based on DisplayBackgroundEquip
+  useEffect(() => {
+    const theme = getThemeFromBackground(DisplayBackgroundEquip);
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [DisplayBackgroundEquip]);
 
   // Load saved backgrounds from localStorage on mount
   useEffect(() => {
