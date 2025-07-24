@@ -6,7 +6,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { NavigationProvider, useNavigation } from '@/context/NavigationContext';
 import { SectionTransition } from '@/components/layout/SectionTransition';
 import { DashboardSection } from '@/components/dashboard/DashboardSectionNew';
-import { MatchSection } from '@/components/dashboard/MatchSection';
+import { MatchSection } from '@/components/dashboard/MatchSectionNew';
 import { InventorySection } from '@/components/dashboard/InventoryReference';
 import { ProfileSection } from '@/components/dashboard/ProfileSection';
 import { SettingsSection } from '@/components/dashboard/SettingsSection';
@@ -14,7 +14,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 
 const DashboardContent: React.FC = () => {
-  const { currentSection, setCurrentSection } = useNavigation();
+  const { currentSection, sectionParams, setCurrentSection } = useNavigation();
   const { user } = useAuth();
   const { DisplayBackgroundEquip } = useBackground();
   const [userGold] = useState(1000); // Placeholder for user gold
@@ -85,9 +85,9 @@ const DashboardContent: React.FC = () => {
                 </div>
                 <div
                   onClick={() => handleSectionChange('dashboard')}
-                  className="relative font-orbitron text-xl md:text-3xl bg-gradient-to-br from-[#ffd700] to-[#ffed4e] bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
+                  className="relative text-xl md:text-3xl bg-gradient-to-br from-[#ffd700] to-[#ffed4e] bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
                   style={{
-                    fontFamily: "Orbitron",
+                    fontFamily: "Audiowide",
                     fontWeight: 400,
                   }}
                 >
@@ -117,7 +117,7 @@ const DashboardContent: React.FC = () => {
                     className="relative font-medium text-white text-sm"
                     style={{
                       color: "#FFF",
-                      fontFamily: "Orbitron",
+                      fontFamily: "Audiowide",
                       fontSize: "16px",
                       fontWeight: 400,
                       textTransform: "uppercase",
@@ -147,7 +147,7 @@ const DashboardContent: React.FC = () => {
                     className="relative font-medium text-white text-sm"
                     style={{
                       color: "#FFF",
-                      fontFamily: "Orbitron",
+                      fontFamily: "Audiowide",
                       fontSize: "16px",
                       fontWeight: 400,
                       textTransform: "uppercase",
@@ -179,7 +179,7 @@ const DashboardContent: React.FC = () => {
                   className="relative text-sm"
                   style={{
                     color: "#FFF",
-                    fontFamily: "Orbitron",
+                    fontFamily: "Audiowide",
                     fontSize: "18px",
                     fontWeight: 400,
                     textTransform: "uppercase",
@@ -205,7 +205,12 @@ const DashboardContent: React.FC = () => {
                 className="w-full h-full"
               >
                 {currentSection === 'dashboard' && <DashboardSection />}
-                {currentSection === 'match' && <MatchSection />}
+                {currentSection === 'match' && (
+                  <MatchSection 
+                    gameMode={sectionParams.gameMode}
+                    actionType={sectionParams.actionType}
+                  />
+                )}
                 {currentSection === 'inventory' && <InventorySection />}
                 {currentSection === 'profile' && <ProfileSection />}
                 {currentSection === 'settings' && <SettingsSection />}
@@ -224,7 +229,7 @@ const DashboardContent: React.FC = () => {
               }`}
             >
               <div className="text-xl">🎯</div>
-              <span className="text-xs text-white font-orbitron">Dashboard</span>
+              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>Dashboard</span>
             </button>
             <button
               onClick={() => handleSectionChange('match')}
@@ -233,7 +238,7 @@ const DashboardContent: React.FC = () => {
               }`}
             >
               <div className="text-xl">🎲</div>
-              <span className="text-xs text-white font-orbitron">Match</span>
+              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>Match</span>
             </button>
             <button
               onClick={() => handleSectionChange('inventory')}
@@ -242,7 +247,7 @@ const DashboardContent: React.FC = () => {
               }`}
             >
               <div className="text-xl">🎒</div>
-              <span className="text-xs text-white font-orbitron">Inventory</span>
+              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>Inventory</span>
             </button>
             <button
               onClick={() => handleSectionChange('settings')}
@@ -251,7 +256,7 @@ const DashboardContent: React.FC = () => {
               }`}
             >
               <div className="text-xl">⚙️</div>
-              <span className="text-xs text-white font-orbitron">Settings</span>
+              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>Settings</span>
             </button>
           </div>
         </footer>

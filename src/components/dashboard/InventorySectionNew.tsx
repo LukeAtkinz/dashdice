@@ -102,7 +102,7 @@ export const InventorySection: React.FC = () => {
         <h1 
           className="text-5xl font-bold text-white mb-4"
           style={{
-            fontFamily: "Orbitron",
+            fontFamily: "Audiowide",
             textTransform: "uppercase",
             textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
           }}
@@ -112,7 +112,7 @@ export const InventorySection: React.FC = () => {
         <p 
           className="text-xl text-white/80"
           style={{
-            fontFamily: "Orbitron",
+            fontFamily: "Montserrat",
           }}
         >
           Manage your collection
@@ -145,7 +145,7 @@ export const InventorySection: React.FC = () => {
             <span
               style={{
                 color: "#FFF",
-                fontFamily: "Orbitron",
+                fontFamily: "Audiowide",
                 fontSize: "14px",
                 fontWeight: 400,
                 textTransform: "uppercase",
@@ -210,7 +210,7 @@ export const InventorySection: React.FC = () => {
               <h3
                 className="text-white font-bold mb-2"
                 style={{
-                  fontFamily: "Orbitron",
+                  fontFamily: "Audiowide",
                   fontSize: "18px",
                   textTransform: "uppercase",
                 }}
@@ -222,7 +222,7 @@ export const InventorySection: React.FC = () => {
                 style={{
                   background: rarityColors[item.rarity as keyof typeof rarityColors],
                   color: "#FFF",
-                  fontFamily: "Orbitron",
+                  fontFamily: "Montserrat",
                   textTransform: "uppercase",
                 }}
               >
@@ -241,7 +241,7 @@ export const InventorySection: React.FC = () => {
                       ? "linear-gradient(135deg, #FFD700, #FFA500)" 
                       : "linear-gradient(135deg, #00FF80, #00A855)",
                     color: "#FFF",
-                    fontFamily: "Orbitron",
+                    fontFamily: "Audiowide",
                     textTransform: "uppercase",
                   }}
                   whileHover={{ scale: 1.05 }}
@@ -257,7 +257,7 @@ export const InventorySection: React.FC = () => {
                       ? "linear-gradient(135deg, #FFD700, #FFA500)" 
                       : "linear-gradient(135deg, #FF0080, #FF4DB8)",
                     color: "#FFF",
-                    fontFamily: "Orbitron",
+                    fontFamily: "Audiowide",
                     textTransform: "uppercase",
                   }}
                   whileHover={{ scale: 1.05 }}
@@ -273,7 +273,7 @@ export const InventorySection: React.FC = () => {
                   style={{
                     background: "linear-gradient(135deg, #00FF80, #00A855)",
                     color: "#FFF",
-                    fontFamily: "Orbitron",
+                    fontFamily: "Audiowide",
                     textTransform: "uppercase",
                   }}
                   whileHover={{ scale: 1.05 }}
@@ -286,7 +286,7 @@ export const InventorySection: React.FC = () => {
                   style={{
                     background: "rgba(255, 255, 255, 0.2)",
                     color: "#FFF",
-                    fontFamily: "Orbitron",
+                    fontFamily: "Audiowide",
                     textTransform: "uppercase",
                   }}
                   whileHover={{ scale: 1.05 }}
@@ -318,7 +318,7 @@ export const InventorySection: React.FC = () => {
         <span
           style={{
             color: "#FFF",
-            fontFamily: "Orbitron",
+            fontFamily: "Audiowide",
             fontSize: "18px",
             fontWeight: 400,
             textTransform: "uppercase",

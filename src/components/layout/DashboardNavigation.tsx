@@ -3,7 +3,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigation, DashboardSection } from '@/context/NavigationContext';
-import { Button } from '@/components/ui/Button';
 
 interface NavigationItem {
   id: DashboardSection;
@@ -27,7 +26,7 @@ const navigationItems: NavigationItem[] = [
   },
   {
     id: 'inventory',
-    label: 'Inventory',
+    label: 'Vault',
     icon: '🎒',
     description: 'Manage your items'
   },
@@ -49,61 +48,149 @@ export const DashboardNavigation: React.FC = () => {
   const { currentSection, setCurrentSection } = useNavigation();
 
   return (
-    <div className="bg-white border-b border-gray-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <h1 className="text-xl font-orbitron font-bold text-blue-600">
+    <div className="w-full flex flex-row items-center justify-center relative z-30 px-[2rem] md:px-[4rem] py-[2rem]">
+      <style jsx>{`
+        .nav-button {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-button:hover {
+          animation: navPulse 0.6s ease-in-out;
+          box-shadow: 0 8px 25px rgba(255, 0, 128, 0.3);
+          transform: scale(1.05);
+        }
+        .nav-button:active {
+          animation: navClick 0.2s ease-in-out;
+          transform: scale(0.95);
+        }
+        .nav-button.active {
+          box-shadow: 0 6px 20px rgba(255, 0, 128, 0.4);
+        }
+        @keyframes navPulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+        @keyframes navClick {
+          0% { transform: scale(1); }
+          50% { transform: scale(0.95); }
+          100% { transform: scale(1); }
+        }
+      `}</style>
+
+      <div className="flex-1 flex flex-row items-center justify-between bg-gradient-to-br from-[#192E39] to-[#99999900] rounded-[30px] px-[20px] md:px-[30px] py-[15px]">
+        
+        {/* Left Navigation */}
+        <div className="flex flex-row items-center justify-start gap-[1rem] md:gap-[2rem]">
+          {/* Logo Section */}
+          <div className="flex flex-row items-center justify-start gap-[1rem]">
+            <div 
+              className="w-6 h-6 md:w-10 md:h-10 bg-gradient-to-br from-[#ffd700] to-[#ffed4e] rounded-full flex items-center justify-center"
+            >
+              🎲
+            </div>
+            <div
+              onClick={() => setCurrentSection('dashboard')}
+              className="relative text-xl md:text-3xl bg-gradient-to-br from-[#ffd700] to-[#ffed4e] bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
+              style={{
+                fontFamily: "Audiowide",
+                fontWeight: 400,
+              }}
+            >
               DashDice
-            </h1>
+            </div>
           </div>
 
           {/* Navigation Items */}
-          <nav className="hidden md:flex space-x-1">
-            {navigationItems.map((item) => {
+          <div className="hidden md:flex items-center gap-[20px]">
+            {navigationItems.slice(0, 3).map((item) => {
               const isActive = currentSection === item.id;
               
               return (
-                <div key={item.id} className="relative">
-                  <Button
-                    variant={isActive ? 'primary' : 'outline'}
-                    size="sm"
-                    onClick={() => setCurrentSection(item.id)}
-                    className="flex items-center space-x-2 relative"
+                <button
+                  key={item.id}
+                  onClick={() => setCurrentSection(item.id)}
+                  className={`nav-button ${isActive ? 'active' : ''} flex items-center justify-center px-[20px] py-[10px] rounded-[15px] cursor-pointer border-0`}
+                  style={{
+                    background: isActive ? '#FF0080' : 'rgba(255, 255, 255, 0.1)',
+                  }}
+                >
+                  <span
+                    style={{
+                      color: '#FFF',
+                      fontFamily: 'Audiowide',
+                      fontSize: '18px',
+                      fontWeight: 400,
+                      textTransform: 'uppercase',
+                    }}
                   >
-                    <span className="text-lg">{item.icon}</span>
-                    <span className="hidden lg:inline">{item.label}</span>
-                  </Button>
-                  
-                  {/* Active indicator */}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"
-                      initial={false}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
-                    />
-                  )}
-                </div>
+                    {item.label}
+                  </span>
+                </button>
               );
             })}
-          </nav>
-
-          {/* Mobile Navigation */}
-          <div className="md:hidden">
-            <select
-              value={currentSection}
-              onChange={(e) => setCurrentSection(e.target.value as DashboardSection)}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            >
-              {navigationItems.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.icon} {item.label}
-                </option>
-              ))}
-            </select>
           </div>
+        </div>
+
+        {/* Right Navigation */}
+        <div className="flex flex-row items-center justify-end gap-[20px]">
+          {navigationItems.slice(3).map((item) => {
+            const isActive = currentSection === item.id;
+            
+            return (
+              <button
+                key={item.id}
+                onClick={() => setCurrentSection(item.id)}
+                className={`nav-button ${isActive ? 'active' : ''} flex items-center justify-center px-[20px] py-[10px] rounded-[15px] cursor-pointer border-0`}
+                style={{
+                  background: isActive ? '#FF0080' : 'rgba(255, 255, 255, 0.1)',
+                }}
+              >
+                <span
+                  style={{
+                    color: '#FFF',
+                    fontFamily: 'Audiowide',
+                    fontSize: '18px',
+                    fontWeight: 400,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Mobile Navigation */}
+      <div className="md:hidden absolute top-full left-0 right-0 bg-gradient-to-br from-[#192E39] to-[#99999900] rounded-[20px] mx-4 mt-2 p-4">
+        <div className="grid grid-cols-2 gap-2">
+          {navigationItems.map((item) => {
+            const isActive = currentSection === item.id;
+            
+            return (
+              <button
+                key={item.id}
+                onClick={() => setCurrentSection(item.id)}
+                className={`nav-button ${isActive ? 'active' : ''} flex flex-col items-center justify-center p-3 rounded-[10px] cursor-pointer border-0`}
+                style={{
+                  background: isActive ? '#FF0080' : 'rgba(255, 255, 255, 0.1)',
+                }}
+              >
+                <span className="text-lg mb-1">{item.icon}</span>
+                <span
+                  style={{
+                    color: '#FFF',
+                    fontFamily: 'Audiowide',
+                    fontSize: '12px',
+                    fontWeight: 400,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
