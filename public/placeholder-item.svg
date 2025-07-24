@@ -1,0 +1,12 @@
+<!-- This is a placeholder SVG for inventory items -->
+<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#f3f4f6" stroke="#d1d5db" stroke-width="2"/>
+  <text x="100" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#6b7280">
+    Item Image
+  </text>
+  <text x="100" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#9ca3af">
+    Placeholder
+  </text>
+  <circle cx="100" cy="140" r="20" fill="#e5e7eb" stroke="#d1d5db" stroke-width="1"/>
+  <path d="M90 140 L100 130 L110 140 L100 150 Z" fill="#9ca3af"/>
+</svg>

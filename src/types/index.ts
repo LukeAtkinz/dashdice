@@ -1,0 +1,79 @@
+export interface User {
+  uid: string;
+  email: string;
+  displayName?: string;
+  photoURL?: string;
+  createdAt: Date;
+  lastLoginAt: Date;
+  inventory: InventoryItem[];
+  ownedBackgrounds: string[]; // Array of background IDs
+  equippedBackground?: string; // Currently equipped background ID
+}
+
+export interface InventoryItem {
+  id: string;
+  type: 'background' | 'dice' | 'avatar' | 'effect';
+  name: string;
+  description?: string;
+  imageUrl: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  acquiredAt: Date;
+  equipped?: boolean;
+}
+
+export interface GameState {
+  gameId: string;
+  players: GamePlayer[];
+  currentPlayer: string;
+  status: 'waiting' | 'active' | 'finished';
+  createdAt: Date;
+  updatedAt: Date;
+  winner?: string;
+}
+
+export interface GamePlayer {
+  uid: string;
+  displayName: string;
+  avatar?: string;
+  score: number;
+  ready: boolean;
+}
+
+export interface Match {
+  id: string;
+  players: string[];
+  status: 'waiting' | 'active' | 'finished';
+  createdAt: Date;
+  updatedAt: Date;
+  winner?: string;
+  gameType: 'ranked' | 'casual' | 'tournament';
+}
+
+export interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, displayName: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+}
+
+export interface InventoryContextType {
+  inventory: InventoryItem[];
+  loading: boolean;
+  error: string | null;
+  addItem: (item: Omit<InventoryItem, 'id' | 'acquiredAt'>) => Promise<void>;
+  equipItem: (itemId: string) => Promise<void>;
+  unequipItem: (itemId: string) => Promise<void>;
+  refreshInventory: () => Promise<void>;
+}
+
+export interface GameContextType {
+  currentGame: GameState | null;
+  loading: boolean;
+  error: string | null;
+  createGame: () => Promise<string>;
+  joinGame: (gameId: string) => Promise<void>;
+  leaveGame: () => Promise<void>;
+  updatePlayerReady: (ready: boolean) => Promise<void>;
+}
