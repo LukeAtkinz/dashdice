@@ -7,7 +7,7 @@ import { NavigationProvider, useNavigation } from '@/context/NavigationContext';
 import { SectionTransition } from '@/components/layout/SectionTransition';
 import { DashboardSection } from '@/components/dashboard/DashboardSectionNew';
 import { MatchSection } from '@/components/dashboard/MatchSection';
-import { InventorySection } from '@/components/dashboard/InventorySectionNew';
+import { InventorySection } from '@/components/dashboard/InventoryReference';
 import { ProfileSection } from '@/components/dashboard/ProfileSection';
 import { SettingsSection } from '@/components/dashboard/SettingsSection';
 import { useAuth } from '@/context/AuthContext';
