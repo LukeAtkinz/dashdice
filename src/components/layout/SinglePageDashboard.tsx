@@ -11,25 +11,59 @@ import { InventorySection } from '@/components/dashboard/InventorySectionNew';
 import { ProfileSection } from '@/components/dashboard/ProfileSection';
 import { SettingsSection } from '@/components/dashboard/SettingsSection';
 import { useAuth } from '@/context/AuthContext';
+import { useBackground } from '@/context/BackgroundContext';
 
 const DashboardContent: React.FC = () => {
   const { currentSection, setCurrentSection } = useNavigation();
   const { user } = useAuth();
+  const { DisplayBackgroundEquip } = useBackground();
   const [userGold] = useState(1000); // Placeholder for user gold
 
   const handleSectionChange = (section: string) => {
     setCurrentSection(section as any);
   };
 
-  return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Background with gradient */}
+  // Render background based on equipped display background
+  const renderBackground = () => {
+    if (DisplayBackgroundEquip) {
+      if (DisplayBackgroundEquip.type === 'video') {
+        return (
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover z-0"
+          >
+            <source src={DisplayBackgroundEquip.file} type="video/mp4" />
+          </video>
+        );
+      } else {
+        return (
+          <img
+            src={DisplayBackgroundEquip.file}
+            alt={DisplayBackgroundEquip.name}
+            className="absolute inset-0 w-full h-full object-cover z-0"
+          />
+        );
+      }
+    }
+    
+    // Default gradient background
+    return (
       <div 
         className="absolute inset-0 z-0"
         style={{
           background: "radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)"
         }}
       />
+    );
+  };
+
+  return (
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Dynamic Background */}
+      {renderBackground()}
       
       {/* Overlay for better content visibility */}
       <div className="absolute inset-0 bg-black/30 z-10" />
