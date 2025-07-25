@@ -55,36 +55,24 @@ export const MatchSection: React.FC<MatchSectionProps> = ({
     }, 1200);
   };
 
-  // Video game-style transition animations
-  const slideVariants = {
+  // Simple fade transition animation matching SinglePageDashboard
+  const fadeVariants = {
     enter: {
-      x: '100%',
       opacity: 0,
-      scale: 0.9,
-      rotateY: -20
+      y: 20
     },
     center: {
-      x: 0,
       opacity: 1,
-      scale: 1,
-      rotateY: 0,
+      y: 0,
       transition: {
-        type: "spring" as const,
-        stiffness: 100,
-        damping: 25,
-        duration: 0.8
+        duration: 0.3
       }
     },
     exit: {
-      x: '100%',
       opacity: 0,
-      scale: 0.9,
-      rotateY: 20,
+      y: -20,
       transition: {
-        type: "spring" as const,
-        stiffness: 120,
-        damping: 30,
-        duration: 0.6
+        duration: 0.3
       }
     }
   };
@@ -189,7 +177,7 @@ export const MatchSection: React.FC<MatchSectionProps> = ({
       <AnimatePresence mode="wait">
         <motion.div
           key="waiting-room"
-          variants={slideVariants}
+          variants={fadeVariants}
           initial="enter"
           animate="center"
           exit="exit"
