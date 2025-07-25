@@ -412,7 +412,8 @@ export const InventorySection: React.FC = () => {
             key={`display-panel-${selectedBackground?.id || 'none'}`} 
             className="rounded-lg overflow-hidden card-fade-in" 
             style={{ 
-              width: '775px', 
+              width: '100%', 
+              maxWidth: '775px',
               background: 'var(--ui-inventory-bg, var(--ui-background-container))', 
               backdropFilter: 'blur(10px)', 
               overflow: 'hidden', 
@@ -425,18 +426,15 @@ export const InventorySection: React.FC = () => {
                   className="relative" 
                   style={{ 
                     display: 'flex', 
-                    width: '775px', 
+                    width: '100%', 
                     height: '410px', 
                     alignItems: 'center', 
                     borderRadius: '20px', 
                     border: '1px solid #FFF', 
-                    overflow: 'hidden', 
-                    background: selectedBackground.isGradient ? selectedBackground.url : `url('${selectedBackground.url}')`, 
-                    backgroundSize: 'cover', 
-                    backgroundPosition: 'center' 
+                    overflow: 'hidden'
                   }}
                 >
-                  {selectedBackground.isVideo && selectedBackground.videoUrl && (
+                  {selectedBackground.isVideo && selectedBackground.videoUrl ? (
                     <video 
                       autoPlay 
                       loop 
@@ -447,14 +445,17 @@ export const InventorySection: React.FC = () => {
                     >
                       <source src={selectedBackground.videoUrl} type="video/mp4" />
                     </video>
+                  ) : (
+                    <div
+                      className="absolute inset-0 w-full h-full"
+                      style={{ 
+                        background: selectedBackground.isGradient ? selectedBackground.url : `url('${selectedBackground.url}')`, 
+                        backgroundSize: 'cover', 
+                        backgroundPosition: 'center',
+                        borderRadius: '20px'
+                      }}
+                    />
                   )}
-                  <div 
-                    className="absolute inset-0 rounded-lg z-5" 
-                    style={{ 
-                      borderRadius: '20px', 
-                      background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)' 
-                    }}
-                  ></div>
                   <div className="relative z-10 flex flex-col items-center justify-center w-full h-full">
                     <h2 style={{ 
                       color: '#FFF', 
@@ -482,7 +483,7 @@ export const InventorySection: React.FC = () => {
                   className="flex items-center justify-center text-white/50" 
                   style={{ 
                     display: 'flex', 
-                    width: '775px', 
+                    width: '100%', 
                     height: '410px', 
                     padding: '20px 20px 30px 20px', 
                     alignItems: 'center', 
