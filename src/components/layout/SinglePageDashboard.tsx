@@ -78,11 +78,11 @@ const DashboardContent: React.FC = () => {
             <div className="flex flex-row items-center justify-start gap-[1rem] md:gap-[2rem]">
               {/* Logo Section */}
               <div className="flex flex-row items-center justify-start gap-[1rem]">
-                <div 
-                  className="w-6 h-6 md:w-10 md:h-10 bg-gradient-to-br from-[#ffd700] to-[#ffed4e] rounded-full flex items-center justify-center"
-                >
-                  🎲
-                </div>
+                <img
+                  src="/Design Elements/CrownLogo.webp"
+                  alt="DashDice Logo"
+                  className="w-6 h-6 md:w-10 md:h-10"
+                />
                 <div
                   onClick={() => handleSectionChange('dashboard')}
                   className="relative text-xl md:text-3xl bg-gradient-to-br from-[#ffd700] to-[#ffed4e] bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
@@ -97,73 +97,99 @@ const DashboardContent: React.FC = () => {
 
               {/* Navigation Items */}
               <div className="hidden md:flex items-center gap-[20px]">
+                {/* VAULT Button */}
                 <button
                   onClick={() => handleSectionChange('inventory')}
-                  className="flex flex-row items-center justify-start gap-[0.5rem] cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
+                  className="flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
                   style={{
                     display: "flex",
+                    width: "209px",
                     height: "56px",
                     padding: "4px 16px",
                     justifyContent: "center",
                     alignItems: "center",
                     gap: "10px",
                     borderRadius: "18px",
-                    background: "var(--ui-button-bg)",
-                    boxShadow: "0 4px 15px rgba(255, 0, 128, 0.3)",
+                    background: "#FF0080",
+                    border: "none"
                   }}
                 >
-                  <div className="text-2xl">🎒</div>
-                  <div
-                    className="relative font-medium text-white text-sm"
+                  <img
+                    src="/Design Elements/Gem Bucket.webp"
+                    alt="Vault"
                     style={{
-                      color: "var(--ui-button-text)",
-                      fontFamily: "Audiowide",
-                      fontSize: "16px",
-                      fontWeight: 400,
-                      textTransform: "uppercase",
+                      width: "50px",
+                      height: "50px",
+                      flexShrink: 0,
+                      aspectRatio: "1/1"
                     }}
-                  >
-                    Inventory
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => handleSectionChange('profile')}
-                  className="flex flex-row items-center justify-start gap-[0.5rem] cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
-                  style={{
-                    display: "flex",
-                    height: "56px",
-                    padding: "4px 16px",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: "10px",
-                    borderRadius: "18px",
-                    background: "var(--ui-button-bg)",
-                    boxShadow: "0 4px 15px rgba(102, 126, 234, 0.3)",
-                  }}
-                >
-                  <div className="text-2xl">👥</div>
-                  <div
-                    className="relative font-medium text-white text-sm"
+                  />
+                  <span
                     style={{
                       color: "#FFF",
                       fontFamily: "Audiowide",
-                      fontSize: "16px",
+                      fontSize: "32px",
+                      fontStyle: "normal",
                       fontWeight: 400,
-                      textTransform: "uppercase",
+                      lineHeight: "30px"
                     }}
                   >
-                    Profile
-                  </div>
+                    VAULT
+                  </span>
+                </button>
+
+                {/* SHOP Button */}
+                <button
+                  className="flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
+                  title="Coming Soon!"
+                  style={{
+                    display: "flex",
+                    width: "209px",
+                    height: "56px",
+                    padding: "4px 16px",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: "10px",
+                    borderRadius: "18px",
+                    background: "#FF0080",
+                    border: "none",
+                    opacity: 0.7
+                  }}
+                >
+                  <img
+                    src="/Design Elements/discount tag.webp"
+                    alt="Shop"
+                    style={{
+                      width: "50px",
+                      height: "50px",
+                      flexShrink: 0,
+                      aspectRatio: "1/1"
+                    }}
+                  />
+                  <span
+                    style={{
+                      color: "#FFF",
+                      fontFamily: "Audiowide",
+                      fontSize: "32px",
+                      fontStyle: "normal",
+                      fontWeight: 400,
+                      lineHeight: "30px"
+                    }}
+                  >
+                    SHOP
+                  </span>
                 </button>
               </div>
             </div>
 
-            {/* Right Side - Gold Display */}
-            <div className="flex flex-row items-center justify-end gap-[20px]">
-              <div
+            {/* Right Side - Profile */}
+            <div className="flex flex-row items-center justify-end">
+              <button
+                onClick={() => handleSectionChange('profile')}
+                className="flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
                 style={{
                   display: "flex",
+                  width: "209px",
                   height: "56px",
                   padding: "4px 16px",
                   justifyContent: "center",
@@ -171,23 +197,32 @@ const DashboardContent: React.FC = () => {
                   gap: "10px",
                   borderRadius: "18px",
                   background: "#FF0080",
-                  backdropFilter: "blur(20px)",
+                  border: "none"
                 }}
               >
-                <div className="text-2xl">🪙</div>
-                <div
-                  className="relative text-sm"
+                <img
+                  src="/Design Elements/Delivery Man.webp"
+                  alt="Profile"
+                  style={{
+                    width: "50px",
+                    height: "50px",
+                    flexShrink: 0,
+                    aspectRatio: "1/1"
+                  }}
+                />
+                <span
                   style={{
                     color: "#FFF",
                     fontFamily: "Audiowide",
-                    fontSize: "18px",
+                    fontSize: "32px",
+                    fontStyle: "normal",
                     fontWeight: 400,
-                    textTransform: "uppercase",
+                    lineHeight: "30px"
                   }}
                 >
-                  {userGold.toLocaleString()}
-                </div>
-              </div>
+                  PROFILE
+                </span>
+              </button>
             </div>
           </div>
         </header>

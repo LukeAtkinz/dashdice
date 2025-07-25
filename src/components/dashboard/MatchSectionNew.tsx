@@ -76,7 +76,7 @@ export const MatchSection: React.FC<MatchSectionProps> = ({
       }
     },
     exit: {
-      x: '-100%',
+      x: '100%',
       opacity: 0,
       scale: 0.9,
       rotateY: 20,
