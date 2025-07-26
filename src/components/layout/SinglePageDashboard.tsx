@@ -182,8 +182,50 @@ const DashboardContent: React.FC = () => {
               </div>
             </div>
 
-            {/* Right Side - Profile */}
-            <div className="flex flex-row items-center justify-end">
+            {/* Right Side - Friends and Profile */}
+            <div className="flex flex-row items-center justify-end gap-[1rem]">
+              {/* FRIENDS Button */}
+              <button
+                onClick={() => handleSectionChange('friends')}
+                className="flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
+                style={{
+                  display: "flex",
+                  width: "209px",
+                  height: "56px",
+                  padding: "4px 16px",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: "10px",
+                  borderRadius: "18px",
+                  background: "#FF0080",
+                  border: "none"
+                }}
+              >
+                <img
+                  src="/Design Elements/friends.webp"
+                  alt="Friends"
+                  style={{
+                    width: "50px",
+                    height: "50px",
+                    flexShrink: 0,
+                    aspectRatio: "1/1"
+                  }}
+                />
+                <span
+                  style={{
+                    color: "#FFF",
+                    fontFamily: "Audiowide",
+                    fontSize: "28px",
+                    fontStyle: "normal",
+                    fontWeight: 400,
+                    lineHeight: "30px"
+                  }}
+                >
+                  FRIENDS
+                </span>
+              </button>
+
+              {/* PROFILE Button */}
               <button
                 onClick={() => handleSectionChange('profile')}
                 className="flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
@@ -214,7 +256,7 @@ const DashboardContent: React.FC = () => {
                   style={{
                     color: "#FFF",
                     fontFamily: "Audiowide",
-                    fontSize: "32px",
+                    fontSize: "26px",
                     fontStyle: "normal",
                     fontWeight: 400,
                     lineHeight: "30px"
