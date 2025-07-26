@@ -9,7 +9,7 @@ const gameConfig = {
   quickfire: { 
     name: 'QUICK\nFIRE', 
     icon: '/Design Elements/finance startup.webp', 
-    description: 'Speed Over Strategy',
+    description: 'More Speed, More Pressure',
     rotation: '-70deg',
     position: { top: '3rem', left: '-2rem' },
     available: true
@@ -17,7 +17,7 @@ const gameConfig = {
   classic: { 
     name: 'CLASSIC\nMODE', 
     icon: '/Design Elements/Crown Mode.webp', 
-    description: 'Traditional Gameplay',
+    description: 'Full Force, Full Focus',
     rotation: '0deg',
     position: { top: '-2rem', left: '-2rem' },
     available: false
@@ -25,7 +25,7 @@ const gameConfig = {
   zerohour: { 
     name: 'ZERO\nHOUR', 
     icon: '/Design Elements/time out.webp', 
-    description: 'Last Chance Wins',
+    description: 'Time Runs Backwards',
     rotation: '0deg',
     position: { top: '-2rem', left: '-2rem' },
     available: false
@@ -33,23 +33,23 @@ const gameConfig = {
   lastline: { 
     name: 'LAST\nLINE', 
     icon: '/Design Elements/skull.webp', 
-    description: 'Final Roll Counts',
-    rotation: '15deg',
+    description: 'One Roll, One Life',
+    rotation: '5deg',
     position: { top: '-1rem', left: '-2rem' },
     available: false
   },
   truegrit: { 
     name: 'TRUE\nGRIT', 
-    icon: '/Design Elements/Sword.webp', 
-    description: 'No Banking Allowed',
-    rotation: '45deg',
-    position: { top: '2rem', left: '-2rem' },
+    icon: '/Design Elements/Castle.webp', 
+    description: 'No Banking, No Mercy',
+    rotation: '0deg',
+    position: { top: '1rem', left: '-4rem' },
     available: false
   },
   tagteam: { 
     name: 'TAG\nTEAM', 
     icon: '/Design Elements/friends.webp', 
-    description: 'Team-Based Play',
+    description: 'Rise Or Fall Together',
     rotation: '0deg',
     position: { top: '-2rem', left: '-2rem' },
     available: false
