@@ -31,6 +31,18 @@ interface WaitingRoomEntry {
       matchWins: number;
     };
   };
+  opponentData?: {
+    playerDisplayName: string;
+    playerId: string;
+    displayBackgroundEquipped: any;
+    matchBackgroundEquipped: any;
+    playerStats: {
+      bestStreak: number;
+      currentStreak: number;
+      gamesPlayed: number;
+      matchWins: number;
+    };
+  };
 }
 
 export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
@@ -46,6 +58,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchingText, setSearchingText] = useState('Searching for opponents...');
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [opponentJoined, setOpponentJoined] = useState(false);
 
   // Game mode display configurations
   const gameModeConfig = {
@@ -116,7 +130,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
   // Create waiting room entry when component mounts
   useEffect(() => {
-    const createWaitingRoomEntry = async () => {
+    const handleMatchmaking = async () => {
       try {
         setError('');
         setIsLoading(true);
@@ -128,40 +142,187 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
         const userStats = await getUserStats();
 
-        const entry: WaitingRoomEntry = {
-          createdAt: serverTimestamp(),
-          gameMode: "Classic Mode", // Always set as requested
-          gameType: "", // Leave blank as requested
-          playersRequired: 1, // Always 1 as requested
-          hostData: {
+        // First, check for existing games with same gameMode and gameType
+        const q = query(
+          collection(db, 'waitingroom'),
+          where('gameMode', '==', gameMode),
+          where('gameType', '==', 'Open Server')
+        );
+
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          // Found an existing game - join as opponent
+          const existingGameDoc = querySnapshot.docs[0];
+          const existingGame = existingGameDoc.data() as WaitingRoomEntry;
+          
+          // Add opponent data to the existing game
+          const opponentData = {
             playerDisplayName: getDisplayName(),
             playerId: user.uid,
             displayBackgroundEquipped: DisplayBackgroundEquip || null,
             matchBackgroundEquipped: MatchBackgroundEquip || null,
             playerStats: userStats
-          }
-        };
+          };
 
-        const docRef = await addDoc(collection(db, 'waitingroom'), entry);
-        setWaitingRoomEntry({ ...entry, id: docRef.id });
-        setIsLoading(false);
+          await updateDoc(doc(db, 'waitingroom', existingGameDoc.id), {
+            opponentData: opponentData
+          });
+
+          // Set up listener for the joined game
+          const unsubscribe = onSnapshot(doc(db, 'waitingroom', existingGameDoc.id), (doc) => {
+            if (doc.exists()) {
+              const data = doc.data() as WaitingRoomEntry;
+              setWaitingRoomEntry({ ...data, id: doc.id });
+              
+              // Check if opponent joined (we are the opponent in this case)
+              if (data.opponentData) {
+                setOpponentJoined(true);
+                // Start countdown immediately since we just joined
+                startCountdown();
+              }
+            }
+          });
+
+          setIsLoading(false);
+          return () => unsubscribe();
+        } else {
+          // No existing game found - create new one
+          const entry: WaitingRoomEntry = {
+            createdAt: serverTimestamp(),
+            gameMode: gameMode,
+            gameType: "Open Server",
+            playersRequired: 0, // Set to 0 as requested
+            hostData: {
+              playerDisplayName: getDisplayName(),
+              playerId: user.uid,
+              displayBackgroundEquipped: DisplayBackgroundEquip || null,
+              matchBackgroundEquipped: MatchBackgroundEquip || null,
+              playerStats: userStats
+            }
+          };
+
+          const docRef = await addDoc(collection(db, 'waitingroom'), entry);
+          const gameId = docRef.id;
+          
+          // Set up listener for when opponent joins
+          const unsubscribe = onSnapshot(doc(db, 'waitingroom', gameId), (doc) => {
+            if (doc.exists()) {
+              const data = doc.data() as WaitingRoomEntry;
+              setWaitingRoomEntry({ ...data, id: doc.id });
+              
+              // Check if opponent joined
+              if (data.opponentData && !opponentJoined) {
+                setOpponentJoined(true);
+                startCountdown();
+              }
+            }
+          });
+
+          setWaitingRoomEntry({ ...entry, id: gameId });
+          
+          // Add test computer player after 3 seconds for testing
+          setTimeout(() => {
+            addTestOpponent(gameId);
+          }, 3000);
+
+          setIsLoading(false);
+          return () => unsubscribe();
+        }
 
       } catch (err) {
-        console.error('Error creating waiting room entry:', err);
+        console.error('Error in matchmaking:', err);
         setError('Failed to create game session');
         setIsLoading(false);
       }
     };
 
-    createWaitingRoomEntry();
+    const matchmakingCleanup = handleMatchmaking();
 
     // Cleanup function to remove waiting room entry when component unmounts
     return () => {
+      if (matchmakingCleanup && typeof matchmakingCleanup.then === 'function') {
+        matchmakingCleanup.then((cleanup) => {
+          if (cleanup && typeof cleanup === 'function') {
+            cleanup();
+          }
+        });
+      }
       if (waitingRoomEntry?.id) {
         deleteDoc(doc(db, 'waitingroom', waitingRoomEntry.id)).catch(console.error);
       }
     };
   }, [user, gameMode, actionType]);
+
+  // Function to start 5-second countdown
+  const startCountdown = () => {
+    setCountdown(5);
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev === null || prev <= 1) {
+          clearInterval(timer);
+          // Move to matches collection and navigate to match
+          moveToMatchesAndNavigate();
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  // Function to add test computer opponent
+  const addTestOpponent = async (gameId: string) => {
+    try {
+      const computerOpponentData = {
+        playerDisplayName: "GKent",
+        playerId: "computer_gkent",
+        displayBackgroundEquipped: null, // Will use underwater theme
+        matchBackgroundEquipped: { 
+          type: 'image',
+          file: '/backgrounds/Underwater.jpg',
+          name: 'Underwater'
+        },
+        playerStats: {
+          bestStreak: 3,
+          currentStreak: 1,
+          gamesPlayed: 100,
+          matchWins: 69
+        }
+      };
+
+      await updateDoc(doc(db, 'waitingroom', gameId), {
+        opponentData: computerOpponentData
+      });
+    } catch (err) {
+      console.error('Error adding test opponent:', err);
+    }
+  };
+
+  // Function to move game to matches collection
+  const moveToMatchesAndNavigate = async () => {
+    try {
+      if (!waitingRoomEntry?.id) return;
+
+      // Create match document
+      const matchData = {
+        ...waitingRoomEntry,
+        status: 'active',
+        createdAt: serverTimestamp(),
+        startedAt: serverTimestamp()
+      };
+
+      await addDoc(collection(db, 'matches'), matchData);
+      
+      // Remove from waiting room
+      await deleteDoc(doc(db, 'waitingroom', waitingRoomEntry.id));
+      
+      // Navigate to match (placeholder for now)
+      console.log('Would navigate to Match.js with data:', matchData);
+      
+    } catch (err) {
+      console.error('Error moving to matches:', err);
+    }
+  };
 
   // Handle leaving the game
   const handleLeave = async () => {
@@ -259,7 +420,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   }
 
   return (
-    <div className="w-full h-full flex items-center justify-center p-8 min-h-0">
+    <div className="w-full h-full flex items-center justify-center min-h-0" style={{ padding: '20px' }}>
       {/* CSS Styles for animations */}
       <style jsx>{`
         @keyframes pulse {
@@ -276,13 +437,85 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             opacity: 1;
           }
         }
+        
+        @keyframes epicPulse {
+          0% { 
+            transform: scale(1) rotate(0deg);
+            filter: drop-shadow(0 0 20px rgba(255, 0, 128, 0.8));
+          }
+          25% { 
+            transform: scale(1.15) rotate(1deg);
+            filter: drop-shadow(0 0 40px rgba(255, 69, 0, 1));
+          }
+          50% { 
+            transform: scale(1.3) rotate(0deg);
+            filter: drop-shadow(0 0 60px rgba(255, 215, 0, 1));
+          }
+          75% { 
+            transform: scale(1.15) rotate(-1deg);
+            filter: drop-shadow(0 0 40px rgba(255, 0, 0, 1));
+          }
+          100% { 
+            transform: scale(1) rotate(0deg);
+            filter: drop-shadow(0 0 20px rgba(255, 0, 128, 0.8));
+          }
+        }
+        
+        @keyframes battleFlash {
+          0% { 
+            background: radial-gradient(circle, rgba(255,0,128,0.3) 0%, rgba(0,0,0,0.8) 70%);
+            transform: scale(1);
+          }
+          20% { 
+            background: radial-gradient(circle, rgba(255,69,0,0.4) 0%, rgba(0,0,0,0.8) 70%);
+            transform: scale(1.02);
+          }
+          40% { 
+            background: radial-gradient(circle, rgba(255,215,0,0.5) 0%, rgba(0,0,0,0.8) 70%);
+            transform: scale(1.05);
+          }
+          60% { 
+            background: radial-gradient(circle, rgba(255,0,0,0.4) 0%, rgba(0,0,0,0.8) 70%);
+            transform: scale(1.02);
+          }
+          80% { 
+            background: radial-gradient(circle, rgba(0,255,128,0.3) 0%, rgba(0,0,0,0.8) 70%);
+            transform: scale(1.01);
+          }
+          100% { 
+            background: radial-gradient(circle, rgba(255,0,128,0.3) 0%, rgba(0,0,0,0.8) 70%);
+            transform: scale(1);
+          }
+        }
+        
+        @keyframes goExplosion {
+          0% { 
+            transform: scale(1);
+            filter: drop-shadow(0 0 30px rgba(0, 255, 0, 1));
+          }
+          50% { 
+            transform: scale(2);
+            filter: drop-shadow(0 0 100px rgba(255, 255, 255, 1));
+          }
+          100% { 
+            transform: scale(1.5);
+            filter: drop-shadow(0 0 50px rgba(0, 255, 0, 0.8));
+          }
+        }
+        
+        @keyframes shakeGround {
+          0%, 100% { transform: translateY(0px); }
+          25% { transform: translateY(-3px); }
+          75% { transform: translateY(3px); }
+        }
       `}</style>
 
       {/* Main Content Container */}
       <div
         style={{
           display: 'flex',
-          width: '1600px',
+          width: 'calc(100vw - 40px)',
+          maxWidth: '100%',
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
@@ -362,7 +595,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'flex-start',
-                flex: '0 0 50%',
+                flex: '0 0 60%',
                 alignSelf: 'stretch',
                 borderRadius: '15px',
                 position: 'relative',
@@ -372,17 +605,33 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             >
               {renderPlayerBackground()}
               
-              {/* Player Name in top right */}
+              {/* Bottom-left to transparent gradient overlay for readability */}
               <div
                 style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '40%',
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)',
+                  zIndex: 1,
+                  pointerEvents: 'none'
+                }}
+              />
+              
+              {/* Player Name in bottom left with better readability */}
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '20px',
+                  left: '20px',
                   color: '#FFF',
                   fontFamily: 'Audiowide',
-                  fontSize: '20px',
+                  fontSize: '28px',
                   fontWeight: 400,
                   textTransform: 'uppercase',
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                  alignSelf: 'flex-end',
-                  zIndex: 1
+                  textShadow: '2px 2px 8px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)',
+                  zIndex: 2
                 }}
               >
                 {waitingRoomEntry?.hostData.playerDisplayName}
@@ -414,7 +663,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 gridRow: '1 / span 1', 
                 gridColumn: '1 / span 1', 
                 borderRadius: '18px', 
-                background: 'var(--ui-waiting-room-bg)', 
+                background: 'linear-gradient(318deg, #574E78 0.08%, rgba(89, 89, 89, 0.02) 50.25%)', 
                 backdropFilter: 'blur(20px)' 
               }}>
                 <div style={{ textAlign: 'center' }}>
@@ -457,7 +706,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 gridRow: '1 / span 1', 
                 gridColumn: '2 / span 1', 
                 borderRadius: '18px', 
-                background: 'var(--ui-waiting-room-bg)', 
+                background: 'linear-gradient(41deg, #6497C8 0.22%, rgba(89, 89, 89, 0.00) 50.11%)', 
                 backdropFilter: 'blur(20px)' 
               }}>
                 <div style={{ textAlign: 'center' }}>
@@ -500,7 +749,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 gridRow: '2 / span 1', 
                 gridColumn: '1 / span 1', 
                 borderRadius: '18px', 
-                background: 'var(--ui-waiting-room-bg)', 
+                background: 'linear-gradient(222deg, #3A57A5 -0.22%, rgba(89, 89, 89, 0.02) 49.96%)', 
                 backdropFilter: 'blur(20px)' 
               }}>
                 <div style={{ textAlign: 'center' }}>
@@ -543,7 +792,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 gridRow: '2 / span 1', 
                 gridColumn: '2 / span 1', 
                 borderRadius: '18px', 
-                background: 'var(--ui-waiting-room-bg)', 
+                background: 'linear-gradient(139deg, #AB7076 -0.08%, rgba(123, 123, 123, 0.02) 49.82%)', 
                 backdropFilter: 'blur(20px)' 
               }}>
                 <div style={{ textAlign: 'center' }}>
@@ -601,32 +850,394 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             </div>
           </div>
 
-          {/* Waiting Area (Opponent placeholder) */}
+          {/* Opponent Section - Show opponent card or waiting */}
+          {waitingRoomEntry?.opponentData ? (
+            // Show opponent card when joined - Stats on left, Background on right (opposite of host)
+            <div
+              style={{
+                display: 'flex',
+                height: '410px',
+                padding: '20px',
+                alignItems: 'flex-start',
+                gap: '20px',
+                flex: '1 0 0',
+                borderRadius: '20px',
+                border: `1px solid var(--ui-waiting-room-border)`
+              }}
+            >
+              {/* Opponent Stats - on the left (inside) */}
+              <div
+                style={{
+                  display: 'grid',
+                  rowGap: '10px',
+                  columnGap: '10px',
+                  maxWidth: '500px',
+                  flex: '1 0 0',
+                  alignSelf: 'stretch',
+                  gridTemplateRows: 'repeat(2, minmax(0, 1fr))',
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))'
+                }}
+              >
+                {/* Match Wins */}
+                <div style={{ 
+                  display: 'flex', 
+                  padding: '4px 20px', 
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  gap: '10px', 
+                  flex: '1 0 0', 
+                  alignSelf: 'stretch', 
+                  gridRow: '1 / span 1', 
+                  gridColumn: '1 / span 1', 
+                  borderRadius: '18px', 
+                  background: 'linear-gradient(318deg, #574E78 0.08%, rgba(89, 89, 89, 0.02) 50.25%)', 
+                  backdropFilter: 'blur(20px)' 
+                }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ 
+                      color: '#E2E2E2', 
+                      textAlign: 'center', 
+                      fontFamily: 'Audiowide', 
+                      fontSize: '13px', 
+                      fontStyle: 'normal', 
+                      fontWeight: 400, 
+                      lineHeight: '56px', 
+                      textTransform: 'uppercase' 
+                    }}>
+                      Match Wins
+                    </div>
+                    <div style={{ 
+                      color: '#E2E2E2', 
+                      textAlign: 'center', 
+                      fontFamily: 'Audiowide', 
+                      fontSize: '70px', 
+                      fontStyle: 'normal', 
+                      fontWeight: 400, 
+                      lineHeight: '56px', 
+                      textTransform: 'uppercase' 
+                    }}>
+                      {waitingRoomEntry.opponentData.playerStats.matchWins}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Games Played */}
+                <div style={{ 
+                  display: 'flex', 
+                  padding: '4px 20px', 
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  gap: '10px', 
+                  flex: '1 0 0', 
+                  alignSelf: 'stretch', 
+                  gridRow: '1 / span 1', 
+                  gridColumn: '2 / span 1', 
+                  borderRadius: '18px', 
+                  background: 'linear-gradient(41deg, #6497C8 0.22%, rgba(89, 89, 89, 0.00) 50.11%)', 
+                  backdropFilter: 'blur(20px)' 
+                }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ 
+                      color: '#E2E2E2', 
+                      textAlign: 'center', 
+                      fontFamily: 'Audiowide', 
+                      fontSize: '13px', 
+                      fontStyle: 'normal', 
+                      fontWeight: 400, 
+                      lineHeight: '56px', 
+                      textTransform: 'uppercase' 
+                    }}>
+                      Games Played
+                    </div>
+                    <div style={{ 
+                      color: '#E2E2E2', 
+                      textAlign: 'center', 
+                      fontFamily: 'Audiowide', 
+                      fontSize: '70px', 
+                      fontStyle: 'normal', 
+                      fontWeight: 400, 
+                      lineHeight: '56px', 
+                      textTransform: 'uppercase' 
+                    }}>
+                      {waitingRoomEntry.opponentData.playerStats.gamesPlayed}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Best Streak */}
+                <div style={{ 
+                  display: 'flex', 
+                  padding: '4px 20px', 
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  gap: '10px', 
+                  flex: '1 0 0', 
+                  alignSelf: 'stretch', 
+                  gridRow: '2 / span 1', 
+                  gridColumn: '1 / span 1', 
+                  borderRadius: '18px', 
+                  background: 'linear-gradient(222deg, #3A57A5 -0.22%, rgba(89, 89, 89, 0.02) 49.96%)', 
+                  backdropFilter: 'blur(20px)' 
+                }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ 
+                      color: '#E2E2E2', 
+                      textAlign: 'center', 
+                      fontFamily: 'Audiowide', 
+                      fontSize: '13px', 
+                      fontStyle: 'normal', 
+                      fontWeight: 400, 
+                      lineHeight: '56px', 
+                      textTransform: 'uppercase' 
+                    }}>
+                      Best Streak
+                    </div>
+                    <div style={{ 
+                      color: '#E2E2E2', 
+                      textAlign: 'center', 
+                      fontFamily: 'Audiowide', 
+                      fontSize: '70px', 
+                      fontStyle: 'normal', 
+                      fontWeight: 400, 
+                      lineHeight: '56px', 
+                      textTransform: 'uppercase' 
+                    }}>
+                      {waitingRoomEntry.opponentData.playerStats.bestStreak}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Current Streak */}
+                <div style={{ 
+                  display: 'flex', 
+                  padding: '4px 20px', 
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  gap: '10px', 
+                  flex: '1 0 0', 
+                  alignSelf: 'stretch', 
+                  gridRow: '2 / span 1', 
+                  gridColumn: '2 / span 1', 
+                  borderRadius: '18px', 
+                  background: 'linear-gradient(139deg, #AB7076 -0.08%, rgba(123, 123, 123, 0.02) 49.82%)', 
+                  backdropFilter: 'blur(20px)' 
+                }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ 
+                      color: '#E2E2E2', 
+                      textAlign: 'center', 
+                      fontFamily: 'Audiowide', 
+                      fontSize: '13px', 
+                      fontStyle: 'normal', 
+                      fontWeight: 400, 
+                      lineHeight: '56px', 
+                      textTransform: 'uppercase' 
+                    }}>
+                      Current Streak
+                    </div>
+                    <div style={{ 
+                      color: '#E2E2E2', 
+                      textAlign: 'center', 
+                      fontFamily: 'Audiowide', 
+                      fontSize: '70px', 
+                      fontStyle: 'normal', 
+                      fontWeight: 400, 
+                      lineHeight: '56px', 
+                      textTransform: 'uppercase' 
+                    }}>
+                      {waitingRoomEntry.opponentData.playerStats.currentStreak}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Opponent Display Background - on the right (outside) */}
+              <div
+                style={{
+                  display: 'flex',
+                  padding: '20px',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  flex: '0 0 60%',
+                  alignSelf: 'stretch',
+                  borderRadius: '15px',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  background: waitingRoomEntry.opponentData.matchBackgroundEquipped?.file 
+                    ? `url('${waitingRoomEntry.opponentData.matchBackgroundEquipped.file}') center/cover no-repeat` 
+                    : '#332A63'
+                }}
+              >
+                {/* Bottom-left to transparent gradient overlay for readability */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '40%',
+                    background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)',
+                    zIndex: 1,
+                    pointerEvents: 'none'
+                  }}
+                />
+                
+                {/* Opponent Name in bottom left with better readability */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '20px',
+                    left: '20px',
+                    color: '#FFF',
+                    fontFamily: 'Audiowide',
+                    fontSize: '28px',
+                    fontWeight: 400,
+                    textTransform: 'uppercase',
+                    textShadow: '2px 2px 8px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)',
+                    zIndex: 2
+                  }}
+                >
+                  {waitingRoomEntry.opponentData.playerDisplayName}
+                </div>
+              </div>
+            </div>
+          ) : (
+            // Show waiting for opponent
+            <div
+              style={{
+                color: '#E2E2E2',
+                textAlign: 'center',
+                fontFamily: 'Audiowide',
+                fontSize: '48px',
+                fontStyle: 'normal',
+                fontWeight: 400,
+                lineHeight: '56px',
+                textTransform: 'uppercase',
+                flex: '1 0 0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'column',
+                gap: '10px'
+              }}
+            >
+              {searchingText}
+            </div>
+          )}
+        </div>
+
+        {/* Epic Battle Countdown Section */}
+        {countdown !== null && (
           <div
             style={{
-              color: '#E2E2E2',
-              textAlign: 'center',
-              fontFamily: 'Audiowide',
-              fontSize: '48px',
-              fontStyle: 'normal',
-              fontWeight: 400,
-              lineHeight: '56px',
-              textTransform: 'uppercase',
-              flex: '1 0 0',
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
               flexDirection: 'column',
-              gap: '10px'
+              alignItems: 'center',
+              gap: '30px',
+              textAlign: 'center',
+              padding: '60px',
+              borderRadius: '30px',
+              position: 'relative',
+              overflow: 'hidden',
+              animation: countdown > 0 ? 'battleFlash 0.8s infinite' : 'none',
+              border: countdown > 0 ? '3px solid rgba(255, 0, 128, 0.8)' : '3px solid rgba(0, 255, 0, 0.8)',
+              boxShadow: countdown > 0 
+                ? '0 0 50px rgba(255, 0, 128, 0.6), inset 0 0 30px rgba(255, 69, 0, 0.3)' 
+                : '0 0 80px rgba(0, 255, 0, 0.8), inset 0 0 40px rgba(0, 255, 0, 0.2)'
             }}
           >
-            {searchingText}
+            {/* Epic Background Effects */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: countdown > 0 
+                  ? 'linear-gradient(45deg, rgba(255,0,128,0.1) 0%, rgba(255,69,0,0.2) 25%, rgba(255,215,0,0.1) 50%, rgba(255,0,0,0.2) 75%, rgba(255,0,128,0.1) 100%)'
+                  : 'radial-gradient(circle, rgba(0,255,0,0.3) 0%, rgba(0,255,128,0.2) 50%, rgba(0,0,0,0.9) 100%)',
+                animation: countdown > 0 ? 'shakeGround 0.3s infinite' : 'none',
+                zIndex: -1
+              }}
+            />
+            
+            <div
+              style={{
+                color: countdown > 0 ? '#FFD700' : '#00FF00',
+                fontFamily: 'Audiowide',
+                fontSize: countdown > 0 ? '36px' : '42px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '4px',
+                textShadow: countdown > 0 
+                  ? '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 69, 0, 0.6)' 
+                  : '0 0 30px rgba(0, 255, 0, 1), 0 0 60px rgba(0, 255, 128, 0.8)',
+                animation: countdown > 0 ? 'epicPulse 0.6s infinite' : 'none'
+              }}
+            >
+              {countdown > 0 ? '⚔️ BATTLE COMMENCING ⚔️' : '🔥 FIGHT! 🔥'}
+            </div>
+            
+            <div
+              style={{
+                color: countdown > 0 ? '#FF0080' : '#00FF00',
+                fontFamily: 'Audiowide',
+                fontSize: countdown > 0 ? '180px' : '200px',
+                fontWeight: 900,
+                textShadow: countdown > 0 
+                  ? '0 0 30px rgba(255, 0, 128, 1), 0 0 60px rgba(255, 69, 0, 0.8), 0 0 90px rgba(255, 215, 0, 0.6)'
+                  : '0 0 50px rgba(0, 255, 0, 1), 0 0 100px rgba(255, 255, 255, 0.8)',
+                animation: countdown > 0 ? 'epicPulse 0.4s infinite' : 'goExplosion 0.8s infinite',
+                textTransform: 'uppercase',
+                letterSpacing: countdown > 0 ? '10px' : '20px',
+                WebkitTextStroke: countdown > 0 ? '2px #FFFFFF' : '3px #000000'
+              }}
+            >
+              {countdown > 0 ? countdown : 'GO!'}
+            </div>
+            
+            {countdown > 0 && (
+              <div
+                style={{
+                  color: '#FF4500',
+                  fontFamily: 'Audiowide',
+                  fontSize: '24px',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '3px',
+                  textShadow: '0 0 15px rgba(255, 69, 0, 0.8)',
+                  animation: 'epicPulse 0.8s infinite'
+                }}
+              >
+                🗡️ PREPARE FOR COMBAT 🛡️
+              </div>
+            )}
+            
+            {countdown === 0 && (
+              <div
+                style={{
+                  color: '#00FF00',
+                  fontFamily: 'Audiowide',
+                  fontSize: '32px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '4px',
+                  textShadow: '0 0 25px rgba(0, 255, 0, 1)',
+                  animation: 'goExplosion 0.6s infinite'
+                }}
+              >
+                🏆 LET THE BATTLE BEGIN! 🏆
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
         {/* Leave Button */}
         <button
           onClick={handleLeave}
+          disabled={countdown !== null || opponentJoined}
           style={{
             display: 'flex',
             padding: '20px',
@@ -634,7 +1245,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             alignItems: 'center',
             gap: '10px',
             borderRadius: '18px',
-            background: '#FF0080',
+            background: (countdown !== null || opponentJoined) ? '#666666' : '#FF0080',
             backdropFilter: 'blur(20px)',
             color: '#FFF',
             fontFamily: 'Audiowide',
@@ -643,20 +1254,26 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             fontWeight: 400,
             lineHeight: '30px',
             border: 'none',
-            cursor: 'pointer',
+            cursor: (countdown !== null || opponentJoined) ? 'not-allowed' : 'pointer',
+            opacity: (countdown !== null || opponentJoined) ? 0.5 : 1,
             textTransform: 'uppercase',
             transition: 'all 0.3s ease'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.05)';
-            e.currentTarget.style.boxShadow = '0 8px 25px rgba(255, 0, 128, 0.4)';
+            if (countdown === null && !opponentJoined) {
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 8px 25px rgba(255, 0, 128, 0.4)';
+            }
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = 'none';
+            if (countdown === null && !opponentJoined) {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = 'none';
+            }
           }}
         >
-          Leave Game
+          {countdown !== null ? 'Starting Game...' : 
+           opponentJoined ? 'Match Found!' : 'Leave Game'}
         </button>
       </div>
     </div>
