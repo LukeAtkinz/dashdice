@@ -420,7 +420,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   }
 
   return (
-    <div className="w-full h-full flex items-center justify-center min-h-0" style={{ padding: '20px' }}>
+    <div className="w-full h-full flex items-center justify-center min-h-0" style={{ padding: '10px' }}>
       {/* CSS Styles for animations */}
       <style jsx>{`
         @keyframes pulse {
@@ -514,32 +514,32 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       <div
         style={{
           display: 'flex',
-          width: 'calc(100vw - 40px)',
+          width: 'calc(100vw - 20px)',
           maxWidth: '100%',
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          gap: '40px'
+          gap: '20px'
         }}
       >
-        {/* Game Mode Title and Description */}
+        {/* Game Mode Title */}
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            gap: '20px'
+            gap: '10px'
           }}
         >
           <h1
             style={{
               color: '#E2E2E2',
               fontFamily: 'Audiowide',
-              fontSize: '48px',
+              fontSize: '64px',
               fontStyle: 'normal',
               fontWeight: 400,
-              lineHeight: '56px',
+              lineHeight: '72px',
               textTransform: 'uppercase',
               margin: 0,
               textShadow: "0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4), 0 0 60px rgba(255, 215, 0, 0.2)"
@@ -547,20 +547,6 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           >
             {currentGameMode.name}
           </h1>
-          <p
-            style={{
-              color: '#E19E23',
-              fontFamily: 'Audiowide',
-              fontSize: '24px',
-              fontStyle: 'normal',
-              fontWeight: 400,
-              lineHeight: '56px',
-              textTransform: 'uppercase',
-              margin: 0
-            }}
-          >
-            {currentGameMode.description}
-          </p>
         </div>
 
         {/* Profile VS Information */}

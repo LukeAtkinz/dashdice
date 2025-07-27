@@ -81,11 +81,11 @@ const DashboardContent: React.FC = () => {
                 <img
                   src="/Design Elements/CrownLogo.webp"
                   alt="DashDice Logo"
-                  className="w-6 h-6 md:w-10 md:h-10"
+                  className="w-8 h-8 md:w-14 md:h-14"
                 />
                 <div
                   onClick={() => handleSectionChange('dashboard')}
-                  className="relative text-xl md:text-3xl bg-gradient-to-br from-[#ffd700] to-[#ffed4e] bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
+                  className="relative text-2xl md:text-4xl bg-gradient-to-br from-[#ffd700] to-[#ffed4e] bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
                   style={{
                     fontFamily: "Audiowide",
                     fontWeight: 400,
@@ -103,12 +103,12 @@ const DashboardContent: React.FC = () => {
                   className="flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
                   style={{
                     display: "flex",
-                    width: "209px",
-                    height: "56px",
-                    padding: "4px 16px",
+                    width: "180px",
+                    height: "48px",
+                    padding: "4px 12px",
                     justifyContent: "center",
                     alignItems: "center",
-                    gap: "10px",
+                    gap: "8px",
                     borderRadius: "18px",
                     background: "#FF0080",
                     border: "none"
@@ -118,8 +118,8 @@ const DashboardContent: React.FC = () => {
                     src="/Design Elements/Gem Bucket.webp"
                     alt="Vault"
                     style={{
-                      width: "50px",
-                      height: "50px",
+                      width: "40px",
+                      height: "40px",
                       flexShrink: 0,
                       aspectRatio: "1/1"
                     }}
@@ -128,10 +128,10 @@ const DashboardContent: React.FC = () => {
                     style={{
                       color: "#FFF",
                       fontFamily: "Audiowide",
-                      fontSize: "32px",
+                      fontSize: "26px",
                       fontStyle: "normal",
                       fontWeight: 400,
-                      lineHeight: "30px"
+                      lineHeight: "26px"
                     }}
                   >
                     VAULT
@@ -144,12 +144,12 @@ const DashboardContent: React.FC = () => {
                   title="Coming Soon!"
                   style={{
                     display: "flex",
-                    width: "209px",
-                    height: "56px",
-                    padding: "4px 16px",
+                    width: "180px",
+                    height: "48px",
+                    padding: "4px 12px",
                     justifyContent: "center",
                     alignItems: "center",
-                    gap: "10px",
+                    gap: "8px",
                     borderRadius: "18px",
                     background: "#FF0080",
                     border: "none",
@@ -160,8 +160,8 @@ const DashboardContent: React.FC = () => {
                     src="/Design Elements/discount tag.webp"
                     alt="Shop"
                     style={{
-                      width: "50px",
-                      height: "50px",
+                      width: "40px",
+                      height: "40px",
                       flexShrink: 0,
                       aspectRatio: "1/1"
                     }}
@@ -170,10 +170,10 @@ const DashboardContent: React.FC = () => {
                     style={{
                       color: "#FFF",
                       fontFamily: "Audiowide",
-                      fontSize: "32px",
+                      fontSize: "26px",
                       fontStyle: "normal",
                       fontWeight: 400,
-                      lineHeight: "30px"
+                      lineHeight: "26px"
                     }}
                   >
                     SHOP
@@ -190,12 +190,12 @@ const DashboardContent: React.FC = () => {
                 className="flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
                 style={{
                   display: "flex",
-                  width: "209px",
-                  height: "56px",
-                  padding: "4px 16px",
+                  width: "180px",
+                  height: "48px",
+                  padding: "4px 12px",
                   justifyContent: "center",
                   alignItems: "center",
-                  gap: "10px",
+                  gap: "8px",
                   borderRadius: "18px",
                   background: "#FF0080",
                   border: "none"
@@ -205,8 +205,8 @@ const DashboardContent: React.FC = () => {
                   src="/Design Elements/friends.webp"
                   alt="Friends"
                   style={{
-                    width: "50px",
-                    height: "50px",
+                    width: "40px",
+                    height: "40px",
                     flexShrink: 0,
                     aspectRatio: "1/1"
                   }}
@@ -215,10 +215,10 @@ const DashboardContent: React.FC = () => {
                   style={{
                     color: "#FFF",
                     fontFamily: "Audiowide",
-                    fontSize: "28px",
+                    fontSize: "24px",
                     fontStyle: "normal",
                     fontWeight: 400,
-                    lineHeight: "30px"
+                    lineHeight: "26px"
                   }}
                 >
                   FRIENDS
@@ -231,12 +231,12 @@ const DashboardContent: React.FC = () => {
                 className="flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
                 style={{
                   display: "flex",
-                  width: "209px",
-                  height: "56px",
-                  padding: "4px 16px",
+                  width: "180px",
+                  height: "48px",
+                  padding: "4px 12px",
                   justifyContent: "center",
                   alignItems: "center",
-                  gap: "10px",
+                  gap: "8px",
                   borderRadius: "18px",
                   background: "#FF0080",
                   border: "none"
@@ -246,8 +246,8 @@ const DashboardContent: React.FC = () => {
                   src="/Design Elements/Delivery Man.webp"
                   alt="Profile"
                   style={{
-                    width: "50px",
-                    height: "50px",
+                    width: "40px",
+                    height: "40px",
                     flexShrink: 0,
                     aspectRatio: "1/1"
                   }}
@@ -256,10 +256,10 @@ const DashboardContent: React.FC = () => {
                   style={{
                     color: "#FFF",
                     fontFamily: "Audiowide",
-                    fontSize: "26px",
+                    fontSize: "22px",
                     fontStyle: "normal",
                     fontWeight: 400,
-                    lineHeight: "30px"
+                    lineHeight: "26px"
                   }}
                 >
                   PROFILE
