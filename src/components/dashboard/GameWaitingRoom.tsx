@@ -519,7 +519,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          gap: '20px'
+          gap: '20px',
+          background: 'transparent'
         }}
       >
         {/* Game Mode Title */}

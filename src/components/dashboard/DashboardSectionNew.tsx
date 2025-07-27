@@ -111,7 +111,7 @@ export const DashboardSection: React.FC = () => {
             key={mode}
             onMouseEnter={() => setHoveredGameMode(mode)}
             onMouseLeave={() => setHoveredGameMode(null)}
-            className="h-[15.625rem] w-[31.25rem] rounded-[30px] overflow-hidden shrink-0 flex flex-row items-center justify-start relative text-right text-[4rem] text-gainsboro font-audiowide cursor-pointer hover:scale-105 transition-all duration-300"
+            className="h-[15.625rem] w-[31.25rem] rounded-[30px] overflow-hidden shrink-0 flex flex-row items-center justify-start relative text-right text-[4rem] text-gainsboro font-audiowide cursor-pointer transition-all duration-300"
             style={{
               background: `var(--ui-game-mode-bg, linear-gradient(rgba(37, 37, 37, 0.12), rgba(37, 37, 37, 0.12)), linear-gradient(242.59deg, #192e39 30%, rgba(153, 153, 153, 0)))`
             }}
