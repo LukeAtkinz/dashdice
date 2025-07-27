@@ -420,7 +420,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   }
 
   return (
-    <div className="w-full h-full flex items-center justify-center min-h-0" style={{ padding: '10px' }}>
+    <div className="w-full h-full flex items-center justify-center min-h-0" style={{ padding: '10px', width: '100vw', maxWidth: 'none' }}>
       {/* CSS Styles for animations */}
       <style jsx>{`
         @keyframes pulse {
@@ -514,12 +514,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       <div
         style={{
           display: 'flex',
-          width: 'calc(100vw - 20px)',
+          width: 'calc(95vw - 20px)',
           maxWidth: '100%',
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          gap: '20px',
+          gap: '40px',
           background: 'transparent'
         }}
       >
@@ -650,33 +650,34 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 gridRow: '1 / span 1', 
                 gridColumn: '1 / span 1', 
                 borderRadius: '18px', 
-                background: 'linear-gradient(318deg, #574E78 0.08%, rgba(89, 89, 89, 0.02) 50.25%)', 
+                background: 'rgba(87, 78, 120, 0.3)', 
                 backdropFilter: 'blur(20px)' 
               }}>
-                <div style={{ textAlign: 'center' }}>
+                <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ 
                     color: '#E2E2E2', 
                     textAlign: 'center', 
                     fontFamily: 'Audiowide', 
-                    fontSize: '13px', 
+                    fontSize: '48px', 
                     fontStyle: 'normal', 
                     fontWeight: 400, 
-                    lineHeight: '56px', 
+                    lineHeight: '48px', 
                     textTransform: 'uppercase' 
                   }}>
-                    Match Wins
+                    {waitingRoomEntry?.hostData.playerStats.matchWins}
                   </div>
                   <div style={{ 
                     color: '#E2E2E2', 
                     textAlign: 'center', 
                     fontFamily: 'Audiowide', 
-                    fontSize: '70px', 
+                    fontSize: '11px', 
                     fontStyle: 'normal', 
                     fontWeight: 400, 
-                    lineHeight: '56px', 
-                    textTransform: 'uppercase' 
+                    lineHeight: '16px', 
+                    textTransform: 'uppercase',
+                    opacity: 0.8
                   }}>
-                    {waitingRoomEntry?.hostData.playerStats.matchWins}
+                    Match Wins
                   </div>
                 </div>
               </div>
@@ -693,33 +694,34 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 gridRow: '1 / span 1', 
                 gridColumn: '2 / span 1', 
                 borderRadius: '18px', 
-                background: 'linear-gradient(41deg, #6497C8 0.22%, rgba(89, 89, 89, 0.00) 50.11%)', 
+                background: 'rgba(100, 151, 200, 0.3)', 
                 backdropFilter: 'blur(20px)' 
               }}>
-                <div style={{ textAlign: 'center' }}>
+                <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ 
                     color: '#E2E2E2', 
                     textAlign: 'center', 
                     fontFamily: 'Audiowide', 
-                    fontSize: '13px', 
+                    fontSize: '48px', 
                     fontStyle: 'normal', 
                     fontWeight: 400, 
-                    lineHeight: '56px', 
+                    lineHeight: '48px', 
                     textTransform: 'uppercase' 
                   }}>
-                    Games Played
+                    {waitingRoomEntry?.hostData.playerStats.gamesPlayed}
                   </div>
                   <div style={{ 
                     color: '#E2E2E2', 
                     textAlign: 'center', 
                     fontFamily: 'Audiowide', 
-                    fontSize: '70px', 
+                    fontSize: '11px', 
                     fontStyle: 'normal', 
                     fontWeight: 400, 
-                    lineHeight: '56px', 
-                    textTransform: 'uppercase' 
+                    lineHeight: '16px', 
+                    textTransform: 'uppercase',
+                    opacity: 0.8
                   }}>
-                    {waitingRoomEntry?.hostData.playerStats.gamesPlayed}
+                    Games Played
                   </div>
                 </div>
               </div>
@@ -736,33 +738,34 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 gridRow: '2 / span 1', 
                 gridColumn: '1 / span 1', 
                 borderRadius: '18px', 
-                background: 'linear-gradient(222deg, #3A57A5 -0.22%, rgba(89, 89, 89, 0.02) 49.96%)', 
+                background: 'rgba(58, 87, 165, 0.3)', 
                 backdropFilter: 'blur(20px)' 
               }}>
-                <div style={{ textAlign: 'center' }}>
+                <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ 
                     color: '#E2E2E2', 
                     textAlign: 'center', 
                     fontFamily: 'Audiowide', 
-                    fontSize: '13px', 
+                    fontSize: '48px', 
                     fontStyle: 'normal', 
                     fontWeight: 400, 
-                    lineHeight: '56px', 
+                    lineHeight: '48px', 
                     textTransform: 'uppercase' 
                   }}>
-                    Best Streak
+                    {waitingRoomEntry?.hostData.playerStats.bestStreak}
                   </div>
                   <div style={{ 
                     color: '#E2E2E2', 
                     textAlign: 'center', 
                     fontFamily: 'Audiowide', 
-                    fontSize: '70px', 
+                    fontSize: '11px', 
                     fontStyle: 'normal', 
                     fontWeight: 400, 
-                    lineHeight: '56px', 
-                    textTransform: 'uppercase' 
+                    lineHeight: '16px', 
+                    textTransform: 'uppercase',
+                    opacity: 0.8
                   }}>
-                    {waitingRoomEntry?.hostData.playerStats.bestStreak}
+                    Best Streak
                   </div>
                 </div>
               </div>
@@ -779,33 +782,34 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 gridRow: '2 / span 1', 
                 gridColumn: '2 / span 1', 
                 borderRadius: '18px', 
-                background: 'linear-gradient(139deg, #AB7076 -0.08%, rgba(123, 123, 123, 0.02) 49.82%)', 
+                background: 'rgba(171, 112, 118, 0.3)', 
                 backdropFilter: 'blur(20px)' 
               }}>
-                <div style={{ textAlign: 'center' }}>
+                <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ 
                     color: '#E2E2E2', 
                     textAlign: 'center', 
                     fontFamily: 'Audiowide', 
-                    fontSize: '13px', 
+                    fontSize: '48px', 
                     fontStyle: 'normal', 
                     fontWeight: 400, 
-                    lineHeight: '56px', 
+                    lineHeight: '48px', 
                     textTransform: 'uppercase' 
                   }}>
-                    Current Streak
+                    {waitingRoomEntry?.hostData.playerStats.currentStreak}
                   </div>
                   <div style={{ 
                     color: '#E2E2E2', 
                     textAlign: 'center', 
                     fontFamily: 'Audiowide', 
-                    fontSize: '70px', 
+                    fontSize: '11px', 
                     fontStyle: 'normal', 
                     fontWeight: 400, 
-                    lineHeight: '56px', 
-                    textTransform: 'uppercase' 
+                    lineHeight: '16px', 
+                    textTransform: 'uppercase',
+                    opacity: 0.8
                   }}>
-                    {waitingRoomEntry?.hostData.playerStats.currentStreak}
+                    Current Streak
                   </div>
                 </div>
               </div>
@@ -877,33 +881,34 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   gridRow: '1 / span 1', 
                   gridColumn: '1 / span 1', 
                   borderRadius: '18px', 
-                  background: 'linear-gradient(318deg, #574E78 0.08%, rgba(89, 89, 89, 0.02) 50.25%)', 
+                  background: 'rgba(87, 78, 120, 0.3)', 
                   backdropFilter: 'blur(20px)' 
                 }}>
-                  <div style={{ textAlign: 'center' }}>
+                  <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div style={{ 
                       color: '#E2E2E2', 
                       textAlign: 'center', 
                       fontFamily: 'Audiowide', 
-                      fontSize: '13px', 
+                      fontSize: '48px', 
                       fontStyle: 'normal', 
                       fontWeight: 400, 
-                      lineHeight: '56px', 
+                      lineHeight: '48px', 
                       textTransform: 'uppercase' 
                     }}>
-                      Match Wins
+                      {waitingRoomEntry.opponentData.playerStats.matchWins}
                     </div>
                     <div style={{ 
                       color: '#E2E2E2', 
                       textAlign: 'center', 
                       fontFamily: 'Audiowide', 
-                      fontSize: '70px', 
+                      fontSize: '11px', 
                       fontStyle: 'normal', 
                       fontWeight: 400, 
-                      lineHeight: '56px', 
-                      textTransform: 'uppercase' 
+                      lineHeight: '16px', 
+                      textTransform: 'uppercase',
+                      opacity: 0.8
                     }}>
-                      {waitingRoomEntry.opponentData.playerStats.matchWins}
+                      Match Wins
                     </div>
                   </div>
                 </div>
@@ -920,33 +925,34 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   gridRow: '1 / span 1', 
                   gridColumn: '2 / span 1', 
                   borderRadius: '18px', 
-                  background: 'linear-gradient(41deg, #6497C8 0.22%, rgba(89, 89, 89, 0.00) 50.11%)', 
+                  background: 'rgba(100, 151, 200, 0.3)', 
                   backdropFilter: 'blur(20px)' 
                 }}>
-                  <div style={{ textAlign: 'center' }}>
+                  <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div style={{ 
                       color: '#E2E2E2', 
                       textAlign: 'center', 
                       fontFamily: 'Audiowide', 
-                      fontSize: '13px', 
+                      fontSize: '48px', 
                       fontStyle: 'normal', 
                       fontWeight: 400, 
-                      lineHeight: '56px', 
+                      lineHeight: '48px', 
                       textTransform: 'uppercase' 
                     }}>
-                      Games Played
+                      {waitingRoomEntry.opponentData.playerStats.gamesPlayed}
                     </div>
                     <div style={{ 
                       color: '#E2E2E2', 
                       textAlign: 'center', 
                       fontFamily: 'Audiowide', 
-                      fontSize: '70px', 
+                      fontSize: '11px', 
                       fontStyle: 'normal', 
                       fontWeight: 400, 
-                      lineHeight: '56px', 
-                      textTransform: 'uppercase' 
+                      lineHeight: '16px', 
+                      textTransform: 'uppercase',
+                      opacity: 0.8
                     }}>
-                      {waitingRoomEntry.opponentData.playerStats.gamesPlayed}
+                      Games Played
                     </div>
                   </div>
                 </div>
@@ -963,33 +969,34 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   gridRow: '2 / span 1', 
                   gridColumn: '1 / span 1', 
                   borderRadius: '18px', 
-                  background: 'linear-gradient(222deg, #3A57A5 -0.22%, rgba(89, 89, 89, 0.02) 49.96%)', 
+                  background: 'rgba(58, 87, 165, 0.3)', 
                   backdropFilter: 'blur(20px)' 
                 }}>
-                  <div style={{ textAlign: 'center' }}>
+                  <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div style={{ 
                       color: '#E2E2E2', 
                       textAlign: 'center', 
                       fontFamily: 'Audiowide', 
-                      fontSize: '13px', 
+                      fontSize: '48px', 
                       fontStyle: 'normal', 
                       fontWeight: 400, 
-                      lineHeight: '56px', 
+                      lineHeight: '48px', 
                       textTransform: 'uppercase' 
                     }}>
-                      Best Streak
+                      {waitingRoomEntry.opponentData.playerStats.bestStreak}
                     </div>
                     <div style={{ 
                       color: '#E2E2E2', 
                       textAlign: 'center', 
                       fontFamily: 'Audiowide', 
-                      fontSize: '70px', 
+                      fontSize: '11px', 
                       fontStyle: 'normal', 
                       fontWeight: 400, 
-                      lineHeight: '56px', 
-                      textTransform: 'uppercase' 
+                      lineHeight: '16px', 
+                      textTransform: 'uppercase',
+                      opacity: 0.8
                     }}>
-                      {waitingRoomEntry.opponentData.playerStats.bestStreak}
+                      Best Streak
                     </div>
                   </div>
                 </div>
@@ -1006,33 +1013,34 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   gridRow: '2 / span 1', 
                   gridColumn: '2 / span 1', 
                   borderRadius: '18px', 
-                  background: 'linear-gradient(139deg, #AB7076 -0.08%, rgba(123, 123, 123, 0.02) 49.82%)', 
+                  background: 'rgba(171, 112, 118, 0.3)', 
                   backdropFilter: 'blur(20px)' 
                 }}>
-                  <div style={{ textAlign: 'center' }}>
+                  <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div style={{ 
                       color: '#E2E2E2', 
                       textAlign: 'center', 
                       fontFamily: 'Audiowide', 
-                      fontSize: '13px', 
+                      fontSize: '48px', 
                       fontStyle: 'normal', 
                       fontWeight: 400, 
-                      lineHeight: '56px', 
+                      lineHeight: '48px', 
                       textTransform: 'uppercase' 
                     }}>
-                      Current Streak
+                      {waitingRoomEntry.opponentData.playerStats.currentStreak}
                     </div>
                     <div style={{ 
                       color: '#E2E2E2', 
                       textAlign: 'center', 
                       fontFamily: 'Audiowide', 
-                      fontSize: '70px', 
+                      fontSize: '11px', 
                       fontStyle: 'normal', 
                       fontWeight: 400, 
-                      lineHeight: '56px', 
-                      textTransform: 'uppercase' 
+                      lineHeight: '16px', 
+                      textTransform: 'uppercase',
+                      opacity: 0.8
                     }}>
-                      {waitingRoomEntry.opponentData.playerStats.currentStreak}
+                      Current Streak
                     </div>
                   </div>
                 </div>
