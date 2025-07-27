@@ -60,6 +60,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const [searchingText, setSearchingText] = useState('Searching for opponents...');
   const [countdown, setCountdown] = useState<number | null>(null);
   const [opponentJoined, setOpponentJoined] = useState(false);
+  const [vsCountdown, setVsCountdown] = useState<number | null>(null);
 
   // Game mode display configurations
   const gameModeConfig = {
@@ -179,7 +180,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               if (data.opponentData) {
                 setOpponentJoined(true);
                 // Start countdown immediately since we just joined
-                startCountdown();
+                startVsCountdown();
               }
             }
           });
@@ -214,7 +215,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               // Check if opponent joined
               if (data.opponentData && !opponentJoined) {
                 setOpponentJoined(true);
-                startCountdown();
+                startVsCountdown();
               }
             }
           });
@@ -254,16 +255,18 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     };
   }, [user, gameMode, actionType]);
 
-  // Function to start 5-second countdown
-  const startCountdown = () => {
-    setCountdown(5);
+  // Function to start 5-second countdown for VS section
+  const startVsCountdown = () => {
+    setVsCountdown(5);
     const timer = setInterval(() => {
-      setCountdown((prev) => {
+      setVsCountdown((prev) => {
         if (prev === null || prev <= 1) {
           clearInterval(timer);
           // Move to matches collection and navigate to match
-          moveToMatchesAndNavigate();
-          return null;
+          setTimeout(() => {
+            moveToMatchesAndNavigate();
+          }, 1000); // Wait 1 second after showing "GO!"
+          return 0; // Show "GO!"
         }
         return prev - 1;
       });
@@ -420,93 +423,50 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   }
 
   return (
-    <div className="w-full h-full flex items-center justify-center min-h-0" style={{ padding: '10px', width: '100vw', maxWidth: 'none' }}>
+    <div style={{ 
+      width: '100%', 
+      height: '100%', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      padding: '0',
+      margin: '0',
+      background: 'transparent',
+      overflow: 'hidden'
+    }}>
       {/* CSS Styles for animations */}
       <style jsx>{`
-        @keyframes pulse {
+        @keyframes subtleGlow {
           0% { 
             transform: scale(1);
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+            opacity: 0.9;
+          }
+          50% { 
+            transform: scale(1.05);
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.6));
             opacity: 1;
+          }
+          100% { 
+            transform: scale(1);
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+            opacity: 0.9;
+          }
+        }
+        
+        @keyframes goGlow {
+          0% { 
+            transform: scale(1);
+            filter: drop-shadow(0 0 15px rgba(0, 255, 0, 0.8));
           }
           50% { 
             transform: scale(1.1);
-            opacity: 0.8;
-          }
-          100% { 
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-        
-        @keyframes epicPulse {
-          0% { 
-            transform: scale(1) rotate(0deg);
-            filter: drop-shadow(0 0 20px rgba(255, 0, 128, 0.8));
-          }
-          25% { 
-            transform: scale(1.15) rotate(1deg);
-            filter: drop-shadow(0 0 40px rgba(255, 69, 0, 1));
-          }
-          50% { 
-            transform: scale(1.3) rotate(0deg);
-            filter: drop-shadow(0 0 60px rgba(255, 215, 0, 1));
-          }
-          75% { 
-            transform: scale(1.15) rotate(-1deg);
-            filter: drop-shadow(0 0 40px rgba(255, 0, 0, 1));
-          }
-          100% { 
-            transform: scale(1) rotate(0deg);
-            filter: drop-shadow(0 0 20px rgba(255, 0, 128, 0.8));
-          }
-        }
-        
-        @keyframes battleFlash {
-          0% { 
-            background: radial-gradient(circle, rgba(255,0,128,0.3) 0%, rgba(0,0,0,0.8) 70%);
-            transform: scale(1);
-          }
-          20% { 
-            background: radial-gradient(circle, rgba(255,69,0,0.4) 0%, rgba(0,0,0,0.8) 70%);
-            transform: scale(1.02);
-          }
-          40% { 
-            background: radial-gradient(circle, rgba(255,215,0,0.5) 0%, rgba(0,0,0,0.8) 70%);
-            transform: scale(1.05);
-          }
-          60% { 
-            background: radial-gradient(circle, rgba(255,0,0,0.4) 0%, rgba(0,0,0,0.8) 70%);
-            transform: scale(1.02);
-          }
-          80% { 
-            background: radial-gradient(circle, rgba(0,255,128,0.3) 0%, rgba(0,0,0,0.8) 70%);
-            transform: scale(1.01);
-          }
-          100% { 
-            background: radial-gradient(circle, rgba(255,0,128,0.3) 0%, rgba(0,0,0,0.8) 70%);
-            transform: scale(1);
-          }
-        }
-        
-        @keyframes goExplosion {
-          0% { 
-            transform: scale(1);
             filter: drop-shadow(0 0 30px rgba(0, 255, 0, 1));
           }
-          50% { 
-            transform: scale(2);
-            filter: drop-shadow(0 0 100px rgba(255, 255, 255, 1));
-          }
           100% { 
-            transform: scale(1.5);
-            filter: drop-shadow(0 0 50px rgba(0, 255, 0, 0.8));
+            transform: scale(1);
+            filter: drop-shadow(0 0 15px rgba(0, 255, 0, 0.8));
           }
-        }
-        
-        @keyframes shakeGround {
-          0%, 100% { transform: translateY(0px); }
-          25% { transform: translateY(-3px); }
-          75% { transform: translateY(3px); }
         }
       `}</style>
 
@@ -514,13 +474,15 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       <div
         style={{
           display: 'flex',
-          width: 'calc(95vw - 20px)',
-          maxWidth: '100%',
+          width: '95vw',
+          maxWidth: '95vw',
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
           gap: '40px',
-          background: 'transparent'
+          background: 'transparent',
+          padding: '20px',
+          boxSizing: 'border-box'
         }}
       >
         {/* Game Mode Title */}
@@ -571,7 +533,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               gap: '20px',
               flex: '1 0 0',
               borderRadius: '20px',
-              border: `1px solid var(--ui-waiting-room-border)`
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: 'transparent'
             }}
           >
             {/* Host Display Background */}
@@ -816,7 +779,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             </div>
           </div>
 
-          {/* VS Section */}
+          {/* VS Section with Countdown */}
           <div
             style={{
               display: 'flex',
@@ -826,19 +789,39 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               gap: '20px'
             }}
           >
-            <div
-              style={{
-                color: '#E2E2E2',
-                fontFamily: 'Audiowide',
-                fontSize: '48px',
-                fontStyle: 'normal',
-                fontWeight: 400,
-                lineHeight: '56px',
-                textTransform: 'uppercase'
-              }}
-            >
-              VS
-            </div>
+            {vsCountdown !== null ? (
+              <div
+                style={{
+                  color: vsCountdown === 0 ? '#00FF00' : '#E2E2E2',
+                  fontFamily: 'Audiowide',
+                  fontSize: vsCountdown === 0 ? '72px' : '64px',
+                  fontStyle: 'normal',
+                  fontWeight: 400,
+                  lineHeight: vsCountdown === 0 ? '80px' : '72px',
+                  textTransform: 'uppercase',
+                  textShadow: vsCountdown === 0 
+                    ? '0 0 20px rgba(0, 255, 0, 0.8), 0 0 40px rgba(0, 255, 0, 0.4)' 
+                    : '0 0 15px rgba(255, 255, 255, 0.4)',
+                  animation: vsCountdown === 0 ? 'goGlow 1s infinite' : 'subtleGlow 1.5s infinite'
+                }}
+              >
+                {vsCountdown === 0 ? 'GO!' : vsCountdown}
+              </div>
+            ) : (
+              <div
+                style={{
+                  color: '#E2E2E2',
+                  fontFamily: 'Audiowide',
+                  fontSize: '48px',
+                  fontStyle: 'normal',
+                  fontWeight: 400,
+                  lineHeight: '56px',
+                  textTransform: 'uppercase'
+                }}
+              >
+                VS
+              </div>
+            )}
           </div>
 
           {/* Opponent Section - Show opponent card or waiting */}
@@ -853,7 +836,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 gap: '20px',
                 flex: '1 0 0',
                 borderRadius: '20px',
-                border: `1px solid var(--ui-waiting-room-border)`
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: 'transparent'
               }}
             >
               {/* Opponent Stats - on the left (inside) */}
@@ -1122,117 +1106,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           )}
         </div>
 
-        {/* Epic Battle Countdown Section */}
-        {countdown !== null && (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '30px',
-              textAlign: 'center',
-              padding: '60px',
-              borderRadius: '30px',
-              position: 'relative',
-              overflow: 'hidden',
-              animation: countdown > 0 ? 'battleFlash 0.8s infinite' : 'none',
-              border: countdown > 0 ? '3px solid rgba(255, 0, 128, 0.8)' : '3px solid rgba(0, 255, 0, 0.8)',
-              boxShadow: countdown > 0 
-                ? '0 0 50px rgba(255, 0, 128, 0.6), inset 0 0 30px rgba(255, 69, 0, 0.3)' 
-                : '0 0 80px rgba(0, 255, 0, 0.8), inset 0 0 40px rgba(0, 255, 0, 0.2)'
-            }}
-          >
-            {/* Epic Background Effects */}
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: countdown > 0 
-                  ? 'linear-gradient(45deg, rgba(255,0,128,0.1) 0%, rgba(255,69,0,0.2) 25%, rgba(255,215,0,0.1) 50%, rgba(255,0,0,0.2) 75%, rgba(255,0,128,0.1) 100%)'
-                  : 'radial-gradient(circle, rgba(0,255,0,0.3) 0%, rgba(0,255,128,0.2) 50%, rgba(0,0,0,0.9) 100%)',
-                animation: countdown > 0 ? 'shakeGround 0.3s infinite' : 'none',
-                zIndex: -1
-              }}
-            />
-            
-            <div
-              style={{
-                color: countdown > 0 ? '#FFD700' : '#00FF00',
-                fontFamily: 'Audiowide',
-                fontSize: countdown > 0 ? '36px' : '42px',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '4px',
-                textShadow: countdown > 0 
-                  ? '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 69, 0, 0.6)' 
-                  : '0 0 30px rgba(0, 255, 0, 1), 0 0 60px rgba(0, 255, 128, 0.8)',
-                animation: countdown > 0 ? 'epicPulse 0.6s infinite' : 'none'
-              }}
-            >
-              {countdown > 0 ? '⚔️ BATTLE COMMENCING ⚔️' : '🔥 FIGHT! 🔥'}
-            </div>
-            
-            <div
-              style={{
-                color: countdown > 0 ? '#FF0080' : '#00FF00',
-                fontFamily: 'Audiowide',
-                fontSize: countdown > 0 ? '180px' : '200px',
-                fontWeight: 900,
-                textShadow: countdown > 0 
-                  ? '0 0 30px rgba(255, 0, 128, 1), 0 0 60px rgba(255, 69, 0, 0.8), 0 0 90px rgba(255, 215, 0, 0.6)'
-                  : '0 0 50px rgba(0, 255, 0, 1), 0 0 100px rgba(255, 255, 255, 0.8)',
-                animation: countdown > 0 ? 'epicPulse 0.4s infinite' : 'goExplosion 0.8s infinite',
-                textTransform: 'uppercase',
-                letterSpacing: countdown > 0 ? '10px' : '20px',
-                WebkitTextStroke: countdown > 0 ? '2px #FFFFFF' : '3px #000000'
-              }}
-            >
-              {countdown > 0 ? countdown : 'GO!'}
-            </div>
-            
-            {countdown > 0 && (
-              <div
-                style={{
-                  color: '#FF4500',
-                  fontFamily: 'Audiowide',
-                  fontSize: '24px',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '3px',
-                  textShadow: '0 0 15px rgba(255, 69, 0, 0.8)',
-                  animation: 'epicPulse 0.8s infinite'
-                }}
-              >
-                🗡️ PREPARE FOR COMBAT 🛡️
-              </div>
-            )}
-            
-            {countdown === 0 && (
-              <div
-                style={{
-                  color: '#00FF00',
-                  fontFamily: 'Audiowide',
-                  fontSize: '32px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '4px',
-                  textShadow: '0 0 25px rgba(0, 255, 0, 1)',
-                  animation: 'goExplosion 0.6s infinite'
-                }}
-              >
-                🏆 LET THE BATTLE BEGIN! 🏆
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Leave Button */}
         <button
           onClick={handleLeave}
-          disabled={countdown !== null || opponentJoined}
+          disabled={vsCountdown !== null || opponentJoined}
           style={{
             display: 'flex',
             padding: '20px',
@@ -1240,7 +1117,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             alignItems: 'center',
             gap: '10px',
             borderRadius: '18px',
-            background: (countdown !== null || opponentJoined) ? '#666666' : '#FF0080',
+            background: (vsCountdown !== null || opponentJoined) ? '#666666' : '#FF0080',
             backdropFilter: 'blur(20px)',
             color: '#FFF',
             fontFamily: 'Audiowide',
@@ -1249,25 +1126,25 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             fontWeight: 400,
             lineHeight: '30px',
             border: 'none',
-            cursor: (countdown !== null || opponentJoined) ? 'not-allowed' : 'pointer',
-            opacity: (countdown !== null || opponentJoined) ? 0.5 : 1,
+            cursor: (vsCountdown !== null || opponentJoined) ? 'not-allowed' : 'pointer',
+            opacity: (vsCountdown !== null || opponentJoined) ? 0.5 : 1,
             textTransform: 'uppercase',
             transition: 'all 0.3s ease'
           }}
           onMouseEnter={(e) => {
-            if (countdown === null && !opponentJoined) {
+            if (vsCountdown === null && !opponentJoined) {
               e.currentTarget.style.transform = 'scale(1.05)';
               e.currentTarget.style.boxShadow = '0 8px 25px rgba(255, 0, 128, 0.4)';
             }
           }}
           onMouseLeave={(e) => {
-            if (countdown === null && !opponentJoined) {
+            if (vsCountdown === null && !opponentJoined) {
               e.currentTarget.style.transform = 'scale(1)';
               e.currentTarget.style.boxShadow = 'none';
             }
           }}
         >
-          {countdown !== null ? 'Starting Game...' : 
+          {vsCountdown !== null ? 'Starting Game...' : 
            opponentJoined ? 'Match Found!' : 'Leave Game'}
         </button>
       </div>
