@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
+import { MatchmakingService } from '@/services/matchmakingService';
 
 const gameConfig = {
   quickfire: { 
@@ -62,14 +63,53 @@ export const DashboardSection: React.FC = () => {
   const [hoveredGameMode, setHoveredGameMode] = useState<string | null>(null);
   const [isExiting, setIsExiting] = useState(false);
 
-  const handleGameModeAction = (gameMode: string, action: string) => {
+  const handleGameModeAction = async (gameMode: string, action: string) => {
     console.log(`${gameMode} - ${action} clicked`);
-    setIsExiting(true);
-    // Add delay for exit animation before navigation
-    setTimeout(() => {
-      // Navigate to match section with game mode and action type
-      setCurrentSection('match', { gameMode, actionType: action as 'live' | 'custom' });
-    }, 600);
+    
+    if (action === 'live' && user) {
+      setIsExiting(true);
+      
+      try {
+        // Prepare host data for matchmaking
+        const hostData = {
+          playerDisplayName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
+          playerId: user.uid,
+          displayBackgroundEquipped: user.equippedBackground || 'default',
+          matchBackgroundEquipped: user.equippedBackground || 'default',
+          playerStats: {
+            bestStreak: 0, // Placeholder until stats system is implemented
+            currentStreak: 0,
+            gamesPlayed: 0,
+            matchWins: 0
+          }
+        };
+
+        // Search for existing room or create new one
+        const { roomId, isNewRoom, hasOpponent } = await MatchmakingService.findOrCreateRoom(gameMode, hostData);
+        
+        console.log(`${isNewRoom ? 'Created' : 'Joined'} room:`, roomId);
+        
+        if (hasOpponent) {
+          console.log('Opponent found! Starting 5-second countdown...');
+        }
+        
+        // Navigate to match section
+        setTimeout(() => {
+          setCurrentSection('match', { gameMode, actionType: action as 'live' | 'custom' });
+        }, 600);
+
+      } catch (error) {
+        console.error('Error in matchmaking:', error);
+        setIsExiting(false);
+        alert('Failed to find or create game room. Please try again.');
+      }
+    } else {
+      // For custom games, use original logic
+      setIsExiting(true);
+      setTimeout(() => {
+        setCurrentSection('match', { gameMode, actionType: action as 'live' | 'custom' });
+      }, 600);
+    }
   };
 
   const handleNavigation = (section: string) => {
