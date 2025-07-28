@@ -74,13 +74,13 @@ export const DashboardSection: React.FC = () => {
         const hostData = {
           playerDisplayName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
           playerId: user.uid,
-          displayBackgroundEquipped: user.equippedBackground || 'default',
-          matchBackgroundEquipped: user.equippedBackground || 'default',
+          displayBackgroundEquipped: user.inventory.displayBackgroundEquipped || 'default',
+          matchBackgroundEquipped: user.inventory.matchBackgroundEquipped || 'default',
           playerStats: {
-            bestStreak: 0, // Placeholder until stats system is implemented
-            currentStreak: 0,
-            gamesPlayed: 0,
-            matchWins: 0
+            bestStreak: user.stats.bestStreak || 0,
+            currentStreak: user.stats.currentStreak || 0,
+            gamesPlayed: user.stats.gamesPlayed || 0,
+            matchWins: user.stats.matchWins || 0
           }
         };
 

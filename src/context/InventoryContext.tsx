@@ -97,7 +97,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
 
       // Set equipped background if it's a background item
       if (item.type === 'background') {
-        updateData.equippedBackground = itemId;
+        updateData['inventory.displayBackgroundEquipped'] = itemId;
       }
 
       await updateDoc(userRef, updateData);
@@ -140,7 +140,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
 
       // Clear equipped background if it's a background item
       if (item.type === 'background') {
-        updateData.equippedBackground = null;
+        updateData['inventory.displayBackgroundEquipped'] = null;
       }
 
       await updateDoc(userRef, updateData);

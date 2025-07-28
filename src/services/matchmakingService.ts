@@ -40,7 +40,7 @@ export class MatchmakingService {
   }
 
   /**
-   * Create new waiting room
+   * Create new waiting room with exact structure you specified
    */
   static async createWaitingRoom(gameMode: string, hostData: any) {
     try {
@@ -54,8 +54,8 @@ export class MatchmakingService {
         hostData: {
           playerDisplayName: hostData.playerDisplayName,
           playerId: hostData.playerId,
-          displayBackgroundEquipped: hostData.displayBackgroundEquipped,
-          matchBackgroundEquipped: hostData.matchBackgroundEquipped,
+          playerDisplayBackgroundEquipped: hostData.displayBackgroundEquipped,
+          playerMatchBackgroundEquipped: hostData.matchBackgroundEquipped,
           playerStats: {
             bestStreak: hostData.playerStats.bestStreak,
             currentStreak: hostData.playerStats.currentStreak,
@@ -85,8 +85,8 @@ export class MatchmakingService {
         opponentData: {
           playerDisplayName: opponentData.playerDisplayName,
           playerId: opponentData.playerId,
-          displayBackgroundEquipped: opponentData.displayBackgroundEquipped,
-          matchBackgroundEquipped: opponentData.matchBackgroundEquipped,
+          playerDisplayBackgroundEquipped: opponentData.displayBackgroundEquipped,
+          playerMatchBackgroundEquipped: opponentData.matchBackgroundEquipped,
           playerStats: {
             bestStreak: opponentData.playerStats.bestStreak,
             currentStreak: opponentData.playerStats.currentStreak,
@@ -94,7 +94,7 @@ export class MatchmakingService {
             matchWins: opponentData.playerStats.matchWins
           }
         },
-        'gameData.playersRequired': 0
+        'gameData.playersRequired': 0 // No more players needed
       });
 
       console.log('Added opponent to room:', roomId);
@@ -106,7 +106,7 @@ export class MatchmakingService {
   }
 
   /**
-   * Move room from waitingroom to matches
+   * Move room from waitingroom to matches and add game state variables
    */
   static async moveToMatches(roomId: string) {
     try {
@@ -119,17 +119,48 @@ export class MatchmakingService {
       if (!roomDoc.empty) {
         const roomData = roomDoc.docs[0].data();
         
-        // Add to matches collection
-        const matchRef = await addDoc(collection(db, 'matches'), {
+        // Generate random turnDecider (1 or 2)
+        const turnDecider = Math.floor(Math.random() * 2) + 1;
+        
+        // Create enhanced data for matches collection
+        const matchData = {
           ...roomData,
-          status: 'active',
-          startedAt: serverTimestamp()
-        });
+          // Add game state variables to gameData
+          gameData: {
+            ...roomData.gameData,
+            turnDecider: turnDecider,
+            turnScore: 0,
+            diceOne: 0,
+            diceTwo: 0,
+            roundObjective: 100, // Default objective
+            startingScore: 0,
+            status: 'active',
+            startedAt: serverTimestamp()
+          },
+          // Add game state to hostData
+          hostData: {
+            ...roomData.hostData,
+            turnActive: turnDecider === 1, // Host is active if turnDecider is 1
+            playerScore: 0,
+            roundScore: 0
+          },
+          // Add game state to opponentData
+          opponentData: {
+            ...roomData.opponentData,
+            turnActive: turnDecider === 2, // Opponent is active if turnDecider is 2
+            playerScore: 0,
+            roundScore: 0
+          }
+        };
+        
+        // Add to matches collection
+        const matchRef = await addDoc(collection(db, 'matches'), matchData);
 
         // Delete from waitingroom
         await deleteDoc(doc(db, 'waitingroom', roomId));
         
         console.log('Moved room to matches:', matchRef.id);
+        console.log('Turn assigned to player:', turnDecider);
         return matchRef.id;
       }
     } catch (error) {
@@ -139,14 +170,14 @@ export class MatchmakingService {
   }
 
   /**
-   * Create computer opponent data
+   * Create computer opponent data for testing
    */
   static getComputerOpponent() {
     return {
       playerDisplayName: "GKent",
       playerId: "computer_gkent",
-      displayBackgroundEquipped: "underwater",
-      matchBackgroundEquipped: "underwater",
+      displayBackgroundEquipped: "Underwater",
+      matchBackgroundEquipped: "Underwater",
       playerStats: {
         bestStreak: 3,
         currentStreak: 1,
@@ -167,11 +198,10 @@ export class MatchmakingService {
       if (existingRoom) {
         console.log('Found existing room:', existingRoom.id);
         
-        // Add computer opponent for testing
-        const computerOpponent = this.getComputerOpponent();
-        await this.addOpponentToRoom(existingRoom.id, computerOpponent);
+        // Add current user as opponent
+        await this.addOpponentToRoom(existingRoom.id, hostData);
         
-        // Move to matches collection after 5 seconds
+        // Start 5-second countdown before moving to matches
         setTimeout(async () => {
           await this.moveToMatches(existingRoom.id);
         }, 5000);
@@ -180,6 +210,27 @@ export class MatchmakingService {
       } else {
         // Create new room
         const roomId = await this.createWaitingRoom(gameMode, hostData);
+        
+        // For testing: Add computer opponent after 3 seconds if no real opponent joins
+        setTimeout(async () => {
+          try {
+            // Check if room still exists and has no opponent
+            const roomCheck = await this.findOpenRoom(gameMode);
+            if (roomCheck && roomCheck.id === roomId) {
+              console.log('No real opponent found, adding computer opponent for testing');
+              const computerOpponent = this.getComputerOpponent();
+              await this.addOpponentToRoom(roomId, computerOpponent);
+              
+              // Start 5-second countdown before moving to matches
+              setTimeout(async () => {
+                await this.moveToMatches(roomId);
+              }, 5000);
+            }
+          } catch (error) {
+            console.error('Error adding computer opponent:', error);
+          }
+        }, 3000);
+        
         return { roomId, isNewRoom: true, hasOpponent: false };
       }
     } catch (error) {

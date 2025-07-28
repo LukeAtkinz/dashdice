@@ -10,12 +10,63 @@ export class BackgroundService {
    */
   static async updateEquippedBackground(userId: string, backgroundId: string): Promise<void> {
     try {
+      console.log(`🔄 Updating background for user ${userId} to: ${backgroundId}`);
       const userRef = doc(db, 'users', userId);
-      await updateDoc(userRef, {
-        equippedBackground: backgroundId
-      });
+      
+      const updateData = {
+        'inventory.displayBackgroundEquipped': backgroundId,
+        updatedAt: new Date()
+      };
+      
+      console.log('📤 Sending update to Firebase:', updateData);
+      await updateDoc(userRef, updateData);
+      console.log('✅ Background updated successfully in Firebase');
     } catch (error) {
-      console.error('Error updating equipped background:', error);
+      console.error('❌ Error updating equipped background:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update user's display background
+   */
+  static async updateDisplayBackground(userId: string, backgroundName: string): Promise<void> {
+    try {
+      console.log(`🔄 Updating display background for user ${userId} to: ${backgroundName}`);
+      const userRef = doc(db, 'users', userId);
+      
+      const updateData = {
+        'inventory.displayBackgroundEquipped': backgroundName,
+        updatedAt: new Date()
+      };
+      
+      console.log('📤 Sending display background update to Firebase:', updateData);
+      await updateDoc(userRef, updateData);
+      console.log('✅ Display background updated successfully in Firebase');
+    } catch (error) {
+      console.error('❌ Error updating display background:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update user's match background
+   */
+  static async updateMatchBackground(userId: string, backgroundName: string): Promise<void> {
+    try {
+      console.log(`🔄 Updating match background for user ${userId} to: ${backgroundName}`);
+      const userRef = doc(db, 'users', userId);
+      
+      const updateData = {
+        'inventory.matchBackgroundEquipped': backgroundName,
+        updatedAt: new Date()
+      };
+      
+      console.log('📤 Sending match background update to Firebase:', updateData);
+      await updateDoc(userRef, updateData);
+      console.log('✅ Match background updated successfully in Firebase');
+    } catch (error) {
+      console.error('❌ Error updating match background:', error);
       throw error;
     }
   }
