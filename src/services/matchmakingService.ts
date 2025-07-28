@@ -211,25 +211,8 @@ export class MatchmakingService {
         // Create new room
         const roomId = await this.createWaitingRoom(gameMode, hostData);
         
-        // For testing: Add computer opponent after 3 seconds if no real opponent joins
-        setTimeout(async () => {
-          try {
-            // Check if room still exists and has no opponent
-            const roomCheck = await this.findOpenRoom(gameMode);
-            if (roomCheck && roomCheck.id === roomId) {
-              console.log('No real opponent found, adding computer opponent for testing');
-              const computerOpponent = this.getComputerOpponent();
-              await this.addOpponentToRoom(roomId, computerOpponent);
-              
-              // Start 5-second countdown before moving to matches
-              setTimeout(async () => {
-                await this.moveToMatches(roomId);
-              }, 5000);
-            }
-          } catch (error) {
-            console.error('Error adding computer opponent:', error);
-          }
-        }, 3000);
+        // Room is now open for real players to join
+        // No automatic computer opponent - let real players find and join
         
         return { roomId, isNewRoom: true, hasOpponent: false };
       }

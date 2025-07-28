@@ -1,6 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useAuth } from './AuthContext';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { db } from '@/services/firebase';
 
 interface Background {
   name: string;
@@ -31,6 +34,8 @@ interface BackgroundProviderProps {
 }
 
 export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children }) => {
+  const { user } = useAuth();
+  
   // Available backgrounds from the reference
   const availableBackgrounds: Background[] = [
     { name: "All For Glory", file: "/backgrounds/All For Glory.jpg", type: "image" },
@@ -40,6 +45,26 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
     { name: "Underwater", file: "/backgrounds/Underwater.mp4", type: "video" },
     { name: "Long Road Ahead", file: "/backgrounds/Long Road Ahead.jpg", type: "image" }
   ];
+
+  // Helper function to find background by item ID from inventory
+  const findBackgroundByItemId = (itemId: string, inventory: any[]): Background | null => {
+    const item = inventory?.find(item => item.id === itemId && item.type === 'background');
+    console.log('BackgroundContext: findBackgroundByItemId', {
+      itemId,
+      item,
+      inventoryLength: inventory?.length
+    });
+    
+    if (!item) return null;
+    
+    const foundBackground = availableBackgrounds.find(bg => bg.name === item.name);
+    console.log('BackgroundContext: Found background match', {
+      itemName: item.name,
+      foundBackground
+    });
+    
+    return foundBackground || null;
+  };
 
   // Theme mapping for backgrounds
   const getThemeFromBackground = (background: Background | null): string => {
@@ -67,33 +92,77 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
     document.documentElement.setAttribute('data-theme', theme);
   }, [DisplayBackgroundEquip]);
 
-  // Load saved backgrounds from localStorage on mount
+  // Listen to user data changes to sync equipped backgrounds from Firebase
   useEffect(() => {
-    const savedDisplayBackground = localStorage.getItem('displayBackgroundEquipped');
-    const savedMatchBackground = localStorage.getItem('matchBackgroundEquipped');
-
-    if (savedDisplayBackground) {
-      try {
-        const parsed = JSON.parse(savedDisplayBackground);
-        const found = availableBackgrounds.find(bg => bg.file === parsed.file);
-        if (found) setDisplayBackgroundEquip(found);
-      } catch (error) {
-        console.error('Error loading saved display background:', error);
-      }
+    if (!user) {
+      setDisplayBackgroundEquip(null);
+      setMatchBackgroundEquip(null);
+      return;
     }
 
-    if (savedMatchBackground) {
-      try {
-        const parsed = JSON.parse(savedMatchBackground);
-        const found = availableBackgrounds.find(bg => bg.file === parsed.file);
-        if (found) setMatchBackgroundEquip(found);
-      } catch (error) {
-        console.error('Error loading saved match background:', error);
+    const userRef = doc(db, 'users', user.uid);
+    const unsubscribe = onSnapshot(userRef, (doc) => {
+      if (doc.exists()) {
+        const userData = doc.data();
+        const inventory = userData.inventory || [];
+        const equippedBackgroundId = userData.equippedBackground;
+        
+        console.log('BackgroundContext: User data updated', {
+          equippedBackgroundId,
+          inventoryLength: inventory.length
+        });
+        
+        // Find the equipped background from inventory
+        if (equippedBackgroundId) {
+          const equippedBackground = findBackgroundByItemId(equippedBackgroundId, inventory);
+          console.log('BackgroundContext: Found equipped background', equippedBackground);
+          
+          if (equippedBackground) {
+            setDisplayBackgroundEquip(equippedBackground);
+            setMatchBackgroundEquip(equippedBackground); // Use same for both display and match
+          }
+        } else {
+          console.log('BackgroundContext: No equipped background found');
+          setDisplayBackgroundEquip(null);
+          setMatchBackgroundEquip(null);
+        }
+      }
+    }, (error) => {
+      console.error('BackgroundContext: Error listening to user data:', error);
+    });
+
+    return unsubscribe;
+  }, [user]);
+
+  // Fallback: Load from localStorage if Firebase data is not available (for backwards compatibility)
+  useEffect(() => {
+    if (!user) {
+      const savedDisplayBackground = localStorage.getItem('displayBackgroundEquipped');
+      const savedMatchBackground = localStorage.getItem('matchBackgroundEquipped');
+
+      if (savedDisplayBackground) {
+        try {
+          const parsed = JSON.parse(savedDisplayBackground);
+          const found = availableBackgrounds.find(bg => bg.file === parsed.file);
+          if (found) setDisplayBackgroundEquip(found);
+        } catch (error) {
+          console.error('Error loading saved display background:', error);
+        }
+      }
+
+      if (savedMatchBackground) {
+        try {
+          const parsed = JSON.parse(savedMatchBackground);
+          const found = availableBackgrounds.find(bg => bg.file === parsed.file);
+          if (found) setMatchBackgroundEquip(found);
+        } catch (error) {
+          console.error('Error loading saved match background:', error);
+        }
       }
     }
-  }, []);
+  }, [user]);
 
-  // Save to localStorage when backgrounds change
+  // Update localStorage when backgrounds change (for backwards compatibility)
   useEffect(() => {
     if (DisplayBackgroundEquip) {
       localStorage.setItem('displayBackgroundEquipped', JSON.stringify(DisplayBackgroundEquip));

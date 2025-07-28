@@ -52,6 +52,16 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 }) => {
   const { user } = useAuth();
   const { DisplayBackgroundEquip, MatchBackgroundEquip } = useBackground();
+  
+  // Add logging to see what backgrounds we're getting from context
+  useEffect(() => {
+    console.log('GameWaitingRoom: Background context updated', {
+      DisplayBackgroundEquip,
+      MatchBackgroundEquip,
+      DisplayBackgroundType: DisplayBackgroundEquip?.type,
+      MatchBackgroundType: MatchBackgroundEquip?.type
+    });
+  }, [DisplayBackgroundEquip, MatchBackgroundEquip]);
   const { setCurrentSection } = useNavigation();
   
   const [waitingRoomEntry, setWaitingRoomEntry] = useState<WaitingRoomEntry | null>(null);
@@ -189,6 +199,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           return () => unsubscribe();
         } else {
           // No existing game found - create new one
+          console.log('GameWaitingRoom: Creating new waiting room entry', {
+            DisplayBackgroundEquip,
+            MatchBackgroundEquip,
+            DisplayBackgroundType: DisplayBackgroundEquip?.type,
+            MatchBackgroundType: MatchBackgroundEquip?.type
+          });
+          
           const entry: WaitingRoomEntry = {
             createdAt: serverTimestamp(),
             gameMode: gameMode,
@@ -203,6 +220,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             }
           };
 
+          console.log('GameWaitingRoom: Final entry to be saved', entry);
+
           const docRef = await addDoc(collection(db, 'waitingroom'), entry);
           const gameId = docRef.id;
           
@@ -210,6 +229,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           const unsubscribe = onSnapshot(doc(db, 'waitingroom', gameId), (doc) => {
             if (doc.exists()) {
               const data = doc.data() as WaitingRoomEntry;
+              console.log('GameWaitingRoom: Received waiting room data from Firebase', {
+                data,
+                hostData: data.hostData,
+                matchBackgroundEquipped: data.hostData?.matchBackgroundEquipped
+              });
+              
               setWaitingRoomEntry({ ...data, id: doc.id });
               
               // Check if opponent joined
@@ -222,10 +247,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
           setWaitingRoomEntry({ ...entry, id: gameId });
           
-          // Add test computer player after 3 seconds for testing
-          setTimeout(() => {
-            addTestOpponent(gameId);
-          }, 3000);
+          // Removed automatic test computer player for production
+          // Real players can now join the waiting room
 
           setIsLoading(false);
           return () => unsubscribe();
@@ -344,8 +367,17 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const renderPlayerBackground = () => {
     const background = waitingRoomEntry?.hostData.matchBackgroundEquipped;
     
+    console.log('GameWaitingRoom: renderPlayerBackground called', {
+      background,
+      backgroundType: background?.type,
+      backgroundFile: background?.file,
+      hasWaitingRoomEntry: !!waitingRoomEntry,
+      hostData: waitingRoomEntry?.hostData
+    });
+    
     if (background) {
       if (background.type === 'video') {
+        console.log('GameWaitingRoom: Rendering video background:', background.file);
         return (
           <video
             autoPlay
@@ -353,6 +385,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             muted
             playsInline
             preload="metadata"
+            onLoadStart={() => console.log('Video: Load started')}
+            onCanPlay={() => console.log('Video: Can play')}
+            onError={(e) => console.error('Video: Error loading', e)}
+            onLoadedData={() => console.log('Video: Data loaded')}
             style={{
               position: 'absolute',
               top: 0,
@@ -364,25 +400,38 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             }}
           >
             <source src={background.file} type="video/mp4" />
+            Your browser does not support the video tag.
           </video>
         );
       } else {
+        console.log('GameWaitingRoom: Using CSS background for image:', background.file);
         return null; // CSS background will handle image
       }
     }
+    console.log('GameWaitingRoom: No background found, using default');
     return null;
   };
 
   const getBackgroundStyle = () => {
     const background = waitingRoomEntry?.hostData.matchBackgroundEquipped;
     
+    console.log('GameWaitingRoom: getBackgroundStyle called', {
+      background,
+      backgroundType: background?.type,
+      backgroundFile: background?.file
+    });
+    
     if (background?.type === 'video') {
+      console.log('GameWaitingRoom: Video background - returning empty style');
       return {};
     } else if (background?.file) {
-      return { 
+      const style = { 
         background: `url('${background.file}') center/cover no-repeat` 
       };
+      console.log('GameWaitingRoom: Image background - returning style:', style);
+      return style;
     }
+    console.log('GameWaitingRoom: No background - returning default style');
     return { background: '#332A63' };
   };
 
@@ -1043,11 +1092,33 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   borderRadius: '15px',
                   position: 'relative',
                   overflow: 'hidden',
-                  background: waitingRoomEntry.opponentData.matchBackgroundEquipped?.file 
+                  background: waitingRoomEntry.opponentData.matchBackgroundEquipped?.type !== 'video' && waitingRoomEntry.opponentData.matchBackgroundEquipped?.file 
                     ? `url('${waitingRoomEntry.opponentData.matchBackgroundEquipped.file}') center/cover no-repeat` 
                     : '#332A63'
                 }}
               >
+                {/* Render opponent video background if it's a video */}
+                {waitingRoomEntry.opponentData.matchBackgroundEquipped?.type === 'video' && (
+                  <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="metadata"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      zIndex: 0
+                    }}
+                  >
+                    <source src={waitingRoomEntry.opponentData.matchBackgroundEquipped.file} type="video/mp4" />
+                  </video>
+                )}
+                
                 {/* Bottom-left to transparent gradient overlay for readability */}
                 <div
                   style={{
