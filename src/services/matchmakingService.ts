@@ -7,7 +7,6 @@ import {
   updateDoc,
   deleteDoc,
   doc,
-  limit,
   serverTimestamp 
 } from 'firebase/firestore';
 import { db } from './firebase';
@@ -15,13 +14,14 @@ import { db } from './firebase';
 export class MatchmakingService {
   
   /**
-   * Search for existing open rooms by game type
+   * Search for existing open rooms
    */
-  static async findOpenRoom(gameType: string) {
+  static async findOpenRoom(gameMode: string) {
     try {
       const q = query(
         collection(db, 'waitingroom'),
-        where('gameData.gameType', '==', gameType),
+        where('gameData.gameMode', '==', gameMode),
+        where('gameData.gameType', '==', 'Open Server'),
         where('gameData.playersRequired', '==', 1)
       );
 
@@ -42,13 +42,13 @@ export class MatchmakingService {
   /**
    * Create new waiting room with exact structure you specified
    */
-  static async createWaitingRoom(gameType: string, hostData: any) {
+  static async createWaitingRoom(gameMode: string, hostData: any) {
     try {
       const roomData = {
         gameData: {
           createdAt: serverTimestamp(),
-          gameMode: "Live Server",
-          gameType: gameType,
+          gameMode: gameMode,
+          gameType: "Open Server",
           playersRequired: 1
         },
         hostData: {
@@ -188,12 +188,12 @@ export class MatchmakingService {
   }
 
   /**
-   * Main matchmaking function - simplified to not auto-handle timeouts
+   * Main matchmaking function
    */
-  static async findOrCreateRoom(gameType: string, hostData: any) {
+  static async findOrCreateRoom(gameMode: string, hostData: any) {
     try {
       // First, search for existing room
-      const existingRoom = await this.findOpenRoom(gameType);
+      const existingRoom = await this.findOpenRoom(gameMode);
       
       if (existingRoom) {
         console.log('Found existing room:', existingRoom.id);
@@ -201,55 +201,41 @@ export class MatchmakingService {
         // Add current user as opponent
         await this.addOpponentToRoom(existingRoom.id, hostData);
         
+        // Start 5-second countdown before moving to matches
+        setTimeout(async () => {
+          await this.moveToMatches(existingRoom.id);
+        }, 5000);
+        
         return { roomId: existingRoom.id, isNewRoom: false, hasOpponent: true };
       } else {
         // Create new room
-        const roomId = await this.createWaitingRoom(gameType, hostData);
+        const roomId = await this.createWaitingRoom(gameMode, hostData);
+        
+        // For testing: Add computer opponent after 3 seconds if no real opponent joins
+        setTimeout(async () => {
+          try {
+            // Check if room still exists and has no opponent
+            const roomCheck = await this.findOpenRoom(gameMode);
+            if (roomCheck && roomCheck.id === roomId) {
+              console.log('No real opponent found, adding computer opponent for testing');
+              const computerOpponent = this.getComputerOpponent();
+              await this.addOpponentToRoom(roomId, computerOpponent);
+              
+              // Start 5-second countdown before moving to matches
+              setTimeout(async () => {
+                await this.moveToMatches(roomId);
+              }, 5000);
+            }
+          } catch (error) {
+            console.error('Error adding computer opponent:', error);
+          }
+        }, 3000);
         
         return { roomId, isNewRoom: true, hasOpponent: false };
       }
     } catch (error) {
       console.error('Error in findOrCreateRoom:', error);
       throw error;
-    }
-  }
-
-  /**
-   * Add computer opponent to a room (for testing/fallback)
-   */
-  static async addComputerOpponent(roomId: string) {
-    try {
-      const computerOpponent = this.getComputerOpponent();
-      await this.addOpponentToRoom(roomId, computerOpponent);
-      return true;
-    } catch (error) {
-      console.error('Error adding computer opponent:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Check if room still needs opponents
-   */
-  static async checkRoomStatus(roomId: string) {
-    try {
-      const roomDoc = await getDocs(query(
-        collection(db, 'waitingroom'),
-        where('__name__', '==', roomId)
-      ));
-
-      if (!roomDoc.empty) {
-        const data = roomDoc.docs[0].data();
-        return {
-          exists: true,
-          hasOpponent: !!data.opponentData,
-          playersRequired: data.gameData?.playersRequired || 0
-        };
-      }
-      return { exists: false, hasOpponent: false, playersRequired: 0 };
-    } catch (error) {
-      console.error('Error checking room status:', error);
-      return { exists: false, hasOpponent: false, playersRequired: 0 };
     }
   }
 }

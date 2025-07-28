@@ -5,24 +5,9 @@ export interface User {
   photoURL?: string;
   createdAt: Date;
   lastLoginAt: Date;
-  updatedAt: Date;
-  userTag: string;
-  inventory: {
-    displayBackgroundEquipped: string;
-    matchBackgroundEquipped: string;
-    ownedBackgrounds: string[];
-  };
-  stats: {
-    bestStreak: number;
-    currentStreak: number;
-    gamesPlayed: number;
-    matchWins: number;
-  };
-  settings: {
-    notificationsEnabled: boolean;
-    soundEnabled: boolean;
-    theme: string;
-  };
+  inventory: InventoryItem[];
+  ownedBackgrounds: string[]; // Array of background IDs
+  equippedBackground?: string; // Currently equipped background ID
 }
 
 export interface InventoryItem {
@@ -71,7 +56,6 @@ export interface AuthContextType {
   signUp: (email: string, password: string, displayName: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
-  refreshUser: () => Promise<void>;
 }
 
 export interface InventoryContextType {
