@@ -12,37 +12,29 @@ interface BackgroundSelectorProps {
 }
 
 export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({ onBackgroundChange }) => {
-  const { user, refreshUser } = useAuth();
-  const [selectedBackground, setSelectedBackground] = useState<string | null>(user?.inventory?.displayBackgroundEquipped || null);
+  const { user } = useAuth();
+  const [selectedBackground, setSelectedBackground] = useState<string | null>(user?.equippedBackground || null);
   const [isUpdating, setIsUpdating] = useState(false);
 
   if (!user) {
     return null;
   }
 
-  const ownedBackgrounds = BackgroundService.getUserOwnedBackgrounds(user.inventory.ownedBackgrounds);
-  const currentBackground = BackgroundService.getBackgroundSafely(user.inventory.displayBackgroundEquipped);
+  const ownedBackgrounds = BackgroundService.getUserOwnedBackgrounds(user.ownedBackgrounds);
+  const currentBackground = BackgroundService.getBackgroundSafely(user.equippedBackground);
 
   const handleBackgroundSelect = async (background: Background) => {
     if (isUpdating) return;
     
-    console.log(`🎨 User selecting background: ${background.name} (${background.id})`);
     setSelectedBackground(background.id);
     setIsUpdating(true);
 
     try {
-      console.log('📝 Calling BackgroundService.updateEquippedBackground...');
       await BackgroundService.updateEquippedBackground(user.uid, background.id);
-      
-      console.log('🔄 Refreshing user data...');
-      // Refresh user data to show the updated background immediately
-      await refreshUser();
-      
-      console.log('✅ Background selection complete');
       onBackgroundChange?.(background);
     } catch (error) {
-      console.error('❌ Failed to update background:', error);
-      setSelectedBackground(user.inventory.displayBackgroundEquipped || null);
+      console.error('Failed to update background:', error);
+      setSelectedBackground(user.equippedBackground || null);
     } finally {
       setIsUpdating(false);
     }
@@ -51,7 +43,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({ onBackgr
   const renderBackgroundPreview = (background: Background) => {
     const backgroundUrl = BackgroundService.getBackgroundUrl(background);
     const isSelected = selectedBackground === background.id;
-    const isCurrentlyEquipped = user.inventory.displayBackgroundEquipped === background.id;
+    const isCurrentlyEquipped = user.equippedBackground === background.id;
 
     return (
       <div

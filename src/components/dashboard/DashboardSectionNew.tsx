@@ -74,13 +74,13 @@ export const DashboardSection: React.FC = () => {
         const hostData = {
           playerDisplayName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
           playerId: user.uid,
-          displayBackgroundEquipped: user.inventory.displayBackgroundEquipped || 'default',
-          matchBackgroundEquipped: user.inventory.matchBackgroundEquipped || 'default',
+          displayBackgroundEquipped: user.equippedBackground || 'default',
+          matchBackgroundEquipped: user.equippedBackground || 'default',
           playerStats: {
-            bestStreak: user.stats.bestStreak || 0,
-            currentStreak: user.stats.currentStreak || 0,
-            gamesPlayed: user.stats.gamesPlayed || 0,
-            matchWins: user.stats.matchWins || 0
+            bestStreak: 0, // Placeholder until stats system is implemented
+            currentStreak: 0,
+            gamesPlayed: 0,
+            matchWins: 0
           }
         };
 
@@ -93,9 +93,9 @@ export const DashboardSection: React.FC = () => {
           console.log('Opponent found! Starting 5-second countdown...');
         }
         
-        // Navigate to waiting room instead of directly to match
+        // Navigate to match section
         setTimeout(() => {
-          setCurrentSection('waiting', { gameMode, actionType: action as 'live' | 'custom', roomId });
+          setCurrentSection('match', { gameMode, actionType: action as 'live' | 'custom' });
         }, 600);
 
       } catch (error) {

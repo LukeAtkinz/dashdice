@@ -4,14 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { useNavigation } from '@/context/NavigationContext';
-import { MatchmakingService } from '@/services/matchmakingService';
 import { db } from '@/services/firebase';
 import { collection, addDoc, doc, onSnapshot, updateDoc, deleteDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 
 interface GameWaitingRoomProps {
   gameMode: string;
   actionType: 'live' | 'custom';
-  roomId?: string;
   onBack: () => void;
 }
 
@@ -50,7 +48,6 @@ interface WaitingRoomEntry {
 export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   gameMode,
   actionType,
-  roomId,
   onBack
 }) => {
   const { user } = useAuth();
@@ -144,62 +141,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           return;
         }
 
-        // If roomId is provided (from MatchmakingService), listen to that specific room
-        if (roomId) {
-          console.log('Waiting room listening to roomId:', roomId);
-          
-          const unsubscribe = onSnapshot(doc(db, 'waitingroom', roomId), (doc) => {
-            if (doc.exists()) {
-              const data = doc.data() as WaitingRoomEntry;
-              setWaitingRoomEntry({ ...data, id: doc.id });
-              
-              // Check if opponent joined
-              if (data.opponentData && !opponentJoined) {
-                setOpponentJoined(true);
-                console.log('Opponent joined! Starting countdown...');
-                startVsCountdown();
-              }
-            } else {
-              // Room was deleted - probably moved to matches
-              console.log('Room moved to matches, transitioning...');
-              setCurrentSection('match', { gameMode, actionType });
-            }
-          });
+        const userStats = await getUserStats();
 
-          // Add computer opponent after 3 seconds if no real opponent joins
-          const computerOpponentTimeout = setTimeout(async () => {
-            try {
-              const roomStatus = await MatchmakingService.checkRoomStatus(roomId);
-              if (roomStatus.exists && !roomStatus.hasOpponent) {
-                console.log('Adding computer opponent after 3 seconds...');
-                await MatchmakingService.addComputerOpponent(roomId);
-              }
-            } catch (error) {
-              console.error('Error adding computer opponent:', error);
-            }
-          }, 3000);
-
-          setIsLoading(false);
-          return () => {
-            unsubscribe();
-            clearTimeout(computerOpponentTimeout);
-          };
-        }
-
-        // Fallback: original logic for when no roomId is provided
-        const userStats = {
-          bestStreak: user.stats?.bestStreak || 0,
-          currentStreak: user.stats?.currentStreak || 0,
-          gamesPlayed: user.stats?.gamesPlayed || 0,
-          matchWins: user.stats?.matchWins || 0
-        };
-
-        // Check for existing games
+        // First, check for existing games with same gameMode and gameType
         const q = query(
           collection(db, 'waitingroom'),
-          where('gameData.gameMode', '==', 'Live Server'),
-          where('gameData.gameType', '==', gameMode),
-          where('gameData.playersRequired', '==', 1)
+          where('gameMode', '==', gameMode),
+          where('gameType', '==', 'Open Server')
         );
 
         const querySnapshot = await getDocs(q);
@@ -358,16 +306,21 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     try {
       if (!waitingRoomEntry?.id) return;
 
-      console.log('Moving to matches collection...');
+      // Create match document
+      const matchData = {
+        ...waitingRoomEntry,
+        status: 'active',
+        createdAt: serverTimestamp(),
+        startedAt: serverTimestamp()
+      };
+
+      await addDoc(collection(db, 'matches'), matchData);
       
-      // Use MatchmakingService to handle the transition
-      const matchId = await MatchmakingService.moveToMatches(waitingRoomEntry.id);
+      // Remove from waiting room
+      await deleteDoc(doc(db, 'waitingroom', waitingRoomEntry.id));
       
-      if (matchId) {
-        console.log('Successfully moved to matches:', matchId);
-        // Navigate to match section
-        setCurrentSection('match', { gameMode, actionType });
-      }
+      // Navigate to match (placeholder for now)
+      console.log('Would navigate to Match.js with data:', matchData);
       
     } catch (err) {
       console.error('Error moving to matches:', err);

@@ -5,12 +5,9 @@ import { motion } from 'framer-motion';
 import { useInventory } from '@/context/InventoryContext';
 import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
-import { useAuth } from '@/context/AuthContext';
-import { BackgroundService } from '@/services/backgroundService';
 
 export const InventorySection: React.FC = () => {
   const { setCurrentSection } = useNavigation();
-  const { user, refreshUser } = useAuth();
   const { 
     availableBackgrounds, 
     DisplayBackgroundEquip, 
@@ -64,38 +61,12 @@ export const InventorySection: React.FC = () => {
   const handleEquipBackground = async (background: any) => {
     console.log('Equip Button Clicked:', { tab: activeTab, background });
     
-    if (!user) {
-      console.error('User not authenticated');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      
-      // Map the background object back to the name that Firebase expects
-      const backgroundName = background.background.name;
-      console.log(`🎨 Equipping ${backgroundName} for ${activeTab}`);
-      
-      if (activeTab === 'display') {
-        // Update Firebase for display background
-        await BackgroundService.updateDisplayBackground(user.uid, backgroundName);
-        setDisplayBackgroundEquip(background.background);
-        console.log('✅ Equipped Display Background:', background.background);
-      } else if (activeTab === 'match') {
-        // Update Firebase for match background  
-        await BackgroundService.updateMatchBackground(user.uid, backgroundName);
-        setMatchBackgroundEquip(background.background);
-        console.log('✅ Equipped Match Background:', background.background);
-      }
-      
-      // Refresh user data to get updated backgrounds from Firebase
-      await refreshUser();
-      console.log('🔄 User data refreshed');
-      
-    } catch (error) {
-      console.error('❌ Error equipping background:', error);
-    } finally {
-      setLoading(false);
+    if (activeTab === 'display') {
+      setDisplayBackgroundEquip(background.background);
+      console.log('Equipped Display Background:', background.background);
+    } else if (activeTab === 'match') {
+      setMatchBackgroundEquip(background.background);
+      console.log('Equipped Match Background:', background.background);
     }
   };
 
