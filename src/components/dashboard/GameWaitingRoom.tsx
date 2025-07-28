@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
+import { UserService } from '@/services/userService';
 import { useNavigation } from '@/context/NavigationContext';
 import { db } from '@/services/firebase';
 import { collection, addDoc, doc, onSnapshot, updateDoc, deleteDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
@@ -102,21 +103,41 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
   const currentGameMode = gameModeConfig[gameMode as keyof typeof gameModeConfig] || gameModeConfig.classic;
 
-  // Get display name from user email
-  const getDisplayName = () => {
-    return user?.email?.split('@')[0] || 'Anonymous';
-  };
-
-  // Get user stats from profile (placeholder - you'll need to implement actual profile fetching)
-  const getUserStats = async () => {
-    // TODO: Fetch from user profile in database
-    // For now returning placeholder data
-    return {
-      bestStreak: 12,
-      currentStreak: 3,
-      gamesPlayed: 127,
-      matchWins: 89
+  // Get user data from profile
+  const getUserData = async () => {
+    try {
+      console.log('🔍 GameWaitingRoom: Fetching user profile for UID:', user!.uid);
+      const userProfile = await UserService.getUserProfile(user!.uid);
+      console.log('📊 GameWaitingRoom: User profile fetched:', userProfile);
+      
+      if (userProfile) {
+        const userData = {
+          displayName: userProfile.displayName || user?.email?.split('@')[0] || 'Anonymous',
+          stats: userProfile.stats,
+          displayBackgroundEquipped: userProfile.inventory.displayBackgroundEquipped,
+          matchBackgroundEquipped: userProfile.inventory.matchBackgroundEquipped
+        };
+        console.log('✅ GameWaitingRoom: Processed user data:', userData);
+        return userData;
+      }
+    } catch (error) {
+      console.error('❌ GameWaitingRoom: Error fetching user profile:', error);
+    }
+    
+    // Fallback to context data
+    const fallbackData = {
+      displayName: user?.email?.split('@')[0] || 'Anonymous',
+      stats: {
+        bestStreak: 0,
+        currentStreak: 0,
+        gamesPlayed: 0,
+        matchWins: 0
+      },
+      displayBackgroundEquipped: DisplayBackgroundEquip,
+      matchBackgroundEquipped: MatchBackgroundEquip
     };
+    console.log('⚠️ GameWaitingRoom: Using fallback data:', fallbackData);
+    return fallbackData;
   };
 
   // Animated searching text
@@ -151,7 +172,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           return;
         }
 
-        const userStats = await getUserStats();
+        const userData = await getUserData();
 
         // First, check for existing games with same gameMode and gameType
         const q = query(
@@ -163,40 +184,65 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         const querySnapshot = await getDocs(q);
         
         if (!querySnapshot.empty) {
-          // Found an existing game - join as opponent
+          // Found an existing game - check if we're the host before joining as opponent
           const existingGameDoc = querySnapshot.docs[0];
           const existingGame = existingGameDoc.data() as WaitingRoomEntry;
           
-          // Add opponent data to the existing game
-          const opponentData = {
-            playerDisplayName: getDisplayName(),
-            playerId: user.uid,
-            displayBackgroundEquipped: DisplayBackgroundEquip || null,
-            matchBackgroundEquipped: MatchBackgroundEquip || null,
-            playerStats: userStats
-          };
-
-          await updateDoc(doc(db, 'waitingroom', existingGameDoc.id), {
-            opponentData: opponentData
-          });
-
-          // Set up listener for the joined game
-          const unsubscribe = onSnapshot(doc(db, 'waitingroom', existingGameDoc.id), (doc) => {
-            if (doc.exists()) {
-              const data = doc.data() as WaitingRoomEntry;
-              setWaitingRoomEntry({ ...data, id: doc.id });
-              
-              // Check if opponent joined (we are the opponent in this case)
-              if (data.opponentData) {
-                setOpponentJoined(true);
-                // Start countdown immediately since we just joined
-                startVsCountdown();
+          // Check if current user is already the host of this room
+          if (existingGame.hostData?.playerId === user.uid) {
+            console.log('GameWaitingRoom: Current user is already host of this room, just listening for updates');
+            
+            // Set up listener for the room we're hosting
+            const unsubscribe = onSnapshot(doc(db, 'waitingroom', existingGameDoc.id), (doc) => {
+              if (doc.exists()) {
+                const data = doc.data() as WaitingRoomEntry;
+                console.log('GameWaitingRoom: Received room update as host', data);
+                setWaitingRoomEntry({ ...data, id: doc.id });
+                
+                // Check if opponent joined
+                if (data.opponentData && !opponentJoined) {
+                  setOpponentJoined(true);
+                  startVsCountdown();
+                }
               }
-            }
-          });
+            });
 
-          setIsLoading(false);
-          return () => unsubscribe();
+            setIsLoading(false);
+            return () => unsubscribe();
+          } else {
+            // Different user is host - join as opponent
+            console.log('GameWaitingRoom: Joining existing room as opponent');
+            
+            const opponentData = {
+              playerDisplayName: userData.displayName,
+              playerId: user.uid,
+              displayBackgroundEquipped: userData.displayBackgroundEquipped || null,
+              matchBackgroundEquipped: userData.matchBackgroundEquipped || null,
+              playerStats: userData.stats
+            };
+
+            await updateDoc(doc(db, 'waitingroom', existingGameDoc.id), {
+              opponentData: opponentData
+            });
+
+            // Set up listener for the joined game
+            const unsubscribe = onSnapshot(doc(db, 'waitingroom', existingGameDoc.id), (doc) => {
+              if (doc.exists()) {
+                const data = doc.data() as WaitingRoomEntry;
+                setWaitingRoomEntry({ ...data, id: doc.id });
+                
+                // Check if opponent joined (we are the opponent in this case)
+                if (data.opponentData) {
+                  setOpponentJoined(true);
+                  // Start countdown immediately since we just joined
+                  startVsCountdown();
+                }
+              }
+            });
+
+            setIsLoading(false);
+            return () => unsubscribe();
+          }
         } else {
           // No existing game found - create new one
           console.log('GameWaitingRoom: Creating new waiting room entry', {
@@ -212,11 +258,11 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             gameType: "Open Server",
             playersRequired: 0, // Set to 0 as requested
             hostData: {
-              playerDisplayName: getDisplayName(),
+              playerDisplayName: userData.displayName,
               playerId: user.uid,
-              displayBackgroundEquipped: DisplayBackgroundEquip || null,
-              matchBackgroundEquipped: MatchBackgroundEquip || null,
-              playerStats: userStats
+              displayBackgroundEquipped: userData.displayBackgroundEquipped || null,
+              matchBackgroundEquipped: userData.matchBackgroundEquipped || null,
+              playerStats: userData.stats
             }
           };
 
