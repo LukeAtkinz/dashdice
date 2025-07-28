@@ -6,6 +6,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { NavigationProvider, useNavigation } from '@/context/NavigationContext';
 import { SectionTransition } from '@/components/layout/SectionTransition';
 import { DashboardSection } from '@/components/dashboard/DashboardSectionNew';
+import { GameWaitingRoom } from '@/components/dashboard/GameWaitingRoom';
 import { MatchSection } from '@/components/dashboard/MatchSectionNew';
 import { InventorySection } from '@/components/dashboard/InventoryReference';
 import { ProfileSection } from '@/components/dashboard/ProfileSection';
@@ -282,6 +283,14 @@ const DashboardContent: React.FC = () => {
                 className="w-full h-full"
               >
                 {currentSection === 'dashboard' && <DashboardSection />}
+                {currentSection === 'waiting' && (
+                  <GameWaitingRoom 
+                    gameMode={sectionParams.gameMode || 'classic'}
+                    actionType={sectionParams.actionType || 'live'}
+                    roomId={sectionParams.roomId}
+                    onBack={() => setCurrentSection('dashboard')}
+                  />
+                )}
                 {currentSection === 'match' && (
                   <MatchSection 
                     gameMode={sectionParams.gameMode}

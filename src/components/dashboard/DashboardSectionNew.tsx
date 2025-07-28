@@ -93,9 +93,9 @@ export const DashboardSection: React.FC = () => {
           console.log('Opponent found! Starting 5-second countdown...');
         }
         
-        // Navigate to match section
+        // Navigate to waiting room instead of directly to match
         setTimeout(() => {
-          setCurrentSection('match', { gameMode, actionType: action as 'live' | 'custom' });
+          setCurrentSection('waiting', { gameMode, actionType: action as 'live' | 'custom', roomId });
         }, 600);
 
       } catch (error) {
