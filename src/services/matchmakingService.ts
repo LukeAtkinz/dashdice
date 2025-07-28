@@ -179,9 +179,14 @@ export class MatchmakingService {
    */
   static async findOrCreateRoom(gameMode: string, hostData: any) {
     try {
+      console.log('🔍 Starting findOrCreateRoom for user:', hostData.playerId);
+      console.log('📊 Host data received:', JSON.stringify(hostData, null, 2));
+      
       // Use transaction to atomically check and create room to prevent race conditions
       const result = await runTransaction(db, async (transaction) => {
-        // Search for existing room within transaction
+        console.log('🔄 Starting transaction...');
+        
+        // Search for existing room within transaction, excluding rooms where current user is host
         const q = query(
           collection(db, 'waitingroom'),
           where('gameMode', '==', gameMode),
@@ -190,11 +195,24 @@ export class MatchmakingService {
         );
 
         const querySnapshot = await getDocs(q);
+        console.log(`📋 Found ${querySnapshot.docs.length} existing rooms`);
         
-        if (!querySnapshot.empty) {
-          // Found existing room - join it
-          const existingDoc = querySnapshot.docs[0];
+        // Filter out rooms where the current user is already the host
+        const availableRooms = querySnapshot.docs.filter(doc => {
+          const roomData = doc.data();
+          const isOwnRoom = roomData.hostData?.playerId === hostData.playerId;
+          console.log(`🏠 Room ${doc.id}: host=${roomData.hostData?.playerId}, current=${hostData.playerId}, isOwn=${isOwnRoom}`);
+          return !isOwnRoom;
+        });
+        
+        console.log(`✅ Available rooms for joining: ${availableRooms.length}`);
+        
+        if (availableRooms.length > 0) {
+          // Found existing room where current user is NOT the host - join it
+          const existingDoc = availableRooms[0];
           const roomRef = doc(db, 'waitingroom', existingDoc.id);
+          
+          console.log(`🤝 Joining room ${existingDoc.id} as opponent`);
           
           // Convert background strings to objects if needed
           const displayBg = typeof hostData.displayBackgroundEquipped === 'string' 
@@ -222,9 +240,12 @@ export class MatchmakingService {
             playersRequired: 0 // Room is now full
           });
           
+          console.log(`✅ Joined existing room ${existingDoc.id} as opponent`);
           return { roomId: existingDoc.id, isNewRoom: false, hasOpponent: true };
         } else {
-          // No existing room - create new one
+          // No available room (either none exist or all are hosted by current user) - create new one
+          console.log('🆕 Creating new room as host');
+          
           // Convert background strings to objects if needed
           const displayBg = typeof hostData.displayBackgroundEquipped === 'string' 
             ? this.convertBackgroundToObject(hostData.displayBackgroundEquipped)
@@ -251,28 +272,33 @@ export class MatchmakingService {
               }
             },
             playersRequired: 1
+            // NOTE: NO opponentData field - will only be added when someone joins
           };
+
+          console.log('📝 Room data to create:', JSON.stringify(roomData, null, 2));
 
           const newRoomRef = doc(collection(db, 'waitingroom'));
           transaction.set(newRoomRef, roomData);
           
+          console.log(`✅ Created new room ${newRoomRef.id} as host - NO OPPONENT DATA`);
           return { roomId: newRoomRef.id, isNewRoom: true, hasOpponent: false };
         }
       });
 
       // If room is full, start countdown to move to matches
       if (result.hasOpponent) {
-        console.log('Match found! Starting countdown...');
+        console.log('🎯 Match found! Starting countdown...');
         setTimeout(async () => {
           await this.moveToMatches(result.roomId);
         }, 5000);
       } else {
-        console.log('Created new room, waiting for opponent...');
+        console.log('⏳ Created new room, waiting for opponent...');
       }
 
+      console.log('🔚 Transaction result:', result);
       return result;
     } catch (error) {
-      console.error('Error in findOrCreateRoom:', error);
+      console.error('❌ Error in findOrCreateRoom:', error);
       throw error;
     }
   }

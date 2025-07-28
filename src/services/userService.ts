@@ -33,21 +33,26 @@ export class UserService {
    */
   static async getUserProfile(uid: string): Promise<UserProfile | null> {
     try {
+      console.log('🔍 UserService: Fetching user document for UID:', uid);
       const userRef = doc(db, 'users', uid);
       const userSnap = await getDoc(userRef);
       
       if (userSnap.exists()) {
         const userData = userSnap.data();
-        return {
+        console.log('📊 UserService: Raw user data from Firebase:', userData);
+        
+        // Handle both old and new user document formats
+        const profile: UserProfile = {
           uid,
           email: userData.email,
           displayName: userData.displayName,
           createdAt: userData.createdAt,
           lastLoginAt: userData.lastLoginAt,
-          userTag: userData.userTag,
+          userTag: userData.userTag || userData.email?.split('@')[0] || 'Anonymous',
           inventory: {
-            displayBackgroundEquipped: userData.inventory?.displayBackgroundEquipped || userData.displayBackgroundEquipped || 'default',
-            matchBackgroundEquipped: userData.inventory?.matchBackgroundEquipped || userData.matchBackgroundEquipped || 'default',
+            // Handle both old format (equippedBackground) and new format (inventory.displayBackgroundEquipped)
+            displayBackgroundEquipped: userData.inventory?.displayBackgroundEquipped || userData.equippedBackground || 'default',
+            matchBackgroundEquipped: userData.inventory?.matchBackgroundEquipped || userData.equippedBackground || 'default',
             ownedBackgrounds: userData.inventory?.ownedBackgrounds || userData.ownedBackgrounds || ['default']
           },
           stats: {
@@ -63,11 +68,16 @@ export class UserService {
           },
           updatedAt: userData.updatedAt
         };
+        
+        console.log('✅ UserService: Processed user profile:', profile);
+        return profile;
+      } else {
+        console.log('❌ UserService: User document not found for UID:', uid);
       }
       
       return null;
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error('❌ UserService: Error fetching user profile:', error);
       return null;
     }
   }

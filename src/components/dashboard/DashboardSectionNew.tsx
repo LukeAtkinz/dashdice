@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
 import { MatchmakingService } from '@/services/matchmakingService';
+import { UserService } from '@/services/userService';
 
 const gameConfig = {
   quickfire: { 
@@ -70,19 +71,26 @@ export const DashboardSection: React.FC = () => {
       setIsExiting(true);
       
       try {
-        // Prepare host data for matchmaking
+        // Get complete user profile data instead of using basic auth data
+        console.log('🔍 DashboardSectionNew: Fetching user profile for:', user.uid);
+        const userProfile = await UserService.getUserProfile(user.uid);
+        
+        if (!userProfile) {
+          throw new Error('Could not fetch user profile');
+        }
+        
+        console.log('📊 DashboardSectionNew: User profile fetched:', userProfile);
+        
+        // Prepare host data using complete profile data
         const hostData = {
-          playerDisplayName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
+          playerDisplayName: userProfile.displayName || userProfile.email?.split('@')[0] || 'Anonymous',
           playerId: user.uid,
-          displayBackgroundEquipped: user.equippedBackground || 'default',
-          matchBackgroundEquipped: user.equippedBackground || 'default',
-          playerStats: {
-            bestStreak: 0, // Placeholder until stats system is implemented
-            currentStreak: 0,
-            gamesPlayed: 0,
-            matchWins: 0
-          }
+          displayBackgroundEquipped: userProfile.inventory.displayBackgroundEquipped,
+          matchBackgroundEquipped: userProfile.inventory.matchBackgroundEquipped,
+          playerStats: userProfile.stats
         };
+        
+        console.log('✅ DashboardSectionNew: Host data prepared:', hostData);
 
         // Search for existing room or create new one
         const { roomId, isNewRoom, hasOpponent } = await MatchmakingService.findOrCreateRoom(gameMode, hostData);
