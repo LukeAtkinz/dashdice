@@ -7,7 +7,9 @@ import {
   updateDoc,
   deleteDoc,
   doc,
-  serverTimestamp 
+  serverTimestamp,
+  runTransaction,
+  writeBatch
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -20,9 +22,9 @@ export class MatchmakingService {
     try {
       const q = query(
         collection(db, 'waitingroom'),
-        where('gameData.gameMode', '==', gameMode),
-        where('gameData.gameType', '==', 'Open Server'),
-        where('gameData.playersRequired', '==', 1)
+        where('gameMode', '==', gameMode),
+        where('gameType', '==', 'Open Server'),
+        where('playersRequired', '==', 1)
       );
 
       const querySnapshot = await getDocs(q);
@@ -40,38 +42,11 @@ export class MatchmakingService {
   }
 
   /**
-   * Create new waiting room with exact structure you specified
+   * DEPRECATED: This method should not be used. Use findOrCreateRoom instead.
+   * Keeping for compatibility but it will throw an error.
    */
   static async createWaitingRoom(gameMode: string, hostData: any) {
-    try {
-      const roomData = {
-        gameData: {
-          createdAt: serverTimestamp(),
-          gameMode: gameMode,
-          gameType: "Open Server",
-          playersRequired: 1
-        },
-        hostData: {
-          playerDisplayName: hostData.playerDisplayName,
-          playerId: hostData.playerId,
-          playerDisplayBackgroundEquipped: hostData.displayBackgroundEquipped,
-          playerMatchBackgroundEquipped: hostData.matchBackgroundEquipped,
-          playerStats: {
-            bestStreak: hostData.playerStats.bestStreak,
-            currentStreak: hostData.playerStats.currentStreak,
-            gamesPlayed: hostData.playerStats.gamesPlayed,
-            matchWins: hostData.playerStats.matchWins
-          }
-        }
-      };
-
-      const docRef = await addDoc(collection(db, 'waitingroom'), roomData);
-      console.log('Created waiting room:', docRef.id);
-      return docRef.id;
-    } catch (error) {
-      console.error('Error creating waiting room:', error);
-      throw error;
-    }
+    throw new Error('createWaitingRoom is deprecated. Use findOrCreateRoom instead to prevent duplicate document creation.');
   }
 
   /**
@@ -188,34 +163,114 @@ export class MatchmakingService {
   }
 
   /**
-   * Main matchmaking function
+   * Helper method to convert background string to object structure
+   */
+  private static convertBackgroundToObject(backgroundId: string) {
+    // Convert string background ID to object structure
+    return {
+      file: backgroundId,
+      name: backgroundId,
+      type: "background"
+    };
+  }
+
+  /**
+   * Main matchmaking function with transaction to prevent duplicate room creation
    */
   static async findOrCreateRoom(gameMode: string, hostData: any) {
     try {
-      // First, search for existing room
-      const existingRoom = await this.findOpenRoom(gameMode);
-      
-      if (existingRoom) {
-        console.log('Found existing room:', existingRoom.id);
+      // Use transaction to atomically check and create room to prevent race conditions
+      const result = await runTransaction(db, async (transaction) => {
+        // Search for existing room within transaction
+        const q = query(
+          collection(db, 'waitingroom'),
+          where('gameMode', '==', gameMode),
+          where('gameType', '==', 'Open Server'),
+          where('playersRequired', '==', 1)
+        );
+
+        const querySnapshot = await getDocs(q);
         
-        // Add current user as opponent
-        await this.addOpponentToRoom(existingRoom.id, hostData);
-        
-        // Start 5-second countdown before moving to matches
+        if (!querySnapshot.empty) {
+          // Found existing room - join it
+          const existingDoc = querySnapshot.docs[0];
+          const roomRef = doc(db, 'waitingroom', existingDoc.id);
+          
+          // Convert background strings to objects if needed
+          const displayBg = typeof hostData.displayBackgroundEquipped === 'string' 
+            ? this.convertBackgroundToObject(hostData.displayBackgroundEquipped)
+            : hostData.displayBackgroundEquipped;
+          
+          const matchBg = typeof hostData.matchBackgroundEquipped === 'string'
+            ? this.convertBackgroundToObject(hostData.matchBackgroundEquipped)
+            : hostData.matchBackgroundEquipped;
+          
+          // Add opponent data and update playersRequired
+          transaction.update(roomRef, {
+            opponentData: {
+              displayBackgroundEquipped: displayBg,
+              matchBackgroundEquipped: matchBg,
+              playerDisplayName: hostData.playerDisplayName,
+              playerId: hostData.playerId,
+              playerStats: {
+                bestStreak: hostData.playerStats.bestStreak,
+                currentStreak: hostData.playerStats.currentStreak,
+                gamesPlayed: hostData.playerStats.gamesPlayed,
+                matchWins: hostData.playerStats.matchWins
+              }
+            },
+            playersRequired: 0 // Room is now full
+          });
+          
+          return { roomId: existingDoc.id, isNewRoom: false, hasOpponent: true };
+        } else {
+          // No existing room - create new one
+          // Convert background strings to objects if needed
+          const displayBg = typeof hostData.displayBackgroundEquipped === 'string' 
+            ? this.convertBackgroundToObject(hostData.displayBackgroundEquipped)
+            : hostData.displayBackgroundEquipped;
+          
+          const matchBg = typeof hostData.matchBackgroundEquipped === 'string'
+            ? this.convertBackgroundToObject(hostData.matchBackgroundEquipped)
+            : hostData.matchBackgroundEquipped;
+          
+          const roomData = {
+            createdAt: serverTimestamp(),
+            gameMode: gameMode,
+            gameType: "Open Server",
+            hostData: {
+              displayBackgroundEquipped: displayBg,
+              matchBackgroundEquipped: matchBg,
+              playerDisplayName: hostData.playerDisplayName,
+              playerId: hostData.playerId,
+              playerStats: {
+                bestStreak: hostData.playerStats.bestStreak,
+                currentStreak: hostData.playerStats.currentStreak,
+                gamesPlayed: hostData.playerStats.gamesPlayed,
+                matchWins: hostData.playerStats.matchWins
+              }
+            },
+            playersRequired: 1
+          };
+
+          const newRoomRef = doc(collection(db, 'waitingroom'));
+          transaction.set(newRoomRef, roomData);
+          
+          return { roomId: newRoomRef.id, isNewRoom: true, hasOpponent: false };
+        }
+      });
+
+      // If room is full, start countdown to move to matches
+      if (result.hasOpponent) {
+        console.log('Match found! Starting countdown...');
         setTimeout(async () => {
-          await this.moveToMatches(existingRoom.id);
+          await this.moveToMatches(result.roomId);
         }, 5000);
-        
-        return { roomId: existingRoom.id, isNewRoom: false, hasOpponent: true };
       } else {
-        // Create new room
-        const roomId = await this.createWaitingRoom(gameMode, hostData);
-        
-        // Room is now open for real players to join
-        // No automatic computer opponent - let real players find and join
-        
-        return { roomId, isNewRoom: true, hasOpponent: false };
+        console.log('Created new room, waiting for opponent...');
       }
+
+      return result;
     } catch (error) {
       console.error('Error in findOrCreateRoom:', error);
       throw error;
