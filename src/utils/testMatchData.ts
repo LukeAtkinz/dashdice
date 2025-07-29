@@ -17,7 +17,7 @@ export const createTestMatch = async () => {
       status: 'active',
       startedAt: serverTimestamp(),
       
-      // Host player data (Test Player 1)
+      // Host player data (Test Player 1 - You)
       hostData: {
         displayBackgroundEquipped: {
           name: "All For Glory",
@@ -29,8 +29,8 @@ export const createTestMatch = async () => {
           file: "/backgrounds/New Day.mp4",
           type: "video"
         },
-        playerDisplayName: "TestPlayer1",
-        playerId: "6Py4mehQItZxs2rmWcVWOd7mHqY2", // Use actual user ID as host
+        playerDisplayName: "You (TestPlayer1)",
+        playerId: "test-user-1", // Use test-user-1 as host so you can play
         playerStats: {
           bestStreak: 5,
           currentStreak: 2,
@@ -54,7 +54,7 @@ export const createTestMatch = async () => {
           file: "/backgrounds/Relax.png",
           type: "image"
         },
-        playerDisplayName: "TestPlayer2",
+        playerDisplayName: "TestPlayer2 (AI)",
         playerId: "test-user-2", // Test opponent
         playerStats: {
           bestStreak: 3,

@@ -164,48 +164,50 @@ const DashboardContent: React.FC = () => {
                   </span>
                 </button>
 
-                {/* TEST MATCH Button */}
-                <button
-                  onClick={() => handleSectionChange('match')}
-                  className="flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
-                  title="Test Match System (Creates test players and match)"
-                  style={{
-                    display: "flex",
-                    width: "180px",
-                    height: "48px",
-                    padding: "8px 16px",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: "8px",
-                    borderRadius: "18px",
-                    background: "#FF0080",
-                    border: "none",
-                    opacity: 1
-                  }}
-                >
-                  <img
-                    src="/Design Elements/discount tag.webp"
-                    alt="Shop"
+                {/* TEST MATCH Button - Hidden when in match */}
+                {currentSection !== 'match' && (
+                  <button
+                    onClick={() => handleSectionChange('match')}
+                    className="flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
+                    title="Test Match System (Creates test players and match)"
                     style={{
-                      width: "40px",
-                      height: "40px",
-                      flexShrink: 0,
-                      aspectRatio: "1/1"
-                    }}
-                  />
-                  <span
-                    style={{
-                      color: "#FFF",
-                      fontFamily: "Audiowide",
-                      fontSize: "20px",
-                      fontStyle: "normal",
-                      fontWeight: 400,
-                      lineHeight: "20px"
+                      display: "flex",
+                      width: "180px",
+                      height: "48px",
+                      padding: "8px 16px",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      gap: "8px",
+                      borderRadius: "18px",
+                      background: "#FF0080",
+                      border: "none",
+                      opacity: 1
                     }}
                   >
-                    TEST MATCH
-                  </span>
-                </button>
+                    <img
+                      src="/Design Elements/discount tag.webp"
+                      alt="Shop"
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        flexShrink: 0,
+                        aspectRatio: "1/1"
+                      }}
+                    />
+                    <span
+                      style={{
+                        color: "#FFF",
+                        fontFamily: "Audiowide",
+                        fontSize: "20px",
+                        fontStyle: "normal",
+                        fontWeight: 400,
+                        lineHeight: "20px"
+                      }}
+                    >
+                      TEST MATCH
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
 
