@@ -338,9 +338,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const opponent = isHost ? matchData.opponentData : matchData.hostData;
 
   return (
-    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-screen">
+    <div className="w-full flex flex-col items-center justify-start gap-[2rem] pt-[1rem] pb-[2rem] min-h-screen">
       {/* Game Arena */}
-      <div className="flex-1 flex items-center justify-center p-8">
+      <div className="flex items-center justify-center p-4">
           <div className="flex items-center justify-between gap-8" style={{ width: '95vw' }}>
             
             {/* Player 1 (Current User - Left Side) */}

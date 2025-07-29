@@ -215,7 +215,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
            justifyContent: 'space-between',
            alignItems: 'center',
            alignSelf: 'stretch',
-           backdropFilter: 'blur(20px)'
+           backdropFilter: 'blur(5px)'
          }}>
       {shouldShowAnimation ? (
         // Slot machine reel effect
