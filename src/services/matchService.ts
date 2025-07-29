@@ -264,30 +264,42 @@ export class MatchService {
       let gameOverReason = '';
       
       // Game Rules Processing
-      // Rule 1: Single 1 - Turn over, no score added
+      const currentMultiplier = matchData.gameData.hasDoubleMultiplier || false;
+      
+      // Rule 1: Single 1 - Turn over, no score added (clears multiplier)
       if ((dice1 === 1 && dice2 !== 1) || (dice2 === 1 && dice1 !== 1)) {
         console.log('🎲 Single 1 rolled - Turn over, no score added');
         turnOver = true;
         newTurnScore = 0; // Don't add to player score
       }
-      // Rule 2: Double 6 - Turn over, player score reset to 0
+      // Rule 2: Double 6 - Turn over, player score reset to 0 (clears multiplier)
       else if (dice1 === 6 && dice2 === 6) {
         console.log('🎲 Double 6 rolled - Player score reset to 0');
         turnOver = true;
         resetPlayerScore = true;
         newTurnScore = 0;
       }
-      // Rule 3: Double 1 (Snake Eyes) - +20 to turn score, continue playing
+      // Rule 3: Double 1 (Snake Eyes) - +20 to turn score, continue playing (no multiplier effect)
       else if (dice1 === 1 && dice2 === 1) {
         console.log('🎲 Snake Eyes rolled - +20 to turn score');
         newTurnScore = currentTurnScore + 20;
         turnOver = false; // Continue playing
       }
-      // Normal scoring - add dice sum to turn score
+      // Rule 4: Other Doubles (22, 33, 44, 55) - Set 2x multiplier and add dice sum
+      else if (dice1 === dice2) {
+        const diceSum = dice1 + dice2;
+        const scoreToAdd = currentMultiplier ? diceSum * 2 : diceSum;
+        newTurnScore = currentTurnScore + scoreToAdd;
+        console.log(`🎲 Double ${dice1}s rolled - ${diceSum} points${currentMultiplier ? ' (2x multiplier already active)' : ''}, 2x multiplier activated for rest of turn`);
+        turnOver = false; // Continue playing
+        // Multiplier will be set in updates below
+      }
+      // Normal scoring - add dice sum to turn score (apply multiplier if active)
       else {
         const diceSum = dice1 + dice2;
-        newTurnScore = currentTurnScore + diceSum;
-        console.log(`🎲 Normal roll: ${dice1} + ${dice2} = ${diceSum}, Turn score: ${newTurnScore}`);
+        const scoreToAdd = currentMultiplier ? diceSum * 2 : diceSum;
+        newTurnScore = currentTurnScore + scoreToAdd;
+        console.log(`🎲 Normal roll: ${dice1} + ${dice2} = ${diceSum}${currentMultiplier ? ' (x2 = ' + scoreToAdd + ')' : ''}, Turn score: ${newTurnScore}`);
         turnOver = false; // Continue playing
       }
       
@@ -297,6 +309,16 @@ export class MatchService {
         'gameData.rollPhase': deleteField(), // Use deleteField() instead of null
         'gameData.turnScore': newTurnScore,
       };
+      
+      // Handle double multiplier logic
+      if (dice1 === dice2 && dice1 !== 1 && dice1 !== 6) {
+        // Set multiplier for doubles (22, 33, 44, 55)
+        updates['gameData.hasDoubleMultiplier'] = true;
+      } else if (turnOver) {
+        // Clear multiplier when turn ends
+        updates['gameData.hasDoubleMultiplier'] = false;
+      }
+      // Note: Snake eyes (11) doesn't affect multiplier state
       
       // Handle turn over scenarios
       if (turnOver) {
@@ -365,6 +387,7 @@ export class MatchService {
       // Prepare updates
       const updates: any = {
         'gameData.turnScore': 0,
+        'gameData.hasDoubleMultiplier': false, // Clear multiplier when banking
       };
       
       // Update player score

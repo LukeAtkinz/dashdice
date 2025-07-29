@@ -42,6 +42,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   const getGameRuleResult = () => {
     const dice1 = matchData.gameData.diceOne;
     const dice2 = matchData.gameData.diceTwo;
+    const hasMultiplier = matchData.gameData.hasDoubleMultiplier || false;
     
     if (!dice1 || !dice2) return null;
     
@@ -57,10 +58,26 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
     else if (dice1 === 1 && dice2 === 1) {
       return { rule: 'SNAKE EYES', result: '+20 to turn score, continue playing', color: 'text-yellow-400' };
     }
-    // Normal scoring
+    // Other Doubles (22, 33, 44, 55)
+    else if (dice1 === dice2) {
+      const sum = dice1 + dice2;
+      const actualScore = hasMultiplier ? sum * 2 : sum;
+      return { 
+        rule: `DOUBLE ${dice1}s`, 
+        result: `+${actualScore} to turn score, 2x MULTIPLIER ACTIVE!`, 
+        color: 'text-purple-400' 
+      };
+    }
+    // Normal scoring (with multiplier if active)
     else {
       const sum = dice1 + dice2;
-      return { rule: 'NORMAL', result: `+${sum} to turn score`, color: 'text-green-400' };
+      const actualScore = hasMultiplier ? sum * 2 : sum;
+      const multiplierText = hasMultiplier ? ' (2x MULTIPLIER)' : '';
+      return { 
+        rule: 'NORMAL' + multiplierText, 
+        result: `+${actualScore} to turn score`, 
+        color: hasMultiplier ? 'text-blue-400' : 'text-green-400' 
+      };
     }
   };
 
@@ -75,7 +92,12 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <div className="inline-block px-8 py-4 bg-white/10 border-2 border-white/30 rounded-2xl backdrop-blur-sm min-w-[300px]">
+        <div 
+          className="inline-block px-8 py-4 border-2 border-white/30 rounded-2xl backdrop-blur-sm min-w-[300px]"
+          style={{
+            background: "linear-gradient(135deg, rgba(120, 119, 198, 0.6) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(120, 119, 198, 0.6) 100%), linear-gradient(180deg, rgba(53, 51, 205, 0.8) 0%, rgba(114, 9, 183, 0.8) 100%)"
+          }}
+        >
           {!isMyTurn ? (
             // Show "YOUR TURN" when it's opponent's turn  
             <motion.div 
@@ -119,7 +141,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               </p>
             </motion.div>
           ) : (
-            // Default state - show turn instructions
+            // Default state - show turn instructions (with multiplier status if active)
             <motion.div 
               className="text-center"
               initial={{ opacity: 0 }}
@@ -132,12 +154,21 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               >
                 YOUR TURN
               </p>
-              <p 
-                className="text-lg text-gray-300 mt-1"
-                style={{ fontFamily: "Audiowide" }}
-              >
-                Roll the dice to play
-              </p>
+              {matchData.gameData.hasDoubleMultiplier ? (
+                <p 
+                  className="text-lg text-purple-400 mt-1 animate-pulse"
+                  style={{ fontFamily: "Audiowide" }}
+                >
+                  🔥 2x MULTIPLIER ACTIVE! 🔥
+                </p>
+              ) : (
+                <p 
+                  className="text-lg text-gray-300 mt-1"
+                  style={{ fontFamily: "Audiowide" }}
+                >
+                  Roll the dice to play
+                </p>
+              )}
             </motion.div>
           )}
         </div>

@@ -66,6 +66,7 @@ export interface MatchData {
     turnDeciderDice?: number;
     winner?: string;
     gameOverReason?: string;
+    hasDoubleMultiplier?: boolean; // 2x multiplier active when player rolls doubles
   };
   
   // Match metadata
@@ -93,7 +94,8 @@ export const GAME_RULES = {
   SINGLE_ONE: 'Single 1: Turn over, no score added to player total',
   DOUBLE_SIX: 'Double 6: Turn over, player score reset to 0',
   SNAKE_EYES: 'Double 1 (Snake Eyes): +20 to turn score, continue playing',
-  NORMAL_SCORING: 'Normal: Add dice sum to turn score',
+  DOUBLE_MULTIPLIER: 'Any Other Double: 2x multiplier for rest of turn (22, 33, 44, 55)',
+  NORMAL_SCORING: 'Normal: Add dice sum to turn score (2x if multiplier active)',
   BANKING: 'Bank score: Add turn score to player total, switch turns',
   WIN_CONDITION: 'First to reach round objective wins',
 } as const;
