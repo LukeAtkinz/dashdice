@@ -277,7 +277,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       startSlotMachineAnimation('turnDecider', matchData.gameData.turnDeciderDice, 1500);
     }
 
-    // Gameplay dice animations
+    // Gameplay dice animations - Simplified with immediate values
     if (matchData.gameData.isRolling && matchData.gameData.rollPhase === 'dice1' && 
         matchData.gameData.diceOne > 0 && !dice1Animation.isSpinning) {
       // 🎰 Animation Durations per specification:

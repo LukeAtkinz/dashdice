@@ -211,38 +211,31 @@ export class MatchService {
         throw new Error('Not your turn or invalid game phase');
       }
       
-      // Start rolling animation
+      // 🎰 Generate dice values upfront for proper animation coordination
+      const dice1 = Math.floor(Math.random() * 6) + 1;
+      const dice2 = Math.floor(Math.random() * 6) + 1;
+      
+      // Start rolling animation with dice values provided immediately
       await updateDoc(matchRef, {
         'gameData.isRolling': true,
         'gameData.rollPhase': 'dice1',
-        'gameData.diceOne': 0,
-        'gameData.diceTwo': 0,
+        'gameData.diceOne': dice1, // Provide value immediately for animation
+        'gameData.diceTwo': 0, // Will be revealed when dice2 phase starts
       });
       
-      // Roll first dice after animation delay
+      // 🎰 Wait for Dice 1 animation (1200ms) then reveal Dice 2
       setTimeout(async () => {
-        const dice1 = Math.floor(Math.random() * 6) + 1;
-        
         await updateDoc(matchRef, {
-          'gameData.diceOne': dice1,
-          'gameData.rollPhase': 'dice2'
+          'gameData.rollPhase': 'dice2',
+          'gameData.diceTwo': dice2 // Provide dice2 value for animation
         });
         
-        // Roll second dice after first dice settles
+        // 🎰 Wait for Dice 2 animation (1200ms) then process game rules
         setTimeout(async () => {
-          const dice2 = Math.floor(Math.random() * 6) + 1;
-          
-          await updateDoc(matchRef, {
-            'gameData.diceTwo': dice2
-          });
-          
-          // Process game rules after second dice settles
-          setTimeout(async () => {
-            await this.processGameRules(matchId, dice1, dice2, isHost);
-          }, 1500); // Wait for dice animation to complete
-          
-        }, 1500); // Wait for first dice to settle
-      }, 500); // Initial delay before first dice
+          await this.processGameRules(matchId, dice1, dice2, isHost);
+        }, 1200); // Wait for dice2 animation to complete (1200ms)
+        
+      }, 1200); // Wait for dice1 animation to complete (1200ms)
       
     } catch (error) {
       console.error('❌ Error rolling dice:', error);
