@@ -7,6 +7,7 @@ import { NavigationProvider, useNavigation } from '@/context/NavigationContext';
 import { SectionTransition } from '@/components/layout/SectionTransition';
 import { DashboardSection } from '@/components/dashboard/DashboardSectionNew';
 import { MatchSection } from '@/components/dashboard/MatchSectionNew';
+import { Match } from '@/components/dashboard/Match';
 import { InventorySection } from '@/components/dashboard/InventoryReference';
 import { ProfileSection } from '@/components/dashboard/ProfileSection';
 import { SettingsSection } from '@/components/dashboard/SettingsSection';
@@ -140,8 +141,9 @@ const DashboardContent: React.FC = () => {
 
                 {/* SHOP Button */}
                 <button
+                  onClick={() => handleSectionChange('match')}
                   className="flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
-                  title="Coming Soon!"
+                  title="Shop Development (Match.tsx)"
                   style={{
                     display: "flex",
                     width: "180px",
@@ -153,7 +155,7 @@ const DashboardContent: React.FC = () => {
                     borderRadius: "18px",
                     background: "#FF0080",
                     border: "none",
-                    opacity: 0.7
+                    opacity: 1
                   }}
                 >
                   <img
@@ -283,9 +285,9 @@ const DashboardContent: React.FC = () => {
               >
                 {currentSection === 'dashboard' && <DashboardSection />}
                 {currentSection === 'match' && (
-                  <MatchSection 
+                  <Match 
                     gameMode={sectionParams.gameMode}
-                    actionType={sectionParams.actionType}
+                    roomId="dev-room-123"
                   />
                 )}
                 {currentSection === 'inventory' && <InventorySection />}
