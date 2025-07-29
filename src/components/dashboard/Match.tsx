@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
-import { useBackground } from '@/context/BackgroundContext';
 import { MatchService } from '@/services/matchService';
 import { MatchData } from '@/types/match';
 import { useNavigation } from '@/context/NavigationContext';
@@ -18,7 +17,6 @@ interface MatchProps {
 
 export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const { user } = useAuth();
-  const { DisplayBackgroundEquip } = useBackground();
   const { setCurrentSection } = useNavigation();
   
   const [matchData, setMatchData] = useState<MatchData | null>(null);
@@ -258,11 +256,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     }
   };
 
-  // Handle leaving match
-  const handleLeaveMatch = () => {
-    setCurrentSection('dashboard');
-  };
-
   // Trigger dice animations based on match data
   useEffect(() => {
     if (!matchData) return;
@@ -328,7 +321,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           </h2>
           <p className="text-red-300 mb-6">{error || 'Match not found'}</p>
           <button
-            onClick={handleLeaveMatch}
+            onClick={() => setCurrentSection('dashboard')}
             className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
             style={{ fontFamily: "Audiowide" }}
           >
@@ -344,90 +337,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
   const opponent = isHost ? matchData.opponentData : matchData.hostData;
 
-  // Arena background style
-  const arenaBackgroundStyle = DisplayBackgroundEquip?.file ? {
-    backgroundImage: DisplayBackgroundEquip.type !== 'video' ? `url(${DisplayBackgroundEquip.file})` : undefined,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat'
-  } : {
-    background: "radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)"
-  };
-
-  // Player background style
-  const getPlayerBackgroundStyle = (background: any) => {
-    if (!background?.url) {
-      return {
-        background: "radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)"
-      };
-    }
-    
-    return background.isVideo ? {} : {
-      backgroundImage: `url(${background.url})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat'
-    };
-  };
-
-  // Mock player backgrounds for demo
-  const playerBackgrounds = [
-    {
-      id: 'All For Glory',
-      name: 'All For Glory',
-      url: '/backgrounds/All For Glory.jpg',
-      isVideo: false
-    },
-    {
-      id: 'Long Road Ahead',
-      name: 'Long Road Ahead', 
-      url: '/backgrounds/Long Road Ahead.jpg',
-      isVideo: false
-    }
-  ];
-
   return (
-    <div 
-      className="w-full h-full relative overflow-hidden"
-      style={arenaBackgroundStyle}
-    >
-      {/* Arena Background Video */}
-      {DisplayBackgroundEquip?.file && DisplayBackgroundEquip.type === 'video' && (
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="metadata"
-          className="absolute inset-0 w-full h-full object-cover -z-10"
-        >
-          <source src={DisplayBackgroundEquip.file} type="video/mp4" />
-        </video>
-      )}
-
-      {/* Main Game Layout */}
-      <div className="relative w-full h-full flex flex-col">
-        
-        {/* Top Navigation Bar */}
-        <div className="absolute top-0 left-0 right-0 z-50 p-4">
-          <div className="flex justify-between items-center">
-            <button
-              onClick={handleLeaveMatch}
-              className="flex items-center gap-2 px-4 py-2 bg-black/50 hover:bg-black/70 text-white rounded-lg backdrop-blur-sm transition-colors"
-              style={{ fontFamily: 'Audiowide' }}
-            >
-              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M19 7v4H5.83l2.88-2.88-1.42-1.41L2 12l5.29 5.29 1.42-1.41L5.83 13H19v4l5-5-5-5z"/>
-              </svg>
-              Exit Match
-            </button>
-            
-            <div className="w-32"></div> {/* Spacer for center alignment */}
-          </div>
-        </div>
-
-        {/* Game Arena */}
-        <div className="flex-1 flex items-center justify-center p-8 pt-24">
+    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-screen">
+      {/* Game Arena */}
+      <div className="flex-1 flex items-center justify-center p-8">
           <div className="flex items-center justify-between gap-8" style={{ width: '95vw' }}>
             
             {/* Player 1 (Current User - Left Side) */}
@@ -450,26 +363,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   height: '500px'
                 }}
               >
-                {/* Player Background */}
-                <div 
-                  className="absolute inset-0"
-                  style={getPlayerBackgroundStyle(playerBackgrounds[0])}
-                >
-                  {/* Background Video */}
-                  {playerBackgrounds[0]?.isVideo && (
-                    <video
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      preload="metadata"
-                      className="absolute inset-0 w-full h-full object-cover"
-                    >
-                      <source src={playerBackgrounds[0].url} type="video/mp4" />
-                    </video>
-                  )}
-                </div>
-
                 {/* Player Info Overlay */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   {/* Match Score - Large and Centered */}
@@ -572,7 +465,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               {matchData.gameData.gamePhase === 'gameOver' && (
                 <GameOverPhase
                   matchData={matchData}
-                  onLeaveMatch={handleLeaveMatch}
+                  onLeaveMatch={() => setCurrentSection('dashboard')}
                 />
               )}
             </div>
@@ -597,26 +490,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   height: '500px'
                 }}
               >
-                {/* Player Background */}
-                <div 
-                  className="absolute inset-0"
-                  style={getPlayerBackgroundStyle(playerBackgrounds[1])}
-                >
-                  {/* Background Video */}
-                  {playerBackgrounds[1]?.isVideo && (
-                    <video
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      preload="metadata"
-                      className="absolute inset-0 w-full h-full object-cover"
-                    >
-                      <source src={playerBackgrounds[1].url} type="video/mp4" />
-                    </video>
-                  )}
-                </div>
-
                 {/* Player Info Overlay */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   {/* Match Score - Large and Centered */}
@@ -672,7 +545,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
           </div>
         </div>
-      </div>
     </div>
   );
 };
