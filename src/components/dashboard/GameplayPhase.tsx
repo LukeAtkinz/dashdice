@@ -68,6 +68,81 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
 
   return (
     <div className="flex flex-col items-center justify-center">
+      {/* Always Visible Game Status Box - Top of Dice Container */}
+      <motion.div 
+        className="mb-6"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <div className="inline-block px-8 py-4 bg-white/10 border-2 border-white/30 rounded-2xl backdrop-blur-sm min-w-[300px]">
+          {!isMyTurn ? (
+            // Show "YOUR TURN" when it's opponent's turn  
+            <motion.div 
+              className="text-center"
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.2 }}
+            >
+              <p 
+                className="text-2xl font-bold text-yellow-400" 
+                style={{ fontFamily: "Audiowide" }}
+              >
+                YOUR TURN
+              </p>
+              <p 
+                className="text-lg text-gray-300 mt-1"
+                style={{ fontFamily: "Audiowide" }}
+              >
+                Waiting for {opponent.playerDisplayName}
+              </p>
+            </motion.div>
+          ) : gameRuleResult && !matchData.gameData.isRolling && matchData.gameData.diceOne > 0 && matchData.gameData.diceTwo > 0 ? (
+            // Show game rule result when dice have been rolled
+            <motion.div 
+              className="text-center"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <p 
+                className={`text-xl font-bold ${gameRuleResult.color}`} 
+                style={{ fontFamily: "Audiowide" }}
+              >
+                {gameRuleResult.rule}
+              </p>
+              <p 
+                className="text-lg text-white mt-1"
+                style={{ fontFamily: "Audiowide" }}
+              >
+                {gameRuleResult.result}
+              </p>
+            </motion.div>
+          ) : (
+            // Default state - show turn instructions
+            <motion.div 
+              className="text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
+            >
+              <p 
+                className="text-xl font-bold text-blue-400" 
+                style={{ fontFamily: "Audiowide" }}
+              >
+                YOUR TURN
+              </p>
+              <p 
+                className="text-lg text-gray-300 mt-1"
+                style={{ fontFamily: "Audiowide" }}
+              >
+                Roll the dice to play
+              </p>
+            </motion.div>
+          )}
+        </div>
+      </motion.div>
+
       {/* Dice Container with Turn Score Between */}
       <div className="relative flex flex-col gap-4 mb-8">
         {/* Dice 1 - Slot Machine */}
@@ -165,30 +240,6 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           </div>
         )}
       </div>
-
-      {/* Game Rule Result */}
-      {gameRuleResult && !matchData.gameData.isRolling && matchData.gameData.diceOne > 0 && matchData.gameData.diceTwo > 0 && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center mb-8"
-        >
-          <div className="bg-white/10 rounded-2xl p-6 backdrop-blur-sm border border-white/20">
-            <p 
-              className={`text-lg font-bold ${gameRuleResult.color}`} 
-              style={{ fontFamily: "Audiowide" }}
-            >
-              {gameRuleResult.rule}
-            </p>
-            <p 
-              className="text-white mt-1"
-              style={{ fontFamily: "Audiowide" }}
-            >
-              {gameRuleResult.result}
-            </p>
-          </div>
-        </motion.div>
-      )}
     </div>
   );
 };
