@@ -285,12 +285,12 @@ export class MatchService {
         newTurnScore = currentTurnScore + 20;
         turnOver = false; // Continue playing
       }
-      // Rule 4: Other Doubles (22, 33, 44, 55) - Set 2x multiplier and add dice sum
+      // Rule 4: Other Doubles (22, 33, 44, 55) - Set 2x multiplier and add dice sum normally
       else if (dice1 === dice2) {
         const diceSum = dice1 + dice2;
-        const scoreToAdd = currentMultiplier ? diceSum * 2 : diceSum;
-        newTurnScore = currentTurnScore + scoreToAdd;
-        console.log(`🎲 Double ${dice1}s rolled - ${diceSum} points${currentMultiplier ? ' (2x multiplier already active)' : ''}, 2x multiplier activated for rest of turn`);
+        // Doubles themselves don't get multiplied - they just activate the multiplier for future rolls
+        newTurnScore = currentTurnScore + diceSum;
+        console.log(`🎲 Double ${dice1}s rolled - ${diceSum} points added, 2x multiplier activated for rest of turn`);
         turnOver = false; // Continue playing
         // Multiplier will be set in updates below
       }
