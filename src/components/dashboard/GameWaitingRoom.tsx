@@ -72,6 +72,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const [countdown, setCountdown] = useState<number | null>(null);
   const [opponentJoined, setOpponentJoined] = useState(false);
   const [vsCountdown, setVsCountdown] = useState<number | null>(null);
+  const [isLeaving, setIsLeaving] = useState(false); // Add flag to prevent multiple leave operations
 
   // Game mode display configurations
   const gameModeConfig = {
@@ -398,7 +399,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
   // Handle leaving the game
   const handleLeave = async () => {
+    if (isLeaving) {
+      console.log('⏸️ GameWaitingRoom: Already leaving, ignoring additional leave request');
+      return; // Prevent multiple leave attempts
+    }
+    
     try {
+      setIsLeaving(true);
       console.log('🚪 GameWaitingRoom: Leaving game, waiting room entry:', waitingRoomEntry?.id);
       
       if (waitingRoomEntry?.id) {
@@ -1263,7 +1270,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         {/* Leave Button */}
         <button
           onClick={handleLeave}
-          disabled={vsCountdown !== null || opponentJoined}
+          disabled={vsCountdown !== null || opponentJoined || isLeaving}
           style={{
             display: 'flex',
             padding: '20px',
@@ -1271,7 +1278,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             alignItems: 'center',
             gap: '10px',
             borderRadius: '18px',
-            background: (vsCountdown !== null || opponentJoined) ? '#666666' : '#FF0080',
+            background: (vsCountdown !== null || opponentJoined || isLeaving) ? '#666666' : '#FF0080',
             backdropFilter: 'blur(20px)',
             color: '#FFF',
             fontFamily: 'Audiowide',
@@ -1280,26 +1287,27 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             fontWeight: 400,
             lineHeight: '30px',
             border: 'none',
-            cursor: (vsCountdown !== null || opponentJoined) ? 'not-allowed' : 'pointer',
-            opacity: (vsCountdown !== null || opponentJoined) ? 0.5 : 1,
+            cursor: (vsCountdown !== null || opponentJoined || isLeaving) ? 'not-allowed' : 'pointer',
+            opacity: (vsCountdown !== null || opponentJoined || isLeaving) ? 0.5 : 1,
             textTransform: 'uppercase',
             transition: 'all 0.3s ease'
           }}
           onMouseEnter={(e) => {
-            if (vsCountdown === null && !opponentJoined) {
+            if (vsCountdown === null && !opponentJoined && !isLeaving) {
               e.currentTarget.style.transform = 'scale(1.05)';
               e.currentTarget.style.boxShadow = '0 8px 25px rgba(255, 0, 128, 0.4)';
             }
           }}
           onMouseLeave={(e) => {
-            if (vsCountdown === null && !opponentJoined) {
+            if (vsCountdown === null && !opponentJoined && !isLeaving) {
               e.currentTarget.style.transform = 'scale(1)';
               e.currentTarget.style.boxShadow = 'none';
             }
           }}
         >
           {vsCountdown !== null ? 'Starting Game...' : 
-           opponentJoined ? 'Match Found!' : 'Leave Game'}
+           opponentJoined ? 'Match Found!' : 
+           isLeaving ? 'Leaving...' : 'Leave Game'}
         </button>
       </div>
     </div>

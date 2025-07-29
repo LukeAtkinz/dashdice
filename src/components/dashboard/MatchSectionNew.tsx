@@ -34,17 +34,22 @@ export const MatchSection: React.FC<MatchSectionProps> = ({
         setIsTransitioning(false);
       }, 1200);
     }
-  }, [initialGameMode, initialActionType, showWaitingRoom]);
+  }, [initialGameMode, initialActionType]); // Removed showWaitingRoom from dependencies to prevent retrigger
 
   const handleBackFromWaitingRoom = () => {
     console.log('🔙 MatchSectionNew: Handling back from waiting room');
     setIsTransitioning(true);
+    
+    // Clear the state to prevent re-triggering
+    setSelectedGameMode('classic');
+    setSelectedActionType('live');
+    
     setTimeout(() => {
       setShowWaitingRoom(false);
       setIsTransitioning(false);
       console.log('✅ MatchSectionNew: Returned to dashboard with smooth animation');
-      setCurrentSection('dashboard'); // Go back to dashboard instead of match section
-    }, 800);
+      setCurrentSection('dashboard', {}); // Explicitly clear params
+    }, 300); // Reduced from 800ms to 300ms for quicker transition
   };
 
   const handleStartGame = (gameMode: string, actionType: 'live' | 'custom') => {
@@ -97,7 +102,7 @@ export const MatchSection: React.FC<MatchSectionProps> = ({
     }
   };
 
-  // Video game transition overlay
+  // Simple transition overlay
   if (isTransitioning) {
     return (
       <motion.div 
@@ -105,69 +110,20 @@ export const MatchSection: React.FC<MatchSectionProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
         style={{
-          background: "radial-gradient(circle at center, rgba(var(--ui-button-bg), 0.4) 0%, rgba(0, 0, 0, 0.9) 100%)"
+          background: "rgba(0, 0, 0, 0.8)"
         }}
       >
         <motion.div
           className="text-center"
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
         >
-          <motion.div
-            className="text-8xl mb-6"
-            animate={{ 
-              rotate: [0, 360],
-              scale: [1, 1.2, 1]
-            }}
-            transition={{ 
-              rotate: { duration: 2.5, repeat: Infinity, ease: "linear" },
-              scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
-            }}
-          >
-            🎮
-          </motion.div>
-          <motion.div
-            className="text-3xl text-white font-audiowide mb-3"
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-          >
-            LOADING GAME MODE
-          </motion.div>
-          <motion.div
-            className="text-lg text-white/60"
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.7, duration: 0.5 }}
-          >
-            Preparing your battlefield...
-          </motion.div>
-          <motion.div
-            className="mt-6 flex justify-center"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.9, duration: 0.3 }}
-          >
-            <div className="flex space-x-2">
-              {[0, 1, 2].map((i) => (
-                <motion.div
-                  key={i}
-                  className="w-3 h-3 rounded-full bg-white"
-                  animate={{
-                    scale: [1, 1.5, 1],
-                    opacity: [0.3, 1, 0.3]
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    delay: i * 0.2
-                  }}
-                />
-              ))}
-            </div>
-          </motion.div>
+          <div className="text-2xl text-white font-audiowide">
+            Transitioning...
+          </div>
         </motion.div>
       </motion.div>
     );
