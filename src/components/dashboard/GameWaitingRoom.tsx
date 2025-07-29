@@ -44,6 +44,16 @@ interface WaitingRoomEntry {
       matchWins: number;
     };
   };
+  gameData?: {
+    type: string;
+    settings: any;
+    turnDecider: number;
+    turnScore: number;
+    diceOne: number;
+    diceTwo: number;
+    roundObjective: number;
+    startingScore: number;
+  };
 }
 
 export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
@@ -376,21 +386,53 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     try {
       if (!waitingRoomEntry?.id) return;
 
-      // Create match document
+      // Get round objective based on game mode
+      const getRoundObjective = (mode: string): number => {
+        switch (mode.toLowerCase()) {
+          case 'quickfire': return 50;
+          case 'classic': return 100;
+          case 'zerohour': return 150;
+          case 'lastline': return 200;
+          default: return 100;
+        }
+      };
+
+      // Create enhanced match document with game phase
       const matchData = {
         ...waitingRoomEntry,
         status: 'active',
         createdAt: serverTimestamp(),
-        startedAt: serverTimestamp()
+        startedAt: serverTimestamp(),
+        gameData: {
+          // Use existing gameData if available, otherwise create new
+          type: waitingRoomEntry.gameData?.type || 'dice',
+          settings: waitingRoomEntry.gameData?.settings || {},
+          turnDecider: waitingRoomEntry.gameData?.turnDecider || Math.floor(Math.random() * 2) + 1, // Random 1 or 2
+          turnScore: 0,
+          diceOne: 0,
+          diceTwo: 0,
+          roundObjective: waitingRoomEntry.gameData?.roundObjective || getRoundObjective(waitingRoomEntry.gameMode),
+          startingScore: waitingRoomEntry.gameData?.startingScore || 0,
+          status: 'active',
+          startedAt: serverTimestamp(),
+          // Initialize game phase for new match system
+          gamePhase: 'turnDecider',
+          isRolling: false
+          // Don't include undefined optional fields
+        }
       };
 
-      await addDoc(collection(db, 'matches'), matchData);
+      const matchDocRef = await addDoc(collection(db, 'matches'), matchData);
       
       // Remove from waiting room
       await deleteDoc(doc(db, 'waitingroom', waitingRoomEntry.id));
       
-      // Navigate to match (placeholder for now)
-      console.log('Would navigate to Match.js with data:', matchData);
+      // Navigate to Match component with match ID
+      console.log('🎮 Navigating to Match component with ID:', matchDocRef.id);
+      setCurrentSection('match', {
+        gameMode: waitingRoomEntry.gameMode,
+        matchId: matchDocRef.id
+      });
       
     } catch (err) {
       console.error('Error moving to matches:', err);

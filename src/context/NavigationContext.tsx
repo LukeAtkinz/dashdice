@@ -2,11 +2,12 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-export type DashboardSection = 'dashboard' | 'match' | 'inventory' | 'profile' | 'settings';
+export type DashboardSection = 'dashboard' | 'waiting-room' | 'match' | 'inventory' | 'profile' | 'settings';
 
 interface SectionParams {
   gameMode?: string;
   actionType?: 'live' | 'custom';
+  matchId?: string; // Add matchId for match navigation
 }
 
 interface NavigationContextType {
