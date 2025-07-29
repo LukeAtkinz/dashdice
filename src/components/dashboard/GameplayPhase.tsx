@@ -269,7 +269,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             <button
               onClick={onRollDice}
               disabled={!canRoll}
-              className={`px-8 py-4 rounded-xl text-xl font-bold transition-all transform ${
+              className={`px-12 py-6 rounded-xl text-2xl font-bold transition-all transform ${
                 canRoll
                   ? 'text-white hover:scale-105'
                   : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
@@ -285,7 +285,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             <button
               onClick={onBankScore}
               disabled={!canBank}
-              className={`px-8 py-4 rounded-xl text-xl font-bold transition-all transform ${
+              className={`px-12 py-6 rounded-xl text-2xl font-bold transition-all transform ${
                 canBank
                   ? 'text-white hover:scale-105'
                   : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'

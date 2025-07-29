@@ -193,7 +193,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         reelSpeed: 0.1 // Reset reel speed
       });
 
-      // 🎰 Tick-Back Delay - 300ms pause before showing final result
+      // 🎰 Tick-Back Delay - 150ms pause before showing final result
       setTimeout(() => {
         setDiceState({
           isSpinning: false,
@@ -201,7 +201,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           finalNumber: finalValue,
           reelSpeed: 0.1 // Reset reel speed
         });
-      }, 300); // Exactly 300ms tick-back delay
+      }, 150); // Reduced from 300ms to 150ms for smoother transition
       
     }, animationDuration);
   };
