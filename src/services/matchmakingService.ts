@@ -166,12 +166,41 @@ export class MatchmakingService {
    * Helper method to convert background string to object structure
    */
   private static convertBackgroundToObject(backgroundId: string) {
-    // Convert string background ID to object structure
-    return {
-      file: backgroundId,
-      name: backgroundId,
-      type: "background"
-    };
+    // Available backgrounds reference
+    const availableBackgrounds = [
+      { name: "All For Glory", file: "/backgrounds/All For Glory.jpg", type: "image" },
+      { name: "New Day", file: "/backgrounds/New Day.mp4", type: "video" },
+      { name: "On A Mission", file: "/backgrounds/On A Mission.mp4", type: "video" },
+      { name: "Relax", file: "/backgrounds/Relax.png", type: "image" },
+      { name: "Underwater", file: "/backgrounds/Underwater.mp4", type: "video" },
+      { name: "Long Road Ahead", file: "/backgrounds/Long Road Ahead.jpg", type: "image" }
+    ];
+    
+    console.log('🔧 MatchmakingService: Converting background string to object:', backgroundId);
+    
+    // If 'default' or no background, use Relax as default
+    if (!backgroundId || backgroundId === 'default') {
+      const defaultBg = availableBackgrounds.find(bg => bg.name === "Relax");
+      console.log('🔧 MatchmakingService: Using default background (Relax):', defaultBg);
+      return defaultBg;
+    }
+    
+    // Try to find by name first
+    let background = availableBackgrounds.find(bg => bg.name === backgroundId);
+    
+    // If not found by name, try to find by file path
+    if (!background) {
+      background = availableBackgrounds.find(bg => bg.file === backgroundId);
+    }
+    
+    // If still not found, return default
+    if (!background) {
+      console.log('⚠️ MatchmakingService: Background not found, using default:', backgroundId);
+      background = availableBackgrounds.find(bg => bg.name === "Relax");
+    }
+    
+    console.log('✅ MatchmakingService: Converted background:', background);
+    return background;
   }
 
   /**

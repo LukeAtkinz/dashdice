@@ -51,9 +51,9 @@ export class UserService {
           userTag: userData.userTag || userData.email?.split('@')[0] || 'Anonymous',
           inventory: {
             // Read from inventory object only
-            displayBackgroundEquipped: userData.inventory?.displayBackgroundEquipped || 'default',
-            matchBackgroundEquipped: userData.inventory?.matchBackgroundEquipped || 'default',
-            ownedBackgrounds: userData.inventory?.ownedBackgrounds || userData.ownedBackgrounds || ['default']
+            displayBackgroundEquipped: userData.inventory?.displayBackgroundEquipped || 'Relax',
+            matchBackgroundEquipped: userData.inventory?.matchBackgroundEquipped || 'Relax',
+            ownedBackgrounds: userData.inventory?.ownedBackgrounds || userData.ownedBackgrounds || ['Relax']
           },
           stats: {
             bestStreak: userData.stats?.bestStreak || 0,

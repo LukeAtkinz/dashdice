@@ -115,21 +115,49 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
   const [DisplayBackgroundEquip, setDisplayBackgroundEquipState] = useState<Background | null>(null);
   const [MatchBackgroundEquip, setMatchBackgroundEquipState] = useState<Background | null>(null);
 
+  // Helper function to ensure background is a complete object
+  const ensureCompleteBackgroundObject = (background: Background | string | null): Background | null => {
+    if (!background) return null;
+    
+    // If it's already a complete object, return it
+    if (typeof background === 'object' && background.name && background.file && background.type) {
+      return background;
+    }
+    
+    // If it's a string, try to find the complete object
+    if (typeof background === 'string') {
+      return findBackgroundByName(background);
+    }
+    
+    console.warn('Invalid background format:', background);
+    return null;
+  };
+
   // Enhanced setter functions that persist to Firebase
   const setDisplayBackgroundEquip = async (background: Background | null) => {
     try {
-      setDisplayBackgroundEquipState(background);
+      // Ensure we have a complete background object
+      const completeBackground = ensureCompleteBackgroundObject(background);
+      setDisplayBackgroundEquipState(completeBackground);
       
-      if (user && background) {
-        console.log('BackgroundContext: Saving display background to Firebase:', background);
+      if (user && completeBackground) {
+        console.log('BackgroundContext: Saving display background to Firebase:', completeBackground);
         const userRef = doc(db, 'users', user.uid);
         
         // Save only to the inventory.displayBackgroundEquipped field
         await updateDoc(userRef, {
-          'inventory.displayBackgroundEquipped': background.name
+          'inventory.displayBackgroundEquipped': {
+            name: completeBackground.name,
+            file: completeBackground.file,
+            type: completeBackground.type
+          }
         });
         
-        console.log('✅ Display background saved to Firebase');
+        console.log('✅ Display background saved to Firebase successfully:', {
+          name: completeBackground.name,
+          file: completeBackground.file,
+          type: completeBackground.type
+        });
       }
     } catch (error) {
       console.error('❌ Error saving display background to Firebase:', error);
@@ -138,18 +166,28 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
 
   const setMatchBackgroundEquip = async (background: Background | null) => {
     try {
-      setMatchBackgroundEquipState(background);
+      // Ensure we have a complete background object
+      const completeBackground = ensureCompleteBackgroundObject(background);
+      setMatchBackgroundEquipState(completeBackground);
       
-      if (user && background) {
-        console.log('BackgroundContext: Saving match background to Firebase:', background);
+      if (user && completeBackground) {
+        console.log('BackgroundContext: Saving match background to Firebase:', completeBackground);
         const userRef = doc(db, 'users', user.uid);
         
         // Save only to the inventory.matchBackgroundEquipped field
         await updateDoc(userRef, {
-          'inventory.matchBackgroundEquipped': background.name
+          'inventory.matchBackgroundEquipped': {
+            name: completeBackground.name,
+            file: completeBackground.file,
+            type: completeBackground.type
+          }
         });
         
-        console.log('✅ Match background saved to Firebase');
+        console.log('✅ Match background saved to Firebase successfully:', {
+          name: completeBackground.name,
+          file: completeBackground.file,
+          type: completeBackground.type
+        });
       }
     } catch (error) {
       console.error('❌ Error saving match background to Firebase:', error);
@@ -183,21 +221,45 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
         });
         
         // Handle display background from inventory
-        const displayBgName = userData.inventory?.displayBackgroundEquipped;
-        if (displayBgName) {
-          const displayBackground = findBackgroundByName(displayBgName);
-          console.log('BackgroundContext: Found display background', displayBackground);
-          setDisplayBackgroundEquipState(displayBackground);
+        const displayBgData = userData.inventory?.displayBackgroundEquipped;
+        if (displayBgData) {
+          console.log('🔍 Processing display background data:', displayBgData);
+          
+          // If it's already a complete background object, use it directly
+          if (typeof displayBgData === 'object' && displayBgData.name && displayBgData.file && displayBgData.type) {
+            console.log('✅ Display background is complete object:', displayBgData);
+            setDisplayBackgroundEquipState(displayBgData);
+          } else if (typeof displayBgData === 'string') {
+            // Legacy support: if it's a string, try to find the background
+            console.log('⚠️ Display background is legacy string, converting:', displayBgData);
+            const displayBackground = findBackgroundByName(displayBgData);
+            setDisplayBackgroundEquipState(displayBackground);
+          } else {
+            console.log('❌ Invalid display background data format:', displayBgData);
+            setDisplayBackgroundEquipState(null);
+          }
         } else {
           setDisplayBackgroundEquipState(null);
         }
         
         // Handle match background from inventory
-        const matchBgName = userData.inventory?.matchBackgroundEquipped;
-        if (matchBgName) {
-          const matchBackground = findBackgroundByName(matchBgName);
-          console.log('BackgroundContext: Found match background', matchBackground);
-          setMatchBackgroundEquipState(matchBackground);
+        const matchBgData = userData.inventory?.matchBackgroundEquipped;
+        if (matchBgData) {
+          console.log('🔍 Processing match background data:', matchBgData);
+          
+          // If it's already a complete background object, use it directly
+          if (typeof matchBgData === 'object' && matchBgData.name && matchBgData.file && matchBgData.type) {
+            console.log('✅ Match background is complete object:', matchBgData);
+            setMatchBackgroundEquipState(matchBgData);
+          } else if (typeof matchBgData === 'string') {
+            // Legacy support: if it's a string, try to find the background
+            console.log('⚠️ Match background is legacy string, converting:', matchBgData);
+            const matchBackground = findBackgroundByName(matchBgData);
+            setMatchBackgroundEquipState(matchBackground);
+          } else {
+            console.log('❌ Invalid match background data format:', matchBgData);
+            setMatchBackgroundEquipState(null);
+          }
         } else {
           setMatchBackgroundEquipState(null);
         }

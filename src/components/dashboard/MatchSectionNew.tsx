@@ -37,10 +37,12 @@ export const MatchSection: React.FC<MatchSectionProps> = ({
   }, [initialGameMode, initialActionType, showWaitingRoom]);
 
   const handleBackFromWaitingRoom = () => {
+    console.log('🔙 MatchSectionNew: Handling back from waiting room');
     setIsTransitioning(true);
     setTimeout(() => {
       setShowWaitingRoom(false);
       setIsTransitioning(false);
+      console.log('✅ MatchSectionNew: Returned to dashboard with smooth animation');
       setCurrentSection('dashboard'); // Go back to dashboard instead of match section
     }, 800);
   };

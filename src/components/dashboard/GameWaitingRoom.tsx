@@ -399,12 +399,19 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   // Handle leaving the game
   const handleLeave = async () => {
     try {
+      console.log('🚪 GameWaitingRoom: Leaving game, waiting room entry:', waitingRoomEntry?.id);
+      
       if (waitingRoomEntry?.id) {
+        console.log('🗑️ GameWaitingRoom: Deleting waiting room document:', waitingRoomEntry.id);
         await deleteDoc(doc(db, 'waitingroom', waitingRoomEntry.id));
+        console.log('✅ GameWaitingRoom: Waiting room document deleted successfully');
+      } else {
+        console.log('⚠️ GameWaitingRoom: No waiting room entry to delete');
       }
     } catch (err) {
-      console.error('Error leaving game:', err);
+      console.error('❌ GameWaitingRoom: Error leaving game:', err);
     } finally {
+      console.log('🔙 GameWaitingRoom: Calling onBack to return to dashboard');
       onBack();
     }
   };
@@ -413,71 +420,101 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const renderPlayerBackground = () => {
     const background = waitingRoomEntry?.hostData.matchBackgroundEquipped;
     
-    console.log('GameWaitingRoom: renderPlayerBackground called', {
+    console.log('🎨 GameWaitingRoom: renderPlayerBackground called', {
       background,
-      backgroundType: background?.type,
+      backgroundType: typeof background,
+      backgroundKeys: background && typeof background === 'object' ? Object.keys(background) : [],
+      backgroundName: background?.name,
       backgroundFile: background?.file,
+      backgroundType_prop: background?.type,
       hasWaitingRoomEntry: !!waitingRoomEntry,
-      hostData: waitingRoomEntry?.hostData
+      hostData: waitingRoomEntry?.hostData,
+      fullWaitingRoomEntry: waitingRoomEntry
     });
     
-    if (background) {
-      if (background.type === 'video') {
-        console.log('GameWaitingRoom: Rendering video background:', background.file);
-        return (
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            onLoadStart={() => console.log('Video: Load started')}
-            onCanPlay={() => console.log('Video: Can play')}
-            onError={(e) => console.error('Video: Error loading', e)}
-            onLoadedData={() => console.log('Video: Data loaded')}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              zIndex: 0
-            }}
-          >
-            <source src={background.file} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        );
-      } else {
-        console.log('GameWaitingRoom: Using CSS background for image:', background.file);
-        return null; // CSS background will handle image
-      }
+    // Validate background object structure
+    if (!background || typeof background !== 'object') {
+      console.log('GameWaitingRoom: No valid background object, using default');
+      return null;
     }
-    console.log('GameWaitingRoom: No background found, using default');
+    
+    // Handle complete background object
+    if (background.type === 'video' && background.file) {
+      console.log('GameWaitingRoom: Rendering video background:', background.file);
+      return (
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          onLoadStart={() => console.log('Video: Load started')}
+          onCanPlay={() => console.log('Video: Can play')}
+          onError={(e) => console.error('Video: Error loading', e)}
+          onLoadedData={() => console.log('Video: Data loaded')}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            zIndex: 0
+          }}
+        >
+          <source src={background.file} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      );
+    } else if (background.type === 'image' && background.file) {
+      console.log('GameWaitingRoom: Using CSS background for image:', background.file);
+      return null; // CSS background will handle image
+    }
+    
+    console.log('GameWaitingRoom: Invalid background format, using default');
     return null;
   };
 
   const getBackgroundStyle = () => {
     const background = waitingRoomEntry?.hostData.matchBackgroundEquipped;
     
-    console.log('GameWaitingRoom: getBackgroundStyle called', {
+    console.log('🎨 GameWaitingRoom: getBackgroundStyle called', {
       background,
-      backgroundType: background?.type,
-      backgroundFile: background?.file
+      backgroundType: typeof background,
+      backgroundKeys: background && typeof background === 'object' ? Object.keys(background) : [],
+      backgroundName: background?.name,
+      backgroundFile: background?.file,
+      backgroundType_prop: background?.type,
+      fullHostData: waitingRoomEntry?.hostData
     });
     
-    if (background?.type === 'video') {
-      console.log('GameWaitingRoom: Video background - returning empty style');
-      return {};
-    } else if (background?.file) {
-      const style = { 
-        background: `url('${background.file}') center/cover no-repeat` 
-      };
-      console.log('GameWaitingRoom: Image background - returning style:', style);
-      return style;
+    // Validate background object structure
+    if (!background) {
+      console.log('GameWaitingRoom: No background - returning default style');
+      return { background: '#332A63' };
     }
-    console.log('GameWaitingRoom: No background - returning default style');
+    
+    // Handle legacy string format (just in case)
+    if (typeof background === 'string') {
+      console.log('GameWaitingRoom: Legacy string background, returning default');
+      return { background: '#332A63' };
+    }
+    
+    // Handle complete background object
+    if (typeof background === 'object' && background.type && background.file) {
+      if (background.type === 'video') {
+        console.log('GameWaitingRoom: Video background - returning empty style');
+        return {};
+      } else if (background.type === 'image') {
+        const style = { 
+          background: `url('${background.file}') center/cover no-repeat` 
+        };
+        console.log('GameWaitingRoom: Image background - returning style:', style);
+        return style;
+      }
+    }
+    
+    console.log('GameWaitingRoom: Invalid background format - returning default style');
     return { background: '#332A63' };
   };
 
