@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { MatchData } from '@/types/match';
 import { SlotMachineDice } from './SlotMachineDice';
+import { useBackground } from '@/context/BackgroundContext';
 
 interface GameplayPhaseProps {
   matchData: MatchData;
@@ -34,9 +35,26 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   onRollDice,
   onBankScore
 }) => {
+  const { DisplayBackgroundEquip } = useBackground();
   const isMyTurn = currentPlayer.turnActive;
   const canRoll = isMyTurn && !matchData.gameData.isRolling;
   const canBank = isMyTurn && !matchData.gameData.isRolling && matchData.gameData.turnScore > 0;
+
+  // Create button gradient style based on user's display background
+  const getButtonGradientStyle = (baseColor: string) => {
+    if (DisplayBackgroundEquip?.file) {
+      return {
+        background: `var(--ui-button-bg, linear-gradient(243deg, ${baseColor} 25.17%, rgba(153, 153, 153, 0.00) 109.89%))`,
+        backdropFilter: 'blur(5px)',
+        border: '2px solid rgba(255, 255, 255, 0.3)'
+      };
+    }
+    return {
+      background: `linear-gradient(243deg, ${baseColor} 25.17%, rgba(153, 153, 153, 0.00) 109.89%)`,
+      backdropFilter: 'blur(5px)',
+      border: '2px solid rgba(255, 255, 255, 0.3)'
+    };
+  };
 
   // Get game rule result for display
   const getGameRuleResult = () => {
@@ -255,12 +273,15 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               disabled={!canRoll}
               className={`px-8 py-4 rounded-xl text-xl font-bold transition-all transform ${
                 canRoll
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white hover:scale-105 border-2 border-blue-400'
+                  ? 'text-white hover:scale-105'
                   : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
               }`}
-              style={{ fontFamily: "Audiowide" }}
+              style={{ 
+                fontFamily: "Audiowide",
+                ...(canRoll ? getButtonGradientStyle('rgba(59, 130, 246, 0.8)') : {})
+              }}
             >
-              {matchData.gameData.isRolling ? 'ROLLING...' : 'ROLL DICE'}
+              {matchData.gameData.isRolling ? 'ROLLING...' : 'PLAY'}
             </button>
             
             <button
@@ -268,12 +289,15 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               disabled={!canBank}
               className={`px-8 py-4 rounded-xl text-xl font-bold transition-all transform ${
                 canBank
-                  ? 'bg-green-600 hover:bg-green-700 text-white hover:scale-105 border-2 border-green-400'
+                  ? 'text-white hover:scale-105'
                   : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
               }`}
-              style={{ fontFamily: "Audiowide" }}
+              style={{ 
+                fontFamily: "Audiowide",
+                ...(canBank ? getButtonGradientStyle('rgba(34, 197, 94, 0.8)') : {})
+              }}
             >
-              BANK SCORE
+              BANK
             </button>
           </>
         ) : (
