@@ -397,17 +397,36 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         }
       };
 
-      // Create enhanced match document with game phase
+      // Create enhanced match document with proper match data structure
       const matchData = {
-        ...waitingRoomEntry,
-        status: 'active',
         createdAt: serverTimestamp(),
+        gameMode: waitingRoomEntry.gameMode,
+        gameType: waitingRoomEntry.gameType,
+        status: 'active',
         startedAt: serverTimestamp(),
+        
+        // Initialize host data with game-specific fields
+        hostData: {
+          ...waitingRoomEntry.hostData,
+          turnActive: false, // Will be set by turn decider
+          playerScore: 0,
+          roundScore: 0
+        },
+        
+        // Initialize opponent data with game-specific fields
+        opponentData: waitingRoomEntry.opponentData ? {
+          ...waitingRoomEntry.opponentData,
+          turnActive: false, // Will be set by turn decider
+          playerScore: 0,
+          roundScore: 0
+        } : undefined,
+        
         gameData: {
           // Use existing gameData if available, otherwise create new
           type: waitingRoomEntry.gameData?.type || 'dice',
           settings: waitingRoomEntry.gameData?.settings || {},
           turnDecider: waitingRoomEntry.gameData?.turnDecider || Math.floor(Math.random() * 2) + 1, // Random 1 or 2
+          currentTurn: 1, // Initialize current turn
           turnScore: 0,
           diceOne: 0,
           diceTwo: 0,
@@ -415,12 +434,21 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           startingScore: waitingRoomEntry.gameData?.startingScore || 0,
           status: 'active',
           startedAt: serverTimestamp(),
-          // Initialize game phase for new match system
-          gamePhase: 'turnDecider',
+          // Start directly in gameplay phase with random first player
+          gamePhase: 'gameplay' as const,
           isRolling: false
           // Don't include undefined optional fields
         }
       };
+
+      // Randomly determine who goes first (true = host goes first)
+      const hostGoesFirst = Math.random() < 0.5;
+      
+      // Set turnActive based on random selection
+      matchData.hostData.turnActive = hostGoesFirst;
+      if (matchData.opponentData) {
+        matchData.opponentData.turnActive = !hostGoesFirst;
+      }
 
       const matchDocRef = await addDoc(collection(db, 'matches'), matchData);
       
