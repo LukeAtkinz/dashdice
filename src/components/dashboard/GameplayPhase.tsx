@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { MatchData, GAME_RULES } from '@/types/match';
+import { MatchData } from '@/types/match';
 import { SlotMachineDice } from './SlotMachineDice';
 
 interface GameplayPhaseProps {
@@ -68,8 +68,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
 
   return (
     <div className="flex flex-col items-center justify-center">
-      {/* Dice Container - Two Dice Stacked Vertically like reference */}
-      <div className="flex flex-col gap-4 mb-8">
+      {/* Dice Container with Turn Score Between */}
+      <div className="relative flex flex-col gap-4 mb-8">
         {/* Dice 1 - Slot Machine */}
         <div style={{ width: '600px' }}>
           <SlotMachineDice
@@ -80,6 +80,32 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             isGameRolling={matchData.gameData.isRolling || false}
             matchData={matchData}
           />
+        </div>
+        
+        {/* Turn Score - Positioned absolutely between dice */}
+        <div 
+          className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center"
+          >
+            <div className="inline-block px-8 py-4 bg-yellow-600/30 border-2 border-yellow-500 rounded-2xl backdrop-blur-sm shadow-xl">
+              <p 
+                className="text-lg text-yellow-300 mb-1"
+                style={{ fontFamily: "Audiowide" }}
+              >
+                Turn Score
+              </p>
+              <p 
+                className="text-4xl font-bold text-yellow-400" 
+                style={{ fontFamily: "Audiowide" }}
+              >
+                {matchData.gameData.turnScore}
+              </p>
+            </div>
+          </motion.div>
         </div>
         
         {/* Dice 2 - Slot Machine */}
@@ -140,28 +166,6 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         )}
       </div>
 
-      {/* Turn Score Display */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-8"
-      >
-        <div className="inline-block px-8 py-4 bg-yellow-600/20 border-2 border-yellow-500 rounded-2xl backdrop-blur-sm">
-          <p 
-            className="text-lg text-yellow-300 mb-1"
-            style={{ fontFamily: "Audiowide" }}
-          >
-            Turn Score
-          </p>
-          <p 
-            className="text-4xl font-bold text-yellow-400" 
-            style={{ fontFamily: "Audiowide" }}
-          >
-            {matchData.gameData.turnScore}
-          </p>
-        </div>
-      </motion.div>
-
       {/* Game Rule Result */}
       {gameRuleResult && !matchData.gameData.isRolling && matchData.gameData.diceOne > 0 && matchData.gameData.diceTwo > 0 && (
         <motion.div
@@ -185,42 +189,6 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           </div>
         </motion.div>
       )}
-
-      {/* Game Rules Display */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center"
-      >
-        <div className="bg-white/5 rounded-2xl p-6 backdrop-blur-sm max-w-2xl border border-white/10">
-          <h3 
-            className="text-lg font-bold text-white mb-4" 
-            style={{ fontFamily: "Audiowide" }}
-          >
-            GAME RULES
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-300">
-            <div>
-              <span className="text-red-400 font-bold">Single 1:</span> Turn over, no score
-            </div>
-            <div>
-              <span className="text-red-500 font-bold">Double 6:</span> Player score reset to 0
-            </div>
-            <div>
-              <span className="text-yellow-400 font-bold">Snake Eyes:</span> +20 to turn, continue
-            </div>
-            <div>
-              <span className="text-green-400 font-bold">Normal:</span> Add dice sum to turn
-            </div>
-          </div>
-          <p 
-            className="text-gray-400 text-xs mt-3"
-            style={{ fontFamily: "Audiowide" }}
-          >
-            First to reach {matchData.gameData.roundObjective} wins!
-          </p>
-        </div>
-      </motion.div>
     </div>
   );
 };

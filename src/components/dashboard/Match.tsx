@@ -76,10 +76,36 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   }, [roomId, user]);
 
   // Slot machine animation function
+  /*
+   * 🎰 DICE REEL ANIMATION SYSTEM
+   * 
+   * Animation Durations:
+   * - Dice 1 & 2: 1200ms (1.2 seconds)
+   * - Turn Decider: 1500ms (1.5 seconds)
+   * 
+   * 3-Phase Speed Progression:
+   * 
+   * Phase 1 (0-70%): Fast Spinning
+   * - Speed: 60ms → 88ms intervals
+   * - Background Reel: 0.1s (very fast)
+   * 
+   * Phase 2 (70-90%): Deceleration  
+   * - Speed: 88ms → 200ms intervals
+   * - Background Reel: 0.1s → 0.5s (slowing)
+   * 
+   * Phase 3 (90-100%): Final Slow
+   * - Speed: 200ms → 500ms intervals  
+   * - Background Reel: 0.5s → 2.0s (very slow)
+   * 
+   * Special Effects:
+   * - Near Miss: Triggered at 60% duration
+   * - Overshoot: Shows wrong number briefly
+   * - Tick-Back: 300ms pause before final result
+   */
   const startSlotMachineAnimation = (
     diceNumber: 1 | 2 | 'turnDecider', 
     finalValue: number,
-    animationDuration: number = 2000
+    animationDuration: number = 1200 // Default to 1200ms for dice 1 & 2
   ) => {
     const setDiceState = diceNumber === 1 ? setDice1Animation : 
                         diceNumber === 2 ? setDice2Animation : 
@@ -93,11 +119,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       reelSpeed: 0.1
     });
 
-    // Progressive deceleration animation with synchronized background reel
-    let currentSpeed = 60;
+    // 🎰 3-Phase Progressive Deceleration System
+    let currentSpeed = 60; // Initial speed: 60ms intervals
     let intervalId: NodeJS.Timeout;
     let elapsedTime = 0;
-    let reelAnimationSpeed = 0.1; // Background reel speed
+    let reelAnimationSpeed = 0.1; // Background reel speed: very fast
 
     const animateReel = () => {
       setDiceState(prev => ({
@@ -108,28 +134,34 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       elapsedTime += currentSpeed;
       const progress = elapsedTime / animationDuration;
       
-      // Progressive deceleration
+      // 🎰 Phase 1 - Fast Spinning (0-70% of duration)
       if (progress < 0.7) {
-        // Fast spinning phase (first 70% of time)
-        currentSpeed = Math.max(60, 60 + (progress * 40)); // 60ms to 88ms
-        reelAnimationSpeed = 0.1; // Fast background reel
-      } else if (progress < 0.9) {
-        // Deceleration phase (70% to 90% of time)
-        const decelProgress = (progress - 0.7) / 0.2;
-        currentSpeed = 88 + (decelProgress * 112); // 88ms to 200ms
-        reelAnimationSpeed = 0.1 + (decelProgress * 0.4); // 0.1s to 0.5s
-      } else {
-        // Final slow phase (last 10% of time)
-        const finalProgress = (progress - 0.9) / 0.1;
-        currentSpeed = 200 + (finalProgress * 300); // 200ms to 500ms
-        reelAnimationSpeed = 0.5 + (finalProgress * 1.5); // 0.5s to 2.0s
+        // Speed: 60ms → 88ms intervals
+        currentSpeed = 60 + (progress / 0.7) * 28; // Linear interpolation: 60ms to 88ms
+        reelAnimationSpeed = 0.1; // Background reel: 0.1s (very fast)
+      } 
+      // 🎰 Phase 2 - Deceleration (70-90% of duration)
+      else if (progress < 0.9) {
+        const decelProgress = (progress - 0.7) / 0.2; // 0-1 over 20% of duration
+        // Speed: 88ms → 200ms intervals
+        currentSpeed = 88 + (decelProgress * 112);
+        // Background reel: 0.1s → 0.5s (slowing down)
+        reelAnimationSpeed = 0.1 + (decelProgress * 0.4);
+      } 
+      // 🎰 Phase 3 - Final Slow (90-100% of duration)
+      else {
+        const finalProgress = (progress - 0.9) / 0.1; // 0-1 over last 10% of duration
+        // Speed: 200ms → 500ms intervals
+        currentSpeed = 200 + (finalProgress * 300);
+        // Background reel: 0.5s → 2.0s (very slow)
+        reelAnimationSpeed = 0.5 + (finalProgress * 1.5);
       }
       
       // Update the animation speed for the reel background
       setDiceState(prev => ({
         ...prev,
         currentNumber: Math.floor(Math.random() * 6) + 1,
-        reelSpeed: reelAnimationSpeed // Add reel speed to state
+        reelSpeed: reelAnimationSpeed // Synchronized background reel speed
       }));
       
       if (elapsedTime < animationDuration) {
@@ -139,7 +171,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
     animateReel();
 
-    // Create "near miss" moments - show high value briefly
+    // 🎰 Near Miss Timing - Triggered at 60% of animation duration
     const nearMissTimeout = setTimeout(() => {
       if (Math.random() < 0.7) { // 70% chance of near miss
         setDiceState(prev => ({
@@ -147,13 +179,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           currentNumber: 6 // Briefly show a 6 for excitement
         }));
       }
-    }, animationDuration * 0.6);
+    }, animationDuration * 0.6); // Exactly 60% of duration
 
-    // Show final result with overshoot effect
+    // 🎰 Overshoot Effect - Shows wrong number briefly before final value
     setTimeout(() => {
       clearTimeout(intervalId);
       clearTimeout(nearMissTimeout);
       
+      // Show wrong number briefly (overshoot effect)
       const overshoot = finalValue < 6 ? finalValue + 1 : finalValue - 1;
       setDiceState({
         isSpinning: false,
@@ -162,6 +195,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         reelSpeed: 0.1 // Reset reel speed
       });
 
+      // 🎰 Tick-Back Delay - 300ms pause before showing final result
       setTimeout(() => {
         setDiceState({
           isSpinning: false,
@@ -169,7 +203,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           finalNumber: finalValue,
           reelSpeed: 0.1 // Reset reel speed
         });
-      }, 300);
+      }, 300); // Exactly 300ms tick-back delay
       
     }, animationDuration);
   };
@@ -238,18 +272,24 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         matchData.gameData.turnDeciderChoice && 
         matchData.gameData.turnDeciderDice && 
         !turnDeciderDiceAnimation.isSpinning) {
+      // 🎰 Animation Durations per specification:
+      // Turn Decider Dice: 1500ms (1.5 seconds)
       startSlotMachineAnimation('turnDecider', matchData.gameData.turnDeciderDice, 1500);
     }
 
     // Gameplay dice animations
     if (matchData.gameData.isRolling && matchData.gameData.rollPhase === 'dice1' && 
         matchData.gameData.diceOne > 0 && !dice1Animation.isSpinning) {
-      startSlotMachineAnimation(1, matchData.gameData.diceOne, 2000);
+      // 🎰 Animation Durations per specification:
+      // Both Dice 1 & 2: 1200ms (1.2 seconds)
+      startSlotMachineAnimation(1, matchData.gameData.diceOne, 1200);
     }
 
     if (matchData.gameData.isRolling && matchData.gameData.rollPhase === 'dice2' && 
         matchData.gameData.diceTwo > 0 && !dice2Animation.isSpinning) {
-      startSlotMachineAnimation(2, matchData.gameData.diceTwo, 2500);
+      // 🎰 Animation Durations per specification:
+      // Both Dice 1 & 2: 1200ms (1.2 seconds)
+      startSlotMachineAnimation(2, matchData.gameData.diceTwo, 1200);
     }
   }, [
     matchData?.gameData.turnDeciderChoice, 
@@ -380,19 +420,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               Exit Match
             </button>
             
-            <div className="text-center">
-              <h1 className="text-6xl font-bold text-white" style={{ fontFamily: 'Audiowide' }}>
-                {gameMode?.toUpperCase() || 'MATCH'}
-              </h1>
-            </div>
-            
             <div className="w-32"></div> {/* Spacer for center alignment */}
           </div>
         </div>
 
         {/* Game Arena */}
         <div className="flex-1 flex items-center justify-center p-8 pt-24">
-          <div className="flex items-center justify-between gap-8" style={{ width: 'calc(100vw - 160px)' }}>
+          <div className="flex items-center justify-between gap-8" style={{ width: '95vw' }}>
             
             {/* Player 1 (Current User - Left Side) */}
             <div className="flex-1 max-w-[500px]">

@@ -1,5 +1,20 @@
 'use client';
 
+/*
+ * 🎰 SLOT MACHINE DICE COMPONENT
+ * 
+ * Implements 3-phase progressive deceleration animation:
+ * - Phase 1: Fast spinning with background reel at 0.1s
+ * - Phase 2: Deceleration with reel slowing from 0.1s to 0.5s  
+ * - Phase 3: Final slow with reel at 0.5s to 2.0s
+ * 
+ * Features:
+ * - Responsive background reel speed (synced with main animation)
+ * - Micro-animations for spinning numbers (scale/rotate)
+ * - Conditional glow effects for special dice combinations
+ * - Static display when not animating
+ */
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { MatchData } from '@/types/match';
@@ -205,14 +220,14 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
       {shouldShowAnimation ? (
         // Slot machine reel effect
         <div className="absolute inset-0">
-          {/* Spinning reel background */}
+          {/* 🎰 Spinning reel background with progressive speed changes */}
           <motion.div
             className="absolute inset-0 flex flex-row items-center"
             animate={{
               x: [-600, 0, -600],
             }}
             transition={{
-              duration: animationState.reelSpeed || 0.1,
+              duration: animationState.reelSpeed || 0.1, // Responsive to speed changes
               repeat: Infinity,
               ease: "linear"
             }}
@@ -238,7 +253,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             ))}
           </motion.div>
           
-          {/* Main spinning number */}
+          {/* 🎰 Main spinning number with micro-animations */}
           <motion.div
             className="absolute inset-0 flex items-center justify-center z-10"
             animate={{

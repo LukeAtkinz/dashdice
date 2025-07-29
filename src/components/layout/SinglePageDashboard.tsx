@@ -121,7 +121,12 @@ const DashboardContent: React.FC = () => {
                 {/* VAULT Button */}
                 <button
                   onClick={() => handleSectionChange('inventory')}
-                  className="flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
+                  disabled={currentSection === 'match'}
+                  className={`flex cursor-pointer transition-all duration-300 ${
+                    currentSection === 'match' 
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : 'hover:scale-105 hover:shadow-lg active:scale-95'
+                  }`}
                   style={{
                     display: "flex",
                     width: "180px",
@@ -131,7 +136,7 @@ const DashboardContent: React.FC = () => {
                     alignItems: "center",
                     gap: "8px",
                     borderRadius: "18px",
-                    background: "#FF0080",
+                    background: currentSection === 'match' ? "#666666" : "#FF0080",
                     border: "none"
                   }}
                 >
@@ -250,7 +255,12 @@ const DashboardContent: React.FC = () => {
               {/* PROFILE Button */}
               <button
                 onClick={() => handleSectionChange('profile')}
-                className="flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
+                disabled={currentSection === 'match'}
+                className={`flex transition-all duration-300 ${
+                  currentSection === 'match' 
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : 'cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95'
+                }`}
                 style={{
                   display: "flex",
                   width: "180px",
@@ -260,7 +270,7 @@ const DashboardContent: React.FC = () => {
                   alignItems: "center",
                   gap: "8px",
                   borderRadius: "18px",
-                  background: "#FF0080",
+                  background: currentSection === 'match' ? "#666666" : "#FF0080",
                   border: "none"
                 }}
               >
@@ -292,8 +302,9 @@ const DashboardContent: React.FC = () => {
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 w-full flex items-center justify-center min-h-0 overflow-auto">
-          <div className="w-full max-w-[100rem] flex flex-col items-center justify-center gap-[2rem] py-[2rem] px-[2rem]">
+        {currentSection === 'match' ? (
+          // Full-screen match without constraints
+          <main className="flex-1 w-full h-full min-h-0 overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentSection}
@@ -303,27 +314,42 @@ const DashboardContent: React.FC = () => {
                 transition={{ duration: 0.3 }}
                 className="w-full h-full"
               >
-                {currentSection === 'dashboard' && <DashboardSection />}
-                {currentSection === 'waiting-room' && (
-                  <GameWaitingRoom 
-                    gameMode={sectionParams.gameMode || 'classic'}
-                    actionType={sectionParams.actionType || 'live'}
-                    onBack={() => setCurrentSection('dashboard')}
-                  />
-                )}
-                {currentSection === 'match' && (
-                  <Match 
-                    gameMode={sectionParams.gameMode}
-                    roomId={sectionParams.matchId || "dev-room-123"}
-                  />
-                )}
-                {currentSection === 'inventory' && <InventorySection />}
-                {currentSection === 'profile' && <ProfileSection />}
-                {currentSection === 'settings' && <SettingsSection />}
+                <Match 
+                  gameMode={sectionParams.gameMode}
+                  roomId={sectionParams.matchId || "dev-room-123"}
+                />
               </motion.div>
             </AnimatePresence>
-          </div>
-        </main>
+          </main>
+        ) : (
+          // Regular content with constraints
+          <main className="flex-1 w-full flex items-center justify-center min-h-0 overflow-auto">
+            <div className="w-full max-w-[100rem] flex flex-col items-center justify-center gap-[2rem] py-[2rem] px-[2rem]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentSection}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full h-full"
+                >
+                  {currentSection === 'dashboard' && <DashboardSection />}
+                  {currentSection === 'waiting-room' && (
+                    <GameWaitingRoom 
+                      gameMode={sectionParams.gameMode || 'classic'}
+                      actionType={sectionParams.actionType || 'live'}
+                      onBack={() => setCurrentSection('dashboard')}
+                    />
+                  )}
+                  {currentSection === 'inventory' && <InventorySection />}
+                  {currentSection === 'profile' && <ProfileSection />}
+                  {currentSection === 'settings' && <SettingsSection />}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </main>
+        )}
 
         {/* Bottom Navigation for Mobile */}
         <footer className="md:hidden flex-shrink-0 w-full flex flex-row items-center justify-center py-[1rem] px-[2rem] relative z-30">
