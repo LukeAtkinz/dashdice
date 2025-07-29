@@ -8,11 +8,14 @@ import { SectionTransition } from '@/components/layout/SectionTransition';
 import { DashboardSection } from '@/components/dashboard/DashboardSectionNew';
 import { MatchSection } from '@/components/dashboard/MatchSectionNew';
 import { Match } from '@/components/dashboard/Match';
+import { GameWaitingRoom } from '@/components/dashboard/GameWaitingRoom';
 import { InventorySection } from '@/components/dashboard/InventoryReference';
 import { ProfileSection } from '@/components/dashboard/ProfileSection';
 import { SettingsSection } from '@/components/dashboard/SettingsSection';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
+import { createTestMatch } from '@/utils/testMatchData';
+import '@/utils/testUtils'; // Load test utilities for development
 
 const DashboardContent: React.FC = () => {
   const { currentSection, sectionParams, setCurrentSection } = useNavigation();
@@ -20,8 +23,25 @@ const DashboardContent: React.FC = () => {
   const { DisplayBackgroundEquip } = useBackground();
   const [userGold] = useState(1000); // Placeholder for user gold
 
-  const handleSectionChange = (section: string) => {
-    setCurrentSection(section as any);
+  const handleSectionChange = async (section: string) => {
+    // Special handling for match section - create test match
+    if (section === 'match') {
+      try {
+        console.log('🧪 Creating test match for development...');
+        const testMatchId = await createTestMatch();
+        setCurrentSection('match', {
+          gameMode: 'classic',
+          matchId: testMatchId
+        });
+        console.log('✅ Test match created and navigated to:', testMatchId);
+      } catch (error) {
+        console.error('❌ Error creating test match:', error);
+        // Fallback to regular navigation
+        setCurrentSection(section as any);
+      }
+    } else {
+      setCurrentSection(section as any);
+    }
   };
 
   // Render background based on equipped display background
@@ -139,11 +159,11 @@ const DashboardContent: React.FC = () => {
                   </span>
                 </button>
 
-                {/* SHOP Button */}
+                {/* TEST MATCH Button */}
                 <button
                   onClick={() => handleSectionChange('match')}
                   className="flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
-                  title="Shop Development (Match.tsx)"
+                  title="Test Match System (Creates test players and match)"
                   style={{
                     display: "flex",
                     width: "180px",
@@ -172,13 +192,13 @@ const DashboardContent: React.FC = () => {
                     style={{
                       color: "#FFF",
                       fontFamily: "Audiowide",
-                      fontSize: "26px",
+                      fontSize: "20px",
                       fontStyle: "normal",
                       fontWeight: 400,
-                      lineHeight: "26px"
+                      lineHeight: "20px"
                     }}
                   >
-                    SHOP
+                    TEST MATCH
                   </span>
                 </button>
               </div>
@@ -284,10 +304,17 @@ const DashboardContent: React.FC = () => {
                 className="w-full h-full"
               >
                 {currentSection === 'dashboard' && <DashboardSection />}
+                {currentSection === 'waiting-room' && (
+                  <GameWaitingRoom 
+                    gameMode={sectionParams.gameMode || 'classic'}
+                    actionType={sectionParams.actionType || 'live'}
+                    onBack={() => setCurrentSection('dashboard')}
+                  />
+                )}
                 {currentSection === 'match' && (
                   <Match 
                     gameMode={sectionParams.gameMode}
-                    roomId="dev-room-123"
+                    roomId={sectionParams.matchId || "dev-room-123"}
                   />
                 )}
                 {currentSection === 'inventory' && <InventorySection />}
@@ -316,8 +343,8 @@ const DashboardContent: React.FC = () => {
                 currentSection === 'match' ? 'bg-white/20' : 'hover:bg-white/10'
               }`}
             >
-              <div className="text-xl">🎲</div>
-              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>Match</span>
+              <div className="text-xl">🧪</div>
+              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>Test Match</span>
             </button>
             <button
               onClick={() => handleSectionChange('inventory')}

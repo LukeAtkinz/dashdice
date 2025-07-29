@@ -101,9 +101,9 @@ export const DashboardSection: React.FC = () => {
           console.log('Opponent found! Starting 5-second countdown...');
         }
         
-        // Navigate to match section
+        // Navigate to waiting room section
         setTimeout(() => {
-          setCurrentSection('match', { gameMode, actionType: action as 'live' | 'custom' });
+          setCurrentSection('waiting-room', { gameMode, actionType: action as 'live' | 'custom' });
         }, 600);
 
       } catch (error) {
@@ -112,10 +112,10 @@ export const DashboardSection: React.FC = () => {
         alert('Failed to find or create game room. Please try again.');
       }
     } else {
-      // For custom games, use original logic
+      // For custom games, navigate to waiting room first
       setIsExiting(true);
       setTimeout(() => {
-        setCurrentSection('match', { gameMode, actionType: action as 'live' | 'custom' });
+        setCurrentSection('waiting-room', { gameMode, actionType: action as 'live' | 'custom' });
       }, 600);
     }
   };
