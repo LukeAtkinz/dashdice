@@ -197,19 +197,38 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             animate={{ opacity: 1, scale: 1 }}
             className="text-center"
           >
-            <div className="inline-block px-8 py-4 bg-yellow-600/30 border-2 border-yellow-500 rounded-2xl backdrop-blur-sm shadow-xl">
-              <p 
-                className="text-lg text-yellow-300 mb-1"
-                style={{ fontFamily: "Audiowide" }}
-              >
-                Turn Score
-              </p>
-              <p 
-                className="text-4xl font-bold text-yellow-400" 
-                style={{ fontFamily: "Audiowide" }}
-              >
-                {matchData.gameData.turnScore}
-              </p>
+            <div className="flex items-center gap-4">
+              {/* Turn Score Container */}
+              <div className="inline-block px-8 py-4 bg-yellow-600/30 border-2 border-yellow-500 rounded-2xl backdrop-blur-sm shadow-xl">
+                <p 
+                  className="text-lg text-yellow-300 mb-1"
+                  style={{ fontFamily: "Audiowide" }}
+                >
+                  Turn Score
+                </p>
+                <p 
+                  className="text-4xl font-bold text-yellow-400" 
+                  style={{ fontFamily: "Audiowide" }}
+                >
+                  {matchData.gameData.turnScore}
+                </p>
+              </div>
+              
+              {/* 2X Multiplier Indicator */}
+              {matchData.gameData.hasDoubleMultiplier && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="inline-block px-4 py-2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
+                >
+                  <p 
+                    className="text-2xl font-bold text-red-300" 
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    2X
+                  </p>
+                </motion.div>
+              )}
             </div>
           </motion.div>
         </div>
