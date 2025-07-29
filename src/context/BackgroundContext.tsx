@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '@/services/firebase';
 
 interface Background {
@@ -66,6 +66,35 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
     return foundBackground || null;
   };
 
+  // Helper function to find background by name/ID
+  const findBackgroundByName = (backgroundId: string): Background | null => {
+    // Try to find by exact name match first
+    let background = availableBackgrounds.find(bg => 
+      bg.name.toLowerCase().replace(/\s+/g, '-') === backgroundId
+    );
+    
+    // If not found, try by name directly
+    if (!background) {
+      background = availableBackgrounds.find(bg => 
+        bg.name.toLowerCase() === backgroundId.toLowerCase()
+      );
+    }
+    
+    // If still not found, try without spaces/dashes
+    if (!background) {
+      background = availableBackgrounds.find(bg => 
+        bg.name.toLowerCase().replace(/[\s-]/g, '') === backgroundId.toLowerCase().replace(/[\s-]/g, '')
+      );
+    }
+    
+    console.log('BackgroundContext: findBackgroundByName', {
+      backgroundId,
+      found: background
+    });
+    
+    return background || null;
+  };
+
   // Theme mapping for backgrounds
   const getThemeFromBackground = (background: Background | null): string => {
     if (!background) return 'default';
@@ -83,8 +112,49 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
   };
 
   // State for equipped backgrounds
-  const [DisplayBackgroundEquip, setDisplayBackgroundEquip] = useState<Background | null>(null);
-  const [MatchBackgroundEquip, setMatchBackgroundEquip] = useState<Background | null>(null);
+  const [DisplayBackgroundEquip, setDisplayBackgroundEquipState] = useState<Background | null>(null);
+  const [MatchBackgroundEquip, setMatchBackgroundEquipState] = useState<Background | null>(null);
+
+  // Enhanced setter functions that persist to Firebase
+  const setDisplayBackgroundEquip = async (background: Background | null) => {
+    try {
+      setDisplayBackgroundEquipState(background);
+      
+      if (user && background) {
+        console.log('BackgroundContext: Saving display background to Firebase:', background);
+        const userRef = doc(db, 'users', user.uid);
+        
+        // Save only to the inventory.displayBackgroundEquipped field
+        await updateDoc(userRef, {
+          'inventory.displayBackgroundEquipped': background.name
+        });
+        
+        console.log('✅ Display background saved to Firebase');
+      }
+    } catch (error) {
+      console.error('❌ Error saving display background to Firebase:', error);
+    }
+  };
+
+  const setMatchBackgroundEquip = async (background: Background | null) => {
+    try {
+      setMatchBackgroundEquipState(background);
+      
+      if (user && background) {
+        console.log('BackgroundContext: Saving match background to Firebase:', background);
+        const userRef = doc(db, 'users', user.uid);
+        
+        // Save only to the inventory.matchBackgroundEquipped field
+        await updateDoc(userRef, {
+          'inventory.matchBackgroundEquipped': background.name
+        });
+        
+        console.log('✅ Match background saved to Firebase');
+      }
+    } catch (error) {
+      console.error('❌ Error saving match background to Firebase:', error);
+    }
+  };
 
   // Apply theme to document based on DisplayBackgroundEquip
   useEffect(() => {
@@ -95,8 +165,8 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
   // Listen to user data changes to sync equipped backgrounds from Firebase
   useEffect(() => {
     if (!user) {
-      setDisplayBackgroundEquip(null);
-      setMatchBackgroundEquip(null);
+      setDisplayBackgroundEquipState(null);
+      setMatchBackgroundEquipState(null);
       return;
     }
 
@@ -105,26 +175,31 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
       if (doc.exists()) {
         const userData = doc.data();
         const inventory = userData.inventory || [];
-        const equippedBackgroundId = userData.equippedBackground;
         
         console.log('BackgroundContext: User data updated', {
-          equippedBackgroundId,
-          inventoryLength: inventory.length
+          inventoryDisplayBg: userData.inventory?.displayBackgroundEquipped,
+          inventoryMatchBg: userData.inventory?.matchBackgroundEquipped,
+          inventoryLength: userData.inventory?.length || 0
         });
         
-        // Find the equipped background from inventory
-        if (equippedBackgroundId) {
-          const equippedBackground = findBackgroundByItemId(equippedBackgroundId, inventory);
-          console.log('BackgroundContext: Found equipped background', equippedBackground);
-          
-          if (equippedBackground) {
-            setDisplayBackgroundEquip(equippedBackground);
-            setMatchBackgroundEquip(equippedBackground); // Use same for both display and match
-          }
+        // Handle display background from inventory
+        const displayBgName = userData.inventory?.displayBackgroundEquipped;
+        if (displayBgName) {
+          const displayBackground = findBackgroundByName(displayBgName);
+          console.log('BackgroundContext: Found display background', displayBackground);
+          setDisplayBackgroundEquipState(displayBackground);
         } else {
-          console.log('BackgroundContext: No equipped background found');
-          setDisplayBackgroundEquip(null);
-          setMatchBackgroundEquip(null);
+          setDisplayBackgroundEquipState(null);
+        }
+        
+        // Handle match background from inventory
+        const matchBgName = userData.inventory?.matchBackgroundEquipped;
+        if (matchBgName) {
+          const matchBackground = findBackgroundByName(matchBgName);
+          console.log('BackgroundContext: Found match background', matchBackground);
+          setMatchBackgroundEquipState(matchBackground);
+        } else {
+          setMatchBackgroundEquipState(null);
         }
       }
     }, (error) => {
@@ -144,7 +219,7 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
         try {
           const parsed = JSON.parse(savedDisplayBackground);
           const found = availableBackgrounds.find(bg => bg.file === parsed.file);
-          if (found) setDisplayBackgroundEquip(found);
+          if (found) setDisplayBackgroundEquipState(found);
         } catch (error) {
           console.error('Error loading saved display background:', error);
         }
@@ -154,7 +229,7 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
         try {
           const parsed = JSON.parse(savedMatchBackground);
           const found = availableBackgrounds.find(bg => bg.file === parsed.file);
-          if (found) setMatchBackgroundEquip(found);
+          if (found) setMatchBackgroundEquipState(found);
         } catch (error) {
           console.error('Error loading saved match background:', error);
         }

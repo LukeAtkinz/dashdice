@@ -50,9 +50,9 @@ export class UserService {
           lastLoginAt: userData.lastLoginAt,
           userTag: userData.userTag || userData.email?.split('@')[0] || 'Anonymous',
           inventory: {
-            // Handle both old format (equippedBackground) and new format (inventory.displayBackgroundEquipped)
-            displayBackgroundEquipped: userData.inventory?.displayBackgroundEquipped || userData.equippedBackground || 'default',
-            matchBackgroundEquipped: userData.inventory?.matchBackgroundEquipped || userData.equippedBackground || 'default',
+            // Read from inventory object only
+            displayBackgroundEquipped: userData.inventory?.displayBackgroundEquipped || 'default',
+            matchBackgroundEquipped: userData.inventory?.matchBackgroundEquipped || 'default',
             ownedBackgrounds: userData.inventory?.ownedBackgrounds || userData.ownedBackgrounds || ['default']
           },
           stats: {
