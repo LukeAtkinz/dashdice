@@ -194,6 +194,17 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     try {
       // Use test user ID for testing
       const playerId = user.uid || 'test-user-1';
+      
+      // Debug logging
+      console.log('🎲 Rolling dice...');
+      console.log('Match Data:', matchData);
+      console.log('Player ID:', playerId);
+      console.log('Is Host:', matchData.hostData.playerId === playerId);
+      console.log('Current Player:', matchData.hostData.playerId === playerId ? matchData.hostData : matchData.opponentData);
+      console.log('Game Phase:', matchData.gameData.gamePhase);
+      console.log('Host Turn Active:', matchData.hostData.turnActive);
+      console.log('Opponent Turn Active:', matchData.opponentData?.turnActive);
+      
       await MatchService.rollDice(matchData.id!, playerId);
     } catch (error) {
       console.error('❌ Error rolling dice:', error);

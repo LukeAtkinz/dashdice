@@ -30,14 +30,14 @@ export const createTestMatch = async () => {
           type: "video"
         },
         playerDisplayName: "TestPlayer1",
-        playerId: "test-user-1",
+        playerId: "6Py4mehQItZxs2rmWcVWOd7mHqY2", // Use actual user ID as host
         playerStats: {
           bestStreak: 5,
           currentStreak: 2,
           gamesPlayed: 15,
           matchWins: 8
         },
-        turnActive: true,  // Host goes first
+        turnActive: true,  // You (host) go first
         playerScore: 25,
         roundScore: 0
       },
@@ -55,7 +55,7 @@ export const createTestMatch = async () => {
           type: "image"
         },
         playerDisplayName: "TestPlayer2",
-        playerId: "test-user-2", 
+        playerId: "test-user-2", // Test opponent
         playerStats: {
           bestStreak: 3,
           currentStreak: 1,
