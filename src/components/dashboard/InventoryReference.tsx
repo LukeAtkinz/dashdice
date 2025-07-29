@@ -161,7 +161,7 @@ export const InventorySection: React.FC = () => {
       `}</style>
 
       {/* Title Section */}
-      <div className="w-full flex flex-col items-center justify-center gap-[1rem] py-[3rem] pb-[2rem]">
+      <div className="w-full flex flex-col items-center justify-center gap-[1rem] py-[1rem] pb-[1rem]">
         <h1
           style={{
             color: "#FFF",
@@ -181,7 +181,7 @@ export const InventorySection: React.FC = () => {
       </div>
 
       {/* Navigation */}
-      <div className="w-full px-8 py-8 pb-[3rem]">
+      <div className="w-full px-8 py-4 pb-[1rem]">
         <div className="flex items-center justify-center gap-4" style={{ gap: '20px' }}>
           <button
             onClick={() => handleTabChange('display')}

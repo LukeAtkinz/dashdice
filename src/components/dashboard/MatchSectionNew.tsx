@@ -182,7 +182,15 @@ export const MatchSection: React.FC<MatchSectionProps> = ({
           animate="center"
           exit="exit"
           className="w-full h-full relative"
-          style={{ perspective: "1200px" }}
+          style={{ 
+            perspective: "1200px",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 25
+          }}
         >
           <motion.div
             variants={overlayVariants}
@@ -191,7 +199,7 @@ export const MatchSection: React.FC<MatchSectionProps> = ({
             exit="exit"
             className="absolute inset-0 bg-gradient-to-r from-purple-900/30 via-transparent to-blue-900/30 z-0"
           />
-          <div className="relative z-10">
+          <div className="relative z-10 w-full h-full">
             <GameWaitingRoom 
               gameMode={selectedGameMode}
               actionType={selectedActionType}

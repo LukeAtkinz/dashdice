@@ -569,12 +569,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       <div
         style={{
           display: 'flex',
-          width: '95vw',
-          maxWidth: '95vw',
+          width: '100vw',
+          maxWidth: '100vw',
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          gap: '40px',
+          gap: '50px',
           background: 'transparent',
           padding: '20px',
           boxSizing: 'border-box'
