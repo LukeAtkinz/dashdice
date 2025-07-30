@@ -199,6 +199,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 const data = doc.data() as WaitingRoomEntry;
                 console.log('🔄 GameWaitingRoom: Received room update for existing room', data);
                 setWaitingRoomEntry({ ...data, id: doc.id });
+                setError(''); // Clear any previous errors
                 
                 // Check if opponent joined
                 if (data.opponentData && !opponentJoined) {
@@ -206,9 +207,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   startVsCountdown();
                 }
               } else {
-                console.error('❌ GameWaitingRoom: Room does not exist:', roomId);
-                console.log('🔄 GameWaitingRoom: Room might have been deleted or is on different environment');
-                setError('Room not found - this might be due to testing across different environments');
+                console.log('🔄 GameWaitingRoom: Room no longer exists in waitingroom (likely moved to matches)');
+                // Don't set error here - room might have been moved to matches by other player
+                // The moveToMatchesAndNavigate function will handle navigation
               }
             },
             (error) => {
@@ -543,21 +544,16 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           startingScore: roomData.gameData?.startingScore || 0,
           status: 'active',
           startedAt: serverTimestamp(),
-          // Start directly in gameplay phase with random first player
-          gamePhase: 'gameplay' as const,
+          // Start with turn decider phase so players can choose who goes first
+          gamePhase: 'turnDecider' as const,
           isRolling: false
           // Don't include undefined optional fields
         }
       };
 
-      // Randomly determine who goes first (true = host goes first)
-      const hostGoesFirst = Math.random() < 0.5;
-      
-      // Set turnActive based on random selection
-      matchData.hostData.turnActive = hostGoesFirst;
-      if (matchData.opponentData) {
-        matchData.opponentData.turnActive = !hostGoesFirst;
-      }
+      // Don't pre-assign turns when using turnDecider phase
+      // The turns will be assigned after the turn decider choice is made
+      console.log('🎮 GameWaitingRoom: Starting in turnDecider phase, turns will be assigned after choice');
 
       console.log('🎮 GameWaitingRoom: Match data prepared:', matchData);
 
