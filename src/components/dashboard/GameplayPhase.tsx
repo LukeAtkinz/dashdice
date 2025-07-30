@@ -236,7 +236,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               <motion.div
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="absolute -right-16 top-1/2 transform -translate-y-1/2 px-4 py-2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
+                className="absolute -right-24 top-1/2 transform -translate-y-1/2 px-4 py-2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
               >
                 <p 
                   className="text-2xl font-bold text-red-300" 
@@ -279,7 +279,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 ...(canRoll ? getButtonGradientStyle('rgba(59, 130, 246, 0.8)') : {})
               }}
             >
-              {matchData.gameData.isRolling ? 'ROLLING...' : 'PLAY'}
+              PLAY
             </button>
             
             <button
