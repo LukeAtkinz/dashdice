@@ -24,10 +24,11 @@ const DashboardContent: React.FC = () => {
   const [userGold] = useState(1000); // Placeholder for user gold
 
   const handleSectionChange = async (section: string) => {
-    // Special handling for match section - create test match
+    // This function is only for manual button clicks, not for programmatic navigation
+    // When GameWaitingRoom calls setCurrentSection directly, it bypasses this function
     if (section === 'match') {
       try {
-        console.log('🧪 Creating test match for development...');
+        console.log('🧪 Creating test match for development (from button click)...');
         const testMatchId = await createTestMatch();
         setCurrentSection('match', {
           gameMode: 'classic',
@@ -341,6 +342,7 @@ const DashboardContent: React.FC = () => {
                     <GameWaitingRoom 
                       gameMode={sectionParams.gameMode || 'classic'}
                       actionType={sectionParams.actionType || 'live'}
+                      roomId={sectionParams.roomId}
                       onBack={() => setCurrentSection('dashboard')}
                     />
                   )}

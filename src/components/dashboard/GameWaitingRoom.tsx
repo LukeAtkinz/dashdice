@@ -12,6 +12,7 @@ interface GameWaitingRoomProps {
   gameMode: string;
   actionType: 'live' | 'custom';
   onBack: () => void;
+  roomId?: string; // Optional roomId for existing rooms
 }
 
 interface WaitingRoomEntry {
@@ -59,7 +60,8 @@ interface WaitingRoomEntry {
 export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   gameMode,
   actionType,
-  onBack
+  onBack,
+  roomId
 }) => {
   const { user } = useAuth();
   const { DisplayBackgroundEquip, MatchBackgroundEquip } = useBackground();
@@ -185,6 +187,41 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
         const userData = await getUserData();
 
+        // If roomId is provided, listen to that specific room
+        if (roomId) {
+          console.log('🎯 GameWaitingRoom: Using existing room ID:', roomId);
+          
+          // Set up listener for the existing room
+          const unsubscribe = onSnapshot(
+            doc(db, 'waitingroom', roomId), 
+            (doc) => {
+              if (doc.exists()) {
+                const data = doc.data() as WaitingRoomEntry;
+                console.log('🔄 GameWaitingRoom: Received room update for existing room', data);
+                setWaitingRoomEntry({ ...data, id: doc.id });
+                
+                // Check if opponent joined
+                if (data.opponentData && !opponentJoined) {
+                  setOpponentJoined(true);
+                  startVsCountdown();
+                }
+              } else {
+                console.error('❌ GameWaitingRoom: Room does not exist:', roomId);
+                console.log('🔄 GameWaitingRoom: Room might have been deleted or is on different environment');
+                setError('Room not found - this might be due to testing across different environments');
+              }
+            },
+            (error) => {
+              console.error('❌ GameWaitingRoom: Error listening to room:', error);
+              setError('Connection error - please try again');
+            }
+          );
+
+          setIsLoading(false);
+          return () => unsubscribe();
+        }
+
+        // Original logic for when no roomId is provided (custom games)
         // First, check for existing games with same gameMode and gameType
         const q = query(
           collection(db, 'waitingroom'),
@@ -333,17 +370,21 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         deleteDoc(doc(db, 'waitingroom', waitingRoomEntry.id)).catch(console.error);
       }
     };
-  }, [user, gameMode, actionType]);
+  }, [user, gameMode, actionType, roomId || '']);
 
   // Function to start 5-second countdown for VS section
   const startVsCountdown = () => {
+    console.log('🕐 GameWaitingRoom: Starting VS countdown...');
     setVsCountdown(5);
     const timer = setInterval(() => {
       setVsCountdown((prev) => {
+        console.log('🕐 GameWaitingRoom: Countdown tick:', prev);
         if (prev === null || prev <= 1) {
           clearInterval(timer);
+          console.log('🕐 GameWaitingRoom: Countdown finished! Showing GO!');
           // Move to matches collection and navigate to match
           setTimeout(() => {
+            console.log('🕐 GameWaitingRoom: Starting navigation after 1 second delay...');
             moveToMatchesAndNavigate();
           }, 1000); // Wait 1 second after showing "GO!"
           return 0; // Show "GO!"
@@ -384,7 +425,74 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   // Function to move game to matches collection
   const moveToMatchesAndNavigate = async () => {
     try {
-      if (!waitingRoomEntry?.id) return;
+      console.log('🎮 GameWaitingRoom: moveToMatchesAndNavigate called!');
+      console.log('🎮 GameWaitingRoom: waitingRoomEntry:', waitingRoomEntry);
+      console.log('🎮 GameWaitingRoom: roomId prop:', roomId);
+      
+      // Use roomId if waitingRoomEntry is null (room was already moved by other player)
+      const roomIdToUse = waitingRoomEntry?.id || roomId;
+      
+      if (!roomIdToUse) {
+        console.error('❌ GameWaitingRoom: No room ID available (neither waitingRoomEntry.id nor roomId prop)!');
+        return;
+      }
+
+      console.log('🎮 GameWaitingRoom: Using room ID:', roomIdToUse);
+
+      // Check if room was already moved to matches collection
+      try {
+        const matchDoc = await getDocs(query(collection(db, 'matches'), where('originalRoomId', '==', roomIdToUse)));
+        if (!matchDoc.empty) {
+          console.log('🎮 GameWaitingRoom: Room already moved to matches, navigating to existing match...');
+          const existingMatch = matchDoc.docs[0];
+          setCurrentSection('match', {
+            gameMode: gameMode,
+            matchId: existingMatch.id
+          });
+          return;
+        }
+      } catch (error) {
+        console.log('🎮 GameWaitingRoom: Could not check for existing match, proceeding with creation...');
+      }
+
+      // Get room data - either from waitingRoomEntry or fetch from database
+      let roomData = waitingRoomEntry;
+      
+      if (!roomData) {
+        console.log('🎮 GameWaitingRoom: waitingRoomEntry is null, fetching from database...');
+        try {
+          const roomDoc = await getDocs(query(collection(db, 'waitingroom'), where('__name__', '==', roomIdToUse)));
+          if (!roomDoc.empty) {
+            roomData = { ...roomDoc.docs[0].data(), id: roomDoc.docs[0].id } as WaitingRoomEntry;
+            console.log('🎮 GameWaitingRoom: Room data fetched from database:', roomData);
+          } else {
+            console.log('🎮 GameWaitingRoom: Room not found in waitingroom, might already be moved. Checking matches...');
+            // Check if already in matches
+            const matchesQuery = await getDocs(query(collection(db, 'matches')));
+            const matchingMatch = matchesQuery.docs.find(doc => {
+              const data = doc.data();
+              return data.hostData?.playerId === user?.uid || data.opponentData?.playerId === user?.uid;
+            });
+            
+            if (matchingMatch) {
+              console.log('🎮 GameWaitingRoom: Found existing match, navigating...');
+              setCurrentSection('match', {
+                gameMode: gameMode,
+                matchId: matchingMatch.id
+              });
+              return;
+            }
+            
+            console.error('❌ GameWaitingRoom: Room not found in any collection');
+            return;
+          }
+        } catch (error) {
+          console.error('❌ GameWaitingRoom: Error fetching room data:', error);
+          return;
+        }
+      }
+
+      console.log('🎮 GameWaitingRoom: Creating match document...');
 
       // Get round objective based on game mode
       const getRoundObjective = (mode: string): number => {
@@ -400,22 +508,23 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       // Create enhanced match document with proper match data structure
       const matchData = {
         createdAt: serverTimestamp(),
-        gameMode: waitingRoomEntry.gameMode,
-        gameType: waitingRoomEntry.gameType,
+        originalRoomId: roomIdToUse, // Track original room ID
+        gameMode: roomData.gameMode,
+        gameType: roomData.gameType,
         status: 'active',
         startedAt: serverTimestamp(),
         
         // Initialize host data with game-specific fields
         hostData: {
-          ...waitingRoomEntry.hostData,
+          ...roomData.hostData,
           turnActive: false, // Will be set by turn decider
           playerScore: 0,
           roundScore: 0
         },
         
         // Initialize opponent data with game-specific fields
-        opponentData: waitingRoomEntry.opponentData ? {
-          ...waitingRoomEntry.opponentData,
+        opponentData: roomData.opponentData ? {
+          ...roomData.opponentData,
           turnActive: false, // Will be set by turn decider
           playerScore: 0,
           roundScore: 0
@@ -423,15 +532,15 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         
         gameData: {
           // Use existing gameData if available, otherwise create new
-          type: waitingRoomEntry.gameData?.type || 'dice',
-          settings: waitingRoomEntry.gameData?.settings || {},
-          turnDecider: waitingRoomEntry.gameData?.turnDecider || Math.floor(Math.random() * 2) + 1, // Random 1 or 2
+          type: roomData.gameData?.type || 'dice',
+          settings: roomData.gameData?.settings || {},
+          turnDecider: roomData.gameData?.turnDecider || Math.floor(Math.random() * 2) + 1, // Random 1 or 2
           currentTurn: 1, // Initialize current turn
           turnScore: 0,
           diceOne: 0,
           diceTwo: 0,
-          roundObjective: waitingRoomEntry.gameData?.roundObjective || getRoundObjective(waitingRoomEntry.gameMode),
-          startingScore: waitingRoomEntry.gameData?.startingScore || 0,
+          roundObjective: roomData.gameData?.roundObjective || getRoundObjective(roomData.gameMode),
+          startingScore: roomData.gameData?.startingScore || 0,
           status: 'active',
           startedAt: serverTimestamp(),
           // Start directly in gameplay phase with random first player
@@ -450,20 +559,35 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         matchData.opponentData.turnActive = !hostGoesFirst;
       }
 
+      console.log('🎮 GameWaitingRoom: Match data prepared:', matchData);
+
       const matchDocRef = await addDoc(collection(db, 'matches'), matchData);
+      console.log('✅ GameWaitingRoom: Match document created with ID:', matchDocRef.id);
       
-      // Remove from waiting room
-      await deleteDoc(doc(db, 'waitingroom', waitingRoomEntry.id));
+      // Remove from waiting room (only if we have the room data)
+      try {
+        await deleteDoc(doc(db, 'waitingroom', roomIdToUse));
+        console.log('✅ GameWaitingRoom: Waiting room document deleted');
+      } catch (error) {
+        console.log('🎮 GameWaitingRoom: Could not delete waiting room (might already be deleted):', error);
+      }
       
       // Navigate to Match component with match ID
-      console.log('🎮 Navigating to Match component with ID:', matchDocRef.id);
-      setCurrentSection('match', {
-        gameMode: waitingRoomEntry.gameMode,
+      console.log('🎮 GameWaitingRoom: Calling setCurrentSection with match data...');
+      console.log('🎮 GameWaitingRoom: setCurrentSection function:', typeof setCurrentSection);
+      console.log('🎮 GameWaitingRoom: Navigation params:', {
+        gameMode: roomData.gameMode,
         matchId: matchDocRef.id
       });
       
+      setCurrentSection('match', {
+        gameMode: roomData.gameMode,
+        matchId: matchDocRef.id
+      });
+      console.log('✅ GameWaitingRoom: Navigation called successfully!');
+      
     } catch (err) {
-      console.error('Error moving to matches:', err);
+      console.error('❌ GameWaitingRoom: Error moving to matches:', err);
     }
   };
 

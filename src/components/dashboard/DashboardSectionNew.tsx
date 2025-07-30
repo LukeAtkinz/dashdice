@@ -103,7 +103,11 @@ export const DashboardSection: React.FC = () => {
         
         // Navigate to waiting room section
         setTimeout(() => {
-          setCurrentSection('waiting-room', { gameMode, actionType: action as 'live' | 'custom' });
+          setCurrentSection('waiting-room', { 
+            gameMode, 
+            actionType: action as 'live' | 'custom',
+            roomId: roomId 
+          });
         }, 600);
 
       } catch (error) {
