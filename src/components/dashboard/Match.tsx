@@ -359,6 +359,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
   const opponent = isHost ? matchData.opponentData : matchData.hostData;
 
+  // Debug logging for background data
+  console.log('🎨 Match backgrounds:', {
+    currentPlayerBackground: currentPlayer.matchBackgroundEquipped,
+    opponentBackground: opponent.matchBackgroundEquipped,
+    currentPlayerRarity: currentPlayer.matchBackgroundEquipped?.rarity,
+    opponentRarity: opponent.matchBackgroundEquipped?.rarity
+  });
+
   return (
     <div className="w-full flex flex-col items-center justify-start gap-[2rem] pt-[1rem] pb-[2rem] min-h-screen">
       {/* Game Arena */}
@@ -385,6 +393,34 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   height: '500px'
                 }}
               >
+                {/* Player Background */}
+                {currentPlayer.matchBackgroundEquipped ? (
+                  currentPlayer.matchBackgroundEquipped.type === 'video' ? (
+                    <video
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="absolute inset-0 w-full h-full object-cover"
+                    >
+                      <source src={currentPlayer.matchBackgroundEquipped.file} type="video/mp4" />
+                    </video>
+                  ) : (
+                    <img
+                      src={currentPlayer.matchBackgroundEquipped.file}
+                      alt={currentPlayer.matchBackgroundEquipped.name}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  )
+                ) : (
+                  /* Default gradient background */
+                  <div 
+                    className="absolute inset-0"
+                    style={{
+                      background: "radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)"
+                    }}
+                  />
+                )}
                 {/* Player Info Overlay */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   {/* Match Score - Large and Centered */}
@@ -452,7 +488,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   lineHeight: '42px',
                   textTransform: 'uppercase'
                 }}>
-                  EPIC
+                  {currentPlayer.matchBackgroundEquipped?.rarity || 'COMMON'}
                 </span>
               </div>
             </div>
@@ -512,6 +548,34 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   height: '500px'
                 }}
               >
+                {/* Player Background */}
+                {opponent.matchBackgroundEquipped ? (
+                  opponent.matchBackgroundEquipped.type === 'video' ? (
+                    <video
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="absolute inset-0 w-full h-full object-cover"
+                    >
+                      <source src={opponent.matchBackgroundEquipped.file} type="video/mp4" />
+                    </video>
+                  ) : (
+                    <img
+                      src={opponent.matchBackgroundEquipped.file}
+                      alt={opponent.matchBackgroundEquipped.name}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  )
+                ) : (
+                  /* Default gradient background */
+                  <div 
+                    className="absolute inset-0"
+                    style={{
+                      background: "radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)"
+                    }}
+                  />
+                )}
                 {/* Player Info Overlay */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   {/* Match Score - Large and Centered */}
@@ -560,7 +624,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   lineHeight: '42px',
                   textTransform: 'uppercase'
                 }}>
-                  LEGENDARY
+                  {opponent.matchBackgroundEquipped?.rarity || 'COMMON'}
                 </span>
               </div>
             </div>
