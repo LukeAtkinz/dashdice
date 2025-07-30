@@ -157,13 +157,13 @@ export const DashboardSection: React.FC = () => {
       `}</style>
 
       {/* Game Mode Container - Match reference exactly */}
-      <div className="w-[100%] overflow-hidden flex flex-row items-center justify-center flex-wrap content-center gap-x-[0.5rem] md:gap-x-[0.687rem] gap-y-[0.5rem] md:gap-y-[0.625rem]">
+      <div className="w-[100%] overflow-hidden flex flex-row items-center justify-center flex-wrap content-center gap-x-[0.5rem] md:gap-x-[0.687rem] gap-y-[0.5rem] md:gap-y-[0.625rem] pr-[1rem] md:pr-[2rem]">
         {Object.entries(gameConfig).map(([mode, config]) => (
           <div
             key={mode}
             onMouseEnter={() => setHoveredGameMode(mode)}
             onMouseLeave={() => setHoveredGameMode(null)}
-            className="h-[12rem] md:h-[15.625rem] w-[90vw] md:w-[31.25rem] rounded-[20px] md:rounded-[30px] overflow-hidden shrink-0 flex flex-row items-center justify-start relative text-right text-[2.5rem] md:text-[4rem] text-gainsboro font-audiowide cursor-pointer transition-all duration-300"
+            className="h-[12rem] md:h-[15.625rem] w-[90vw] md:w-[31.25rem] rounded-[30px] overflow-hidden shrink-0 flex flex-row items-center justify-start relative text-right text-[2.5rem] md:text-[4rem] text-gainsboro font-audiowide cursor-pointer transition-all duration-300"
             style={{
               background: `var(--ui-game-mode-bg, linear-gradient(rgba(37, 37, 37, 0.12), rgba(37, 37, 37, 0.12)), linear-gradient(242.59deg, #192e39 30%, rgba(153, 153, 153, 0)))`
             }}
@@ -180,7 +180,7 @@ export const DashboardSection: React.FC = () => {
                       }}
                       className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
                       style={{
-                        borderRadius: '20px',
+                        borderRadius: '30px',
                         background: 'var(--ui-background-container)',
                         height: '80px',
                         alignContent: 'center',
@@ -211,7 +211,7 @@ export const DashboardSection: React.FC = () => {
                       }}
                       className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
                       style={{
-                        borderRadius: '20px',
+                        borderRadius: '30px',
                         background: 'var(--ui-button-bg)',
                         height: '80px',
                         alignContent: 'center',
@@ -240,7 +240,7 @@ export const DashboardSection: React.FC = () => {
                     <div
                       className="w-full flex flex-col justify-center items-center"
                       style={{
-                        borderRadius: '20px',
+                        borderRadius: '30px',
                         background: 'linear-gradient(243deg, rgba(128, 128, 128, 0.6) 25.17%, rgba(153, 153, 153, 0.00) 109.89%)',
                         height: '160px',
                         alignContent: 'center',

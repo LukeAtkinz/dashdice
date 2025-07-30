@@ -93,7 +93,7 @@ const DashboardContent: React.FC = () => {
       {/* Main Layout */}
       <div className="relative z-20 h-screen flex flex-col">
         {/* Top Navigation Header */}
-        <header className="flex-shrink-0 w-full flex flex-row items-center justify-center gap-[1.25rem] relative z-30 px-[2rem] md:px-[4rem] py-[2rem]">
+        <header className="flex-shrink-0 w-full flex flex-row items-center justify-center gap-[1.25rem] relative z-30 px-[1rem] md:px-[4rem] py-[1rem] md:py-[2rem]">
           <div className="flex-1 flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px] w-full max-w-none" style={{ background: "var(--ui-navbar-bg)" }}>
             
             {/* Left Navigation */}
@@ -326,8 +326,8 @@ const DashboardContent: React.FC = () => {
           </main>
         ) : (
           // Regular content with constraints
-          <main className="flex-1 w-full flex items-start justify-center min-h-0 overflow-auto">
-            <div className="w-full max-w-[100rem] flex flex-col items-center justify-start gap-[2rem] py-[2rem] px-[2rem]">
+          <main className="flex-1 w-full flex items-start justify-center min-h-0 overflow-auto pb-[6rem] md:pb-0">
+            <div className="w-full max-w-[100rem] flex flex-col items-center justify-start gap-[2rem] py-[2rem] px-[1rem] md:px-[2rem] pr-[1rem] md:pr-[2rem]">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentSection}
@@ -355,9 +355,9 @@ const DashboardContent: React.FC = () => {
           </main>
         )}
 
-        {/* Bottom Navigation for Mobile */}
-        <footer className="md:hidden flex-shrink-0 w-full flex flex-row items-center justify-center py-[1rem] px-[2rem] relative z-30">
-          <div className="flex flex-row items-center justify-center gap-[1rem] bg-gradient-to-br from-[#192E39] to-[#99999900] rounded-[30px] px-[20px] py-[10px]">
+        {/* Bottom Navigation for Mobile - Fixed at bottom */}
+        <footer className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-[0.75rem] px-[1rem] relative z-30 bg-black/20 backdrop-blur-sm">
+          <div className="flex flex-row items-center justify-center gap-[0.75rem] bg-gradient-to-br from-[#192E39] to-[#99999900] rounded-[20px] px-[15px] py-[8px]">
             <button
               onClick={() => handleSectionChange('dashboard')}
               className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
