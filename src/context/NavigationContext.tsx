@@ -8,6 +8,7 @@ interface SectionParams {
   gameMode?: string;
   actionType?: 'live' | 'custom';
   matchId?: string; // Add matchId for match navigation
+  roomId?: string; // Add roomId for waiting room navigation
 }
 
 interface NavigationContextType {

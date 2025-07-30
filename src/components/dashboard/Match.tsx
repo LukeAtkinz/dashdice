@@ -16,6 +16,7 @@ interface MatchProps {
 }
 
 export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
+  console.log('🎮 Match: Component rendered with props:', { gameMode, roomId });
   const { user } = useAuth();
   const { setCurrentSection } = useNavigation();
   
@@ -48,7 +49,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
   // Subscribe to match updates
   useEffect(() => {
-    if (!roomId || !user) return;
+    console.log('🎮 Match: useEffect triggered with roomId:', roomId, 'user:', user?.uid);
+    if (!roomId || !user) {
+      console.log('🎮 Match: Early return - missing roomId or user');
+      return;
+    }
 
     console.log('🎮 Match: Subscribing to match:', roomId);
     setLoading(true);
