@@ -326,8 +326,8 @@ const DashboardContent: React.FC = () => {
           </main>
         ) : (
           // Regular content with constraints
-          <main className="flex-1 w-full flex items-start justify-center min-h-0 overflow-auto pb-[6rem] md:pb-0">
-            <div className="w-full max-w-[100rem] flex flex-col items-center justify-start gap-[2rem] py-[2rem] px-[1rem] md:px-[2rem] pr-[1rem] md:pr-[2rem]">
+          <main className="flex-1 w-full flex items-start justify-center min-h-0 overflow-auto pb-[8rem] md:pb-0" style={{ paddingBottom: 'max(6rem, env(safe-area-inset-bottom) + 6rem)' }}>
+            <div className="w-full max-w-[100rem] flex flex-col items-center justify-center gap-[2rem] py-[2rem] px-[1rem] md:px-[2rem] pr-[1rem] md:pr-[2rem]">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentSection}
@@ -356,8 +356,11 @@ const DashboardContent: React.FC = () => {
         )}
 
         {/* Bottom Navigation for Mobile - Fixed at bottom */}
-        <footer className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-[0.75rem] px-[1rem] relative z-30 bg-black/20 backdrop-blur-sm">
-          <div className="flex flex-row items-center justify-center gap-[0.75rem] bg-gradient-to-br from-[#192E39] to-[#99999900] rounded-[20px] px-[15px] py-[8px]">
+        <footer 
+          className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-[0.75rem] px-[1rem] z-50 bg-black/40 backdrop-blur-md border-t border-white/10"
+          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom) + 0.5rem)' }}
+        >
+          <div className="flex flex-row items-center justify-center gap-[0.75rem] bg-gradient-to-br from-[#192E39] to-[#99999900] rounded-[20px] px-[15px] py-[8px] shadow-lg">
             <button
               onClick={() => handleSectionChange('dashboard')}
               className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${

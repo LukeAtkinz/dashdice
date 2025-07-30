@@ -157,13 +157,13 @@ export const DashboardSection: React.FC = () => {
       `}</style>
 
       {/* Game Mode Container - Match reference exactly */}
-      <div className="w-[100%] overflow-hidden flex flex-row items-center justify-center flex-wrap content-center gap-x-[0.5rem] md:gap-x-[0.687rem] gap-y-[0.5rem] md:gap-y-[0.625rem] pr-[1rem] md:pr-[2rem]">
+      <div className="w-[100%] overflow-hidden flex flex-row items-center justify-center flex-wrap content-center gap-x-[0.5rem] md:gap-x-[0.687rem] gap-y-[0.5rem] md:gap-y-[0.625rem] px-[1rem] md:px-[2rem]">
         {Object.entries(gameConfig).map(([mode, config]) => (
           <div
             key={mode}
             onMouseEnter={() => setHoveredGameMode(mode)}
             onMouseLeave={() => setHoveredGameMode(null)}
-            className="h-[12rem] md:h-[15.625rem] w-[90vw] md:w-[31.25rem] rounded-[30px] overflow-hidden shrink-0 flex flex-row items-center justify-start relative text-right text-[2.5rem] md:text-[4rem] text-gainsboro font-audiowide cursor-pointer transition-all duration-300"
+            className="h-[12rem] md:h-[15.625rem] w-[90vw] md:w-[30rem] rounded-[30px] overflow-hidden shrink-0 flex flex-row items-center justify-start relative text-right text-[2.5rem] md:text-[4rem] text-gainsboro font-audiowide cursor-pointer transition-all duration-300"
             style={{
               background: `var(--ui-game-mode-bg, linear-gradient(rgba(37, 37, 37, 0.12), rgba(37, 37, 37, 0.12)), linear-gradient(242.59deg, #192e39 30%, rgba(153, 153, 153, 0)))`
             }}
@@ -272,7 +272,7 @@ export const DashboardSection: React.FC = () => {
               <>
                 <div className="max-h-[100%] relative flex-1 flex flex-col items-end px-[1rem] md:px-[2.25rem] z-[0] transition-all duration-300">
                   <h2
-                    className="m-0 self-stretch relative text-white uppercase font-normal text-[32px] md:text-[64px] leading-[30px] md:leading-[60px]"
+                    className="m-0 self-stretch relative text-white uppercase font-normal text-[40px] md:text-[72px] leading-[38px] md:leading-[68px]"
                     style={{
                       color: "#FFF",
                       fontFamily: "Audiowide",
