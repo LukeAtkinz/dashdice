@@ -14,8 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DashDice - Multiplayer Dice Game",
+  title: "Dashdice",
   description: "Play dice games with friends online",
+  icons: {
+    icon: "/Design Elements/favicon-32x32_2.png",
+  },
 };
 
 export default function RootLayout({
