@@ -216,8 +216,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     if (!matchData) return;
     
     try {
-      // For testing: always use test-user-1 to match our test data
-      const playerId = 'test-user-1'; // Hardcode test user ID for development
+      // Use the actual authenticated user ID
+      const playerId = user?.uid;
+      
+      if (!playerId) {
+        console.error('❌ No authenticated user found');
+        return;
+      }
+      
       await MatchService.makeTurnDeciderChoice(matchData.id!, playerId, choice);
     } catch (error) {
       console.error('❌ Error making turn decider choice:', error);
@@ -229,13 +235,18 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     if (!matchData) return;
     
     try {
-      // For testing: always use test-user-1 to match our test data
-      const playerId = 'test-user-1'; // Hardcode test user ID for development
+      // Use the actual authenticated user ID
+      const playerId = user?.uid;
+      
+      if (!playerId) {
+        console.error('❌ No authenticated user found');
+        return;
+      }
       
       // Debug logging
       console.log('🎲 Rolling dice...');
       console.log('Match Data:', matchData);
-      console.log('Player ID (hardcoded test):', playerId);
+      console.log('Player ID (authenticated user):', playerId);
       console.log('Is Host:', matchData.hostData.playerId === playerId);
       console.log('Current Player:', matchData.hostData.playerId === playerId ? matchData.hostData : matchData.opponentData);
       console.log('Game Phase:', matchData.gameData.gamePhase);
@@ -253,8 +264,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     if (!matchData) return;
     
     try {
-      // For testing: always use test-user-1 to match our test data
-      const playerId = 'test-user-1'; // Hardcode test user ID for development
+      // Use the actual authenticated user ID
+      const playerId = user?.uid;
+      
+      if (!playerId) {
+        console.error('❌ No authenticated user found');
+        return;
+      }
+      
       await MatchService.bankScore(matchData.id!, playerId);
     } catch (error) {
       console.error('❌ Error banking score:', error);
@@ -337,8 +354,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     );
   }
 
-  // Determine current player data (for testing, use hardcoded test-user-1)
-  const isHost = matchData.hostData.playerId === 'test-user-1';
+  // Determine current player data using authenticated user ID
+  const isHost = matchData.hostData.playerId === user?.uid;
   const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
   const opponent = isHost ? matchData.opponentData : matchData.hostData;
 
