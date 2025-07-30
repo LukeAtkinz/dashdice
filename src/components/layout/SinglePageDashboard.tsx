@@ -94,7 +94,7 @@ const DashboardContent: React.FC = () => {
       <div className="relative z-20 h-screen flex flex-col">
         {/* Top Navigation Header */}
         <header className="flex-shrink-0 w-full flex flex-row items-center justify-center gap-[1.25rem] relative z-30 px-[2rem] md:px-[4rem] py-[2rem]">
-          <div className="flex-1 flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px]" style={{ background: "var(--ui-navbar-bg)" }}>
+          <div className="flex-1 flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px] w-full max-w-none" style={{ background: "var(--ui-navbar-bg)" }}>
             
             {/* Left Navigation */}
             <div className="flex flex-row items-center justify-start gap-[1rem] md:gap-[2rem]">
@@ -326,8 +326,8 @@ const DashboardContent: React.FC = () => {
           </main>
         ) : (
           // Regular content with constraints
-          <main className="flex-1 w-full flex items-center justify-center min-h-0 overflow-auto">
-            <div className="w-full max-w-[100rem] flex flex-col items-center justify-center gap-[2rem] py-[2rem] px-[2rem]">
+          <main className="flex-1 w-full flex items-start justify-center min-h-0 overflow-auto">
+            <div className="w-full max-w-[100rem] flex flex-col items-center justify-start gap-[2rem] py-[2rem] px-[2rem]">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentSection}

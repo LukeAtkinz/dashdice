@@ -130,7 +130,7 @@ export const DashboardSection: React.FC = () => {
 
   return (
     <motion.div 
-      className="w-full flex flex-col items-center justify-center gap-[2rem] py-[2rem]"
+      className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem]"
       initial={{ opacity: 1, scale: 1 }}
       animate={{ 
         opacity: isExiting ? 0.7 : 1, 
@@ -157,19 +157,19 @@ export const DashboardSection: React.FC = () => {
       `}</style>
 
       {/* Game Mode Container - Match reference exactly */}
-      <div className="w-[100%] overflow-hidden flex flex-row items-center justify-center flex-wrap content-center gap-x-[0.687rem] gap-y-[0.625rem]">
+      <div className="w-[100%] overflow-hidden flex flex-row items-center justify-center flex-wrap content-center gap-x-[0.5rem] md:gap-x-[0.687rem] gap-y-[0.5rem] md:gap-y-[0.625rem]">
         {Object.entries(gameConfig).map(([mode, config]) => (
           <div
             key={mode}
             onMouseEnter={() => setHoveredGameMode(mode)}
             onMouseLeave={() => setHoveredGameMode(null)}
-            className="h-[15.625rem] w-[31.25rem] rounded-[30px] overflow-hidden shrink-0 flex flex-row items-center justify-start relative text-right text-[4rem] text-gainsboro font-audiowide cursor-pointer transition-all duration-300"
+            className="h-[12rem] md:h-[15.625rem] w-[90vw] md:w-[31.25rem] rounded-[20px] md:rounded-[30px] overflow-hidden shrink-0 flex flex-row items-center justify-start relative text-right text-[2.5rem] md:text-[4rem] text-gainsboro font-audiowide cursor-pointer transition-all duration-300"
             style={{
               background: `var(--ui-game-mode-bg, linear-gradient(rgba(37, 37, 37, 0.12), rgba(37, 37, 37, 0.12)), linear-gradient(242.59deg, #192e39 30%, rgba(153, 153, 153, 0)))`
             }}
           >
             {hoveredGameMode === mode ? (
-              <div className="w-full h-full flex flex-col justify-center items-center gap-[10px] p-[20px] animate-fade-in">
+              <div className="w-full h-full flex flex-col justify-center items-center gap-[8px] md:gap-[10px] p-[15px] md:p-[20px] animate-fade-in">
                 {config.available ? (
                   <>
                     <button
@@ -180,9 +180,9 @@ export const DashboardSection: React.FC = () => {
                       }}
                       className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
                       style={{
-                        borderRadius: '30px',
+                        borderRadius: '20px',
                         background: 'var(--ui-background-container)',
-                        height: '100px',
+                        height: '80px',
                         alignContent: 'center',
                         justifyContent: 'center',
                         border: 0,
@@ -190,14 +190,13 @@ export const DashboardSection: React.FC = () => {
                       }}
                     >
                       <span
+                        className="text-[20px] md:text-[28px] leading-[24px] md:leading-[40px]"
                         style={{
                           color: '#E2E2E2',
                           textAlign: 'center',
                           fontFamily: 'Audiowide',
-                          fontSize: '28px',
                           fontStyle: 'normal',
                           fontWeight: 400,
-                          lineHeight: '40px',
                           textTransform: 'uppercase',
                         }}
                       >
@@ -212,9 +211,9 @@ export const DashboardSection: React.FC = () => {
                       }}
                       className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
                       style={{
-                        borderRadius: '30px',
+                        borderRadius: '20px',
                         background: 'var(--ui-button-bg)',
-                        height: '100px',
+                        height: '80px',
                         alignContent: 'center',
                         justifyContent: 'center',
                         border: 0,
@@ -222,14 +221,13 @@ export const DashboardSection: React.FC = () => {
                       }}
                     >
                       <span
+                        className="text-[20px] md:text-[28px] leading-[24px] md:leading-[40px]"
                         style={{
                           color: '#E2E2E2',
                           textAlign: 'center',
                           fontFamily: 'Audiowide',
-                          fontSize: '28px',
                           fontStyle: 'normal',
                           fontWeight: 400,
-                          lineHeight: '40px',
                           textTransform: 'uppercase',
                         }}
                       >
@@ -242,9 +240,9 @@ export const DashboardSection: React.FC = () => {
                     <div
                       className="w-full flex flex-col justify-center items-center"
                       style={{
-                        borderRadius: '30px',
+                        borderRadius: '20px',
                         background: 'linear-gradient(243deg, rgba(128, 128, 128, 0.6) 25.17%, rgba(153, 153, 153, 0.00) 109.89%)',
-                        height: '210px',
+                        height: '160px',
                         alignContent: 'center',
                         justifyContent: 'center',
                         border: 0,
@@ -253,14 +251,13 @@ export const DashboardSection: React.FC = () => {
                       }}
                     >
                       <span
+                        className="text-[24px] md:text-[32px] leading-[28px] md:leading-[40px]"
                         style={{
                           color: '#E2E2E2',
                           textAlign: 'center',
                           fontFamily: 'Audiowide',
-                          fontSize: '32px',
                           fontStyle: 'normal',
                           fontWeight: 400,
-                          lineHeight: '40px',
                           textTransform: 'uppercase',
                           opacity: 0.8
                         }}
@@ -273,16 +270,14 @@ export const DashboardSection: React.FC = () => {
               </div>
             ) : (
               <>
-                <div className="max-h-[100%] relative flex-1 flex flex-col items-end px-[2.25rem] z-[0] transition-all duration-300">
+                <div className="max-h-[100%] relative flex-1 flex flex-col items-end px-[1rem] md:px-[2.25rem] z-[0] transition-all duration-300">
                   <h2
-                    className="m-0 self-stretch relative text-white uppercase font-normal"
+                    className="m-0 self-stretch relative text-white uppercase font-normal text-[32px] md:text-[64px] leading-[30px] md:leading-[60px]"
                     style={{
                       color: "#FFF",
                       fontFamily: "Audiowide",
-                      fontSize: "64px",
                       fontStyle: "normal",
                       fontWeight: 400,
-                      lineHeight: "60px",
                       textTransform: "uppercase",
                       whiteSpace: "pre-line"
                     }}
@@ -290,14 +285,12 @@ export const DashboardSection: React.FC = () => {
                     {config.name}
                   </h2>
                   <div
-                    className="w-[50%] relative font-light inline-block"
+                    className="w-[50%] relative font-light inline-block text-[14px] md:text-[24px] leading-[14px] md:leading-[24px]"
                     style={{
                       color: "#FFF",
                       fontFamily: "Montserrat",
-                      fontSize: "24px",
                       fontStyle: "normal",
                       fontWeight: 300,
-                      lineHeight: "24px",
                       textTransform: "uppercase",
                       textAlign: "right",
                       opacity: 0.8,
@@ -307,7 +300,7 @@ export const DashboardSection: React.FC = () => {
                   </div>
                 </div>
                 <img
-                  className="w-[25.256rem] absolute max-h-none object-contain z-[1] transition-all duration-300"
+                  className="w-[15rem] md:w-[25.256rem] absolute max-h-none object-contain z-[1] transition-all duration-300"
                   alt={mode}
                   src={config.icon}
                   style={{
