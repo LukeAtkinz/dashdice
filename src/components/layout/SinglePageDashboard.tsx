@@ -113,7 +113,7 @@ const DashboardContent: React.FC = () => {
                     fontWeight: 400,
                   }}
                 >
-                  DashDice
+                  Dashdice
                 </div>
               </div>
 
