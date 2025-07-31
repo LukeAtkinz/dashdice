@@ -178,6 +178,9 @@ export default function Home() {
                   <li>• Enhanced game over screen with detailed player stats</li>
                   <li>• Comprehensive user profile stats tracking</li>
                   <li>• Win/loss streak system with automatic updates</li>
+                  <li>• Advanced rematch system with 10-second timers</li>
+                  <li>• Private rematch rooms with seamless transitions</li>
+                  <li>• Automatic match archival to prevent rejoining completed games</li>
                 </ul>
               </CardContent>
             </Card>

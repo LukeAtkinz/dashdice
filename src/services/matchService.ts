@@ -15,6 +15,7 @@ import {
 import { db } from '@/services/firebase';
 import { MatchData, GamePhase, RollPhase, TurnDeciderChoice } from '@/types/match';
 import { UserService } from './userService';
+import { CompletedMatchService } from './completedMatchService';
 
 export class MatchService {
   /**
@@ -443,6 +444,19 @@ export class MatchService {
       if (gameOver && winner) {
         const winnerId = isHost ? matchData.hostData.playerId : matchData.opponentData.playerId;
         await this.updateUserStats(matchData, winnerId);
+        
+        // 🏆 MOVE MATCH TO COMPLETED: Archive the match to prevent rejoining
+        const finalScore = isHost ? 
+          (matchData.hostData.playerScore + newTurnScore) : 
+          (matchData.opponentData.playerScore + newTurnScore);
+          
+        await CompletedMatchService.moveMatchToCompleted(matchId, {
+          playerId: winnerId,
+          playerDisplayName: winner,
+          finalScore: finalScore
+        });
+        
+        console.log('✅ Auto-win match archived to CompletedMatches collection');
       }
       
     } catch (error) {
@@ -532,6 +546,15 @@ export class MatchService {
         // 📊 UPDATE USER STATS: Update user profiles when match ends
         const winnerId = currentPlayer.playerId;
         await this.updateUserStats(matchData, winnerId);
+        
+        // 🏆 MOVE MATCH TO COMPLETED: Archive the match to prevent rejoining
+        await CompletedMatchService.moveMatchToCompleted(matchId, {
+          playerId: winnerId,
+          playerDisplayName: winner,
+          finalScore: newPlayerScore
+        });
+        
+        console.log('✅ Match archived to CompletedMatches collection');
       }
       
     } catch (error) {
