@@ -217,7 +217,7 @@ const DashboardContent: React.FC = () => {
               {/* FRIENDS Button */}
               <button
                 onClick={() => handleSectionChange('friends')}
-                className="flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
+                className="hidden md:flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
                 style={{
                   display: "flex",
                   width: "180px",
@@ -288,6 +288,7 @@ const DashboardContent: React.FC = () => {
                   }}
                 />
                 <span
+                  className="hidden md:inline"
                   style={{
                     color: "#FFF",
                     fontFamily: "Audiowide",
@@ -357,7 +358,7 @@ const DashboardContent: React.FC = () => {
 
         {/* Bottom Navigation for Mobile - Fixed at bottom */}
         <footer 
-          className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-[0.75rem] px-[1rem] z-50 bg-black/40 backdrop-blur-md border-t border-white/10"
+          className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-[0.75rem] px-[1rem] z-50"
           style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom) + 0.5rem)' }}
         >
           <div className="flex flex-row items-center justify-center gap-[0.75rem] bg-gradient-to-br from-[#192E39] to-[#99999900] rounded-[20px] px-[15px] py-[8px] shadow-lg">
