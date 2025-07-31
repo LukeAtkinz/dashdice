@@ -7,6 +7,7 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  getDoc,
   serverTimestamp,
   runTransaction,
   writeBatch
@@ -145,6 +146,53 @@ export class MatchmakingService {
   }
 
   /**
+   * Validate that a player is allowed to access a specific match
+   * Ensures only the 2 original players can access the match
+   */
+  static async validatePlayerAccess(matchId: string, playerId: string): Promise<boolean> {
+    try {
+      console.log('🔐 Validating player access:', { matchId, playerId });
+
+      // Check in active matches first
+      const matchRef = doc(db, 'matches', matchId);
+      const matchSnapshot = await getDoc(matchRef);
+
+      if (matchSnapshot.exists()) {
+        const matchData = matchSnapshot.data();
+        const hostId = matchData.hostData?.playerId;
+        const opponentId = matchData.opponentData?.playerId;
+        const allowedIds = matchData.allowedPlayerIds || [hostId, opponentId];
+
+        const isAllowed = allowedIds.includes(playerId);
+        console.log(`🔐 Match access validation - Player: ${playerId}, Allowed: ${isAllowed}`);
+        return isAllowed;
+      }
+
+      // If not in active matches, check waiting room
+      const waitingRoomRef = doc(db, 'waitingroom', matchId);
+      const waitingSnapshot = await getDoc(waitingRoomRef);
+
+      if (waitingSnapshot.exists()) {
+        const roomData = waitingSnapshot.data();
+        const hostId = roomData.hostData?.playerId;
+        const opponentId = roomData.opponentData?.playerId;
+        const allowedIds = roomData.allowedPlayerIds || [hostId, opponentId].filter(Boolean);
+
+        const isAllowed = allowedIds.includes(playerId);
+        console.log(`🔐 Waiting room access validation - Player: ${playerId}, Allowed: ${isAllowed}`);
+        return isAllowed;
+      }
+
+      console.log(`❌ Match/Room ${matchId} not found`);
+      return false;
+
+    } catch (error) {
+      console.error('❌ Error validating player access:', error);
+      return false;
+    }
+  }
+
+  /**
    * Create computer opponent data for testing
    */
   static getComputerOpponent() {
@@ -205,6 +253,7 @@ export class MatchmakingService {
 
   /**
    * Main matchmaking function with transaction to prevent duplicate room creation
+   * Includes 20-minute timeout check and player ID validation
    */
   static async findOrCreateRoom(gameMode: string, hostData: any) {
     try {
@@ -226,15 +275,30 @@ export class MatchmakingService {
         const querySnapshot = await getDocs(q);
         console.log(`📋 Found ${querySnapshot.docs.length} existing rooms`);
         
-        // Filter out rooms where the current user is already the host
+        // Filter out rooms where the current user is already the host AND check for expired rooms
+        const now = new Date();
+        const twentyMinutesAgo = new Date(now.getTime() - 20 * 60 * 1000); // 20 minutes ago
+        
         const availableRooms = querySnapshot.docs.filter(doc => {
           const roomData = doc.data();
           const isOwnRoom = roomData.hostData?.playerId === hostData.playerId;
+          
+          // Check if room is expired (older than 20 minutes)
+          const createdAt = roomData.createdAt?.toDate();
+          const isExpired = createdAt && createdAt < twentyMinutesAgo;
+          
+          if (isExpired) {
+            console.log(`⏰ Room ${doc.id} expired (created: ${createdAt}), will be removed`);
+            // Delete expired room within transaction
+            transaction.delete(doc.ref);
+            return false;
+          }
+          
           console.log(`🏠 Room ${doc.id}: host=${roomData.hostData?.playerId}, current=${hostData.playerId}, isOwn=${isOwnRoom}`);
           return !isOwnRoom;
         });
         
-        console.log(`✅ Available rooms for joining: ${availableRooms.length}`);
+        console.log(`✅ Available rooms for joining (after timeout check): ${availableRooms.length}`);
         
         if (availableRooms.length > 0) {
           // Found existing room where current user is NOT the host - join it
@@ -252,7 +316,7 @@ export class MatchmakingService {
             ? this.convertBackgroundToObject(hostData.matchBackgroundEquipped)
             : hostData.matchBackgroundEquipped;
           
-          // Add opponent data and update playersRequired
+          // Add opponent data and update playersRequired to 0 (LOCKED to 2 players only)
           transaction.update(roomRef, {
             opponentData: {
               displayBackgroundEquipped: displayBg,
@@ -266,7 +330,9 @@ export class MatchmakingService {
                 matchWins: hostData.playerStats.matchWins
               }
             },
-            playersRequired: 0 // Room is now full
+            playersRequired: 0, // Room is now full and LOCKED
+            allowedPlayerIds: [existingDoc.data().hostData.playerId, hostData.playerId], // Security: Only these 2 players allowed
+            lockedAt: serverTimestamp() // Track when room was locked
           });
           
           console.log(`✅ Joined existing room ${existingDoc.id} as opponent`);
