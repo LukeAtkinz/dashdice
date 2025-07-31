@@ -19,7 +19,7 @@ export const Card: React.FC<CardProps> = ({
   };
 
   const classes = `
-    bg-white shadow-sm border border-gray-200 rounded-lg
+    bg-white shadow-sm border border-gray-200 rounded-2xl
     ${paddingClasses[padding]}
     ${className}
   `;
