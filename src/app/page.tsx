@@ -157,6 +157,7 @@ export default function Home() {
                 <ul className="text-sm text-gray-500 space-y-1">
                   <li>• Hidden navbar authentication buttons on mobile devices</li>
                   <li>• Mobile navbar optimization - removed backgrounds and simplified layout</li>
+                  <li>• Fixed PVP matchmaking issue - players now connect to each other properly</li>
                 </ul>
               </CardContent>
             </Card>
