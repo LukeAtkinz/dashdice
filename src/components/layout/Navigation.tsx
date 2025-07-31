@@ -75,7 +75,7 @@ export const Navigation: React.FC = () => {
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center space-x-3">
+              <div className="hidden sm:flex items-center space-x-3">
                 <Link href="/login">
                   <Button 
                     variant="outline" 

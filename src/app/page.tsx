@@ -133,24 +133,35 @@ export default function Home() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Version 3.5.0</span>
+                  <span className="text-sm bg-gray-100 text-gray-800 px-2 py-1 rounded">Completed</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">
+                  Complete foundation rebuild with enhanced UX, responsive design, professional branding, and optimized user interface consistency across all platforms.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Version 3.5.1</span>
                   <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">Current</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-4">
-                  Foundation and core systems implementation with enhanced mobile UX and desktop layout optimizations.
+                  Mobile optimization and user experience refinements for better accessibility and streamlined navigation.
                 </p>
                 <ul className="text-sm text-gray-500 space-y-1">
-                  <li>• Enhanced desktop layout and game mode styling</li>
-                  <li>• Comprehensive mobile UX improvements</li>
-                  <li>• Landing page redesign with video backgrounds</li>
-                  <li>• Navigation and branding updates</li>
-                  <li>• Mobile responsiveness and safe area handling</li>
-                  <li>• Button styling consistency and navbar size optimization</li>
+                  <li>• Hidden navbar authentication buttons on mobile devices</li>
                 </ul>
               </CardContent>
             </Card>
-
+          </div>
+          
+          <div className="grid md:grid-cols-1 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
