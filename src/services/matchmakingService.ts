@@ -82,6 +82,19 @@ export class MatchmakingService {
   }
 
   /**
+   * Get round objective based on game mode
+   */
+  static getRoundObjective(gameMode: string): number {
+    switch (gameMode.toLowerCase()) {
+      case 'quickfire': return 50;
+      case 'classic': return 100;
+      case 'zerohour': return 150;
+      case 'lastline': return 200;
+      default: return 100;
+    }
+  }
+
+  /**
    * Move room from waitingroom to matches and add game state variables
    */
   static async moveToMatches(roomId: string) {
@@ -108,7 +121,7 @@ export class MatchmakingService {
             turnScore: 0,
             diceOne: 0,
             diceTwo: 0,
-            roundObjective: 100, // Default objective
+            roundObjective: this.getRoundObjective(roomData.gameMode || 'classic'),
             startingScore: 0,
             status: 'active',
             startedAt: serverTimestamp()
@@ -118,14 +131,28 @@ export class MatchmakingService {
             ...roomData.hostData,
             turnActive: turnDecider === 1, // Host is active if turnDecider is 1
             playerScore: 0,
-            roundScore: 0
+            roundScore: 0,
+            // Initialize match statistics
+            matchStats: {
+              banks: 0,
+              doubles: 0,
+              biggestTurnScore: 0,
+              lastDiceSum: 0
+            }
           },
           // Add game state to opponentData
           opponentData: {
             ...roomData.opponentData,
             turnActive: turnDecider === 2, // Opponent is active if turnDecider is 2
             playerScore: 0,
-            roundScore: 0
+            roundScore: 0,
+            // Initialize match statistics
+            matchStats: {
+              banks: 0,
+              doubles: 0,
+              biggestTurnScore: 0,
+              lastDiceSum: 0
+            }
           }
         };
         

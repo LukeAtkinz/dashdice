@@ -1,4 +1,4 @@
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from './firebase';
 
 export interface UserProfile {
@@ -93,5 +93,110 @@ export class UserService {
       matchBackgroundEquipped: profile.inventory.matchBackgroundEquipped,
       playerStats: profile.stats
     };
+  }
+
+  /**
+   * Update user stats when a game is played (regardless of win/loss)
+   */
+  static async updateGamePlayed(uid: string): Promise<void> {
+    try {
+      console.log('🎮 UserService: Updating gamesPlayed for user:', uid);
+      const userRef = doc(db, 'users', uid);
+      
+      await updateDoc(userRef, {
+        'stats.gamesPlayed': increment(1),
+        updatedAt: new Date()
+      });
+      
+      console.log('✅ UserService: Successfully updated gamesPlayed');
+    } catch (error) {
+      console.error('❌ UserService: Error updating gamesPlayed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update user stats when they win a match
+   * This handles matchWins and streak tracking
+   */
+  static async updateMatchWin(uid: string): Promise<void> {
+    try {
+      console.log('🏆 UserService: Processing match win for user:', uid);
+      const userRef = doc(db, 'users', uid);
+      
+      // Get current user data to handle streak logic
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        throw new Error('User not found');
+      }
+      
+      const userData = userSnap.data();
+      const currentStats = userData.stats || {};
+      const currentStreak = currentStats.currentStreak || 0;
+      const bestStreak = currentStats.bestStreak || 0;
+      
+      // Calculate new streak values
+      const newCurrentStreak = currentStreak + 1;
+      const newBestStreak = newCurrentStreak > bestStreak ? newCurrentStreak : bestStreak;
+      
+      console.log('📊 UserService: Streak update -', {
+        previousCurrent: currentStreak,
+        newCurrent: newCurrentStreak,
+        previousBest: bestStreak,
+        newBest: newBestStreak
+      });
+      
+      // Update all win-related stats
+      await updateDoc(userRef, {
+        'stats.matchWins': increment(1),
+        'stats.currentStreak': newCurrentStreak,
+        'stats.bestStreak': newBestStreak,
+        updatedAt: new Date()
+      });
+      
+      console.log('✅ UserService: Successfully updated match win stats');
+    } catch (error) {
+      console.error('❌ UserService: Error updating match win:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update user stats when they lose a match
+   * This resets the current streak to 0
+   */
+  static async updateMatchLoss(uid: string): Promise<void> {
+    try {
+      console.log('💔 UserService: Processing match loss for user:', uid);
+      const userRef = doc(db, 'users', uid);
+      
+      // Reset current streak to 0 (best streak remains unchanged)
+      await updateDoc(userRef, {
+        'stats.currentStreak': 0,
+        updatedAt: new Date()
+      });
+      
+      console.log('✅ UserService: Successfully reset current streak');
+    } catch (error) {
+      console.error('❌ UserService: Error updating match loss:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Debug utility: Get and log user stats
+   */
+  static async debugUserStats(uid: string): Promise<void> {
+    try {
+      const profile = await this.getUserProfile(uid);
+      if (profile) {
+        console.log('📊 USER STATS DEBUG:', {
+          user: profile.displayName || profile.email,
+          stats: profile.stats
+        });
+      }
+    } catch (error) {
+      console.error('❌ Error debugging user stats:', error);
+    }
   }
 }

@@ -25,6 +25,13 @@ export interface MatchData {
     turnActive: boolean;
     playerScore: number;
     roundScore: number;
+    // New match statistics
+    matchStats: {
+      banks: number;           // How many times player banked
+      doubles: number;         // How many doubles player rolled
+      biggestTurnScore: number; // Largest points in a single turn
+      lastDiceSum: number;     // Score of the last dice rolled
+    };
   };
   
   // Opponent player data
@@ -43,6 +50,13 @@ export interface MatchData {
     turnActive: boolean;
     playerScore: number;
     roundScore: number;
+    // New match statistics
+    matchStats: {
+      banks: number;           // How many times player banked
+      doubles: number;         // How many doubles player rolled
+      biggestTurnScore: number; // Largest points in a single turn
+      lastDiceSum: number;     // Score of the last dice rolled
+    };
   };
   
   // Game state data - Compatible with existing structure

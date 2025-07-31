@@ -166,10 +166,18 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-4">
-                  Advanced match management system with completed match archival and enhanced security protocols.
+                  Game mode configuration updates with improved balance and automatic win detection for better gameplay experience.
                 </p>
                 <ul className="text-sm text-gray-500 space-y-1">
-                  <li>• Created completed matches collection for match history</li>
+                  <li>• Quickfire mode now targets 50 points (was 100)</li>
+                  <li>• Dynamic round objectives in matchmaking service</li>
+                  <li>• Auto-win detection when reaching round objective</li>
+                  <li>• No banking required for automatic victory</li>
+                  <li>• Enhanced game balance for faster matches</li>
+                  <li>• New match statistics tracking system</li>
+                  <li>• Enhanced game over screen with detailed player stats</li>
+                  <li>• Comprehensive user profile stats tracking</li>
+                  <li>• Win/loss streak system with automatic updates</li>
                 </ul>
               </CardContent>
             </Card>
