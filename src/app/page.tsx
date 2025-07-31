@@ -1,26 +1,39 @@
+'use client';
+
 import Link from "next/link";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import { FirebaseConnectionTest } from "@/components/ui/FirebaseConnectionTest";
-import { FontDemo } from "@/components/ui/FontDemo";
 
 export default function Home() {
   return (
     <Layout>
-      <div className="space-y-12">
-        {/* Firebase Connection Test */}
-        <FirebaseConnectionTest />
+      <style jsx>{`
+        @keyframes goldGlow {
+          0% { 
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4), 0 0 60px rgba(255, 215, 0, 0.2);
+          }
+          50% { 
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.6), 0 0 90px rgba(255, 215, 0, 0.4);
+          }
+          100% { 
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4), 0 0 60px rgba(255, 215, 0, 0.2);
+          }
+        }
         
-        {/* Font and Background Demo */}
-        <FontDemo />
-
+        .gold-glow {
+          animation: goldGlow 2s infinite;
+          color: #ffd700;
+        }
+      `}</style>
+      
+      <div className="space-y-16">
         {/* Hero Section */}
-        <div className="text-center space-y-6">
-          <h1 className="text-4xl sm:text-6xl font-bold font-orbitron text-gray-900">
-            Welcome to <span className="text-blue-600">DashDice</span>
+        <div className="text-center space-y-8 mt-12">
+          <h1 className="text-4xl sm:text-6xl font-bold font-orbitron text-white">
+            Who will take the <span className="gold-glow" style={{ fontFamily: "Audiowide" }}>crown</span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-white/90 max-w-2xl mx-auto">
             The ultimate multiplayer dice game experience. Compete with friends, collect items, and customize your gaming experience.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -57,7 +70,7 @@ export default function Home() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <span className="text-2xl">🎒</span>
-                <span>Inventory System</span>
+                <span>Vault System</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -82,35 +95,54 @@ export default function Home() {
           </Card>
         </div>
 
-        {/* Game Modes */}
-        <div className="space-y-6">
-          <h2 className="text-3xl font-bold text-center text-gray-900">Game Modes</h2>
+        {/* Development Roadmap */}
+        <div className="space-y-10">
+          <div className="text-center space-y-6">
+            <h2 className="text-4xl sm:text-5xl font-bold text-center text-white" style={{ fontFamily: "Audiowide" }}>Building Together - Development Progress</h2>
+            <p className="text-lg text-white/80 text-center max-w-3xl mx-auto">
+              Join our community as we build Dashdice! Each milestone represents 5 meaningful changes, showing real progress and transparency in our development journey.
+            </p>
+          </div>
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Ranked Matches</CardTitle>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Version 3.5.0</span>
+                  <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">Current</span>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-4">
-                  Compete in competitive matches to climb the global leaderboard and earn exclusive rewards.
+                  Foundation and core systems implementation with enhanced mobile UX and desktop layout optimizations.
                 </p>
-                <Button variant="outline" size="sm">
-                  Learn More
-                </Button>
+                <ul className="text-sm text-gray-500 space-y-1">
+                  <li>• Enhanced desktop layout and game mode styling</li>
+                  <li>• Comprehensive mobile UX improvements</li>
+                  <li>• Landing page redesign with video backgrounds</li>
+                  <li>• Navigation and branding updates</li>
+                  <li>• Mobile responsiveness and safe area handling</li>
+                </ul>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Casual Play</CardTitle>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Version 3.6.0</span>
+                  <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">Coming Soon</span>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-4">
-                  Relax with friends in casual matches. Perfect for learning the game or having fun.
+                  Enhanced gameplay features and community building tools for a more engaging multiplayer experience.
                 </p>
-                <Button variant="outline" size="sm">
-                  Learn More
-                </Button>
+                <ul className="text-sm text-gray-500 space-y-1">
+                  <li>• Advanced matchmaking system</li>
+                  <li>• Real-time player interactions</li>
+                  <li>• Enhanced inventory management</li>
+                  <li>• Community features and social tools</li>
+                  <li>• Performance optimizations</li>
+                </ul>
               </CardContent>
             </Card>
           </div>
