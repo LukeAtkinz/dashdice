@@ -25,6 +25,31 @@ export default function Home() {
           animation: goldGlow 2s infinite;
           color: #ffd700;
         }
+        
+        .gold-button {
+          background: linear-gradient(to right, #fbbf24, #d97706) !important;
+          color: #000 !important;
+          font-weight: bold !important;
+          border: none !important;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .gold-button:hover {
+          background: linear-gradient(to right, #f59e0b, #b45309) !important;
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .white-button {
+          background: white;
+          color: #000;
+          border: 2px solid white;
+          font-weight: bold;
+        }
+        
+        .white-button:hover {
+          background: rgba(255, 255, 255, 0.9);
+          transform: scale(1.05);
+        }
       `}</style>
       
       <div className="space-y-16">
@@ -38,12 +63,12 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/register">
-              <Button size="lg" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto gold-button" style={{ fontFamily: "Audiowide" }}>
                 Get Started
               </Button>
             </Link>
             <Link href="/login">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto white-button" style={{ fontFamily: "Audiowide" }}>
                 Sign In
               </Button>
             </Link>
@@ -121,6 +146,7 @@ export default function Home() {
                   <li>• Landing page redesign with video backgrounds</li>
                   <li>• Navigation and branding updates</li>
                   <li>• Mobile responsiveness and safe area handling</li>
+                  <li>• Button styling consistency and navbar size optimization</li>
                 </ul>
               </CardContent>
             </Card>
