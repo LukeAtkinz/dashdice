@@ -158,6 +158,7 @@ export default function Home() {
                   <li>• Hidden navbar authentication buttons on mobile devices</li>
                   <li>• Mobile navbar optimization - removed backgrounds and simplified layout</li>
                   <li>• Fixed PVP matchmaking issue - players now connect to each other properly</li>
+                  <li>• Resolved match ID collision and display name sync issues</li>
                 </ul>
               </CardContent>
             </Card>
