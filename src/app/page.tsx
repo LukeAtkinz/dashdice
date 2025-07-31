@@ -147,18 +147,29 @@ export default function Home() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Version 3.5.1</span>
+                  <span className="text-sm bg-gray-100 text-gray-800 px-2 py-1 rounded">Completed</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">
+                  Comprehensive mobile optimization, PVP matchmaking fixes, and security enhancements with timeout management and player access controls.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Version 3.5.2</span>
                   <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">Current</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-4">
-                  Mobile optimization and user experience refinements for better accessibility and streamlined navigation.
+                  Advanced match management system with completed match archival and enhanced security protocols.
                 </p>
                 <ul className="text-sm text-gray-500 space-y-1">
-                  <li>• Hidden navbar authentication buttons on mobile devices</li>
-                  <li>• Mobile navbar optimization - removed backgrounds and simplified layout</li>
-                  <li>• Fixed PVP matchmaking issue - players now connect to each other properly</li>
-                  <li>• Resolved match ID collision and display name sync issues</li>
+                  <li>• Created completed matches collection for match history</li>
                 </ul>
               </CardContent>
             </Card>
