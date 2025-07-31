@@ -156,6 +156,7 @@ export default function Home() {
                 </p>
                 <ul className="text-sm text-gray-500 space-y-1">
                   <li>• Hidden navbar authentication buttons on mobile devices</li>
+                  <li>• Mobile navbar optimization - removed backgrounds and simplified layout</li>
                 </ul>
               </CardContent>
             </Card>
