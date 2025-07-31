@@ -165,12 +165,12 @@ const DashboardContent: React.FC = () => {
                   </span>
                 </button>
 
-                {/* TEST MATCH Button - Hidden when in match */}
+                {/* SHOP Button - Disabled for future implementation */}
                 {currentSection !== 'match' && (
                   <button
-                    onClick={() => handleSectionChange('match')}
-                    className="flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
-                    title="Test Match System (Creates test players and match)"
+                    disabled
+                    className="flex cursor-not-allowed transition-all duration-300"
+                    title="Shop - Coming Soon!"
                     style={{
                       display: "flex",
                       width: "180px",
@@ -180,9 +180,9 @@ const DashboardContent: React.FC = () => {
                       alignItems: "center",
                       gap: "8px",
                       borderRadius: "18px",
-                      background: "#FF0080",
+                      background: "#808080",
                       border: "none",
-                      opacity: 1
+                      opacity: 0.8
                     }}
                   >
                     <img
@@ -192,7 +192,8 @@ const DashboardContent: React.FC = () => {
                         width: "40px",
                         height: "40px",
                         flexShrink: 0,
-                        aspectRatio: "1/1"
+                        aspectRatio: "1/1",
+                        opacity: 0.8
                       }}
                     />
                     <span
@@ -205,7 +206,7 @@ const DashboardContent: React.FC = () => {
                         lineHeight: "20px"
                       }}
                     >
-                      TEST MATCH
+                      SHOP
                     </span>
                   </button>
                 )}
@@ -372,13 +373,12 @@ const DashboardContent: React.FC = () => {
               <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>Dashboard</span>
             </button>
             <button
-              onClick={() => handleSectionChange('match')}
-              className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
-                currentSection === 'match' ? 'bg-white/20' : 'hover:bg-white/10'
-              }`}
+              disabled
+              className="flex flex-col items-center gap-1 p-2 rounded-lg transition-all cursor-not-allowed opacity-60"
+              title="Shop - Coming Soon!"
             >
-              <div className="text-xl">🧪</div>
-              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>Test Match</span>
+              <div className="text-xl">🛍️</div>
+              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>Shop</span>
             </button>
             <button
               onClick={() => handleSectionChange('inventory')}
