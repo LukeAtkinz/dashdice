@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MatchData } from '@/types/match';
+import { MatchService } from '@/services/matchService';
 import { RematchService, RematchRoom } from '@/services/rematchService';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { useAuth } from '@/context/AuthContext';
@@ -37,6 +38,25 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
     
     try {
       setRematchState('requesting');
+      
+      // Archive the current completed match before creating rematch
+      if (matchData.gameData.gamePhase === 'gameOver' && matchData.gameData.winner) {
+        const winnerId = isHost ? 
+          (matchData.gameData.winner === matchData.hostData.playerDisplayName ? matchData.hostData.playerId : matchData.opponentData.playerId) :
+          (matchData.gameData.winner === matchData.opponentData.playerDisplayName ? matchData.opponentData.playerId : matchData.hostData.playerId);
+        
+        const winnerData = winnerId === matchData.hostData.playerId ? matchData.hostData : matchData.opponentData;
+        
+        await MatchService.archiveCompletedMatch(
+          matchData.id || '',
+          winnerId,
+          winnerData.playerDisplayName,
+          winnerData.playerScore
+        );
+        
+        console.log('✅ Match archived when requesting rematch');
+      }
+      
       const roomId = await RematchService.createRematchRoom(
         user.uid,
         currentUser.playerDisplayName,
@@ -143,6 +163,24 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
       setRematchState('waiting');
       setIncomingRematch(null); // Clear the incoming request
       
+      // Archive the current completed match before creating new one
+      if (matchData.gameData.gamePhase === 'gameOver' && matchData.gameData.winner) {
+        const winnerId = isHost ? 
+          (matchData.gameData.winner === matchData.hostData.playerDisplayName ? matchData.hostData.playerId : matchData.opponentData.playerId) :
+          (matchData.gameData.winner === matchData.opponentData.playerDisplayName ? matchData.opponentData.playerId : matchData.hostData.playerId);
+        
+        const winnerData = winnerId === matchData.hostData.playerId ? matchData.hostData : matchData.opponentData;
+        
+        await MatchService.archiveCompletedMatch(
+          matchData.id || '',
+          winnerId,
+          winnerData.playerDisplayName,
+          winnerData.playerScore
+        );
+        
+        console.log('✅ Match archived when accepting rematch');
+      }
+      
       const newMatchId = await RematchService.acceptRematch(incomingRematch.id, user.uid);
       console.log('✅ Rematch accepted, new match ID:', newMatchId);
       
@@ -165,14 +203,38 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
     }
   };
 
-  const handleLeaveMatch = () => {
-    // Cancel any pending rematch
-    if (rematchRoomId && rematchState === 'waiting') {
-      RematchService.cancelRematch(rematchRoomId, user?.uid || '');
+  const handleLeaveMatch = async () => {
+    try {
+      // Cancel any pending rematch
+      if (rematchRoomId && rematchState === 'waiting') {
+        await RematchService.cancelRematch(rematchRoomId, user?.uid || '');
+      }
+      
+      // Archive the completed match before leaving
+      if (matchData.gameData.gamePhase === 'gameOver' && matchData.gameData.winner) {
+        const winnerId = isHost ? 
+          (matchData.gameData.winner === matchData.hostData.playerDisplayName ? matchData.hostData.playerId : matchData.opponentData.playerId) :
+          (matchData.gameData.winner === matchData.opponentData.playerDisplayName ? matchData.opponentData.playerId : matchData.hostData.playerId);
+        
+        const winnerData = winnerId === matchData.hostData.playerId ? matchData.hostData : matchData.opponentData;
+        
+        await MatchService.archiveCompletedMatch(
+          matchData.id || '',
+          winnerId,
+          winnerData.playerDisplayName,
+          winnerData.playerScore
+        );
+        
+        console.log('✅ Match archived when leaving game over screen');
+      }
+      
+      setRematchState('opponent_left');
+      onLeaveMatch();
+    } catch (error) {
+      console.error('❌ Error leaving match:', error);
+      // Still leave even if archiving fails
+      onLeaveMatch();
     }
-    
-    setRematchState('opponent_left');
-    onLeaveMatch();
   };
 
   const getRematchButtonContent = () => {
@@ -404,7 +466,7 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
         className="flex justify-center gap-4"
       >
         <button
-          onClick={onLeaveMatch}
+          onClick={handleLeaveMatch}
           className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xl font-bold transition-all transform hover:scale-105"
           style={{ fontFamily: "Audiowide" }}
         >
