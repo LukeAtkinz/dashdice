@@ -39,7 +39,14 @@ export const createTestMatch = async () => {
         },
         turnActive: true,  // You (host) go first
         playerScore: 25,
-        roundScore: 0
+        roundScore: 0,
+        // Initialize match statistics for testing
+        matchStats: {
+          banks: 3,
+          doubles: 2,
+          biggestTurnScore: 16,
+          lastDiceSum: 8
+        }
       },
 
       // Opponent player data (Test Player 2) 
@@ -64,7 +71,14 @@ export const createTestMatch = async () => {
         },
         turnActive: false, // Opponent waits
         playerScore: 18,
-        roundScore: 0
+        roundScore: 0,
+        // Initialize match statistics for testing
+        matchStats: {
+          banks: 2,
+          doubles: 1,
+          biggestTurnScore: 12,
+          lastDiceSum: 7
+        }
       },
 
       // Game state data - Only include defined fields
@@ -137,7 +151,14 @@ export const createTestMatchWithTurnDecider = async () => {
         },
         turnActive: false,
         playerScore: 0,
-        roundScore: 0
+        roundScore: 0,
+        // Initialize match statistics
+        matchStats: {
+          banks: 0,
+          doubles: 0,
+          biggestTurnScore: 0,
+          lastDiceSum: 0
+        }
       },
 
       opponentData: {
@@ -161,7 +182,14 @@ export const createTestMatchWithTurnDecider = async () => {
         },
         turnActive: false,
         playerScore: 0,
-        roundScore: 0
+        roundScore: 0,
+        // Initialize match statistics
+        matchStats: {
+          banks: 0,
+          doubles: 0,
+          biggestTurnScore: 0,
+          lastDiceSum: 0
+        }
       },
 
       // Game state data - Only include defined fields

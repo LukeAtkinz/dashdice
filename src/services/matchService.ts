@@ -14,8 +14,57 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/services/firebase';
 import { MatchData, GamePhase, RollPhase, TurnDeciderChoice } from '@/types/match';
+import { UserService } from './userService';
 
 export class MatchService {
+  /**
+   * Update user stats when a match ends
+   */
+  private static async updateUserStats(matchData: MatchData, winnerId: string): Promise<void> {
+    try {
+      console.log('📊 MatchService: Updating user stats for match completion');
+      
+      const hostId = matchData.hostData.playerId;
+      const opponentId = matchData.opponentData.playerId;
+      
+      // Skip stats updates for test users
+      const isTestMatch = hostId.startsWith('test-user-') || opponentId.startsWith('test-user-');
+      if (isTestMatch) {
+        console.log('🧪 MatchService: Skipping stats update for test match');
+        return;
+      }
+      
+      // Update gamesPlayed for both players
+      const gamePlayedPromises = [
+        UserService.updateGamePlayed(hostId),
+        UserService.updateGamePlayed(opponentId)
+      ];
+      await Promise.all(gamePlayedPromises);
+      
+      // Update win/loss stats
+      if (winnerId === hostId) {
+        // Host wins, opponent loses
+        await Promise.all([
+          UserService.updateMatchWin(hostId),
+          UserService.updateMatchLoss(opponentId)
+        ]);
+        console.log('🏆 MatchService: Host wins - stats updated');
+      } else if (winnerId === opponentId) {
+        // Opponent wins, host loses
+        await Promise.all([
+          UserService.updateMatchWin(opponentId),
+          UserService.updateMatchLoss(hostId)
+        ]);
+        console.log('🏆 MatchService: Opponent wins - stats updated');
+      }
+      
+      console.log('✅ MatchService: User stats update completed');
+    } catch (error) {
+      console.error('❌ MatchService: Error updating user stats:', error);
+      // Don't throw error to prevent match completion from failing
+    }
+  }
+
   /**
    * Subscribe to real-time match updates
    */
@@ -303,12 +352,62 @@ export class MatchService {
         turnOver = false; // Continue playing
       }
       
-      // Prepare updates
+      // Prepare updates (declare early for auto-win logic)
       const updates: any = {
         'gameData.isRolling': false,
         'gameData.rollPhase': deleteField(), // Use deleteField() instead of null
         'gameData.turnScore': newTurnScore,
       };
+      
+      // 📊 STATISTICS TRACKING
+      const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
+      const currentPlayerScore = currentPlayer.playerScore || 0;
+      const playerStatsPath = isHost ? 'hostData.matchStats' : 'opponentData.matchStats';
+      const currentStats = currentPlayer.matchStats || { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0 };
+      
+      // Track doubles
+      if (dice1 === dice2) {
+        updates[`${playerStatsPath}.doubles`] = currentStats.doubles + 1;
+      }
+      
+      // Track biggest turn score
+      if (newTurnScore > currentStats.biggestTurnScore) {
+        updates[`${playerStatsPath}.biggestTurnScore`] = newTurnScore;
+      }
+      
+      // Track last dice sum
+      updates[`${playerStatsPath}.lastDiceSum`] = dice1 + dice2;
+      
+      // 🏆 AUTO-WIN LOGIC: Check if player + turn score reaches round objective
+      const roundObjective = matchData.gameData.roundObjective || 100; // Use stored objective
+      
+      if (currentPlayerScore + newTurnScore >= roundObjective && !turnOver) {
+        console.log(`🏆 AUTO-WIN! ${currentPlayer.playerDisplayName} reached ${roundObjective} points without banking!`);
+        gameOver = true;
+        winner = currentPlayer.playerDisplayName;
+        gameOverReason = `${winner} reached ${roundObjective} points!`;
+        
+        // Auto-bank the winning score
+        if (isHost) {
+          updates['hostData.playerScore'] = currentPlayerScore + newTurnScore;
+        } else {
+          updates['opponentData.playerScore'] = currentPlayerScore + newTurnScore;
+        }
+        
+        // Clear turn score since it's been auto-banked
+        updates['gameData.turnScore'] = 0;
+        turnOver = true; // Effectively end the turn
+        
+        // Set game over state
+        updates['gameData.gamePhase'] = 'gameOver';
+        updates['gameData.winner'] = winner;
+        updates['gameData.gameOverReason'] = gameOverReason;
+        updates['gameData.status'] = 'completed';
+        
+        // Both players lose turn
+        updates['hostData.turnActive'] = false;
+        updates['opponentData.turnActive'] = false;
+      }
       
       // Handle double multiplier logic
       if (dice1 === dice2 && dice1 !== 1 && dice1 !== 6) {
@@ -339,6 +438,12 @@ export class MatchService {
       }
       
       await updateDoc(matchRef, updates);
+      
+      // 📊 UPDATE USER STATS: If game over, update user profiles
+      if (gameOver && winner) {
+        const winnerId = isHost ? matchData.hostData.playerId : matchData.opponentData.playerId;
+        await this.updateUserStats(matchData, winnerId);
+      }
       
     } catch (error) {
       console.error('❌ Error processing game rules:', error);
@@ -390,6 +495,11 @@ export class MatchService {
         'gameData.hasDoubleMultiplier': false, // Clear multiplier when banking
       };
       
+      // 📊 TRACK BANKING STATISTICS
+      const playerStatsPath = isHost ? 'hostData.matchStats' : 'opponentData.matchStats';
+      const currentStats = currentPlayer.matchStats || { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0 };
+      updates[`${playerStatsPath}.banks`] = currentStats.banks + 1;
+      
       // Update player score
       if (isHost) {
         updates['hostData.playerScore'] = newPlayerScore;
@@ -418,6 +528,10 @@ export class MatchService {
       console.log(`💰 Score banked: ${matchData.gameData.turnScore} points. New score: ${newPlayerScore}`);
       if (gameOver) {
         console.log(`🏆 Game Over! ${winner} wins!`);
+        
+        // 📊 UPDATE USER STATS: Update user profiles when match ends
+        const winnerId = currentPlayer.playerId;
+        await this.updateUserStats(matchData, winnerId);
       }
       
     } catch (error) {

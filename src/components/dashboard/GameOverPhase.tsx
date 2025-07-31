@@ -55,7 +55,7 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
         )}
       </motion.div>
 
-      {/* Final Scores */}
+      {/* Final Scores - Updated Layout */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -64,7 +64,6 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
       >
         {/* Host Score */}
         <div className="p-6 bg-white/10 rounded-2xl backdrop-blur-sm border border-gray-400">
-          <p className="text-lg text-gray-300 mb-2">HOST</p>
           <p className="text-xl font-bold text-white mb-2" style={{ fontFamily: "Audiowide" }}>
             {matchData.hostData.playerDisplayName}
           </p>
@@ -76,7 +75,6 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
 
         {/* Opponent Score */}
         <div className="p-6 bg-white/10 rounded-2xl backdrop-blur-sm border border-gray-400">
-          <p className="text-lg text-gray-300 mb-2">OPPONENT</p>
           <p className="text-xl font-bold text-white mb-2" style={{ fontFamily: "Audiowide" }}>
             {matchData.opponentData.playerDisplayName}
           </p>
@@ -87,34 +85,79 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
         </div>
       </motion.div>
 
-      {/* Game Stats */}
+      {/* Match Statistics - New 3-Column Layout */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.3 }}
         className="mb-8 p-6 bg-black/20 rounded-2xl backdrop-blur-sm border border-gray-600"
       >
-        <h3 className="text-lg font-bold text-white mb-4" style={{ fontFamily: "Audiowide" }}>
+        <h3 className="text-lg font-bold text-white mb-6 text-center" style={{ fontFamily: "Audiowide" }}>
           MATCH STATISTICS
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div className="text-center">
-            <p className="text-gray-300">Game Mode</p>
-            <p className="text-white font-bold">{matchData.gameMode.toUpperCase()}</p>
+        
+        <div className="grid grid-cols-3 gap-8">
+          {/* Left Column - Host Stats */}
+          <div className="text-center space-y-4">
+            <h4 className="text-md font-bold text-yellow-400 mb-4" style={{ fontFamily: "Audiowide" }}>
+              {matchData.hostData.playerDisplayName}
+            </h4>
+            
+            <div className="space-y-3">
+              <div>
+                <p className="text-gray-300 text-sm">Banks</p>
+                <p className="text-white font-bold text-lg">{matchData.hostData.matchStats?.banks || 0}</p>
+              </div>
+              
+              <div>
+                <p className="text-gray-300 text-sm">Doubles</p>
+                <p className="text-white font-bold text-lg">{matchData.hostData.matchStats?.doubles || 0}</p>
+              </div>
+              
+              <div>
+                <p className="text-gray-300 text-sm">Biggest Turn Score</p>
+                <p className="text-white font-bold text-lg">{matchData.hostData.matchStats?.biggestTurnScore || 0}</p>
+              </div>
+              
+              <div>
+                <p className="text-gray-300 text-sm">Last Dice</p>
+                <p className="text-white font-bold text-lg">{matchData.hostData.matchStats?.lastDiceSum || 0}</p>
+              </div>
+            </div>
           </div>
-          <div className="text-center">
-            <p className="text-gray-300">Round Objective</p>
-            <p className="text-white font-bold">{matchData.gameData.roundObjective}</p>
+          
+          {/* Center Column - Separator */}
+          <div className="flex items-center justify-center">
+            <div className="w-px h-48 bg-gradient-to-b from-transparent via-gray-400 to-transparent"></div>
           </div>
-          <div className="text-center">
-            <p className="text-gray-300">Final Turn Score</p>
-            <p className="text-white font-bold">{matchData.gameData.turnScore}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-gray-300">Last Dice</p>
-            <p className="text-white font-bold">
-              {matchData.gameData.diceOne}-{matchData.gameData.diceTwo}
-            </p>
+          
+          {/* Right Column - Opponent Stats */}
+          <div className="text-center space-y-4">
+            <h4 className="text-md font-bold text-yellow-400 mb-4" style={{ fontFamily: "Audiowide" }}>
+              {matchData.opponentData.playerDisplayName}
+            </h4>
+            
+            <div className="space-y-3">
+              <div>
+                <p className="text-gray-300 text-sm">Banks</p>
+                <p className="text-white font-bold text-lg">{matchData.opponentData.matchStats?.banks || 0}</p>
+              </div>
+              
+              <div>
+                <p className="text-gray-300 text-sm">Doubles</p>
+                <p className="text-white font-bold text-lg">{matchData.opponentData.matchStats?.doubles || 0}</p>
+              </div>
+              
+              <div>
+                <p className="text-gray-300 text-sm">Biggest Turn Score</p>
+                <p className="text-white font-bold text-lg">{matchData.opponentData.matchStats?.biggestTurnScore || 0}</p>
+              </div>
+              
+              <div>
+                <p className="text-gray-300 text-sm">Last Dice</p>
+                <p className="text-white font-bold text-lg">{matchData.opponentData.matchStats?.lastDiceSum || 0}</p>
+              </div>
+            </div>
           </div>
         </div>
       </motion.div>
