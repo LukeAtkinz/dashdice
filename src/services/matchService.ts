@@ -445,18 +445,9 @@ export class MatchService {
         const winnerId = isHost ? matchData.hostData.playerId : matchData.opponentData.playerId;
         await this.updateUserStats(matchData, winnerId);
         
-        // 🏆 MOVE MATCH TO COMPLETED: Archive the match to prevent rejoining
-        const finalScore = isHost ? 
-          (matchData.hostData.playerScore + newTurnScore) : 
-          (matchData.opponentData.playerScore + newTurnScore);
-          
-        await CompletedMatchService.moveMatchToCompleted(matchId, {
-          playerId: winnerId,
-          playerDisplayName: winner,
-          finalScore: finalScore
-        });
-        
-        console.log('✅ Auto-win match archived to CompletedMatches collection');
+        // ⚠️ NOTE: Match stays active until players leave or start rematch
+        // This allows GameOverPhase to continue reading match data
+        console.log('✅ Auto-win stats updated - match remains active for game over screen');
       }
       
     } catch (error) {
@@ -547,18 +538,39 @@ export class MatchService {
         const winnerId = currentPlayer.playerId;
         await this.updateUserStats(matchData, winnerId);
         
-        // 🏆 MOVE MATCH TO COMPLETED: Archive the match to prevent rejoining
-        await CompletedMatchService.moveMatchToCompleted(matchId, {
-          playerId: winnerId,
-          playerDisplayName: winner,
-          finalScore: newPlayerScore
-        });
-        
-        console.log('✅ Match archived to CompletedMatches collection');
+        // ⚠️ NOTE: Match stays active until players leave or start rematch
+        // This allows GameOverPhase to continue reading match data
+        console.log('✅ Banking win stats updated - match remains active for game over screen');
       }
       
     } catch (error) {
       console.error('❌ Error banking score:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Archive a completed match to prevent rejoining
+   * Called when players leave the game over screen or start a rematch
+   */
+  static async archiveCompletedMatch(
+    matchId: string, 
+    winnerId: string, 
+    winnerDisplayName: string, 
+    finalScore: number
+  ): Promise<void> {
+    try {
+      console.log('🏆 Archiving completed match:', matchId);
+      
+      await CompletedMatchService.moveMatchToCompleted(matchId, {
+        playerId: winnerId,
+        playerDisplayName: winnerDisplayName,
+        finalScore: finalScore
+      });
+      
+      console.log('✅ Match successfully archived to CompletedMatches collection');
+    } catch (error) {
+      console.error('❌ Error archiving completed match:', error);
       throw error;
     }
   }
