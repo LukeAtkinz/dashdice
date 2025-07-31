@@ -51,6 +51,73 @@ export class MatchmakingService {
   }
 
   /**
+   * Create a private waiting room for rematch between specific players
+   */
+  static async createRematchWaitingRoom(
+    hostUserId: string,
+    hostDisplayName: string,
+    opponentUserId: string,
+    opponentDisplayName: string,
+    gameMode: string,
+    gameType: string
+  ): Promise<string> {
+    try {
+      console.log('🔄 MatchmakingService: Creating rematch waiting room');
+      
+      // Create waiting room data - immediately move to match
+      const waitingRoomData = {
+        gameMode,
+        gameType: 'Private Rematch',
+        playersRequired: 0, // Both players already confirmed
+        createdAt: serverTimestamp(),
+        expiresAt: new Date(Date.now() + (20 * 60 * 1000)), // 20 minute expiry
+        hostData: {
+          playerDisplayName: hostDisplayName,
+          playerId: hostUserId,
+          // Add default background data
+          displayBackgroundEquipped: 'Relax',
+          matchBackgroundEquipped: 'Relax',
+          playerStats: {
+            bestStreak: 0,
+            currentStreak: 0,
+            gamesPlayed: 0,
+            matchWins: 0
+          }
+        },
+        opponentData: {
+          playerDisplayName: opponentDisplayName,
+          playerId: opponentUserId,
+          // Add default background data
+          displayBackgroundEquipped: 'Relax',
+          matchBackgroundEquipped: 'Relax',
+          playerStats: {
+            bestStreak: 0,
+            currentStreak: 0,
+            gamesPlayed: 0,
+            matchWins: 0
+          }
+        },
+        gameData: {
+          type: 'dice',
+          settings: {}
+        }
+      };
+      
+      // Create waiting room temporarily
+      const waitingRoomRef = await addDoc(collection(db, 'waitingroom'), waitingRoomData);
+      
+      // Immediately move to matches (skip waiting room phase)
+      await this.moveToMatches(waitingRoomRef.id);
+      
+      console.log('✅ MatchmakingService: Rematch waiting room created and moved to matches');
+      return waitingRoomRef.id;
+    } catch (error) {
+      console.error('❌ MatchmakingService: Error creating rematch waiting room:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Add opponent to existing room
    */
   static async addOpponentToRoom(roomId: string, opponentData: any) {
