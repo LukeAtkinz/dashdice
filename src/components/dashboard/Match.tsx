@@ -8,7 +8,7 @@ import { MatchData } from '@/types/match';
 import { useNavigation } from '@/context/NavigationContext';
 import { TurnDeciderPhase } from './TurnDeciderPhase';
 import { GameplayPhase } from './GameplayPhase';
-import { GameOverPhase } from './GameOverPhase';
+import { GameOverWrapper } from './GameOverWrapper';
 
 interface MatchProps {
   gameMode?: string;
@@ -521,8 +521,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               )}
 
               {matchData.gameData.gamePhase === 'gameOver' && (
-                <GameOverPhase
-                  matchData={matchData}
+                <GameOverWrapper
+                  matchId={matchData.id || ''}
                   onLeaveMatch={() => setCurrentSection('dashboard')}
                 />
               )}

@@ -550,6 +550,47 @@ export class MatchService {
   }
 
   /**
+   * Get completed match data and immediately archive it
+   * This prevents "Match Not Found" errors in the match end screen
+   */
+  static async getAndArchiveCompletedMatch(matchId: string): Promise<MatchData | null> {
+    try {
+      console.log('📦 Getting and archiving completed match:', matchId);
+      
+      // First, get the match data
+      const matchData = await this.getMatch(matchId);
+      if (!matchData) {
+        console.error('❌ Match not found for archival:', matchId);
+        return null;
+      }
+      
+      // Verify it's actually completed
+      if (matchData.gameData.gamePhase !== 'gameOver' || !matchData.gameData.winner) {
+        console.error('❌ Match is not completed:', matchId);
+        return null;
+      }
+      
+      // Archive the match immediately
+      const winner = matchData.gameData.winner;
+      const winnerData = matchData.hostData.playerDisplayName === winner 
+        ? matchData.hostData 
+        : matchData.opponentData;
+      
+      await CompletedMatchService.moveMatchToCompleted(matchId, {
+        playerId: winnerData.playerId,
+        playerDisplayName: winnerData.playerDisplayName,
+        finalScore: winnerData.playerScore
+      });
+      
+      console.log('✅ Match data retrieved and archived successfully');
+      return matchData;
+    } catch (error) {
+      console.error('❌ Error getting and archiving completed match:', error);
+      return null;
+    }
+  }
+
+  /**
    * Archive a completed match to prevent rejoining
    * Called when players leave the game over screen or start a rematch
    */
