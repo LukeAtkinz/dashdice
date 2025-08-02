@@ -1,0 +1,456 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { MatchData } from '@/types/match';
+import { RematchService, RematchRoom } from '@/services/rematchService';
+import { CountdownTimer } from '@/components/ui/CountdownTimer';
+import { useAuth } from '@/context/AuthContext';
+
+interface MatchSummaryScreenProps {
+  matchData: MatchData;
+  onLeaveMatch: () => void;
+  onRematch?: (newMatchId: string) => void;
+}
+
+export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({ 
+  matchData, 
+  onLeaveMatch,
+  onRematch
+}) => {
+  const { user } = useAuth();
+  const [rematchState, setRematchState] = useState<'idle' | 'requesting' | 'waiting' | 'accepted' | 'expired' | 'opponent_left'>('idle');
+  const [rematchRoomId, setRematchRoomId] = useState<string | null>(null);
+  const [incomingRematch, setIncomingRematch] = useState<RematchRoom | null>(null);
+  
+  const winner = matchData.gameData.winner;
+  const reason = matchData.gameData.gameOverReason;
+  
+  // Determine current user and opponent
+  const isHost = matchData.hostData.playerId === user?.uid;
+  const currentUser = isHost ? matchData.hostData : matchData.opponentData;
+  const opponent = isHost ? matchData.opponentData : matchData.hostData;
+  const opponentDisplayName = opponent.playerDisplayName;
+  const opponentId = opponent.playerId;
+
+  // Rematch handlers
+  const handleRequestRematch = async () => {
+    if (!user || !opponentId) return;
+    
+    try {
+      setRematchState('requesting');
+      
+      const roomId = await RematchService.createRematchRoom(
+        user.uid,
+        currentUser.playerDisplayName,
+        opponentId,
+        opponentDisplayName,
+        matchData.id || '',
+        'standard', // Default game mode
+        'public' // Default game type
+      );
+      setRematchRoomId(roomId);
+    } catch (error) {
+      console.error('Error creating rematch room:', error);
+      setRematchState('idle');
+    }
+  };
+
+  const handleAcceptRematch = async () => {
+    if (!incomingRematch || !user?.uid) return;
+    
+    try {
+      console.log('🎮 Accepting rematch...');
+      setRematchState('waiting');
+      setIncomingRematch(null); // Clear the incoming request
+      
+      const newMatchId = await RematchService.acceptRematch(incomingRematch.id, user.uid);
+      console.log('✅ Rematch accepted, new match ID:', newMatchId);
+      
+      // Navigate to new match
+      if (onRematch) {
+        onRematch(newMatchId);
+      }
+    } catch (error) {
+      console.error('❌ Error accepting rematch:', error);
+      setRematchState('idle');
+    }
+  };
+
+  const handleCancelRematch = async () => {
+    if (!rematchRoomId || !user?.uid) return;
+    
+    try {
+      await RematchService.cancelRematch(rematchRoomId, user.uid);
+      setRematchState('idle');
+      setRematchRoomId(null);
+    } catch (error) {
+      console.error('Error canceling rematch:', error);
+    }
+  };
+
+  const handleRematchTimeout = () => {
+    setRematchState('expired');
+    setRematchRoomId(null);
+  };
+
+  const handleLeaveMatch = () => {
+    // Cancel any pending rematch
+    if (rematchRoomId && rematchState === 'requesting') {
+      RematchService.cancelRematch(rematchRoomId, user?.uid || '');
+    }
+    
+    setRematchState('opponent_left');
+    onLeaveMatch();
+  };
+
+  // Listen for incoming rematch requests
+  useEffect(() => {
+    if (!user?.uid) return;
+    
+    const unsubscribe = RematchService.subscribeToIncomingRematches(
+      user.uid,
+      (rematches) => {
+        // Find rematch from current opponent
+        const relevantRematch = rematches.find(r => 
+          r.requesterUserId === opponent.playerId && 
+          r.opponentUserId === user.uid
+        );
+        
+        if (relevantRematch) {
+          setIncomingRematch(relevantRematch);
+        }
+      }
+    );
+    
+    return () => unsubscribe();
+  }, [user?.uid, opponent.playerId]);
+
+  // Listen for rematch room updates when we're the requester
+  useEffect(() => {
+    if (!rematchRoomId || rematchState !== 'requesting') return;
+    
+    const unsubscribe = RematchService.subscribeToRematchRoom(
+      rematchRoomId,
+      (rematchData) => {
+        if (!rematchData) {
+          setRematchState('expired');
+          return;
+        }
+        
+        if (rematchData.status === 'accepted') {
+          setRematchState('accepted');
+          // The actual match creation is handled in the service
+        } else if (rematchData.status === 'expired' || rematchData.status === 'cancelled') {
+          setRematchState('expired');
+        }
+      }
+    );
+    
+    return () => unsubscribe();
+  }, [rematchRoomId, rematchState]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center relative p-8">
+      {/* Victory/Defeat Announcement */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
+        className="text-center mb-8"
+      >
+        <motion.h1
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="text-6xl md:text-8xl font-bold mb-4"
+          style={{ fontFamily: "Audiowide" }}
+        >
+          {winner === currentUser.playerDisplayName ? (
+            <span className="text-yellow-400 drop-shadow-lg">🏆 VICTORY! 🏆</span>
+          ) : (
+            <span className="text-red-400 drop-shadow-lg">💀 DEFEAT 💀</span>
+          )}
+        </motion.h1>
+
+        {/* Winner Announcement */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mb-6"
+        >
+          <h2 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: "Audiowide" }}>
+            {winner} WINS!
+          </h2>
+        </motion.div>
+
+        {/* Game Over Reason */}
+        {reason && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="mb-8"
+          >
+            <p className="text-xl text-gray-300">{reason}</p>
+          </motion.div>
+        )}
+      </motion.div>
+
+      {/* Final Scores - Updated Layout */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1 }}
+        className="grid grid-cols-2 gap-8 mb-8"
+      >
+        {/* Host Score */}
+        <div className="p-6 bg-white/10 rounded-2xl backdrop-blur-sm border border-gray-400">
+          <p className="text-xl font-bold text-white mb-2" style={{ fontFamily: "Audiowide" }}>
+            {matchData.hostData.playerDisplayName}
+          </p>
+          <p className="text-3xl font-bold text-white" style={{ fontFamily: "Audiowide" }}>
+            {matchData.hostData.playerScore}
+          </p>
+          <p className="text-sm text-gray-300">Final Score</p>
+        </div>
+
+        {/* Opponent Score */}
+        <div className="p-6 bg-white/10 rounded-2xl backdrop-blur-sm border border-gray-400">
+          <p className="text-xl font-bold text-white mb-2" style={{ fontFamily: "Audiowide" }}>
+            {matchData.opponentData.playerDisplayName}
+          </p>
+          <p className="text-3xl font-bold text-white" style={{ fontFamily: "Audiowide" }}>
+            {matchData.opponentData.playerScore}
+          </p>
+          <p className="text-sm text-gray-300">Final Score</p>
+        </div>
+      </motion.div>
+
+      {/* Match Statistics - New 3-Column Layout */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.3 }}
+        className="mb-8 p-6 bg-black/20 rounded-2xl backdrop-blur-sm border border-gray-600"
+      >
+        <h3 className="text-lg font-bold text-white mb-6 text-center" style={{ fontFamily: "Audiowide" }}>
+          MATCH STATISTICS
+        </h3>
+        
+        <div className="grid grid-cols-3 gap-8">
+          {/* Left Column - Host Stats */}
+          <div className="text-center space-y-4">
+            <h4 className="text-md font-bold text-yellow-400 mb-4" style={{ fontFamily: "Audiowide" }}>
+              {matchData.hostData.playerDisplayName}
+            </h4>
+            
+            <div className="space-y-3">
+              <div>
+                <p className="text-gray-300 text-sm">Banks</p>
+                <p className="text-white font-bold text-lg">{matchData.hostData.matchStats?.banks || 0}</p>
+              </div>
+              
+              <div>
+                <p className="text-gray-300 text-sm">Doubles</p>
+                <p className="text-white font-bold text-lg">{matchData.hostData.matchStats?.doubles || 0}</p>
+              </div>
+              
+              <div>
+                <p className="text-gray-300 text-sm">Biggest Turn Score</p>
+                <p className="text-white font-bold text-lg">{matchData.hostData.matchStats?.biggestTurnScore || 0}</p>
+              </div>
+              
+              <div>
+                <p className="text-gray-300 text-sm">Last Dice</p>
+                <p className="text-white font-bold text-lg">{matchData.hostData.matchStats?.lastDiceSum || 0}</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Center Column - Separator */}
+          <div className="flex items-center justify-center">
+            <div className="w-px h-48 bg-gradient-to-b from-transparent via-gray-400 to-transparent"></div>
+          </div>
+          
+          {/* Right Column - Opponent Stats */}
+          <div className="text-center space-y-4">
+            <h4 className="text-md font-bold text-yellow-400 mb-4" style={{ fontFamily: "Audiowide" }}>
+              {matchData.opponentData.playerDisplayName}
+            </h4>
+            
+            <div className="space-y-3">
+              <div>
+                <p className="text-gray-300 text-sm">Banks</p>
+                <p className="text-white font-bold text-lg">{matchData.opponentData.matchStats?.banks || 0}</p>
+              </div>
+              
+              <div>
+                <p className="text-gray-300 text-sm">Doubles</p>
+                <p className="text-white font-bold text-lg">{matchData.opponentData.matchStats?.doubles || 0}</p>
+              </div>
+              
+              <div>
+                <p className="text-gray-300 text-sm">Biggest Turn Score</p>
+                <p className="text-white font-bold text-lg">{matchData.opponentData.matchStats?.biggestTurnScore || 0}</p>
+              </div>
+              
+              <div>
+                <p className="text-gray-300 text-sm">Last Dice</p>
+                <p className="text-white font-bold text-lg">{matchData.opponentData.matchStats?.lastDiceSum || 0}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Incoming Rematch Request */}
+      {incomingRematch && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mb-6 p-6 bg-green-600/20 border-2 border-green-400 rounded-2xl backdrop-blur-sm"
+        >
+          <div className="text-center">
+            <p className="text-xl font-bold text-green-400 mb-4" style={{ fontFamily: "Audiowide" }}>
+              {opponentDisplayName} wants a rematch!
+            </p>
+            <div className="flex justify-center items-center gap-4">
+              <CountdownTimer
+                initialSeconds={10}
+                onComplete={() => {
+                  setIncomingRematch(null);
+                  setRematchState('expired');
+                }}
+                isActive={true}
+                size="medium"
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={handleAcceptRematch}
+                  className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold transition-all transform hover:scale-105"
+                  style={{ fontFamily: "Audiowide" }}
+                >
+                  ACCEPT
+                </button>
+                <button
+                  onClick={() => setIncomingRematch(null)}
+                  className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-all transform hover:scale-105"
+                  style={{ fontFamily: "Audiowide" }}
+                >
+                  DECLINE
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Action Buttons */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.6 }}
+        className="flex justify-center gap-4"
+      >
+        <button
+          onClick={handleLeaveMatch}
+          className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xl font-bold transition-all transform hover:scale-105"
+          style={{ fontFamily: "Audiowide" }}
+        >
+          BACK TO DASHBOARD
+        </button>
+        
+        {/* Rematch Button with Timer */}
+        {rematchState === 'idle' && (
+          <button
+            onClick={handleRequestRematch}
+            className="px-8 py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xl font-bold transition-all transform hover:scale-105"
+            style={{ fontFamily: "Audiowide" }}
+          >
+            REMATCH
+          </button>
+        )}
+        
+        {rematchState === 'requesting' && (
+          <div className="flex items-center gap-4 px-8 py-4 bg-yellow-600/20 border-2 border-yellow-400 rounded-xl">
+            <CountdownTimer
+              initialSeconds={10}
+              onComplete={handleRematchTimeout}
+              isActive={true}
+              size="small"
+            />
+            <span className="text-yellow-400 font-bold text-xl" style={{ fontFamily: "Audiowide" }}>
+              WAITING FOR {opponentDisplayName}
+            </span>
+            <button
+              onClick={handleCancelRematch}
+              className="ml-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition-all"
+              style={{ fontFamily: "Audiowide" }}
+            >
+              CANCEL
+            </button>
+          </div>
+        )}
+        
+        {rematchState === 'waiting' && (
+          <div className="px-8 py-4 bg-blue-600/20 border-2 border-blue-400 rounded-xl">
+            <span className="text-blue-400 font-bold text-xl" style={{ fontFamily: "Audiowide" }}>
+              REMATCH ACCEPTED - STARTING GAME...
+            </span>
+          </div>
+        )}
+        
+        {rematchState === 'expired' && (
+          <div className="px-8 py-4 bg-red-600/20 border-2 border-red-400 rounded-xl">
+            <span className="text-red-400 font-bold text-xl" style={{ fontFamily: "Audiowide" }}>
+              REMATCH EXPIRED
+            </span>
+          </div>
+        )}
+        
+        {rematchState === 'opponent_left' && (
+          <div className="px-8 py-4 bg-gray-600/20 border-2 border-gray-400 rounded-xl">
+            <span className="text-gray-400 font-bold text-xl" style={{ fontFamily: "Audiowide" }}>
+              {opponentDisplayName} LEFT
+            </span>
+          </div>
+        )}
+      </motion.div>
+
+      {/* Celebration Animation */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2 }}
+        className="absolute inset-0 pointer-events-none"
+      >
+        {/* Confetti-like elements */}
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={i}
+            initial={{ 
+              opacity: 0, 
+              y: -100, 
+              x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 800),
+              rotate: 0
+            }}
+            animate={{ 
+              opacity: [0, 1, 0], 
+              y: (typeof window !== 'undefined' ? window.innerHeight : 800) + 100,
+              rotate: 360 * (Math.random() > 0.5 ? 1 : -1)
+            }}
+            transition={{ 
+              duration: 3 + Math.random() * 2,
+              delay: Math.random() * 2,
+              repeat: Infinity,
+              repeatDelay: 5 + Math.random() * 5
+            }}
+            className="absolute w-4 h-4 bg-yellow-400 rounded-full"
+          />
+        ))}
+      </motion.div>
+    </div>
+  );
+};
+
+export default MatchSummaryScreen;
