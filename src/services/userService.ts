@@ -1,5 +1,6 @@
 import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from './firebase';
+import { validateDisplayName, formatDisplayName } from '@/utils/contentModeration';
 
 export interface UserProfile {
   uid: string;
@@ -180,6 +181,41 @@ export class UserService {
     } catch (error) {
       console.error('❌ UserService: Error updating match loss:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Update user profile information
+   */
+  static async updateProfile(uid: string, updates: { displayName?: string }): Promise<{ success: boolean; error?: string }> {
+    try {
+      console.log('👤 UserService: Updating profile for user:', uid, updates);
+      
+      const userRef = doc(db, 'users', uid);
+      const updateData: any = {
+        updatedAt: new Date()
+      };
+
+      // Handle display name update
+      if (updates.displayName !== undefined) {
+        const validation = validateDisplayName(updates.displayName);
+        if (!validation.isValid) {
+          return { success: false, error: validation.error };
+        }
+        
+        const formattedName = formatDisplayName(updates.displayName);
+        updateData.displayName = formattedName;
+        
+        console.log('✅ UserService: Display name validated and formatted:', formattedName);
+      }
+
+      await updateDoc(userRef, updateData);
+      
+      console.log('✅ UserService: Profile updated successfully');
+      return { success: true };
+    } catch (error) {
+      console.error('❌ UserService: Error updating profile:', error);
+      return { success: false, error: 'Failed to update profile. Please try again.' };
     }
   }
 

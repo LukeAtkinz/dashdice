@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/context/AuthContext';
+import { validateDisplayName } from '@/utils/contentModeration';
 
 // Inline form hook
 const useForm = <T extends Record<string, string>>(initialValues: T) => {
@@ -23,6 +24,10 @@ const useForm = <T extends Record<string, string>>(initialValues: T) => {
     }
   };
 
+  const setError = (field: keyof T, message: string) => {
+    setErrors(prev => ({ ...prev, [field]: message }));
+  };
+
   const handleSubmit = (onSubmit: (values: T) => Promise<void> | void) => {
     return async (e: React.FormEvent) => {
       e.preventDefault();
@@ -38,11 +43,12 @@ const useForm = <T extends Record<string, string>>(initialValues: T) => {
     };
   };
 
-  return { values, errors, isSubmitting, handleChange, handleSubmit };
+  return { values, errors, isSubmitting, handleChange, handleSubmit, setError };
 };
 
 export const ProfileSection: React.FC = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, updateUserProfile } = useAuth();
+  const [successMessage, setSuccessMessage] = useState<string>('');
   
   const profileForm = useForm({
     displayName: user?.displayName || '',
@@ -50,9 +56,28 @@ export const ProfileSection: React.FC = () => {
   });
 
   const handleUpdateProfile = profileForm.handleSubmit(async (values) => {
-    console.log('Updating profile:', values);
-    // TODO: Implement profile update logic
-    alert('Profile updated! (Implementation needed)');
+    try {
+      setSuccessMessage(''); // Clear previous success message
+      
+      // Only update if displayName actually changed
+      if (values.displayName !== user?.displayName) {
+        // Validate display name
+        const validation = validateDisplayName(values.displayName);
+        if (!validation.isValid) {
+          profileForm.setError('displayName', validation.error || 'Invalid display name');
+          return;
+        }
+
+        // Update profile
+        await updateUserProfile({ displayName: values.displayName });
+        setSuccessMessage('Profile updated successfully!');
+      } else {
+        setSuccessMessage('No changes to save.');
+      }
+    } catch (error: any) {
+      console.error('Profile update error:', error);
+      profileForm.setError('displayName', error.message || 'Failed to update profile. Please try again.');
+    }
   });
 
   const handleSignOut = async () => {
@@ -107,7 +132,10 @@ export const ProfileSection: React.FC = () => {
                 type="text"
                 value={profileForm.values.displayName}
                 onChange={(e) => profileForm.handleChange('displayName', e.target.value)}
+                error={profileForm.errors.displayName}
                 placeholder="Enter your display name"
+                maxLength={12}
+                helperText="2-12 characters, no inappropriate content"
               />
             </div>
 
@@ -126,6 +154,12 @@ export const ProfileSection: React.FC = () => {
                 Email cannot be changed at this time
               </p>
             </div>
+
+            {successMessage && (
+              <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded-md">
+                {successMessage}
+              </div>
+            )}
 
             <div className="flex space-x-3">
               <Button

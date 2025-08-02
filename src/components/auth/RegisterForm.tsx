@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { validateDisplayName } from '@/utils/contentModeration';
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -68,6 +69,13 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
   });
 
   const onSubmit = handleSubmit(async (formValues) => {
+    // Validate display name
+    const displayNameValidation = validateDisplayName(formValues.displayName);
+    if (!displayNameValidation.isValid) {
+      setError('displayName', displayNameValidation.error || 'Invalid display name');
+      return;
+    }
+
     // Validate passwords match
     if (formValues.password !== formValues.confirmPassword) {
       setError('confirmPassword', 'Passwords do not match');
@@ -90,6 +98,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
         setError('email', 'Invalid email address');
       } else if (error.code === 'auth/weak-password') {
         setError('password', 'Password is too weak');
+      } else if (error.message && !error.code) {
+        // This is a display name validation error
+        setError('displayName', error.message);
       } else {
         setError('password', 'Failed to create account. Please try again');
       }
@@ -111,6 +122,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
             onChange={(e) => handleChange('displayName', e.target.value)}
             error={errors.displayName}
             placeholder="Enter your display name"
+            helperText="2-12 characters, no inappropriate content"
+            maxLength={12}
             required
           />
 

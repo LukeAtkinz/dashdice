@@ -14,6 +14,8 @@ import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '@/services/firebase';
 import { User, AuthContextType } from '@/types';
 import { AVAILABLE_BACKGROUNDS, getDefaultBackground } from '@/config/backgrounds';
+import { UserService } from '@/services/userService';
+import { validateDisplayName, formatDisplayName, generateDisplayNameFromEmail } from '@/utils/contentModeration';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -44,9 +46,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const createdAt = new Date();
       const defaultBackground = getDefaultBackground();
 
+      // Ensure displayName is never null - generate from email if needed
+      const finalDisplayName = displayName || 
+        additionalData?.displayName || 
+        generateDisplayNameFromEmail(email || '');
+
       try {
         await setDoc(userRef, {
-          displayName,
+          displayName: additionalData?.displayName || finalDisplayName,
           email,
           photoURL,
           createdAt,
@@ -110,15 +117,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signUp = async (email: string, password: string, displayName: string) => {
     try {
+      // Validate display name before creating account
+      const validation = validateDisplayName(displayName);
+      if (!validation.isValid) {
+        throw new Error(validation.error);
+      }
+
+      const formattedDisplayName = formatDisplayName(displayName);
+      
       const result = await createUserWithEmailAndPassword(auth, email, password);
       
-      // Update the user's display name
-      await updateProfile(result.user, { displayName });
+      // Update the user's display name in Firebase Auth
+      await updateProfile(result.user, { displayName: formattedDisplayName });
       
-      // Create user document in Firestore
-      await createUserDocument(result.user, { displayName });
-    } catch (error) {
+      // Create user document in Firestore with validated display name
+      await createUserDocument(result.user, { displayName: formattedDisplayName });
+    } catch (error: any) {
       console.error('Error signing up:', error);
+      // Re-throw with proper error message for display name validation
+      if (error.message && !error.code) {
+        throw new Error(error.message);
+      }
       throw error;
     }
   };
@@ -138,6 +157,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await sendPasswordResetEmail(auth, email);
     } catch (error) {
       console.error('Error sending password reset email:', error);
+      throw error;
+    }
+  };
+
+  const updateUserProfile = async (updates: { displayName?: string }) => {
+    try {
+      if (!user?.uid) {
+        throw new Error('No user logged in');
+      }
+
+      // Update in UserService (Firestore)
+      const result = await UserService.updateProfile(user.uid, updates);
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update profile');
+      }
+
+      // Update Firebase Auth if displayName changed
+      if (updates.displayName && auth.currentUser) {
+        await updateProfile(auth.currentUser, { displayName: updates.displayName });
+      }
+
+      // Refresh user data
+      const updatedUserData = await getUserData(user.uid);
+      if (updatedUserData) {
+        setUser(updatedUserData);
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
       throw error;
     }
   };
@@ -164,6 +213,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signUp,
     signOut,
     resetPassword,
+    updateUserProfile,
   };
 
   return (
