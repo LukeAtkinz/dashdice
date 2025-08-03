@@ -161,15 +161,14 @@ export const InventorySection: React.FC = () => {
       `}</style>
 
       {/* Title Section */}
-      <div className="w-full flex flex-col items-center justify-center gap-[1rem] py-[1rem] pb-[1rem]">
+      <div className="w-full flex flex-col items-center justify-center gap-[1rem] py-[0.5rem] md:py-[1rem] pb-[0.5rem] md:pb-[1rem]">
         <h1
+          className="text-5xl md:text-7xl leading-12 md:leading-[70px]"
           style={{
             color: "#FFF",
             fontFamily: "Audiowide",
-            fontSize: "64px",
             fontStyle: "normal",
             fontWeight: 400,
-            lineHeight: "60px",
             textTransform: "uppercase",
             textAlign: "center",
             margin: 0,
@@ -181,16 +180,14 @@ export const InventorySection: React.FC = () => {
       </div>
 
       {/* Navigation */}
-      <div className="w-full px-8 py-4 pb-[1rem]">
-        <div className="flex items-center justify-center gap-4" style={{ gap: '20px' }}>
+      <div className="w-full px-4 md:px-8 py-2 md:py-4 pb-[0.5rem] md:pb-[1rem]">
+        <div className="flex items-center justify-center gap-2 md:gap-4">
           <button
             onClick={() => handleTabChange('display')}
-            className={`nav-button ${activeTab === 'display' ? 'active' : ''}`}
+            className={`nav-button ${activeTab === 'display' ? 'active' : ''} h-12 md:h-16 px-6 md:px-10`}
             style={{
               display: 'flex',
               width: 'fit-content',
-              height: '56px',
-              padding: '4px 30px',
               justifyContent: 'center',
               alignItems: 'center',
               gap: '10px',
@@ -200,24 +197,21 @@ export const InventorySection: React.FC = () => {
               cursor: 'pointer',
             }}
           >
-            <span style={{ 
+            <span className="text-base md:text-4xl" style={{ 
               color: activeTab === 'display' ? 'var(--ui-inventory-button-text, var(--ui-button-text))' : '#FFF', 
               fontFamily: 'Audiowide', 
-              fontSize: '32px', 
               fontWeight: 400, 
               textTransform: 'uppercase' 
             }}>
-              For the Visuals
+              For Visuals
             </span>
           </button>
           <button
             onClick={() => handleTabChange('match')}
-            className={`nav-button ${activeTab === 'match' ? 'active' : ''}`}
+            className={`nav-button ${activeTab === 'match' ? 'active' : ''} h-12 md:h-16 px-6 md:px-10`}
             style={{
               display: 'flex',
               width: 'fit-content',
-              height: '56px',
-              padding: '4px 30px',
               justifyContent: 'center',
               alignItems: 'center',
               gap: '10px',
@@ -227,10 +221,9 @@ export const InventorySection: React.FC = () => {
               cursor: 'pointer',
             }}
           >
-            <span style={{ 
+            <span className="text-base md:text-4xl" style={{ 
               color: activeTab === 'match' ? 'var(--ui-inventory-button-text, var(--ui-button-text))' : '#FFF', 
               fontFamily: 'Audiowide', 
-              fontSize: '32px', 
               fontWeight: 400, 
               textTransform: 'uppercase' 
             }}>
@@ -241,20 +234,17 @@ export const InventorySection: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 px-8 flex justify-center" style={{ paddingTop: '30px' }}>
-        <div className="flex h-full" style={{ maxHeight: '410px', height: '410px', width: '1600px', gap: '20px' }}>
+      <div className="flex-1 px-4 md:px-8 flex justify-center" style={{ paddingTop: '15px' }}>
+        <div className="flex h-full w-[90vw] md:w-auto" style={{ maxHeight: '410px', height: '410px', maxWidth: '1600px', gap: '20px' }}>
           
           {/* Items List */}
           <div 
-            className="rounded-lg overflow-hidden card-fade-in" 
+            className="w-full md:w-1/2 rounded-lg overflow-hidden card-fade-in" 
             style={{ 
-              width: '50%', 
-              borderRadius: '20px', 
-              background: 'var(--ui-inventory-bg, var(--ui-background-container))', 
-              padding: '20px' 
+              borderRadius: '20px'
             }}
           >
-            <div className="p-4 h-full flex flex-col">
+            <div className="h-full flex flex-col">
               <div 
                 className="flex-1 overflow-y-auto custom-scrollbar relative" 
                 style={{ 
@@ -314,7 +304,7 @@ export const InventorySection: React.FC = () => {
                             <h4 style={{ 
                               color: '#E2E2E2', 
                               fontFamily: 'Audiowide', 
-                              fontSize: '24px', 
+                              fontSize: '18px', 
                               fontWeight: 400, 
                               textTransform: 'uppercase', 
                               textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' 
@@ -324,7 +314,7 @@ export const InventorySection: React.FC = () => {
                             <p style={{ 
                               color: 'rgba(255, 255, 255, 0.9)', 
                               fontFamily: 'Montserrat', 
-                              fontSize: '16px', 
+                              fontSize: '14px', 
                               fontWeight: 400, 
                               textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' 
                             }}>
@@ -343,8 +333,8 @@ export const InventorySection: React.FC = () => {
                             style={{ 
                               display: 'flex', 
                               width: 'fit-content', 
-                              height: '56px', 
-                              padding: '4px 30px', 
+                              height: '44px', 
+                              padding: '4px 20px', 
                               justifyContent: 'center', 
                               alignItems: 'center', 
                               gap: '10px', 
@@ -357,7 +347,7 @@ export const InventorySection: React.FC = () => {
                             <span style={{ 
                               color: 'var(--ui-button-text)', 
                               fontFamily: 'Audiowide', 
-                              fontSize: '20px', 
+                              fontSize: '16px', 
                               fontWeight: 400, 
                               textTransform: 'uppercase' 
                             }}>
@@ -372,8 +362,8 @@ export const InventorySection: React.FC = () => {
                             style={{ 
                               display: 'flex', 
                               width: 'fit-content', 
-                              height: '56px', 
-                              padding: '4px 30px', 
+                              height: '44px', 
+                              padding: '4px 20px', 
                               justifyContent: 'center', 
                               alignItems: 'center', 
                               gap: '10px', 
@@ -385,7 +375,7 @@ export const InventorySection: React.FC = () => {
                             <span style={{ 
                               color: 'var(--ui-button-text)', 
                               fontFamily: 'Audiowide', 
-                              fontSize: '20px', 
+                              fontSize: '16px', 
                               fontWeight: 400, 
                               textTransform: 'uppercase' 
                             }}>
@@ -407,14 +397,13 @@ export const InventorySection: React.FC = () => {
             </div>
           </div>
 
-          {/* Display Panel */}
+          {/* Display Panel - Hidden on Mobile */}
           <div 
-            key={`display-panel-${selectedBackground?.id || 'none'}`} 
-            className="rounded-lg overflow-hidden card-fade-in" 
+            key={`display-panel-${selectedBackground?.id || 'none'}`}
+            className="hidden md:block rounded-lg overflow-hidden card-fade-in" 
             style={{ 
               width: '100%', 
               maxWidth: '775px',
-              background: 'var(--ui-inventory-bg, var(--ui-background-container))', 
               backdropFilter: 'blur(10px)', 
               overflow: 'hidden', 
               borderRadius: '20px' 

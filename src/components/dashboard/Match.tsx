@@ -17,8 +17,20 @@ interface MatchProps {
 
 export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   console.log('🎮 Match: Component rendered with props:', { gameMode, roomId });
+  console.log('🔍 DEBUG: Match component entry point:', {
+    timestamp: new Date().toISOString(),
+    gameMode,
+    roomId,
+    component: 'Match'
+  });
+  
   const { user } = useAuth();
   const { setCurrentSection } = useNavigation();
+  
+  console.log('🔍 DEBUG: Match component context:', {
+    userUid: user?.uid,
+    hasSetCurrentSection: typeof setCurrentSection === 'function'
+  });
   
   const [matchData, setMatchData] = useState<MatchData | null>(null);
   const [loading, setLoading] = useState(true);

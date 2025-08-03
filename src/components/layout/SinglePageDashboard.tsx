@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { NavigationProvider, useNavigation } from '@/context/NavigationContext';
@@ -24,8 +24,23 @@ const DashboardContent: React.FC = () => {
   const { DisplayBackgroundEquip } = useBackground();
   const [userGold] = useState(1000); // Placeholder for user gold
   
+  console.log('🏠 SinglePageDashboard: Component rendered with:', {
+    currentSection,
+    sectionParams,
+    timestamp: new Date().toISOString()
+  });
+  
   // Handle browser refresh functionality
   useBrowserRefresh();
+
+  // Track section changes
+  useEffect(() => {
+    console.log('🏠 SinglePageDashboard: Section changed to:', {
+      currentSection,
+      sectionParams,
+      timestamp: new Date().toISOString()
+    });
+  }, [currentSection, sectionParams]);
 
   const handleSectionChange = async (section: string) => {
     // This function is only for manual button clicks, not for programmatic navigation
@@ -97,7 +112,7 @@ const DashboardContent: React.FC = () => {
       {/* Main Layout */}
       <div className="relative z-20 h-screen flex flex-col">
         {/* Top Navigation Header */}
-        <header className="flex-shrink-0 w-full flex flex-row items-center justify-center gap-[1.25rem] relative z-30 px-[1rem] md:px-[4rem] py-[1rem] md:py-[2rem]">
+        <header className="hidden md:flex flex-shrink-0 w-full flex-row items-center justify-center gap-[1.25rem] relative z-30 px-[1rem] md:px-[4rem] py-[1rem] md:py-[2rem]">
           <div className="flex-1 flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px] w-full max-w-none" style={{ background: "var(--ui-navbar-bg)" }}>
             
             {/* Left Navigation */}
@@ -314,6 +329,16 @@ const DashboardContent: React.FC = () => {
         {currentSection === 'match' ? (
           // Full-screen match without constraints
           <main className="flex-1 w-full h-full min-h-0 overflow-hidden">
+            {(() => {
+              console.log('🏠 SinglePageDashboard: Rendering match section with:', {
+                sectionParams,
+                gameMode: sectionParams.gameMode,
+                matchId: sectionParams.matchId,
+                roomId: sectionParams.matchId || "dev-room-123",
+                timestamp: new Date().toISOString()
+              });
+              return null;
+            })()}
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentSection}
@@ -363,44 +388,44 @@ const DashboardContent: React.FC = () => {
 
         {/* Bottom Navigation for Mobile - Fixed at bottom */}
         <footer 
-          className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-[0.75rem] px-[1rem] z-50"
-          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom) + 0.5rem)' }}
+          className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-[1.25rem] px-[1vw] z-50"
+          style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom) + 0.75rem)' }}
         >
-          <div className="flex flex-row items-center justify-center gap-[0.75rem] bg-gradient-to-br from-[#192E39] to-[#99999900] rounded-[20px] px-[15px] py-[8px] shadow-lg">
+          <div className="flex flex-row items-center justify-between w-full max-w-[98vw] bg-gradient-to-br from-[#192E39] to-[#99999900] rounded-[25px] px-[2vw] py-[15px] shadow-lg">
             <button
               onClick={() => handleSectionChange('dashboard')}
-              className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
+              className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[20vw] ${
                 currentSection === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/10'
               }`}
             >
-              <img src="/Design Elements/CrownLogo.webp" alt="Play" className="w-6 h-6" />
-              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>PLAY</span>
+              <img src="/Design Elements/CrownLogo.webp" alt="Play" className="w-8 h-8" />
+              <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PLAY</span>
             </button>
             <button
               disabled
-              className="flex flex-col items-center gap-1 p-2 rounded-lg transition-all cursor-not-allowed opacity-60"
+              className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all cursor-not-allowed opacity-60 flex-1 max-w-[20vw]"
               title="Friends - Coming Soon!"
             >
-              <img src="/Design Elements/friends.webp" alt="Friends" className="w-6 h-6" />
-              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
+              <img src="/Design Elements/friends.webp" alt="Friends" className="w-8 h-8" />
+              <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
             </button>
             <button
               onClick={() => handleSectionChange('inventory')}
-              className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
+              className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[20vw] ${
                 currentSection === 'inventory' ? 'bg-white/20' : 'hover:bg-white/10'
               }`}
             >
-              <img src="/Design Elements/Gem Bucket.webp" alt="Vault" className="w-6 h-6" />
-              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>VAULT</span>
+              <img src="/Design Elements/Gem Bucket.webp" alt="Vault" className="w-8 h-8" />
+              <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>VAULT</span>
             </button>
             <button
               onClick={() => handleSectionChange('settings')}
-              className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
+              className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[20vw] ${
                 currentSection === 'settings' ? 'bg-white/20' : 'hover:bg-white/10'
               }`}
             >
-              <img src="/Design Elements/Delivery Man.webp" alt="Profile" className="w-6 h-6" />
-              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>PROFILE</span>
+              <img src="/Design Elements/Delivery Man.webp" alt="Profile" className="w-8 h-8" />
+              <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PROFILE</span>
             </button>
           </div>
         </footer>

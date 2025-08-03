@@ -26,7 +26,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       
       {/* Content */}
       <div className="relative z-20 min-h-screen flex flex-col">
-        <Navigation />
+        <div className="hidden md:block">
+          <Navigation />
+        </div>
         <main className="flex-1 max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
           {children}
         </main>
