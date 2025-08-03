@@ -33,10 +33,31 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const setCurrentSection = (section: DashboardSection, params: SectionParams = {}) => {
+    console.log('🧭 NavigationContext: setCurrentSection called:', {
+      from: currentSection,
+      to: section,
+      params,
+      isTransitioning,
+      timestamp: new Date().toISOString()
+    });
+    
     if (section !== currentSection && !isTransitioning) {
+      console.log('🧭 NavigationContext: Navigation approved - changing section');
       setPreviousSection(currentSection);
       setCurrentSectionState(section);
       setSectionParams(params);
+      console.log('🧭 NavigationContext: Navigation completed:', {
+        newSection: section,
+        newParams: params,
+        previousSection: currentSection
+      });
+    } else {
+      console.log('🧭 NavigationContext: Navigation blocked:', {
+        reason: section === currentSection ? 'Same section' : 'Already transitioning',
+        currentSection,
+        targetSection: section,
+        isTransitioning
+      });
     }
   };
 

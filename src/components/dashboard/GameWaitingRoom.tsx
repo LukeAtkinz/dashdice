@@ -7,7 +7,7 @@ import { UserService } from '@/services/userService';
 import { useNavigation } from '@/context/NavigationContext';
 import { useWaitingRoomCleanup } from '@/hooks/useWaitingRoomCleanup';
 import { db } from '@/services/firebase';
-import { collection, addDoc, doc, onSnapshot, updateDoc, deleteDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, onSnapshot, updateDoc, deleteDoc, query, where, getDocs, getDoc, serverTimestamp } from 'firebase/firestore';
 
 interface GameWaitingRoomProps {
   gameMode: string;
@@ -380,16 +380,47 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   // Function to start 5-second countdown for VS section
   const startVsCountdown = () => {
     console.log('🕐 GameWaitingRoom: Starting VS countdown...');
+    console.log('🔍 DEBUG: startVsCountdown called with:', {
+      waitingRoomEntry: waitingRoomEntry?.id,
+      opponentJoined,
+      user: user?.uid,
+      gameMode,
+      actionType
+    });
+    
     setVsCountdown(5);
     const timer = setInterval(() => {
       setVsCountdown((prev) => {
         console.log('🕐 GameWaitingRoom: Countdown tick:', prev);
+        console.log('🔍 DEBUG: Countdown state:', {
+          prev,
+          waitingRoomEntryId: waitingRoomEntry?.id,
+          hostPlayerId: waitingRoomEntry?.hostData?.playerId,
+          opponentPlayerId: waitingRoomEntry?.opponentData?.playerId,
+          currentUserId: user?.uid
+        });
+        
         if (prev === null || prev <= 1) {
           clearInterval(timer);
           console.log('🕐 GameWaitingRoom: Countdown finished! Showing GO!');
+          console.log('🔍 DEBUG: About to call moveToMatchesAndNavigate with data:', {
+            waitingRoomEntry,
+            roomId,
+            gameMode,
+            actionType,
+            userUid: user?.uid
+          });
+          
           // Move to matches collection and navigate to match
           setTimeout(() => {
             console.log('🕐 GameWaitingRoom: Starting navigation after 1 second delay...');
+            console.log('🔍 DEBUG: Final navigation call with:', {
+              component: 'GameWaitingRoom',
+              function: 'moveToMatchesAndNavigate',
+              timestamp: new Date().toISOString(),
+              waitingRoomData: waitingRoomEntry,
+              userContext: user?.uid
+            });
             moveToMatchesAndNavigate();
           }, 1000); // Wait 1 second after showing "GO!"
           return 0; // Show "GO!"
@@ -431,73 +462,227 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const moveToMatchesAndNavigate = async () => {
     try {
       console.log('🎮 GameWaitingRoom: moveToMatchesAndNavigate called!');
-      console.log('🎮 GameWaitingRoom: waitingRoomEntry:', waitingRoomEntry);
-      console.log('🎮 GameWaitingRoom: roomId prop:', roomId);
+      console.log('🔍 DEBUG: ENTRY POINT - moveToMatchesAndNavigate:', {
+        timestamp: new Date().toISOString(),
+        waitingRoomEntry: waitingRoomEntry?.id,
+        roomIdProp: roomId,
+        gameMode,
+        actionType,
+        userUid: user?.uid,
+        hostPlayerId: waitingRoomEntry?.hostData?.playerId,
+        opponentPlayerId: waitingRoomEntry?.opponentData?.playerId
+      });
+      
+      // SECURITY CHECK: Ensure user is part of this room
+      if (!user?.uid) {
+        console.error('❌ SECURITY: No authenticated user found');
+        console.log('🔙 SECURITY: Redirecting to dashboard due to no auth');
+        onBack();
+        return;
+      }
       
       // Use roomId if waitingRoomEntry is null (room was already moved by other player)
       const roomIdToUse = waitingRoomEntry?.id || roomId;
       
       if (!roomIdToUse) {
         console.error('❌ GameWaitingRoom: No room ID available (neither waitingRoomEntry.id nor roomId prop)!');
+        console.log('🔍 DEBUG: Missing room ID data:', {
+          waitingRoomEntry,
+          roomId,
+          waitingRoomEntryId: waitingRoomEntry?.id
+        });
+        console.log('🔙 ERROR: Redirecting to dashboard due to missing room ID');
+        onBack();
         return;
       }
 
       console.log('🎮 GameWaitingRoom: Using room ID:', roomIdToUse);
+      console.log('🔍 DEBUG: Room validation passed, proceeding with match creation');
+
+      // SECURITY CHECK: Verify user is authorized for this room
+      if (waitingRoomEntry) {
+        const isHost = waitingRoomEntry.hostData?.playerId === user.uid;
+        const isOpponent = waitingRoomEntry.opponentData?.playerId === user.uid;
+        
+        console.log('🔍 SECURITY CHECK: User authorization:', {
+          userUid: user.uid,
+          hostPlayerId: waitingRoomEntry.hostData?.playerId,
+          opponentPlayerId: waitingRoomEntry.opponentData?.playerId,
+          isHost,
+          isOpponent,
+          isAuthorized: isHost || isOpponent
+        });
+        
+        if (!isHost && !isOpponent) {
+          console.error('❌ SECURITY: User not authorized for this room');
+          console.log('🔙 SECURITY: Redirecting unauthorized user to dashboard');
+          setError('Unauthorized access to game room');
+          setTimeout(() => onBack(), 2000);
+          return;
+        }
+      }
 
       // Check if room was already moved to matches collection
       try {
-        const matchDoc = await getDocs(query(collection(db, 'matches'), where('originalRoomId', '==', roomIdToUse)));
+        console.log('🔍 DEBUG: Checking for existing match...');
+        const existingMatchQuery = query(
+          collection(db, 'matches'), 
+          where('originalRoomId', '==', roomIdToUse)
+        );
+        const matchDoc = await getDocs(existingMatchQuery);
+        
         if (!matchDoc.empty) {
-          console.log('🎮 GameWaitingRoom: Room already moved to matches, navigating to existing match...');
           const existingMatch = matchDoc.docs[0];
+          const matchData = existingMatch.data();
+          
+          console.log('🎮 GameWaitingRoom: Room already moved to matches, navigating to existing match...');
+          console.log('🔍 DEBUG: Found existing match:', {
+            matchId: existingMatch.id,
+            originalRoomId: matchData.originalRoomId,
+            gameMode: matchData.gameMode,
+            hostPlayerId: matchData.hostData?.playerId,
+            opponentPlayerId: matchData.opponentData?.playerId
+          });
+          
+          // SECURITY CHECK: Ensure user is part of the existing match
+          const userInMatch = matchData.hostData?.playerId === user.uid || 
+                             matchData.opponentData?.playerId === user.uid;
+          
+          if (!userInMatch) {
+            console.error('❌ SECURITY: User not authorized for existing match');
+            console.log('🔙 SECURITY: Redirecting unauthorized user from existing match');
+            setError('Unauthorized access to match');
+            setTimeout(() => onBack(), 2000);
+            return;
+          }
+          
+          console.log('🎯 NAVIGATION: Calling setCurrentSection for existing match');
           setCurrentSection('match', {
-            gameMode: gameMode,
+            gameMode: matchData.gameMode || gameMode,
             matchId: existingMatch.id
           });
           return;
         }
+        
+        console.log('🔍 DEBUG: No existing match found, proceeding with creation');
       } catch (error) {
-        console.log('🎮 GameWaitingRoom: Could not check for existing match, proceeding with creation...');
+        console.log('🎮 GameWaitingRoom: Could not check for existing match, proceeding with creation...', error);
       }
 
       // Get room data - either from waitingRoomEntry or fetch from database
       let roomData = waitingRoomEntry;
       
+      console.log('🔍 DEBUG: Getting room data:', {
+        hasWaitingRoomEntry: !!waitingRoomEntry,
+        waitingRoomEntryId: waitingRoomEntry?.id,
+        roomIdToUse
+      });
+      
       if (!roomData) {
         console.log('🎮 GameWaitingRoom: waitingRoomEntry is null, fetching from database...');
         try {
-          const roomDoc = await getDocs(query(collection(db, 'waitingroom'), where('__name__', '==', roomIdToUse)));
-          if (!roomDoc.empty) {
-            roomData = { ...roomDoc.docs[0].data(), id: roomDoc.docs[0].id } as WaitingRoomEntry;
+          // Use correct Firestore v9 syntax for getting a document
+          const roomDocRef = doc(db, 'waitingroom', roomIdToUse);
+          const roomDocSnap = await getDoc(roomDocRef);
+          
+          if (roomDocSnap.exists()) {
+            roomData = { ...roomDocSnap.data(), id: roomDocSnap.id } as WaitingRoomEntry;
             console.log('🎮 GameWaitingRoom: Room data fetched from database:', roomData);
-          } else {
-            console.log('🎮 GameWaitingRoom: Room not found in waitingroom, might already be moved. Checking matches...');
-            // Check if already in matches
-            const matchesQuery = await getDocs(query(collection(db, 'matches')));
-            const matchingMatch = matchesQuery.docs.find(doc => {
-              const data = doc.data();
-              return data.hostData?.playerId === user?.uid || data.opponentData?.playerId === user?.uid;
+            console.log('🔍 DEBUG: Fetched room data details:', {
+              id: roomData.id,
+              gameMode: roomData.gameMode,
+              hostPlayerId: roomData.hostData?.playerId,
+              opponentPlayerId: roomData.opponentData?.playerId
             });
             
-            if (matchingMatch) {
-              console.log('🎮 GameWaitingRoom: Found existing match, navigating...');
+            // SECURITY CHECK: Verify user authorization for fetched room
+            const isHostInFetchedRoom = roomData.hostData?.playerId === user.uid;
+            const isOpponentInFetchedRoom = roomData.opponentData?.playerId === user.uid;
+            
+            console.log('🔍 SECURITY CHECK: Fetched room authorization:', {
+              userUid: user.uid,
+              hostPlayerId: roomData.hostData?.playerId,
+              opponentPlayerId: roomData.opponentData?.playerId,
+              isHost: isHostInFetchedRoom,
+              isOpponent: isOpponentInFetchedRoom,
+              isAuthorized: isHostInFetchedRoom || isOpponentInFetchedRoom
+            });
+            
+            if (!isHostInFetchedRoom && !isOpponentInFetchedRoom) {
+              console.error('❌ SECURITY: User not authorized for fetched room');
+              console.log('🔙 SECURITY: Redirecting unauthorized user');
+              setError('Unauthorized access to game room');
+              setTimeout(() => onBack(), 2000);
+              return;
+            }
+          } else {
+            console.log('🎮 GameWaitingRoom: Room not found in waitingroom, might already be moved. Checking matches...');
+            console.log('🔍 DEBUG: Room document does not exist, checking for existing matches');
+            
+            // Check if already in matches with more specific query
+            const matchesQuery = query(
+              collection(db, 'matches'),
+              where('hostData.playerId', '==', user.uid)
+            );
+            const opponentMatchesQuery = query(
+              collection(db, 'matches'),
+              where('opponentData.playerId', '==', user.uid)
+            );
+            
+            const [hostMatches, opponentMatches] = await Promise.all([
+              getDocs(matchesQuery),
+              getDocs(opponentMatchesQuery)
+            ]);
+            
+            const allUserMatches = [...hostMatches.docs, ...opponentMatches.docs];
+            const activeMatch = allUserMatches.find(doc => {
+              const data = doc.data();
+              return data.status === 'active';
+            });
+            
+            if (activeMatch) {
+              const matchData = activeMatch.data();
+              console.log('🎮 GameWaitingRoom: Found existing active match, navigating...');
+              console.log('🔍 DEBUG: Found active match details:', {
+                matchId: activeMatch.id,
+                gameMode: matchData.gameMode,
+                status: matchData.status,
+                hostPlayerId: matchData.hostData?.playerId,
+                opponentPlayerId: matchData.opponentData?.playerId
+              });
+              
+              console.log('🎯 NAVIGATION: Calling setCurrentSection for found active match');
               setCurrentSection('match', {
-                gameMode: gameMode,
-                matchId: matchingMatch.id
+                gameMode: matchData.gameMode || gameMode,
+                matchId: activeMatch.id
               });
               return;
             }
             
             console.error('❌ GameWaitingRoom: Room not found in any collection');
+            console.log('🔙 ERROR: No room or match found, redirecting to dashboard');
+            setError('Game room no longer exists');
+            setTimeout(() => onBack(), 2000);
             return;
           }
         } catch (error) {
           console.error('❌ GameWaitingRoom: Error fetching room data:', error);
+          console.log('🔙 ERROR: Database error, redirecting to dashboard');
+          setError('Failed to access game room');
+          setTimeout(() => onBack(), 2000);
           return;
         }
       }
 
       console.log('🎮 GameWaitingRoom: Creating match document...');
+      console.log('🔍 DEBUG: Match creation starting with room data:', {
+        roomDataId: roomData.id,
+        gameMode: roomData.gameMode,
+        gameType: roomData.gameType,
+        hostPlayerId: roomData.hostData?.playerId,
+        opponentPlayerId: roomData.opponentData?.playerId,
+        userUid: user.uid
+      });
 
       // Get round objective based on game mode
       const getRoundObjective = (mode: string): number => {
@@ -518,6 +703,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         gameType: roomData.gameType,
         status: 'active',
         startedAt: serverTimestamp(),
+        
+        // Security: Ensure only authorized players are in match
+        authorizedPlayers: [
+          roomData.hostData?.playerId,
+          roomData.opponentData?.playerId
+        ].filter(Boolean), // Remove any null/undefined values
         
         // Initialize host data with game-specific fields
         hostData: {
@@ -558,16 +749,32 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       // Don't pre-assign turns when using turnDecider phase
       // The turns will be assigned after the turn decider choice is made
       console.log('🎮 GameWaitingRoom: Starting in turnDecider phase, turns will be assigned after choice');
+      console.log('🔍 DEBUG: Final match data before creation:', {
+        matchData,
+        authorizedPlayers: matchData.authorizedPlayers,
+        gameMode: matchData.gameMode,
+        status: matchData.status
+      });
 
       console.log('🎮 GameWaitingRoom: Match data prepared:', matchData);
 
       const matchDocRef = await addDoc(collection(db, 'matches'), matchData);
       console.log('✅ GameWaitingRoom: Match document created with ID:', matchDocRef.id);
+      console.log('🔍 DEBUG: Match created successfully:', {
+        matchId: matchDocRef.id,
+        originalRoomId: roomIdToUse,
+        authorizedPlayers: matchData.authorizedPlayers,
+        timestamp: new Date().toISOString()
+      });
       
       // Remove from waiting room (only if we have the room data)
       try {
         await deleteDoc(doc(db, 'waitingroom', roomIdToUse));
         console.log('✅ GameWaitingRoom: Waiting room document deleted');
+        console.log('🔍 DEBUG: Cleanup completed:', {
+          deletedRoomId: roomIdToUse,
+          timestamp: new Date().toISOString()
+        });
       } catch (error) {
         console.log('🎮 GameWaitingRoom: Could not delete waiting room (might already be deleted):', error);
       }
@@ -579,15 +786,138 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         gameMode: roomData.gameMode,
         matchId: matchDocRef.id
       });
+      console.log('🔍 DEBUG: FINAL NAVIGATION CALL:', {
+        component: 'GameWaitingRoom',
+        function: 'setCurrentSection',
+        section: 'match',
+        params: {
+          gameMode: roomData.gameMode,
+          matchId: matchDocRef.id
+        },
+        userUid: user.uid,
+        timestamp: new Date().toISOString(),
+        callStack: 'moveToMatchesAndNavigate -> setCurrentSection'
+      });
       
       setCurrentSection('match', {
         gameMode: roomData.gameMode,
         matchId: matchDocRef.id
       });
       console.log('✅ GameWaitingRoom: Navigation called successfully!');
+      console.log('🔍 DEBUG: Navigation completed - should now be in match section');
       
     } catch (err) {
       console.error('❌ GameWaitingRoom: Error moving to matches:', err);
+      console.log('🔍 DEBUG: CRITICAL ERROR in moveToMatchesAndNavigate:', {
+        error: err,
+        errorMessage: (err as Error)?.message,
+        errorStack: (err as Error)?.stack,
+        waitingRoomEntry: waitingRoomEntry?.id,
+        roomId,
+        gameMode,
+        userUid: user?.uid,
+        timestamp: new Date().toISOString()
+      });
+      
+      // If match creation failed, try to navigate users back to dashboard with error
+      // But first, try a simple navigation to match section in case it's just a Firebase write issue
+      try {
+        console.log('🔄 GameWaitingRoom: Attempting fallback navigation to match...');
+        console.log('🔍 DEBUG: Starting fallback recovery process');
+        
+        // Try to find existing match in case it was created but navigation failed
+        const existingMatchQuery = await getDocs(query(collection(db, 'matches')));
+        const userMatch = existingMatchQuery.docs.find(doc => {
+          const data = doc.data();
+          return data.hostData?.playerId === user?.uid || data.opponentData?.playerId === user?.uid;
+        });
+        
+        if (userMatch) {
+          console.log('🎯 GameWaitingRoom: Found existing match, navigating...');
+          console.log('🔍 DEBUG: Fallback found existing match:', {
+            matchId: userMatch.id,
+            gameMode: userMatch.data().gameMode
+          });
+          
+          setCurrentSection('match', {
+            gameMode: userMatch.data().gameMode || gameMode || 'classic',
+            matchId: userMatch.id
+          });
+          return;
+        }
+        
+        // If no existing match found, create a minimal test match for navigation
+        console.log('🧪 GameWaitingRoom: Creating minimal fallback match...');
+        console.log('🔍 DEBUG: No existing match found, creating fallback');
+        
+        // Use waitingRoomEntry or fallback data
+        const fallbackGameMode = waitingRoomEntry?.gameMode || gameMode || 'classic';
+        const fallbackHostData = waitingRoomEntry?.hostData || {
+          playerDisplayName: user?.email?.split('@')[0] || 'Player',
+          playerId: user?.uid || 'unknown',
+          displayBackgroundEquipped: null,
+          matchBackgroundEquipped: null,
+          playerStats: {
+            bestStreak: 0,
+            currentStreak: 0,
+            gamesPlayed: 0,
+            matchWins: 0
+          }
+        };
+        
+        const fallbackMatchData = {
+          createdAt: serverTimestamp(),
+          gameMode: fallbackGameMode,
+          status: 'active',
+          authorizedPlayers: [user?.uid].filter(Boolean),
+          hostData: {
+            ...fallbackHostData,
+            playerScore: 0
+          },
+          opponentData: waitingRoomEntry?.opponentData ? {
+            ...waitingRoomEntry.opponentData,
+            playerScore: 0
+          } : undefined,
+          gameData: {
+            type: 'dice',
+            roundObjective: 100,
+            turnDecider: 1,
+            diceOne: 0,
+            diceTwo: 0,
+            status: 'active',
+            gamePhase: 'turnDecider' as const
+          }
+        };
+        
+        console.log('🔍 DEBUG: Creating fallback match with data:', fallbackMatchData);
+        
+        const fallbackMatch = await addDoc(collection(db, 'matches'), fallbackMatchData);
+        console.log('🔍 DEBUG: Fallback match created:', fallbackMatch.id);
+        
+        setCurrentSection('match', {
+          gameMode: fallbackGameMode,
+          matchId: fallbackMatch.id
+        });
+        console.log('✅ GameWaitingRoom: Fallback match created successfully!');
+        
+      } catch (fallbackErr) {
+        console.error('❌ GameWaitingRoom: Fallback navigation also failed:', fallbackErr);
+        console.log('🔍 DEBUG: FALLBACK FAILED:', {
+          fallbackError: fallbackErr,
+          fallbackErrorMessage: (fallbackErr as Error)?.message,
+          timestamp: new Date().toISOString()
+        });
+        
+        // Only now return to dashboard if everything failed
+        console.log('🔙 GameWaitingRoom: All navigation attempts failed, returning to dashboard');
+        console.log('🔍 DEBUG: FINAL FALLBACK - returning to dashboard');
+        
+        setError('Failed to start match - returning to dashboard');
+        setTimeout(() => {
+          console.log('🔙 GameWaitingRoom: Executing onBack() after timeout');
+          onBack();
+        }, 2000);
+      }
     }
   };
 
