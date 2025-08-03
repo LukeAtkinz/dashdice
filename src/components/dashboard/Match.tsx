@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { MatchService } from '@/services/matchService';
-import { PlayerHeartbeatService } from '@/services/playerHeartbeatService';
 import { MatchData } from '@/types/match';
 import { useNavigation } from '@/context/NavigationContext';
 import { TurnDeciderPhase } from './TurnDeciderPhase';
@@ -83,34 +82,57 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       setLoading(false);
     });
 
-    // Start heartbeat for current player
-    PlayerHeartbeatService.startHeartbeat(roomId, user.uid);
+    // Dynamically import and start heartbeat for current player
+    import('@/services/playerHeartbeatService').then(({ PlayerHeartbeatService }) => {
+      if (PlayerHeartbeatService && typeof PlayerHeartbeatService.startHeartbeat === 'function') {
+        PlayerHeartbeatService.startHeartbeat(roomId, user.uid);
+      } else {
+        console.error('❌ PlayerHeartbeatService is not available:', PlayerHeartbeatService);
+      }
+    }).catch(error => {
+      console.error('❌ Failed to import PlayerHeartbeatService:', error);
+    });
     
     // Monitor player connections
-    const connectionUnsubscribe = PlayerHeartbeatService.monitorPlayerConnections(
-      roomId,
-      user.uid,
-      (playerId, playerDisplayName) => {
-        console.log('🔌 Player disconnected:', playerDisplayName);
-        setDisconnectedPlayer({ playerId, playerDisplayName });
-      },
-      (timeLeft) => {
-        console.log('⏰ Inactivity warning:', timeLeft, 'seconds left');
-        setInactivityCountdown(timeLeft);
-      },
-      (winnerId, winnerDisplayName) => {
-        console.log('🏆 Match ended due to inactivity, winner:', winnerDisplayName);
-        // End the match and go to game over screen
-        MatchService.endMatch(roomId, winnerId).then(() => {
-          console.log('✅ Match ended successfully');
-        });
+    let connectionUnsubscribe = () => {}; // Default empty function
+    import('@/services/playerHeartbeatService').then(({ PlayerHeartbeatService }) => {
+      if (PlayerHeartbeatService && typeof PlayerHeartbeatService.monitorPlayerConnections === 'function') {
+        connectionUnsubscribe = PlayerHeartbeatService.monitorPlayerConnections(
+          roomId,
+          user.uid,
+          (playerId: string, playerDisplayName: string) => {
+            console.log('🔌 Player disconnected:', playerDisplayName);
+            setDisconnectedPlayer({ playerId, playerDisplayName });
+          },
+          (timeLeft: number) => {
+            console.log('⏰ Inactivity warning:', timeLeft, 'seconds left');
+            setInactivityCountdown(timeLeft);
+          },
+          (winnerId: string, winnerDisplayName: string) => {
+            console.log('🏆 Match ended due to inactivity, winner:', winnerDisplayName);
+            // End the match and go to game over screen
+            MatchService.endMatch(roomId, winnerId).then(() => {
+              console.log('✅ Match ended successfully');
+            });
+          }
+        );
+      } else {
+        console.error('❌ PlayerHeartbeatService.monitorPlayerConnections is not available');
       }
-    );
+    }).catch(error => {
+      console.error('❌ Failed to import PlayerHeartbeatService for monitoring:', error);
+    });
 
     return () => {
       unsubscribe();
       connectionUnsubscribe();
-      PlayerHeartbeatService.cleanup();
+      import('@/services/playerHeartbeatService').then(({ PlayerHeartbeatService }) => {
+        if (PlayerHeartbeatService && typeof PlayerHeartbeatService.cleanup === 'function') {
+          PlayerHeartbeatService.cleanup();
+        }
+      }).catch(error => {
+        console.error('❌ Failed to import PlayerHeartbeatService for cleanup:', error);
+      });
     };
   }, [roomId, user]);
 
