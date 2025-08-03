@@ -373,16 +373,16 @@ const DashboardContent: React.FC = () => {
                 currentSection === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/10'
               }`}
             >
-              <div className="text-xl">🎯</div>
-              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>Dashboard</span>
+              <img src="/Design Elements/CrownLogo.webp" alt="Play" className="w-6 h-6" />
+              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>PLAY</span>
             </button>
             <button
               disabled
               className="flex flex-col items-center gap-1 p-2 rounded-lg transition-all cursor-not-allowed opacity-60"
-              title="Shop - Coming Soon!"
+              title="Friends - Coming Soon!"
             >
-              <div className="text-xl">🛍️</div>
-              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>Shop</span>
+              <img src="/Design Elements/friends.webp" alt="Friends" className="w-6 h-6" />
+              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
             </button>
             <button
               onClick={() => handleSectionChange('inventory')}
@@ -390,8 +390,8 @@ const DashboardContent: React.FC = () => {
                 currentSection === 'inventory' ? 'bg-white/20' : 'hover:bg-white/10'
               }`}
             >
-              <div className="text-xl">🎒</div>
-              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>Inventory</span>
+              <img src="/Design Elements/Gem Bucket.webp" alt="Vault" className="w-6 h-6" />
+              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>VAULT</span>
             </button>
             <button
               onClick={() => handleSectionChange('settings')}
@@ -399,8 +399,8 @@ const DashboardContent: React.FC = () => {
                 currentSection === 'settings' ? 'bg-white/20' : 'hover:bg-white/10'
               }`}
             >
-              <div className="text-xl">⚙️</div>
-              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>Settings</span>
+              <img src="/Design Elements/Delivery Man.webp" alt="Profile" className="w-6 h-6" />
+              <span className="text-xs text-white" style={{ fontFamily: "Audiowide" }}>PROFILE</span>
             </button>
           </div>
         </footer>

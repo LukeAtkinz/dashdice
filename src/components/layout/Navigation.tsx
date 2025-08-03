@@ -22,7 +22,7 @@ export const Navigation: React.FC = () => {
   return (
     <nav className="bg-black/20 backdrop-blur-md shadow-sm border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20">
+        <div className="flex justify-between h-12 md:h-20">
           <div className="flex items-center">
             <Link
               href="/"
@@ -61,7 +61,7 @@ export const Navigation: React.FC = () => {
             {loading ? (
               <div className="animate-pulse h-8 w-20 bg-gray-200 rounded"></div>
             ) : user ? (
-              <div className="flex items-center space-x-4">
+              <div className="hidden md:flex items-center space-x-4">
                 <span className="text-sm text-white/80" style={{ fontFamily: "Audiowide" }}>
                   Welcome, {user.displayName || user.email}
                 </span>
