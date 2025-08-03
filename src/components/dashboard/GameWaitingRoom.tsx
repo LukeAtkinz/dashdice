@@ -1142,9 +1142,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          gap: '50px',
+          gap: window.innerWidth < 768 ? '30px' : '50px',
           background: 'transparent',
-          padding: '20px',
+          padding: window.innerWidth < 768 ? '15px' : '20px',
           boxSizing: 'border-box'
         }}
       >
@@ -1159,16 +1159,18 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           }}
         >
           <h1
+            className="text-center"
             style={{
               color: '#E2E2E2',
               fontFamily: 'Audiowide',
-              fontSize: '64px',
+              fontSize: window.innerWidth < 768 ? '32px' : '64px',
               fontStyle: 'normal',
               fontWeight: 400,
-              lineHeight: '72px',
+              lineHeight: window.innerWidth < 768 ? '36px' : '72px',
               textTransform: 'uppercase',
               margin: 0,
-              textShadow: "0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4), 0 0 60px rgba(255, 215, 0, 0.2)"
+              textShadow: "0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4), 0 0 60px rgba(255, 215, 0, 0.2)",
+              whiteSpace: window.innerWidth < 768 ? 'nowrap' : 'normal'
             }}
           >
             {currentGameMode.name}
@@ -1240,7 +1242,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   left: '20px',
                   color: '#FFF',
                   fontFamily: 'Audiowide',
-                  fontSize: '28px',
+                  fontSize: window.innerWidth < 768 ? '18px' : '28px',
                   fontWeight: 400,
                   textTransform: 'uppercase',
                   textShadow: '2px 2px 8px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)',
@@ -1257,7 +1259,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 display: 'grid',
                 rowGap: '10px',
                 columnGap: '10px',
-                maxWidth: '500px',
+                maxWidth: window.innerWidth < 768 ? '95vw' : '500px',
                 flex: '1 0 0',
                 alignSelf: 'stretch',
                 gridTemplateRows: 'repeat(2, minmax(0, 1fr))',
@@ -1509,7 +1511,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   display: 'grid',
                   rowGap: '10px',
                   columnGap: '10px',
-                  maxWidth: '500px',
+                  maxWidth: window.innerWidth < 768 ? '95vw' : '500px',
                   flex: '1 0 0',
                   alignSelf: 'stretch',
                   gridTemplateRows: 'repeat(2, minmax(0, 1fr))',
@@ -1755,7 +1757,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     left: '20px',
                     color: '#FFF',
                     fontFamily: 'Audiowide',
-                    fontSize: '28px',
+                    fontSize: window.innerWidth < 768 ? '18px' : '28px',
                     fontWeight: 400,
                     textTransform: 'uppercase',
                     textShadow: '2px 2px 8px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)',
@@ -1773,10 +1775,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 color: '#E2E2E2',
                 textAlign: 'center',
                 fontFamily: 'Audiowide',
-                fontSize: '48px',
+                fontSize: window.innerWidth < 768 ? '24px' : '48px',
                 fontStyle: 'normal',
                 fontWeight: 400,
-                lineHeight: '56px',
+                lineHeight: window.innerWidth < 768 ? '28px' : '56px',
                 textTransform: 'uppercase',
                 flex: '1 0 0',
                 display: 'flex',

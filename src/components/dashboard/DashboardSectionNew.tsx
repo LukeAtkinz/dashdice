@@ -241,12 +241,12 @@ export const DashboardSection: React.FC = () => {
                       className="w-full flex flex-col justify-center items-center"
                       style={{
                         borderRadius: '30px',
-                        background: 'linear-gradient(243deg, rgba(128, 128, 128, 0.6) 25.17%, rgba(153, 153, 153, 0.00) 109.89%)',
+                        background: 'transparent',
                         height: '160px',
                         alignContent: 'center',
                         justifyContent: 'center',
-                        border: 0,
-                        boxShadow: '0 4px 15px rgba(128, 128, 128, 0.3)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        boxShadow: '0 4px 15px rgba(128, 128, 128, 0.1)',
                         cursor: 'not-allowed'
                       }}
                     >
@@ -300,7 +300,7 @@ export const DashboardSection: React.FC = () => {
                   </div>
                 </div>
                 <img
-                  className="w-[15rem] md:w-[25.256rem] absolute max-h-none object-contain z-[1] transition-all duration-300"
+                  className="w-[15rem] md:w-[25.256rem] absolute max-h-none object-contain z-[1] transition-all duration-300 hover:scale-105 hover:opacity-100"
                   alt={mode}
                   src={config.icon}
                   style={{
