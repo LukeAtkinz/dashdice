@@ -38,7 +38,7 @@ export const Navigation: React.FC = () => {
             </Link>
             
             {user && (
-              <div className="hidden sm:ml-6 sm:flex sm:space-x-6">
+              <div className="hidden lg:ml-6 lg:flex lg:space-x-6">
                 <Link
                   href="/dashboard"
                   className="px-4 py-3 rounded-md text-lg font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors"

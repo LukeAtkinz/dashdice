@@ -14,6 +14,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         loop
         muted
         playsInline
+        webkit-playsinline="true"
+        preload="auto"
         className="absolute inset-0 w-full h-full object-cover z-0"
       >
         <source src="/backgrounds/New Day.mp4" type="video/mp4" />
