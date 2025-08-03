@@ -80,16 +80,33 @@ export const useBrowserRefresh = () => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('pageshow', handlePageShow);
 
-    // Initial check on mount - only redirect if in match
-    if (user && (currentSection === 'match' || window.location.pathname.includes('/match'))) {
-      console.log('🔄 Initial load detected in match context - exiting match and redirecting to dashboard');
-      setCurrentSection('dashboard');
-      router.push('/dashboard');
-    } else if (user) {
-      console.log('🔄 Initial load detected - preserving current page:', currentSection);
-    }
+    // Initial check on mount - only redirect if in match AND it's a browser refresh
+    // We use a small delay to allow legitimate navigation to complete
+    const checkInitialMatchState = () => {
+      if (user && (currentSection === 'match' || window.location.pathname.includes('/match'))) {
+        // Check if this is a legitimate navigation vs browser refresh
+        // If there's no referrer or the page was reloaded, it's likely a refresh
+        const isRefresh = !document.referrer || 
+                         document.referrer === window.location.href ||
+                         performance.navigation?.type === 1; // TYPE_RELOAD
+        
+        if (isRefresh) {
+          console.log('🔄 Browser refresh detected in match context - exiting match and redirecting to dashboard');
+          setCurrentSection('dashboard');
+          router.push('/dashboard');
+        } else {
+          console.log('🔄 Legitimate navigation to match detected - allowing match to load');
+        }
+      } else if (user) {
+        console.log('🔄 Initial load detected - preserving current page:', currentSection);
+      }
+    };
+
+    // Small delay to allow navigation state to settle
+    const timeoutId = setTimeout(checkInitialMatchState, 100);
 
     return () => {
+      clearTimeout(timeoutId);
       window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pageshow', handlePageShow);

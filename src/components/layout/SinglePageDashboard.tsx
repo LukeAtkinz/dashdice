@@ -185,13 +185,13 @@ const DashboardContent: React.FC = () => {
                 </button>
 
                 {/* SHOP Button - Disabled for future implementation */}
-                {currentSection !== 'match' && (
+                {false && currentSection !== 'match' && (
                   <button
                     disabled
-                    className="flex cursor-not-allowed transition-all duration-300"
+                    className="hidden cursor-not-allowed transition-all duration-300"
                     title="Shop - Coming Soon!"
                     style={{
-                      display: "flex",
+                      display: "none",
                       width: "180px",
                       height: "48px",
                       padding: "8px 16px",
@@ -237,9 +237,9 @@ const DashboardContent: React.FC = () => {
               {/* FRIENDS Button */}
               <button
                 onClick={() => handleSectionChange('friends')}
-                className="hidden md:flex cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
+                className="hidden cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
                 style={{
-                  display: "flex",
+                  display: "none",
                   width: "180px",
                   height: "48px",
                   padding: "8px 16px",
