@@ -208,9 +208,9 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
     <div className="relative rounded-[30px] border border-white/0 overflow-hidden"
          style={{
            display: 'flex',
-           height: '300px',
-           width: '600px',
-           padding: '0 110px',
+           height: 'clamp(200px, 50vw, 300px)',
+           width: '100%',
+           padding: '0 clamp(50px, 18vw, 110px)',
            flexDirection: 'row',
            justifyContent: 'space-between',
            alignItems: 'center',
@@ -237,11 +237,11 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
                 key={`reel-${index}`}
                 className="h-full flex items-center justify-center text-gray-400 opacity-30"
                 style={{ 
-                  minWidth: '600px',
+                  minWidth: '100%',
                   backgroundColor: index % 2 === 0 ? 'rgba(0,0,0,0.05)' : 'transparent',
                   color: '#000',
                   fontFamily: 'Orbitron, monospace',
-                  fontSize: '200px',
+                  fontSize: 'clamp(120px, 25vw, 200px)',
                   fontStyle: 'normal',
                   fontWeight: 500,
                   lineHeight: '42px',
