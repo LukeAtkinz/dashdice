@@ -25,6 +25,10 @@ export interface MatchData {
     turnActive: boolean;
     playerScore: number;
     roundScore: number;
+    // Connection tracking
+    isConnected?: boolean;
+    lastHeartbeat?: Timestamp;
+    disconnectedAt?: Timestamp;
     // New match statistics
     matchStats: {
       banks: number;           // How many times player banked
@@ -50,6 +54,10 @@ export interface MatchData {
     turnActive: boolean;
     playerScore: number;
     roundScore: number;
+    // Connection tracking
+    isConnected?: boolean;
+    lastHeartbeat?: Timestamp;
+    disconnectedAt?: Timestamp;
     // New match statistics
     matchStats: {
       banks: number;           // How many times player banked

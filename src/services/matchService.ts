@@ -654,6 +654,49 @@ export class MatchService {
   }
 
   /**
+   * End a match due to player disconnection or inactivity
+   */
+  static async endMatch(matchId: string, winnerId: string): Promise<void> {
+    try {
+      console.log('🏁 Ending match due to disconnection:', matchId, 'Winner:', winnerId);
+      
+      const matchRef = doc(db, 'matches', matchId);
+      const matchSnapshot = await getDoc(matchRef);
+      
+      if (!matchSnapshot.exists()) {
+        throw new Error('Match not found');
+      }
+      
+      const matchData = matchSnapshot.data() as MatchData;
+      
+      // Determine winner details
+      const isHostWinner = matchData.hostData.playerId === winnerId;
+      const winnerData = isHostWinner ? matchData.hostData : matchData.opponentData;
+      const loserData = isHostWinner ? matchData.opponentData : matchData.hostData;
+      
+      // Update match to completed state
+      const updates = {
+        'gameData.gamePhase': 'gameOver' as const,
+        'gameData.status': 'completed' as const,
+        'gameData.winner': winnerData.playerDisplayName,
+        'gameData.gameOverReason': `${loserData.playerDisplayName} disconnected`,
+        'hostData.turnActive': false,
+        'opponentData.turnActive': false,
+      };
+      
+      await updateDoc(matchRef, updates);
+      
+      // Update user stats
+      await this.updateUserStats(matchData, winnerId);
+      
+      console.log('✅ Match ended successfully due to disconnection');
+    } catch (error) {
+      console.error('❌ Error ending match:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Archive a completed match to prevent rejoining
    * Called when players leave the game over screen or start a rematch
    */
