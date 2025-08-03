@@ -14,6 +14,7 @@ import { ProfileSection } from '@/components/dashboard/ProfileSection';
 import { SettingsSection } from '@/components/dashboard/SettingsSection';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
+import { useBrowserRefresh } from '@/hooks/useBrowserRefresh';
 import { createTestMatch } from '@/utils/testMatchData';
 import '@/utils/testUtils'; // Load test utilities for development
 
@@ -22,6 +23,9 @@ const DashboardContent: React.FC = () => {
   const { user } = useAuth();
   const { DisplayBackgroundEquip } = useBackground();
   const [userGold] = useState(1000); // Placeholder for user gold
+  
+  // Handle browser refresh functionality
+  useBrowserRefresh();
 
   const handleSectionChange = async (section: string) => {
     // This function is only for manual button clicks, not for programmatic navigation

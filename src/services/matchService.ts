@@ -68,44 +68,107 @@ export class MatchService {
 
   /**
    * Subscribe to real-time match updates
+   * Checks both active matches and completed matches collections
    */
   static subscribeToMatch(matchId: string, callback: (data: MatchData | null) => void) {
-    const matchRef = doc(db, 'matches', matchId);
+    console.log('🔍 MatchService: Starting subscription for match:', matchId);
     
-    return onSnapshot(matchRef, (snapshot) => {
-      if (snapshot.exists()) {
+    let activeUnsubscribe: (() => void) | null = null;
+    let completedUnsubscribe: (() => void) | null = null;
+    let hasFoundMatch = false;
+    
+    // First, try to subscribe to active matches
+    const matchRef = doc(db, 'matches', matchId);
+    activeUnsubscribe = onSnapshot(matchRef, async (snapshot) => {
+      if (snapshot.exists() && !hasFoundMatch) {
+        hasFoundMatch = true;
         const data = { id: snapshot.id, ...snapshot.data() } as MatchData;
         
         // Validate required fields before passing data
         if (data.gameData && data.hostData && data.opponentData) {
-          console.log('🎮 Match data updated:', data);
+          console.log('🎮 Match data updated (active):', data);
           callback(data);
         } else {
           console.error('❌ Invalid match data structure:', data);
           callback(null);
         }
-      } else {
-        console.log('❌ Match not found:', matchId);
-        callback(null);
+      } else if (!snapshot.exists() && !hasFoundMatch) {
+        // Match not found in active collection, check completed collection
+        console.log('🔍 Match not in active collection, checking completed matches...');
+        
+        // Try to find in completed matches
+        const completedMatchRef = doc(db, 'completedmatches', matchId);
+        completedUnsubscribe = onSnapshot(completedMatchRef, (completedSnapshot) => {
+          if (completedSnapshot.exists()) {
+            hasFoundMatch = true;
+            const data = { id: completedSnapshot.id, ...completedSnapshot.data() } as MatchData;
+            
+            // Validate required fields before passing data
+            if (data.gameData && data.hostData && data.opponentData) {
+              console.log('🎮 Match data found in completed collection:', data);
+              callback(data);
+            } else {
+              console.error('❌ Invalid completed match data structure:', data);
+              callback(null);
+            }
+          } else if (!hasFoundMatch) {
+            console.log('❌ Match not found in either active or completed collections:', matchId);
+            callback(null);
+          }
+        }, (error) => {
+          console.error('❌ Error listening to completed match updates:', error);
+          if (!hasFoundMatch) {
+            callback(null);
+          }
+        });
       }
     }, (error) => {
-      console.error('❌ Error listening to match updates:', error);
-      callback(null);
+      console.error('❌ Error listening to active match updates:', error);
+      if (!hasFoundMatch) {
+        callback(null);
+      }
     });
+    
+    // Return cleanup function that unsubscribes from both listeners
+    return () => {
+      console.log('🧹 MatchService: Cleaning up subscriptions for match:', matchId);
+      if (activeUnsubscribe) {
+        activeUnsubscribe();
+      }
+      if (completedUnsubscribe) {
+        completedUnsubscribe();
+      }
+    };
   }
 
   /**
    * Get match data by ID
+   * Checks both active matches and completed matches collections
    */
   static async getMatch(matchId: string): Promise<MatchData | null> {
     try {
+      console.log('🔍 MatchService: Getting match data for:', matchId);
+      
+      // First try active matches
       const matchRef = doc(db, 'matches', matchId);
       const matchSnapshot = await getDoc(matchRef);
       
       if (matchSnapshot.exists()) {
+        console.log('✅ MatchService: Found match in active collection');
         return { id: matchSnapshot.id, ...matchSnapshot.data() } as MatchData;
       }
       
+      // If not found in active, try completed matches
+      console.log('🔍 MatchService: Match not in active collection, checking completed...');
+      const completedMatchRef = doc(db, 'completedmatches', matchId);
+      const completedMatchSnapshot = await getDoc(completedMatchRef);
+      
+      if (completedMatchSnapshot.exists()) {
+        console.log('✅ MatchService: Found match in completed collection');
+        return { id: completedMatchSnapshot.id, ...completedMatchSnapshot.data() } as MatchData;
+      }
+      
+      console.log('❌ MatchService: Match not found in either collection');
       return null;
     } catch (error) {
       console.error('❌ Error getting match:', error);
