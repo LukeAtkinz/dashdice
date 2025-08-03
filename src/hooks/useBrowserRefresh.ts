@@ -34,16 +34,14 @@ export const useBrowserRefresh = () => {
     };
 
     const handleVisibilityChange = async () => {
-      // When user refreshes or navigates away and comes back
+      // Skip visibility-based redirects for match context to avoid interfering with legitimate navigation
       if (document.visibilityState === 'visible' && user) {
-        // Only exit matches on refresh - other pages should stay as they are
-        if (currentSection === 'match' || window.location.pathname.includes('/match')) {
-          console.log('🔄 Browser refresh detected in match - exiting match and redirecting to dashboard');
-          setCurrentSection('dashboard');
-          router.push('/dashboard');
-        } else {
+        // Only handle non-match contexts
+        if (currentSection !== 'match' && !window.location.pathname.includes('/match')) {
           console.log('🔄 Browser refresh detected - staying on current page:', currentSection);
           // User stays on their current page (dashboard, inventory, etc.)
+        } else {
+          console.log('🔄 Visibility change in match context - ignoring to allow legitimate navigation');
         }
       }
       
