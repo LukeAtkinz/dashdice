@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { UserService } from '@/services/userService';
 import { useNavigation } from '@/context/NavigationContext';
+import { useWaitingRoomCleanup } from '@/hooks/useWaitingRoomCleanup';
 import { db } from '@/services/firebase';
 import { collection, addDoc, doc, onSnapshot, updateDoc, deleteDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 
@@ -85,6 +86,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const [opponentJoined, setOpponentJoined] = useState(false);
   const [vsCountdown, setVsCountdown] = useState<number | null>(null);
   const [isLeaving, setIsLeaving] = useState(false); // Add flag to prevent multiple leave operations
+
+  // Waiting room cleanup functionality
+  const { leaveWaitingRoom } = useWaitingRoomCleanup(waitingRoomEntry?.id || roomId);
 
   // Game mode display configurations
   const gameModeConfig = {
