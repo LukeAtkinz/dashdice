@@ -36,13 +36,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Connection and leaving states
-  const [disconnectedPlayer, setDisconnectedPlayer] = useState<{
-    playerId: string;
-    playerDisplayName: string;
-  } | null>(null);
-  const [inactivityCountdown, setInactivityCountdown] = useState<number | null>(null);
-  
   // Dice animation states for slot machine effect
   const [dice1Animation, setDice1Animation] = useState<{
     isSpinning: boolean;
@@ -94,57 +87,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       setLoading(false);
     });
 
-    // Dynamically import and start heartbeat for current player
-    import('@/services/playerHeartbeatService').then(({ PlayerHeartbeatService }) => {
-      if (PlayerHeartbeatService && typeof PlayerHeartbeatService.startHeartbeat === 'function') {
-        PlayerHeartbeatService.startHeartbeat(roomId, user.uid);
-      } else {
-        console.error('❌ PlayerHeartbeatService is not available:', PlayerHeartbeatService);
-      }
-    }).catch(error => {
-      console.error('❌ Failed to import PlayerHeartbeatService:', error);
-    });
-    
-    // Monitor player connections
-    let connectionUnsubscribe = () => {}; // Default empty function
-    import('@/services/playerHeartbeatService').then(({ PlayerHeartbeatService }) => {
-      if (PlayerHeartbeatService && typeof PlayerHeartbeatService.monitorPlayerConnections === 'function') {
-        connectionUnsubscribe = PlayerHeartbeatService.monitorPlayerConnections(
-          roomId,
-          user.uid,
-          (playerId: string, playerDisplayName: string) => {
-            console.log('🔌 Player disconnected:', playerDisplayName);
-            setDisconnectedPlayer({ playerId, playerDisplayName });
-          },
-          (timeLeft: number) => {
-            console.log('⏰ Inactivity warning:', timeLeft, 'seconds left');
-            setInactivityCountdown(timeLeft);
-          },
-          (winnerId: string, winnerDisplayName: string) => {
-            console.log('🏆 Match ended due to inactivity, winner:', winnerDisplayName);
-            // End the match and go to game over screen
-            MatchService.endMatch(roomId, winnerId).then(() => {
-              console.log('✅ Match ended successfully');
-            });
-          }
-        );
-      } else {
-        console.error('❌ PlayerHeartbeatService.monitorPlayerConnections is not available');
-      }
-    }).catch(error => {
-      console.error('❌ Failed to import PlayerHeartbeatService for monitoring:', error);
-    });
-
     return () => {
       unsubscribe();
-      connectionUnsubscribe();
-      import('@/services/playerHeartbeatService').then(({ PlayerHeartbeatService }) => {
-        if (PlayerHeartbeatService && typeof PlayerHeartbeatService.cleanup === 'function') {
-          PlayerHeartbeatService.cleanup();
-        }
-      }).catch(error => {
-        console.error('❌ Failed to import PlayerHeartbeatService for cleanup:', error);
-      });
     };
   }, [roomId, user]);
 
@@ -463,17 +407,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   height: '500px'
                 }}
               >
-                {/* Grey overlay for disconnected player */}
-                {disconnectedPlayer?.playerId === currentPlayer.playerId && (
-                  <div 
-                    className="absolute inset-0 z-20"
-                    style={{
-                      background: 'rgba(128, 128, 128, 0.7)',
-                      backdropFilter: 'grayscale(100%)'
-                    }}
-                  />
-                )}
-                
                 {/* Player Background */}
                 {currentPlayer.matchBackgroundEquipped ? (
                   currentPlayer.matchBackgroundEquipped.type === 'video' ? (
@@ -572,45 +505,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   {currentPlayer.matchBackgroundEquipped?.rarity || 'COMMON'}
                 </span>
               </div>
-              
-              {/* Leaving/Countdown Message - Below Rarity */}
-              {(disconnectedPlayer?.playerId === currentPlayer.playerId || 
-                (inactivityCountdown !== null && currentPlayer.playerId !== user?.uid)) && (
-                <div 
-                  className="mt-2 text-left"
-                  style={{
-                    display: 'flex',
-                    width: '190px',
-                    height: '45px',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'flex-start',
-                    borderRadius: '10px',
-                    background: 'linear-gradient(90deg, #FF0000 0%, #CC0000 100%)',
-                    border: '2px solid #FF4444',
-                    boxShadow: '0px 0px 10px rgba(255, 0, 0, 0.5)'
-                  }}
-                >
-                  <span style={{
-                    alignSelf: 'stretch',
-                    color: '#FFF',
-                    textAlign: 'center',
-                    fontFamily: 'Orbitron',
-                    fontSize: '16px',
-                    fontStyle: 'normal',
-                    fontWeight: 700,
-                    lineHeight: '22px',
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-                  }}>
-                    {disconnectedPlayer?.playerId === currentPlayer.playerId 
-                      ? `${currentPlayer.playerDisplayName} has left`
-                      : inactivityCountdown !== null && currentPlayer.playerId !== user?.uid
-                      ? `${inactivityCountdown}s remaining`
-                      : ''
-                    }
-                  </span>
-                </div>
-              )}
             </div>
 
             {/* Center Dice Area */}
@@ -668,17 +562,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   height: '500px'
                 }}
               >
-                {/* Grey overlay for disconnected player */}
-                {disconnectedPlayer?.playerId === opponent.playerId && (
-                  <div 
-                    className="absolute inset-0 z-20"
-                    style={{
-                      background: 'rgba(128, 128, 128, 0.7)',
-                      backdropFilter: 'grayscale(100%)'
-                    }}
-                  />
-                )}
-                
                 {/* Player Background */}
                 {opponent.matchBackgroundEquipped ? (
                   opponent.matchBackgroundEquipped.type === 'video' ? (
@@ -758,45 +641,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   {opponent.matchBackgroundEquipped?.rarity || 'COMMON'}
                 </span>
               </div>
-              
-              {/* Leaving/Countdown Message - Below Rarity */}
-              {(disconnectedPlayer?.playerId === opponent.playerId || 
-                (inactivityCountdown !== null && opponent.playerId !== user?.uid)) && (
-                <div 
-                  className="mt-2 text-right ml-auto"
-                  style={{
-                    display: 'flex',
-                    width: '190px',
-                    height: '45px',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'flex-start',
-                    borderRadius: '10px',
-                    background: 'linear-gradient(90deg, #FF0000 0%, #CC0000 100%)',
-                    border: '2px solid #FF4444',
-                    boxShadow: '0px 0px 10px rgba(255, 0, 0, 0.5)'
-                  }}
-                >
-                  <span style={{
-                    alignSelf: 'stretch',
-                    color: '#FFF',
-                    textAlign: 'center',
-                    fontFamily: 'Orbitron',
-                    fontSize: '16px',
-                    fontStyle: 'normal',
-                    fontWeight: 700,
-                    lineHeight: '22px',
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-                  }}>
-                    {disconnectedPlayer?.playerId === opponent.playerId 
-                      ? `${opponent.playerDisplayName} has left`
-                      : inactivityCountdown !== null && opponent.playerId !== user?.uid
-                      ? `${inactivityCountdown}s remaining`
-                      : ''
-                    }
-                  </span>
-                </div>
-              )}
             </div>
 
           </div>
