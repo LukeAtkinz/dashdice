@@ -391,7 +391,7 @@ const DashboardContent: React.FC = () => {
           className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-[1.25rem] px-[1vw] z-50"
           style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom) + 0.75rem)' }}
         >
-          <div className="flex flex-row items-center justify-between w-full max-w-[98vw] bg-gradient-to-br from-[#192E39] to-[#99999900] rounded-[25px] px-[2vw] py-[15px] shadow-lg">
+          <div className="flex flex-row items-center justify-between w-full max-w-[98vw] bg-black rounded-[25px] px-[2vw] py-[15px] shadow-lg">
             <button
               onClick={() => handleSectionChange('dashboard')}
               className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[20vw] ${
