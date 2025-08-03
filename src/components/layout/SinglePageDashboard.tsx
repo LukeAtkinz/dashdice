@@ -113,7 +113,14 @@ const DashboardContent: React.FC = () => {
       <div className="relative z-20 h-screen flex flex-col">
         {/* Top Navigation Header */}
         <header className="hidden md:flex flex-shrink-0 w-full flex-row items-center justify-center gap-[1.25rem] relative z-30 px-[1rem] md:px-[4rem] py-[1rem] md:py-[2rem]">
-          <div className="flex-1 flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px] w-full max-w-none" style={{ background: "var(--ui-navbar-bg)" }}>
+          <div className="flex-1 flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px] w-full max-w-none" style={{ 
+            background: DisplayBackgroundEquip?.name === 'On A Mission' 
+              ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)'
+              : DisplayBackgroundEquip?.name === 'Long Road Ahead'
+              ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.6) 0%, rgba(76, 29, 149, 0.4) 25%, rgba(30, 27, 75, 0.3) 50%, rgba(30, 58, 138, 0.4) 75%, rgba(59, 130, 246, 0.2) 100%)'
+              : "var(--ui-navbar-bg)",
+            backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(8px)' : 'none'
+          }}>
             
             {/* Left Navigation */}
             <div className="flex flex-row items-center justify-start gap-[1rem] md:gap-[2rem]">
@@ -156,8 +163,15 @@ const DashboardContent: React.FC = () => {
                     alignItems: "center",
                     gap: "8px",
                     borderRadius: "18px",
-                    background: currentSection === 'match' ? "#666666" : "#FF0080",
-                    border: "none"
+                    background: currentSection === 'match' 
+                      ? "#666666" 
+                      : DisplayBackgroundEquip?.name === 'On A Mission'
+                      ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.2) 100%)'
+                      : DisplayBackgroundEquip?.name === 'Long Road Ahead'
+                      ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.8) 0%, rgba(76, 29, 149, 0.6) 25%, rgba(30, 27, 75, 0.4) 50%, rgba(30, 58, 138, 0.6) 75%, rgba(59, 130, 246, 0.4) 100%)'
+                      : "#FF0080",
+                    border: "none",
+                    backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(6px)' : 'none'
                   }}
                 >
                   <img
@@ -293,8 +307,15 @@ const DashboardContent: React.FC = () => {
                   alignItems: "center",
                   gap: "8px",
                   borderRadius: "18px",
-                  background: currentSection === 'match' ? "#666666" : "#FF0080",
-                  border: "none"
+                  background: currentSection === 'match' 
+                    ? "#666666" 
+                    : DisplayBackgroundEquip?.name === 'On A Mission'
+                    ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.2) 100%)'
+                    : DisplayBackgroundEquip?.name === 'Long Road Ahead'
+                    ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.8) 0%, rgba(76, 29, 149, 0.6) 25%, rgba(30, 27, 75, 0.4) 50%, rgba(30, 58, 138, 0.6) 75%, rgba(59, 130, 246, 0.4) 100%)'
+                    : "#FF0080",
+                  border: "none",
+                  backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(6px)' : 'none'
                 }}
               >
                 <img
@@ -388,10 +409,17 @@ const DashboardContent: React.FC = () => {
 
         {/* Bottom Navigation for Mobile - Fixed at bottom */}
         <footer 
-          className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-[1.25rem] px-[1vw] z-50"
+          className={`${currentSection === 'match' ? 'hidden' : 'md:hidden'} fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-[1.25rem] px-[1vw] z-50`}
           style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom) + 0.75rem)' }}
         >
-          <div className="flex flex-row items-center justify-between w-full max-w-[98vw] bg-black rounded-[25px] px-[2vw] py-[15px] shadow-lg">
+          <div className="flex flex-row items-center justify-between w-full max-w-[98vw] rounded-[25px] px-[2vw] py-[15px] shadow-lg" style={{
+            background: DisplayBackgroundEquip?.name === 'On A Mission' 
+              ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.2) 100%)'
+              : DisplayBackgroundEquip?.name === 'Long Road Ahead'
+              ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.8) 0%, rgba(76, 29, 149, 0.6) 25%, rgba(30, 27, 75, 0.4) 50%, rgba(30, 58, 138, 0.6) 75%, rgba(59, 130, 246, 0.4) 100%)'
+              : '#000000',
+            backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(8px)' : 'none'
+          }}>
             <button
               onClick={() => handleSectionChange('dashboard')}
               className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[20vw] ${

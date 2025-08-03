@@ -382,10 +382,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   });
 
   return (
-    <div className="w-full flex flex-col items-center justify-start gap-[2rem] pt-[1rem] pb-[2rem] min-h-screen">
+    <div className="w-full flex flex-col items-center justify-start gap-[2rem] pt-[1rem] pb-[2rem] md:pb-[2rem] min-h-screen" style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom) + 8rem)' }}>
       {/* Game Arena */}
       <div className="flex items-center justify-center p-4">
-          <div className="flex items-center justify-between gap-8" style={{ width: '95vw' }}>
+          {/* Desktop Layout */}
+          <div className="hidden md:flex items-center justify-between gap-8" style={{ width: '95vw' }}>
             
             {/* Player 1 (Current User - Left Side) */}
             <div className="flex-1 max-w-[500px]">
@@ -641,6 +642,207 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   {opponent.matchBackgroundEquipped?.rarity || 'COMMON'}
                 </span>
               </div>
+            </div>
+
+          </div>
+
+          {/* Mobile Layout - Stacked */}
+          <div className="md:hidden flex flex-col items-center w-full px-2" style={{ width: '100vw' }}>
+            
+            {/* User Profiles Section - Top */}
+            <div className="w-full flex justify-between gap-4 mb-6">
+              {/* Current Player Profile - Left */}
+              <div className="flex-1">
+                <h3 
+                  className="text-lg font-bold text-white mb-2 text-center truncate px-2"
+                  style={{ 
+                    fontFamily: 'Audiowide',
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}
+                >
+                  {currentPlayer.playerDisplayName}
+                </h3>
+                
+                <div
+                  className="relative rounded-xl overflow-hidden shadow-lg border-2"
+                  style={{ 
+                    borderColor: currentPlayer.turnActive ? '#00ff00' : '#ffffff',
+                    height: '120px'
+                  }}
+                >
+                  {/* Player Background */}
+                  {currentPlayer.matchBackgroundEquipped ? (
+                    currentPlayer.matchBackgroundEquipped.type === 'video' ? (
+                      <video
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        controls={false}
+                        disablePictureInPicture
+                        controlsList="nodownload noplaybackrate"
+                        className="absolute inset-0 w-full h-full object-cover"
+                        style={{ pointerEvents: 'none' }}
+                      >
+                        <source src={currentPlayer.matchBackgroundEquipped.file} type="video/mp4" />
+                      </video>
+                    ) : (
+                      <img
+                        src={currentPlayer.matchBackgroundEquipped.file}
+                        alt={currentPlayer.matchBackgroundEquipped.name}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    )
+                  ) : (
+                    <div 
+                      className="absolute inset-0"
+                      style={{
+                        background: "radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)"
+                      }}
+                    />
+                  )}
+                  
+                  {/* Score Overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div 
+                      className="text-4xl font-bold text-white"
+                      style={{ 
+                        fontFamily: 'Audiowide',
+                        textShadow: '4px 4px 8px rgba(0,0,0,0.8)'
+                      }}
+                    >
+                      {currentPlayer.playerScore}
+                    </div>
+                  </div>
+
+                  {/* Turn Indicators */}
+                  {matchData.gameData.gamePhase === 'gameplay' && currentPlayer.turnActive && (
+                    <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold animate-pulse">
+                      YOU
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Opponent Profile - Right */}
+              <div className="flex-1">
+                <h3 
+                  className="text-lg font-bold text-white mb-2 text-center truncate px-2"
+                  style={{ 
+                    fontFamily: 'Audiowide',
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}
+                >
+                  {opponent.playerDisplayName}
+                </h3>
+                
+                <div
+                  className="relative rounded-xl overflow-hidden shadow-lg border-2"
+                  style={{ 
+                    borderColor: opponent.turnActive ? '#00ff00' : '#ffffff',
+                    height: '120px'
+                  }}
+                >
+                  {/* Player Background */}
+                  {opponent.matchBackgroundEquipped ? (
+                    opponent.matchBackgroundEquipped.type === 'video' ? (
+                      <video
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        controls={false}
+                        disablePictureInPicture
+                        controlsList="nodownload noplaybackrate"
+                        className="absolute inset-0 w-full h-full object-cover"
+                        style={{ pointerEvents: 'none' }}
+                      >
+                        <source src={opponent.matchBackgroundEquipped.file} type="video/mp4" />
+                      </video>
+                    ) : (
+                      <img
+                        src={opponent.matchBackgroundEquipped.file}
+                        alt={opponent.matchBackgroundEquipped.name}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    )
+                  ) : (
+                    <div 
+                      className="absolute inset-0"
+                      style={{
+                        background: "radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)"
+                      }}
+                    />
+                  )}
+                  
+                  {/* Score Overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div 
+                      className="text-4xl font-bold text-white"
+                      style={{ 
+                        fontFamily: 'Audiowide',
+                        textShadow: '4px 4px 8px rgba(0,0,0,0.8)'
+                      }}
+                    >
+                      {opponent.playerScore}
+                    </div>
+                  </div>
+
+                  {/* Turn Indicators */}
+                  {matchData.gameData.gamePhase === 'gameplay' && opponent.turnActive && (
+                    <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold animate-pulse">
+                      THEM
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Center Dice Area - Middle */}
+            <div className="w-full flex flex-col items-center justify-center mb-6">
+              {/* Phase-specific content with mobile modifications */}
+              {matchData.gameData.gamePhase === 'turnDecider' && (
+                <div className="w-full">
+                  <TurnDeciderPhase
+                    matchData={matchData}
+                    currentPlayer={currentPlayer}
+                    opponent={opponent}
+                    isHost={isHost}
+                    diceAnimation={turnDeciderDiceAnimation}
+                    onChoiceSelect={handleTurnDeciderChoice}
+                  />
+                </div>
+              )}
+
+              {matchData.gameData.gamePhase === 'gameplay' && (
+                <div className="w-full">
+                  <GameplayPhase
+                    matchData={matchData}
+                    currentPlayer={currentPlayer}
+                    opponent={opponent}
+                    isHost={isHost}
+                    dice1Animation={dice1Animation}
+                    dice2Animation={dice2Animation}
+                    onRollDice={handleRollDice}
+                    onBankScore={handleBankScore}
+                  />
+                </div>
+              )}
+
+              {matchData.gameData.gamePhase === 'gameOver' && (
+                <div className="w-full">
+                  <GameOverWrapper
+                    matchId={matchData.id || ''}
+                    onLeaveMatch={() => setCurrentSection('dashboard')}
+                  />
+                </div>
+              )}
             </div>
 
           </div>

@@ -102,180 +102,237 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   const gameRuleResult = getGameRuleResult();
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      {/* Always Visible Game Status Box - Top of Dice Container */}
-      <motion.div 
-        className="mb-6"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <div 
-          className="inline-block px-8 py-4 border-2 border-white/30 rounded-2xl backdrop-blur-sm min-w-[300px]"
-          style={{
-            background: "linear-gradient(135deg, rgba(120, 119, 198, 0.6) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(120, 119, 198, 0.6) 100%), linear-gradient(180deg, rgba(53, 51, 205, 0.8) 0%, rgba(114, 9, 183, 0.8) 100%)"
-          }}
+    <>
+      <div className="flex flex-col items-center justify-center">
+        {/* Always Visible Game Status Box - Top of Dice Container */}
+        <motion.div 
+          className="mb-6"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
         >
-          {!isMyTurn ? (
-            // Show "YOUR TURN" when it's opponent's turn  
-            <motion.div 
-              className="text-center"
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.2 }}
-            >
-              <p 
-                className="text-2xl font-bold text-yellow-400" 
-                style={{ fontFamily: "Audiowide" }}
-              >
-                YOUR TURN
-              </p>
-              <p 
-                className="text-lg text-gray-300 mt-1"
-                style={{ fontFamily: "Audiowide" }}
-              >
-                Waiting for {opponent.playerDisplayName}
-              </p>
-            </motion.div>
-          ) : gameRuleResult && !matchData.gameData.isRolling && matchData.gameData.diceOne > 0 && matchData.gameData.diceTwo > 0 ? (
-            // Show game rule result when dice have been rolled
-            <motion.div 
-              className="text-center"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              <p 
-                className={`text-xl font-bold ${gameRuleResult.color}`} 
-                style={{ fontFamily: "Audiowide" }}
-              >
-                {gameRuleResult.rule}
-              </p>
-              <p 
-                className="text-lg text-white mt-1"
-                style={{ fontFamily: "Audiowide" }}
-              >
-                {gameRuleResult.result}
-              </p>
-            </motion.div>
-          ) : (
-            // Default state - show turn instructions (with multiplier status if active)
-            <motion.div 
-              className="text-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.2 }}
-            >
-              <p 
-                className="text-xl font-bold text-blue-400" 
-                style={{ fontFamily: "Audiowide" }}
-              >
-                YOUR TURN
-              </p>
-              {matchData.gameData.hasDoubleMultiplier ? (
-                <p 
-                  className="text-lg text-purple-400 mt-1 animate-pulse"
-                  style={{ fontFamily: "Audiowide" }}
-                >
-                  🔥 2x MULTIPLIER ACTIVE! 🔥
-                </p>
-              ) : (
-                <p 
-                  className="text-lg text-gray-300 mt-1"
-                  style={{ fontFamily: "Audiowide" }}
-                >
-                  Roll the dice to play
-                </p>
-              )}
-            </motion.div>
-          )}
-        </div>
-      </motion.div>
-
-      {/* Dice Container with Turn Score Between */}
-      <div className="relative flex flex-col gap-4 mb-8">
-        {/* Dice 1 - Slot Machine */}
-        <div style={{ width: '600px' }}>
-          <SlotMachineDice
-            diceNumber={1}
-            animationState={dice1Animation}
-            matchRollPhase={matchData.gameData.rollPhase}
-            actualValue={matchData.gameData.diceOne}
-            isGameRolling={matchData.gameData.isRolling || false}
-            matchData={matchData}
-          />
-        </div>
-        
-        {/* Turn Score - Positioned absolutely between dice */}
-        <div 
-          className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center relative"
+          <div 
+            className="inline-block px-4 md:px-8 py-3 md:py-4 border-2 border-white/30 rounded-2xl backdrop-blur-sm min-w-[250px] md:min-w-[300px]"
+            style={{
+              background: "linear-gradient(135deg, rgba(120, 119, 198, 0.6) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(120, 119, 198, 0.6) 100%), linear-gradient(180deg, rgba(53, 51, 205, 0.8) 0%, rgba(114, 9, 183, 0.8) 100%)"
+            }}
           >
-            {/* Turn Score Container - Fixed Position */}
-            <div className="inline-block px-8 py-4 bg-yellow-600/30 border-2 border-yellow-500 rounded-2xl backdrop-blur-sm shadow-xl">
-              <p 
-                className="text-lg text-yellow-300 mb-1"
-                style={{ fontFamily: "Audiowide" }}
-              >
-                Turn Score
-              </p>
-              <p 
-                className="text-4xl font-bold text-yellow-400" 
-                style={{ fontFamily: "Audiowide" }}
-              >
-                {matchData.gameData.turnScore}
-              </p>
-            </div>
-            
-            {/* 2X Multiplier Indicator - Absolutely positioned */}
-            {matchData.gameData.hasDoubleMultiplier && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="absolute -right-24 top-1/2 transform -translate-y-1/2 px-4 py-2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
+            {!isMyTurn ? (
+              // Show "YOUR TURN" when it's opponent's turn  
+              <motion.div 
+                className="text-center"
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.2 }}
               >
                 <p 
-                  className="text-2xl font-bold text-red-300" 
+                  className="text-xl md:text-2xl font-bold text-yellow-400" 
                   style={{ fontFamily: "Audiowide" }}
                 >
-                  2X
+                  YOUR TURN
+                </p>
+                <p 
+                  className="text-base md:text-lg text-gray-300 mt-1"
+                  style={{ fontFamily: "Audiowide" }}
+                >
+                  Waiting for {opponent.playerDisplayName}
                 </p>
               </motion.div>
+            ) : gameRuleResult && !matchData.gameData.isRolling && matchData.gameData.diceOne > 0 && matchData.gameData.diceTwo > 0 ? (
+              // Show game rule result when dice have been rolled
+              <motion.div 
+                className="text-center"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <p 
+                  className={`text-lg md:text-xl font-bold ${gameRuleResult.color}`} 
+                  style={{ fontFamily: "Audiowide" }}
+                >
+                  {gameRuleResult.rule}
+                </p>
+                <p 
+                  className="text-base md:text-lg text-white mt-1"
+                  style={{ fontFamily: "Audiowide" }}
+                >
+                  {gameRuleResult.result}
+                </p>
+              </motion.div>
+            ) : (
+              // Default state - show turn instructions (with multiplier status if active)
+              <motion.div 
+                className="text-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
+              >
+                <p 
+                  className="text-lg md:text-xl font-bold text-blue-400" 
+                  style={{ fontFamily: "Audiowide" }}
+                >
+                  YOUR TURN
+                </p>
+                {matchData.gameData.hasDoubleMultiplier ? (
+                  <p 
+                    className="text-base md:text-lg text-purple-400 mt-1 animate-pulse"
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    🔥 2x MULTIPLIER ACTIVE! 🔥
+                  </p>
+                ) : (
+                  <p 
+                    className="text-base md:text-lg text-gray-300 mt-1"
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    Roll the dice to play
+                  </p>
+                )}
+              </motion.div>
             )}
-          </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Dice Container with Turn Score Between */}
+        <div className="relative flex flex-col gap-4 mb-4 md:mb-8">
+          {/* Dice 1 - Slot Machine */}
+          <div className="w-full max-w-[600px] md:w-[600px]" style={{ width: 'min(600px, 80vw)' }}>
+            <SlotMachineDice
+              diceNumber={1}
+              animationState={dice1Animation}
+              matchRollPhase={matchData.gameData.rollPhase}
+              actualValue={matchData.gameData.diceOne}
+              isGameRolling={matchData.gameData.isRolling || false}
+              matchData={matchData}
+            />
+          </div>
+          
+          {/* Turn Score - Positioned absolutely between dice */}
+          <div 
+            className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center relative"
+            >
+              {/* Turn Score Container - Fixed Position */}
+              <div className="inline-block px-3 md:px-8 py-1.5 md:py-4 bg-yellow-600/30 border-2 border-yellow-500 rounded-2xl backdrop-blur-sm shadow-xl">
+                <p 
+                  className="text-xs md:text-lg text-yellow-300 mb-0.5 md:mb-1"
+                  style={{ fontFamily: "Audiowide" }}
+                >
+                  Turn Score
+                </p>
+                <p 
+                  className="text-lg md:text-4xl font-bold text-yellow-400" 
+                  style={{ fontFamily: "Audiowide" }}
+                >
+                  {matchData.gameData.turnScore}
+                </p>
+              </div>
+              
+              {/* 2X Multiplier Indicator - Absolutely positioned */}
+              {matchData.gameData.hasDoubleMultiplier && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="absolute -right-12 md:-right-24 top-1/2 transform -translate-y-1/2 px-1.5 md:px-4 py-0.5 md:py-2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
+                >
+                  <p 
+                    className="text-sm md:text-2xl font-bold text-red-300" 
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    2X
+                  </p>
+                </motion.div>
+              )}
+            </motion.div>
+          </div>
+          
+          {/* Dice 2 - Slot Machine */}
+          <div className="w-full max-w-[600px] md:w-[600px]" style={{ width: 'min(600px, 80vw)' }}>
+            <SlotMachineDice
+              diceNumber={2}
+              animationState={dice2Animation}
+              matchRollPhase={matchData.gameData.rollPhase}
+              actualValue={matchData.gameData.diceTwo}
+              isGameRolling={matchData.gameData.isRolling || false}
+              matchData={matchData}
+            />
+          </div>
         </div>
-        
-        {/* Dice 2 - Slot Machine */}
-        <div style={{ width: '600px' }}>
-          <SlotMachineDice
-            diceNumber={2}
-            animationState={dice2Animation}
-            matchRollPhase={matchData.gameData.rollPhase}
-            actualValue={matchData.gameData.diceTwo}
-            isGameRolling={matchData.gameData.isRolling || false}
-            matchData={matchData}
-          />
+
+        {/* Action Buttons - Desktop Only */}
+        <div className="hidden md:flex gap-4 mb-8">
+          {isMyTurn ? (
+            <>
+              <button
+                onClick={onRollDice}
+                disabled={!canRoll}
+                className={`px-12 py-6 rounded-xl text-2xl font-bold transition-all transform ${
+                  canRoll
+                    ? 'text-white hover:scale-105'
+                    : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
+                }`}
+                style={{ 
+                  fontFamily: "Audiowide",
+                  ...(canRoll ? getButtonGradientStyle('rgba(59, 130, 246, 0.8)') : {})
+                }}
+              >
+                PLAY
+              </button>
+              
+              <button
+                onClick={onBankScore}
+                disabled={!canBank}
+                className={`px-12 py-6 rounded-xl text-2xl font-bold transition-all transform ${
+                  canBank
+                    ? 'text-white hover:scale-105'
+                    : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
+                }`}
+                style={{ 
+                  fontFamily: "Audiowide",
+                  ...(canBank ? getButtonGradientStyle('rgba(34, 197, 94, 0.8)') : {})
+                }}
+              >
+                BANK
+              </button>
+            </>
+          ) : (
+            <div className="text-center">
+              <p 
+                className="text-gray-300 text-xl"
+                style={{ 
+                  fontFamily: "Audiowide",
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+                }}
+              >
+                Waiting for {opponent.playerDisplayName} to play...
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex gap-4 mb-8">
+      {/* Mobile Fixed Bottom Buttons */}
+      <div 
+        className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-4 px-4 z-50 bg-black/80 backdrop-blur-sm border-t-2 border-white/20"
+        style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom) + 0.5rem)' }}
+      >
         {isMyTurn ? (
-          <>
+          <div className="flex gap-3 w-full max-w-md">
             <button
               onClick={onRollDice}
               disabled={!canRoll}
-              className={`px-12 py-6 rounded-xl text-2xl font-bold transition-all transform ${
+              className={`flex-1 py-4 rounded-xl text-xl font-bold transition-all transform ${
                 canRoll
-                  ? 'text-white hover:scale-105'
+                  ? 'text-white hover:scale-105 active:scale-95'
                   : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
               }`}
               style={{ 
                 fontFamily: "Audiowide",
+                minHeight: '60px',
                 ...(canRoll ? getButtonGradientStyle('rgba(59, 130, 246, 0.8)') : {})
               }}
             >
@@ -285,33 +342,34 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             <button
               onClick={onBankScore}
               disabled={!canBank}
-              className={`px-12 py-6 rounded-xl text-2xl font-bold transition-all transform ${
+              className={`flex-1 py-4 rounded-xl text-xl font-bold transition-all transform ${
                 canBank
-                  ? 'text-white hover:scale-105'
+                  ? 'text-white hover:scale-105 active:scale-95'
                   : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
               }`}
               style={{ 
                 fontFamily: "Audiowide",
+                minHeight: '60px',
                 ...(canBank ? getButtonGradientStyle('rgba(34, 197, 94, 0.8)') : {})
               }}
             >
               BANK
             </button>
-          </>
+          </div>
         ) : (
-          <div className="text-center">
+          <div className="text-center w-full">
             <p 
-              className="text-gray-300 text-xl"
+              className="text-gray-300 text-lg"
               style={{ 
                 fontFamily: "Audiowide",
                 textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
               }}
             >
-              Waiting for {opponent.playerDisplayName} to play...
+              Waiting for {opponent.playerDisplayName}...
             </p>
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 };
