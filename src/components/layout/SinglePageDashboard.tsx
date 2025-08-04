@@ -378,7 +378,7 @@ const DashboardContent: React.FC = () => {
           </main>
         ) : (
           // Regular content with constraints
-          <main className="flex-1 w-full flex items-start justify-center min-h-0 overflow-auto pb-[8rem] md:pb-0" style={{ paddingBottom: 'max(6rem, env(safe-area-inset-bottom) + 6rem)' }}>
+          <main className="flex-1 w-full flex items-start justify-center min-h-0 overflow-auto pb-[6rem] md:pb-0" style={{ paddingBottom: 'max(4rem, env(safe-area-inset-bottom) + 4rem)' }}>
             <div className="w-full max-w-[100rem] flex flex-col items-center justify-center gap-[2rem] py-[2rem] px-[1rem] md:px-[2rem] pr-[1rem] md:pr-[2rem]">
               <AnimatePresence mode="wait">
                 <motion.div
@@ -409,16 +409,17 @@ const DashboardContent: React.FC = () => {
 
         {/* Bottom Navigation for Mobile - Fixed at bottom */}
         <footer 
-          className={`${currentSection === 'match' ? 'hidden' : 'md:hidden'} fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-[1.25rem] px-[1vw] z-50`}
-          style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom) + 0.75rem)' }}
+          className={`${currentSection === 'match' ? 'hidden' : 'md:hidden'} fixed bottom-0 left-0 right-0 w-[100vw] flex flex-row items-center justify-center z-50`}
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)', padding: '0' }}
         >
-          <div className="flex flex-row items-center justify-between w-full max-w-[98vw] rounded-[25px] px-[2vw] py-[15px] shadow-lg" style={{
+          <div className="flex flex-row items-center justify-between w-full px-[2vw] py-[15px] shadow-lg" style={{
             background: DisplayBackgroundEquip?.name === 'On A Mission' 
               ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.2) 100%)'
               : DisplayBackgroundEquip?.name === 'Long Road Ahead'
               ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.8) 0%, rgba(76, 29, 149, 0.6) 25%, rgba(30, 27, 75, 0.4) 50%, rgba(30, 58, 138, 0.6) 75%, rgba(59, 130, 246, 0.4) 100%)'
               : '#000000',
-            backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(8px)' : 'none'
+            backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(8px)' : 'none',
+            borderRadius: '0'
           }}>
             <button
               onClick={() => handleSectionChange('dashboard')}
