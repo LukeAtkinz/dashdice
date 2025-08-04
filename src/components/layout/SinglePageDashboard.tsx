@@ -102,7 +102,7 @@ const DashboardContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen max-h-screen relative overflow-hidden" style={{ height: '100vh', maxHeight: '100vh' }}>
       {/* Dynamic Background */}
       {renderBackground()}
       
@@ -110,7 +110,7 @@ const DashboardContent: React.FC = () => {
       <div className="absolute inset-0 bg-black/30 z-10" />
 
       {/* Main Layout */}
-      <div className="relative z-20 h-screen flex flex-col">
+      <div className="relative z-20 h-full flex flex-col" style={{ height: '100vh', maxHeight: '100vh' }}>
         {/* Top Navigation Header */}
         <header className="hidden md:flex flex-shrink-0 w-full flex-row items-center justify-center gap-[1.25rem] relative z-30 px-[1rem] md:px-[4rem] py-[1rem] md:py-[2rem]">
           <div className="flex-1 flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px] w-full max-w-none" style={{ 
@@ -378,7 +378,7 @@ const DashboardContent: React.FC = () => {
           </main>
         ) : (
           // Regular content with constraints
-          <main className="flex-1 w-full flex items-start justify-center min-h-0 overflow-auto pb-[6rem] md:pb-0" style={{ paddingBottom: 'max(4rem, env(safe-area-inset-bottom) + 4rem)' }}>
+          <main className="flex-1 w-full flex items-start justify-center min-h-0 overflow-auto pb-[6rem] md:pb-0" style={{ paddingBottom: 'max(4rem, env(safe-area-inset-bottom) + 4rem)', touchAction: 'pan-y' }}>
             <div className="w-full max-w-[100rem] flex flex-col items-center justify-center gap-[2rem] py-[2rem] px-[1rem] md:px-[2rem] pr-[1rem] md:pr-[2rem]">
               <AnimatePresence mode="wait">
                 <motion.div
