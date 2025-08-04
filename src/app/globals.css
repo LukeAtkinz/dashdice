@@ -72,6 +72,42 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Mobile viewport fixes */
+html, body {
+  height: 100%;
+  overflow: hidden; /* Prevent scrolling */
+}
+
+/* Mobile viewport height fixes */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari */
+  html, body {
+    height: -webkit-fill-available;
+  }
+}
+
+/* Mobile device specific fixes */
+@media screen and (max-width: 768px) {
+  html, body {
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for modern browsers */
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    touch-action: pan-y; /* Allow vertical scrolling within components */
+  }
+  
+  /* Reset position for desktop */
+  @media screen and (min-width: 769px) {
+    html, body {
+      position: static;
+      overflow: visible;
+    }
+  }
+}
+
 /* UI Theme System - Colors defined by backgrounds */
 :root {
   /* Default theme colors (same as New Day) */
