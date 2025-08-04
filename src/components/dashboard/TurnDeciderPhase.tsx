@@ -15,6 +15,7 @@ interface TurnDeciderPhaseProps {
     reelSpeed?: number;
   };
   onChoiceSelect: (choice: 'odd' | 'even') => void;
+  onForceGameplay?: () => void; // Debug function to force gameplay
 }
 
 export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
@@ -23,7 +24,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
   opponent,
   isHost,
   diceAnimation,
-  onChoiceSelect
+  onChoiceSelect,
+  onForceGameplay
 }) => {
   const isMyTurnToDecide = (isHost && matchData.gameData.turnDecider === 1) || 
                           (!isHost && matchData.gameData.turnDecider === 2);
@@ -96,11 +98,25 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           >
             Choice Made:
           </p>
-          <div className="inline-block px-6 py-3 bg-yellow-600/20 border-2 border-yellow-500 rounded-xl">
+          <div className="inline-block px-6 py-3 bg-yellow-600/20 border-2 border-yellow-500 rounded-xl mb-4">
             <p className="text-2xl font-bold text-yellow-400" style={{ fontFamily: "Audiowide" }}>
               {matchData.gameData.turnDeciderChoice?.toUpperCase()}
             </p>
           </div>
+          
+          {/* Debug: Force gameplay button */}
+          {onForceGameplay && (
+            <div className="mt-4">
+              <button
+                onClick={onForceGameplay}
+                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-bold transition-all transform hover:scale-105 border border-orange-400"
+                style={{ fontFamily: "Audiowide" }}
+                title="Development: Force skip to gameplay"
+              >
+                🚀 FORCE GAMEPLAY (DEV)
+              </button>
+            </div>
+          )}
         </motion.div>
       )}
 
@@ -112,7 +128,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           className="text-center"
         >
           <p 
-            className="text-xl text-gray-300"
+            className="text-xl text-gray-300 mb-4"
             style={{ 
               fontFamily: 'Audiowide',
               textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
@@ -120,6 +136,16 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           >
             Waiting for {opponent.playerDisplayName} to choose...
           </p>
+          
+          {/* Debug: Force choice button for development */}
+          <button
+            onClick={() => onChoiceSelect('odd')}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold transition-all transform hover:scale-105 border border-red-400"
+            style={{ fontFamily: "Audiowide" }}
+            title="Development: Force choice to unstick"
+          >
+            🔧 FORCE ODD (DEV)
+          </button>
         </motion.div>
       )}
 
