@@ -105,18 +105,27 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         clearTimeout(timeoutId);
       }
       
-      // Hide button after 2 seconds of no scrolling
+      // Hide button after 3 seconds of no scrolling
       timeoutId = setTimeout(() => {
         setIsScrolled(false);
-      }, 2000);
+      }, 3000);
     };
     
-    window.addEventListener('scroll', handleScroll);
-    document.addEventListener('scroll', handleScroll, true); // Capture phase for nested scrolling
+    // Check for scroll events on the main container and window
+    const handleGlobalScroll = () => {
+      handleScroll();
+    };
+    
+    window.addEventListener('scroll', handleGlobalScroll);
+    document.addEventListener('scroll', handleGlobalScroll, true); // Capture phase for nested scrolling
+    document.addEventListener('touchmove', handleGlobalScroll); // Touch scrolling
+    document.addEventListener('wheel', handleGlobalScroll); // Wheel scrolling
     
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-      document.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('scroll', handleGlobalScroll);
+      document.removeEventListener('scroll', handleGlobalScroll, true);
+      document.removeEventListener('touchmove', handleGlobalScroll);
+      document.removeEventListener('wheel', handleGlobalScroll);
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
@@ -1167,19 +1176,38 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         
         @keyframes slideUpButton {
           from {
-            transform: translateY(calc(100% + 80px));
+            transform: translateY(calc(100% + 120px));
+            opacity: 0;
           }
           to {
             transform: translateY(0);
+            opacity: 1;
           }
         }
         
         @keyframes slideDownButton {
           from {
             transform: translateY(0);
+            opacity: 1;
           }
           to {
-            transform: translateY(calc(100% + 80px));
+            transform: translateY(calc(100% + 120px));
+            opacity: 0;
+          }
+        }
+        
+        @keyframes buttonPulse {
+          0% { 
+            transform: translateY(0) scale(1);
+            box-shadow: 0 4px 15px rgba(255, 0, 128, 0.3);
+          }
+          50% { 
+            transform: translateY(0) scale(1.02);
+            box-shadow: 0 6px 20px rgba(255, 0, 128, 0.5);
+          }
+          100% { 
+            transform: translateY(0) scale(1);
+            box-shadow: 0 4px 15px rgba(255, 0, 128, 0.3);
           }
         }
       `}</style>
@@ -1880,33 +1908,39 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             cursor: (vsCountdown !== null || opponentJoined || isLeaving) ? 'not-allowed' : 'pointer',
             opacity: (vsCountdown !== null || opponentJoined || isLeaving) ? 0.5 : 1,
             textTransform: 'uppercase',
-            transition: 'all 0.3s ease',
+            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
             // Mobile positioning and animation
             position: window.innerWidth < 768 ? 'fixed' : 'static',
-            bottom: window.innerWidth < 768 ? (isScrolled ? '80px' : '0px') : 'auto',
+            bottom: window.innerWidth < 768 ? (isScrolled ? '140px' : '0px') : 'auto', // Higher position
             left: window.innerWidth < 768 ? '20px' : 'auto',
             right: window.innerWidth < 768 ? '20px' : 'auto',
             zIndex: window.innerWidth < 768 ? 45 : 'auto',
             transform: window.innerWidth < 768 ? 
-              (isScrolled ? 'translateY(0)' : 'translateY(calc(100% + 80px))') : 
+              (isScrolled ? 'translateY(0) scale(1)' : 'translateY(calc(100% + 140px)) scale(0.95)') : 
               'none',
             margin: window.innerWidth < 768 ? '0' : 'auto',
-            width: window.innerWidth < 768 ? 'calc(100vw - 40px)' : 'auto'
+            width: window.innerWidth < 768 ? 'calc(100vw - 40px)' : 'auto',
+            animation: window.innerWidth < 768 && isScrolled ? 'buttonPulse 2s infinite' : 'none',
+            boxShadow: window.innerWidth < 768 && isScrolled ? 
+              '0 8px 25px rgba(255, 0, 128, 0.4), 0 0 40px rgba(255, 0, 128, 0.2)' : 
+              '0 4px 15px rgba(0, 0, 0, 0.3)'
           }}
           onMouseEnter={(e) => {
             if (vsCountdown === null && !opponentJoined && !isLeaving) {
               e.currentTarget.style.transform = window.innerWidth < 768 ? 
-                (isScrolled ? 'translateY(0) scale(1.02)' : 'translateY(calc(100% + 80px))') :
+                (isScrolled ? 'translateY(0) scale(1.03)' : 'translateY(calc(100% + 140px))') :
                 'scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 8px 25px rgba(255, 0, 128, 0.4)';
+              e.currentTarget.style.boxShadow = '0 10px 30px rgba(255, 0, 128, 0.5)';
             }
           }}
           onMouseLeave={(e) => {
             if (vsCountdown === null && !opponentJoined && !isLeaving) {
               e.currentTarget.style.transform = window.innerWidth < 768 ? 
-                (isScrolled ? 'translateY(0)' : 'translateY(calc(100% + 80px))') :
+                (isScrolled ? 'translateY(0) scale(1)' : 'translateY(calc(100% + 140px))') :
                 'scale(1)';
-              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.boxShadow = window.innerWidth < 768 && isScrolled ? 
+                '0 8px 25px rgba(255, 0, 128, 0.4)' : 
+                '0 4px 15px rgba(0, 0, 0, 0.3)';
             }
           }}
         >

@@ -130,7 +130,7 @@ export const DashboardSection: React.FC = () => {
 
   return (
     <motion.div 
-      className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem]"
+      className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] md:py-[2rem] pt-[1rem] md:pt-[2rem]"
       initial={{ opacity: 1, scale: 1 }}
       animate={{ 
         opacity: isExiting ? 0.7 : 1, 

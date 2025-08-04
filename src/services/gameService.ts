@@ -20,6 +20,69 @@ export class GameService {
   private static readonly MATCHES_COLLECTION = 'matches';
 
   /**
+   * Handle odd/even choice during pregame
+   */
+  static async makeOddEvenChoice(matchId: string, choice: 'odd' | 'even', playerId: string): Promise<void> {
+    try {
+      console.log('🎯 GameService: Making odd/even choice:', { matchId, choice, playerId });
+      
+      const matchRef = doc(db, this.MATCHES_COLLECTION, matchId);
+      const matchSnap = await getDoc(matchRef);
+      
+      if (!matchSnap.exists()) {
+        throw new Error('Match not found');
+      }
+      
+      const matchData = matchSnap.data();
+      const isHost = matchData.hostData.playerId === playerId;
+      const playerIndex = isHost ? 1 : 2;
+      
+      // Check if this player is the chooser
+      if (matchData.gameData.chooserPlayerIndex !== playerIndex) {
+        throw new Error('Not your turn to choose');
+      }
+      
+      if (matchData.gameData.oddEvenChoice !== null) {
+        throw new Error('Choice already made');
+      }
+      
+      // Roll a die to determine the outcome
+      const dieValue = Math.floor(Math.random() * 6) + 1;
+      const isOdd = dieValue % 2 === 1;
+      const playerChoseOdd = choice === 'odd';
+      const playerWins = isOdd === playerChoseOdd;
+      
+      // Determine who goes first
+      const firstPlayerIndex = playerWins ? playerIndex : (playerIndex === 1 ? 2 : 1);
+      
+      console.log('🎲 GameService: Odd/even result:', { 
+        dieValue, 
+        isOdd, 
+        playerChoseOdd, 
+        playerWins, 
+        firstPlayerIndex 
+      });
+      
+      // Update match with choice and start the game
+      await updateDoc(matchRef, {
+        'gameData.oddEvenChoice': choice,
+        'gameData.oddEvenDieValue': dieValue,
+        'gameData.turnDecider': firstPlayerIndex,
+        'gameData.isPregame': false,
+        'gameData.status': 'active',
+        'hostData.gameState.turnActive': firstPlayerIndex === 1,
+        'opponentData.gameState.turnActive': firstPlayerIndex === 2,
+        'gameData.updatedAt': serverTimestamp()
+      });
+      
+      console.log('✅ GameService: Odd/even choice processed successfully');
+    } catch (error) {
+      console.error('❌ GameService: Error making odd/even choice:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Create a new game
    */
   static async createGame(creator: GamePlayer): Promise<string> {
