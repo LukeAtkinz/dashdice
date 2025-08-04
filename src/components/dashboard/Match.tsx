@@ -9,6 +9,8 @@ import { useNavigation } from '@/context/NavigationContext';
 import { TurnDeciderPhase } from './TurnDeciderPhase';
 import { GameplayPhase } from './GameplayPhase';
 import { GameOverWrapper } from './GameOverWrapper';
+import { db } from '@/services/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 
 interface MatchProps {
   gameMode?: string;
@@ -241,6 +243,31 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       await MatchService.makeTurnDeciderChoice(matchData.id!, playerId, choice);
     } catch (error) {
       console.error('❌ Error making turn decider choice:', error);
+    }
+  };
+
+  // Debug: Force gameplay function
+  const handleForceGameplay = async () => {
+    if (!matchData) return;
+    
+    try {
+      const matchRef = doc(db, 'matches', matchData.id!);
+      
+      // Force transition to gameplay with random assignment of who goes first
+      const hostGoesFirst = Math.random() > 0.5;
+      
+      await updateDoc(matchRef, {
+        'gameData.gamePhase': 'gameplay',
+        'gameData.isRolling': false,
+        'gameData.turnScore': 0,
+        'gameData.turnDeciderDice': Math.floor(Math.random() * 6) + 1, // Set a random dice if missing
+        'hostData.turnActive': hostGoesFirst,
+        'opponentData.turnActive': !hostGoesFirst,
+      });
+      
+      console.log(`🚀 Debug: Forced gameplay - ${hostGoesFirst ? 'Host' : 'Opponent'} goes first`);
+    } catch (error) {
+      console.error('❌ Error forcing gameplay:', error);
     }
   };
 
@@ -519,6 +546,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   isHost={isHost}
                   diceAnimation={turnDeciderDiceAnimation}
                   onChoiceSelect={handleTurnDeciderChoice}
+                  onForceGameplay={handleForceGameplay}
                 />
               )}
 
@@ -816,6 +844,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     isHost={isHost}
                     diceAnimation={turnDeciderDiceAnimation}
                     onChoiceSelect={handleTurnDeciderChoice}
+                    onForceGameplay={handleForceGameplay}
                   />
                 </div>
               )}
