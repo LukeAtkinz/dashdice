@@ -96,7 +96,12 @@ html, body {
     overflow: hidden;
     position: fixed;
     width: 100%;
-    touch-action: pan-y; /* Allow vertical scrolling within components */
+    touch-action: manipulation; /* Allow touch interactions but prevent bounce */
+  }
+  
+  /* Allow scrolling within specific containers */
+  .overflow-auto, .overflow-y-auto, .custom-scrollbar {
+    touch-action: pan-y; /* Allow vertical scrolling within these elements */
   }
   
   /* Reset position for desktop */
@@ -104,6 +109,7 @@ html, body {
     html, body {
       position: static;
       overflow: visible;
+      touch-action: auto;
     }
   }
 }

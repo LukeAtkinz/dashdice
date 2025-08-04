@@ -166,17 +166,15 @@ export class MatchmakingService {
    */
   static async moveToMatches(roomId: string) {
     try {
-      // Get room data from waitingroom
-      const roomDoc = await getDocs(query(
-        collection(db, 'waitingroom'),
-        where('__name__', '==', roomId)
-      ));
+      console.log('🔄 MatchmakingService: Moving room to matches:', roomId);
+      
+      // Get room data from waitingroom using direct document reference
+      const roomRef = doc(db, 'waitingroom', roomId);
+      const roomSnap = await getDoc(roomRef);
 
-      if (!roomDoc.empty) {
-        const roomData = roomDoc.docs[0].data();
-        
-        // Generate random turnDecider (1 or 2)
-        const turnDecider = Math.floor(Math.random() * 2) + 1;
+      if (roomSnap.exists()) {
+        const roomData = roomSnap.data();
+        console.log('✅ MatchmakingService: Found room data:', roomData);
         
         // Create enhanced data for matches collection
         const matchData = {
@@ -184,21 +182,27 @@ export class MatchmakingService {
           // Add game state variables to gameData
           gameData: {
             ...roomData.gameData,
-            turnDecider: turnDecider,
+            turnDecider: null, // Will be assigned after odd/even choice
             turnScore: 0,
             diceOne: 0,
             diceTwo: 0,
             roundObjective: this.getRoundObjective(roomData.gameMode || 'classic'),
             startingScore: 0,
-            status: 'active',
+            status: 'pregame',
+            isPregame: true,
+            chooserPlayerIndex: Math.floor(Math.random() * 2) + 1, // 1 = host, 2 = opponent
+            oddEvenDieValue: null,
+            oddEvenChoice: null,
             startedAt: serverTimestamp()
           },
           // Add game state to hostData
           hostData: {
             ...roomData.hostData,
-            turnActive: turnDecider === 1, // Host is active if turnDecider is 1
-            playerScore: 0,
-            roundScore: 0,
+            gameState: {
+              turnActive: false, // No one active during pregame
+              playerScore: 0,
+              roundScore: 0
+            },
             // Initialize match statistics
             matchStats: {
               banks: 0,
@@ -210,9 +214,11 @@ export class MatchmakingService {
           // Add game state to opponentData
           opponentData: {
             ...roomData.opponentData,
-            turnActive: turnDecider === 2, // Opponent is active if turnDecider is 2
-            playerScore: 0,
-            roundScore: 0,
+            gameState: {
+              turnActive: false, // No one active during pregame
+              playerScore: 0,
+              roundScore: 0
+            },
             // Initialize match statistics
             matchStats: {
               banks: 0,
@@ -223,18 +229,24 @@ export class MatchmakingService {
           }
         };
         
+        console.log('🎯 MatchmakingService: Creating match with data:', matchData);
+        
         // Add to matches collection
         const matchRef = await addDoc(collection(db, 'matches'), matchData);
+        console.log('✅ MatchmakingService: Match created successfully:', matchRef.id);
 
         // Delete from waitingroom
-        await deleteDoc(doc(db, 'waitingroom', roomId));
+        await deleteDoc(roomRef);
+        console.log('🗑️ MatchmakingService: Deleted room from waiting room');
         
         console.log('Moved room to matches:', matchRef.id);
-        console.log('Turn assigned to player:', turnDecider);
         return matchRef.id;
+      } else {
+        console.log('❌ MatchmakingService: Room document does not exist in waitingroom');
+        throw new Error('Room not found in waitingroom');
       }
     } catch (error) {
-      console.error('Error moving to matches:', error);
+      console.error('❌ MatchmakingService: Error moving to matches:', error);
       throw error;
     }
   }
