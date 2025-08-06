@@ -179,6 +179,8 @@ export class MatchmakingService {
         // Create enhanced data for matches collection
         const matchData = {
           ...roomData,
+          originalRoomId: roomId, // Track the original waiting room ID
+          createdAt: serverTimestamp(),
           // Add game state variables to gameData
           gameData: {
             ...roomData.gameData,
