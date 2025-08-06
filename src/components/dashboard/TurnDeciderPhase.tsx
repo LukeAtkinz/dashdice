@@ -27,8 +27,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
   onChoiceSelect,
   onForceGameplay
 }) => {
-  const isMyTurnToDecide = (isHost && matchData.gameData.turnDecider === 1) || 
-                          (!isHost && matchData.gameData.turnDecider === 2);
+  const isMyTurnToDecide = (isHost && matchData.gameData.chooserPlayerIndex === 1) || 
+                          (!isHost && matchData.gameData.chooserPlayerIndex === 2);
   
   const hasChoice = !!matchData.gameData.turnDeciderChoice;
   const hasDice = !!matchData.gameData.turnDeciderDice;

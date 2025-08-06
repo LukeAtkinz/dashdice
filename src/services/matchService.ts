@@ -273,11 +273,11 @@ export class MatchService {
       const isOdd = dice % 2 === 1;
       const choiceCorrect = (choice === 'odd' && isOdd) || (choice === 'even' && !isOdd);
       
-      // Use existing turnDecider system (1 = host, 2 = opponent)
-      const turnDeciderPlayer = matchData.gameData.turnDecider || 1;
+      // Use chooserPlayerIndex system (1 = host, 2 = opponent)
+      const chooserPlayer = matchData.gameData.chooserPlayerIndex || 1;
       let hostGoesFirst = false;
       
-      if (turnDeciderPlayer === 1) {
+      if (chooserPlayer === 1) {
         // Host made choice
         hostGoesFirst = choiceCorrect;
       } else {

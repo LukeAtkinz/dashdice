@@ -193,8 +193,8 @@ export class MatchmakingService {
             status: 'pregame',
             isPregame: true,
             chooserPlayerIndex: Math.floor(Math.random() * 2) + 1, // 1 = host, 2 = opponent
-            oddEvenDieValue: null,
-            oddEvenChoice: null,
+            turnDeciderChoice: null,
+            turnDeciderDice: null,
             startedAt: serverTimestamp()
           },
           // Add game state to hostData

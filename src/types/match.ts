@@ -72,13 +72,19 @@ export interface MatchData {
     type: string;
     settings: any;
     turnDecider: number; // 1 = host, 2 = opponent
+    chooserPlayerIndex?: number; // 1 = host, 2 = opponent (for pregame odd/even choice)
     turnScore: number;
     diceOne: number;
     diceTwo: number;
     roundObjective: number;
     startingScore: number;
-    status: 'active' | 'completed' | 'abandoned';
+    status: 'active' | 'completed' | 'abandoned' | 'pregame';
     startedAt: Timestamp;
+    
+    // Pregame fields for odd/even choice phase
+    isPregame?: boolean;
+    oddEvenDieValue?: number;
+    oddEvenChoice?: 'odd' | 'even';
     
     // Enhanced game state for gameplay
     gamePhase: 'turnDecider' | 'gameplay' | 'gameOver';
