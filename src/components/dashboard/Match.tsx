@@ -229,7 +229,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
   // Handle turn decider choice
   const handleTurnDeciderChoice = async (choice: 'odd' | 'even') => {
-    if (!matchData) return;
+    console.log('🎯 handleTurnDeciderChoice called with choice:', choice);
+    
+    if (!matchData) {
+      console.log('❌ No match data available');
+      return;
+    }
     
     try {
       // Use the actual authenticated user ID
@@ -240,7 +245,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         return;
       }
       
+      console.log('🔄 Calling MatchService.makeTurnDeciderChoice with:', { matchId: matchData.id, playerId, choice });
       await MatchService.makeTurnDeciderChoice(matchData.id!, playerId, choice);
+      console.log('✅ MatchService.makeTurnDeciderChoice completed');
     } catch (error) {
       console.error('❌ Error making turn decider choice:', error);
     }
@@ -323,11 +330,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   useEffect(() => {
     if (!matchData) return;
 
-    // Turn decider dice animation
+    // Turn decider dice animation - trigger when isRolling becomes true
     if (matchData.gameData.gamePhase === 'turnDecider' && 
         matchData.gameData.turnDeciderChoice && 
+        matchData.gameData.isRolling &&
         matchData.gameData.turnDeciderDice && 
         !turnDeciderDiceAnimation.isSpinning) {
+      console.log('🎰 Starting turn decider dice animation for result:', matchData.gameData.turnDeciderDice);
       // 🎰 Animation Durations per specification:
       // Turn Decider Dice: 1500ms (1.5 seconds)
       startSlotMachineAnimation('turnDecider', matchData.gameData.turnDeciderDice, 1500);

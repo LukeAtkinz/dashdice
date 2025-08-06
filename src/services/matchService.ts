@@ -80,8 +80,10 @@ export class MatchService {
     // First, try to subscribe to active matches
     const matchRef = doc(db, 'matches', matchId);
     activeUnsubscribe = onSnapshot(matchRef, async (snapshot) => {
-      if (snapshot.exists() && !hasFoundMatch) {
-        hasFoundMatch = true;
+      if (snapshot.exists()) {
+        if (!hasFoundMatch) {
+          hasFoundMatch = true;
+        }
         const data = { id: snapshot.id, ...snapshot.data() } as MatchData;
         
         // Validate required fields before passing data
@@ -231,6 +233,7 @@ export class MatchService {
       const dice = Math.floor(Math.random() * 6) + 1;
       
       console.log(`🎯 Turn decider choice: ${choice}, Dice rolled: ${dice}`);
+      console.log('📝 Updating match document with choice and dice...');
       
       // Update choice and dice
       await updateDoc(matchRef, {
@@ -239,8 +242,11 @@ export class MatchService {
         'gameData.isRolling': true, // Start dice animation
       });
       
+      console.log('✅ Firebase update completed successfully');
+      
       // Process turn decider result after animation delay
       setTimeout(async () => {
+        console.log('⏰ Processing turn decider result after animation delay...');
         await this.processTurnDecider(matchId);
       }, 3000); // Allow time for dice animation
       

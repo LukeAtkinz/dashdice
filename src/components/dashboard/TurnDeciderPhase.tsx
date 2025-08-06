@@ -46,7 +46,9 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
     gamePhase: matchData.gameData.gamePhase,
     isInTurnDeciderPhase,
     currentPlayerName: currentPlayer?.playerDisplayName,
-    turnDeciderChoice: matchData.gameData.turnDeciderChoice
+    turnDeciderChoice: matchData.gameData.turnDeciderChoice,
+    turnDeciderDice: matchData.gameData.turnDeciderDice,
+    isRolling: matchData.gameData.isRolling
   });
 
   // Reset processing state when phase changes away from turn decider
@@ -59,6 +61,14 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
 
   // Handle choice with processing state
   const handleChoice = async (choice: 'odd' | 'even') => {
+    console.log('🎯 TurnDeciderPhase.handleChoice called with:', choice);
+    console.log('🔍 Button validation check:', {
+      isInTurnDeciderPhase,
+      isProcessing,
+      hasChoice,
+      gamePhase: matchData.gameData.gamePhase
+    });
+    
     // Block if not in turn decider phase, already processing, or choice already made
     if (!isInTurnDeciderPhase || isProcessing || hasChoice) {
       console.log('🚫 Choice blocked:', {
@@ -70,9 +80,12 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
       return;
     }
 
+    console.log('✅ Validation passed, setting processing state and calling onChoiceSelect');
     setIsProcessing(true);
     try {
+      console.log('🔄 Calling onChoiceSelect with choice:', choice);
       await onChoiceSelect(choice);
+      console.log('✅ onChoiceSelect completed successfully');
     } catch (error) {
       console.error('❌ Error in handleChoice:', error);
       // Reset processing on error
@@ -89,9 +102,9 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           <SlotMachineDice
             diceNumber={'turnDecider' as any}
             animationState={diceAnimation}
-            matchRollPhase={matchData.gameData.turnDeciderChoice ? 'turnDecider' : undefined}
+            matchRollPhase={matchData.gameData.isRolling ? 'turnDecider' : undefined}
             actualValue={matchData.gameData.turnDeciderDice || null}
-            isGameRolling={matchData.gameData.turnDeciderChoice !== null && matchData.gameData.turnDeciderDice !== null}
+            isGameRolling={matchData.gameData.isRolling || false}
             isTurnDecider={true}
             matchData={matchData}
           />
