@@ -192,6 +192,8 @@ export class MatchmakingService {
             startingScore: 0,
             status: 'pregame',
             isPregame: true,
+            gamePhase: 'turnDecider',
+            isRolling: false,
             chooserPlayerIndex: Math.floor(Math.random() * 2) + 1, // 1 = host, 2 = opponent
             turnDeciderChoice: null,
             turnDeciderDice: null,
