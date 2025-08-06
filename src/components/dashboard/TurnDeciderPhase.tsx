@@ -33,6 +33,17 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
   const hasChoice = !!matchData.gameData.turnDeciderChoice;
   const hasDice = !!matchData.gameData.turnDeciderDice;
 
+  // Debug logging
+  console.log('🔍 TurnDeciderPhase Debug:', {
+    isHost,
+    chooserPlayerIndex: matchData.gameData.chooserPlayerIndex,
+    isMyTurnToDecide,
+    hasChoice,
+    hasDice,
+    currentPlayerName: currentPlayer?.playerDisplayName,
+    turnDeciderChoice: matchData.gameData.turnDeciderChoice
+  });
+
   return (
     <div className="flex flex-col items-center justify-center">
       {/* Turn Decider Phase - Single Dice with Animation */}
@@ -69,18 +80,23 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           <div className="flex gap-6 justify-center">
             <button
               onClick={() => onChoiceSelect('odd')}
-              className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xl font-bold transition-all transform hover:scale-105 border-2 border-blue-400"
-              style={{ fontFamily: "Audiowide" }}
+              className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xl font-bold transition-all transform hover:scale-105 border-2 border-blue-400 cursor-pointer z-50 relative"
+              style={{ fontFamily: "Audiowide", pointerEvents: 'auto' }}
             >
               ODD
             </button>
             <button
               onClick={() => onChoiceSelect('even')}
-              className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xl font-bold transition-all transform hover:scale-105 border-2 border-purple-400"
-              style={{ fontFamily: "Audiowide" }}
+              className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xl font-bold transition-all transform hover:scale-105 border-2 border-purple-400 cursor-pointer z-50 relative"
+              style={{ fontFamily: "Audiowide", pointerEvents: 'auto' }}
             >
               EVEN
             </button>
+          </div>
+          
+          {/* Debug info */}
+          <div className="mt-4 text-sm text-gray-400 bg-black/20 p-2 rounded">
+            Host: {isHost ? 'Yes' : 'No'}, Chooser: {matchData.gameData.chooserPlayerIndex}, MyTurn: {isMyTurnToDecide ? 'Yes' : 'No'}
           </div>
         </motion.div>
       )}
@@ -175,6 +191,30 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           </div>
         </motion.div>
       )}
+      
+      {/* Always visible debug section for testing */}
+      <div className="mt-8 p-4 bg-red-900/30 border border-red-500 rounded-lg">
+        <p className="text-white text-sm mb-2">Debug Controls (Always Visible):</p>
+        <div className="flex gap-4 justify-center">
+          <button
+            onClick={() => onChoiceSelect('odd')}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold transition-all z-50 relative"
+            style={{ fontFamily: "Audiowide", pointerEvents: 'auto' }}
+          >
+            FORCE ODD
+          </button>
+          <button
+            onClick={() => onChoiceSelect('even')}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition-all z-50 relative"
+            style={{ fontFamily: "Audiowide", pointerEvents: 'auto' }}
+          >
+            FORCE EVEN
+          </button>
+        </div>
+        <div className="mt-2 text-xs text-gray-300">
+          Host: {isHost ? 'Yes' : 'No'} | Chooser: {matchData.gameData.chooserPlayerIndex} | MyTurn: {isMyTurnToDecide ? 'Yes' : 'No'} | HasChoice: {hasChoice ? 'Yes' : 'No'}
+        </div>
+      </div>
     </div>
   );
 };
