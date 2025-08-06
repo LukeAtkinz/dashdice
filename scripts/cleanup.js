@@ -3,8 +3,8 @@
  * Run this script to manually clean up old waiting rooms and matches
  */
 
-import admin from 'firebase-admin';
-import serviceAccount from '../serviceAccountKey.json';
+const admin = require('firebase-admin');
+const serviceAccount = require('../serviceAccountKey.json');
 
 // Initialize Firebase Admin if not already initialized
 if (!admin.apps.length) {
