@@ -239,7 +239,7 @@ export const InventorySection: React.FC = () => {
           
           {/* Items List */}
           <div 
-            className="w-full md:w-1/2 rounded-lg overflow-hidden card-fade-in" 
+            className="w-full md:w-[40vw] rounded-lg overflow-hidden card-fade-in" 
             style={{ 
               borderRadius: '20px'
             }}
@@ -402,7 +402,7 @@ export const InventorySection: React.FC = () => {
             key={`display-panel-${selectedBackground?.id || 'none'}`}
             className="hidden md:block rounded-lg overflow-hidden card-fade-in" 
             style={{ 
-              width: '100%', 
+              width: '40vw', 
               maxWidth: '775px',
               backdropFilter: 'blur(10px)', 
               overflow: 'hidden', 
