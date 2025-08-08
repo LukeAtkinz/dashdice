@@ -112,7 +112,7 @@ const DashboardContent: React.FC = () => {
       {/* Main Layout */}
       <div className="relative z-20 h-full flex flex-col" style={{ height: '100vh', maxHeight: '100vh' }}>
         {/* Top Navigation Header */}
-        <header className="hidden md:flex flex-shrink-0 w-full flex-row items-center justify-center gap-[1.25rem] relative z-30 px-[1rem] md:px-[4rem] py-[1rem] md:py-[2rem]">
+        <header className={`${(currentSection === 'match' || currentSection === 'waiting-room') ? 'hidden' : 'hidden md:flex'} flex-shrink-0 w-full flex-row items-center justify-center gap-[1.25rem] relative z-30 px-[1rem] md:px-[4rem] py-[1rem] md:py-[2rem]`}>
           <div className="flex-1 flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px] w-full max-w-none" style={{ 
             background: DisplayBackgroundEquip?.name === 'On A Mission' 
               ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)'
@@ -347,11 +347,12 @@ const DashboardContent: React.FC = () => {
         </header>
 
         {/* Main Content Area */}
-        {currentSection === 'match' ? (
-          // Full-screen match without constraints
-          <main className="flex-1 w-full h-full min-h-0 overflow-hidden">
+        {(currentSection === 'match' || currentSection === 'waiting-room') ? (
+          // Full-screen centered layout for match, waiting-room, and winner screens
+          <main className="flex-1 w-full h-full min-h-0 overflow-hidden flex items-center justify-center">
             {(() => {
-              console.log('🏠 SinglePageDashboard: Rendering match section with:', {
+              console.log('🏠 SinglePageDashboard: Rendering centered section with:', {
+                currentSection,
                 sectionParams,
                 gameMode: sectionParams.gameMode,
                 matchId: sectionParams.matchId,
@@ -367,12 +368,22 @@ const DashboardContent: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
-                className="w-full h-full"
+                className="w-full h-full flex items-center justify-center"
               >
-                <Match 
-                  gameMode={sectionParams.gameMode}
-                  roomId={sectionParams.matchId || "dev-room-123"}
-                />
+                {currentSection === 'match' && (
+                  <Match 
+                    gameMode={sectionParams.gameMode}
+                    roomId={sectionParams.matchId || "dev-room-123"}
+                  />
+                )}
+                {currentSection === 'waiting-room' && (
+                  <GameWaitingRoom 
+                    gameMode={sectionParams.gameMode || 'classic'}
+                    actionType={sectionParams.actionType || 'live'}
+                    roomId={sectionParams.roomId}
+                    onBack={() => setCurrentSection('dashboard')}
+                  />
+                )}
               </motion.div>
             </AnimatePresence>
           </main>
@@ -390,14 +401,6 @@ const DashboardContent: React.FC = () => {
                   className="w-full h-full"
                 >
                   {currentSection === 'dashboard' && <DashboardSection />}
-                  {currentSection === 'waiting-room' && (
-                    <GameWaitingRoom 
-                      gameMode={sectionParams.gameMode || 'classic'}
-                      actionType={sectionParams.actionType || 'live'}
-                      roomId={sectionParams.roomId}
-                      onBack={() => setCurrentSection('dashboard')}
-                    />
-                  )}
                   {currentSection === 'inventory' && <InventorySection />}
                   {currentSection === 'profile' && <ProfileSection />}
                   {currentSection === 'settings' && <SettingsSection />}
@@ -409,7 +412,7 @@ const DashboardContent: React.FC = () => {
 
         {/* Bottom Navigation for Mobile - Fixed at bottom */}
         <footer 
-          className={`${currentSection === 'match' ? 'hidden' : 'md:hidden'} fixed bottom-0 left-0 right-0 w-[100vw] flex flex-row items-center justify-center z-50`}
+          className={`${(currentSection === 'match' || currentSection === 'waiting-room') ? 'hidden' : 'md:hidden'} fixed bottom-0 left-0 right-0 w-[100vw] flex flex-row items-center justify-center z-50`}
           style={{ paddingBottom: 'env(safe-area-inset-bottom)', padding: '0' }}
         >
           <div className="flex flex-row items-center justify-between w-full px-[2vw] py-[15px] shadow-lg" style={{

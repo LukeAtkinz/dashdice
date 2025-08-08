@@ -418,9 +418,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   });
 
   return (
-    <div className="w-full flex flex-col items-center justify-start gap-[2rem] pt-[1rem] pb-[2rem] md:pb-[2rem] min-h-screen" style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom) + 8rem)' }}>
+    <div className="w-full h-full flex flex-col items-center justify-center gap-[2rem] p-4 md:p-8" style={{ minHeight: '100vh' }}>
       {/* Game Arena */}
-      <div className="flex items-center justify-center p-4">
+      <div className="flex items-center justify-center p-4 w-full max-w-[1400px]">
           {/* Desktop Layout */}
           <div className="hidden md:flex items-center justify-between gap-8" style={{ width: '95vw' }}>
             

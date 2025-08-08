@@ -11,49 +11,67 @@ const gameConfig = {
   quickfire: { 
     name: 'QUICK\nFIRE', 
     icon: '/Design Elements/finance startup.webp', 
-    description: 'More Speed, More Pressure',
+    description: 'more speed,\nmore pressure',
     rotation: '-70deg',
+    mobileRotation: '20deg', // 90 degrees different from desktop
     position: { top: '3rem', left: '-2rem' },
+    mobilePosition: { top: '3rem', left: '-2rem' },
+    mobileScale: '1.2', // Slightly bigger on mobile
     available: true
   },
   classic: { 
     name: 'CLASSIC\nMODE', 
     icon: '/Design Elements/Crown Mode.webp', 
-    description: 'Full Force, Full Focus',
+    description: 'full force,\nfull focus',
     rotation: '0deg',
+    mobileRotation: '0deg',
     position: { top: '-2rem', left: '-2rem' },
+    mobilePosition: { top: '-2rem', left: '-2rem' },
+    mobileScale: '1.0',
     available: false
   },
   zerohour: { 
     name: 'ZERO\nHOUR', 
     icon: '/Design Elements/time out.webp', 
-    description: 'Time Runs Backwards',
+    description: 'time runs\nbackwards',
     rotation: '0deg',
+    mobileRotation: '0deg',
     position: { top: '-2rem', left: '-2rem' },
+    mobilePosition: { top: '-2rem', left: '-3rem' }, // Move left on mobile
+    mobileScale: '1.0',
     available: false
   },
   lastline: { 
     name: 'LAST\nLINE', 
     icon: '/Design Elements/skull.webp', 
-    description: 'One Roll, One Life',
+    description: 'one roll,\none life',
     rotation: '5deg',
+    mobileRotation: '5deg',
     position: { top: '-1rem', left: '-2rem' },
+    mobilePosition: { top: '-1rem', left: '-2rem' },
+    mobileScale: '1.0',
     available: false
   },
   truegrit: { 
     name: 'TRUE\nGRIT', 
     icon: '/Design Elements/Castle.webp', 
-    description: 'No Banking, No Mercy',
+    description: 'no banking,\nno mercy',
     rotation: '0deg',
+    mobileRotation: '0deg',
     position: { top: '1rem', left: '-4rem' },
+    mobilePosition: { top: '0rem', left: '-4rem' }, // Move up on mobile
+    mobileScale: '1.0',
     available: false
   },
   tagteam: { 
     name: 'TAG\nTEAM', 
     icon: '/Design Elements/friends.webp', 
-    description: 'Rise Or Fall Together',
+    description: 'rise or fall\ntogether',
     rotation: '0deg',
+    mobileRotation: '0deg',
     position: { top: '-2rem', left: '-2rem' },
+    mobilePosition: { top: '-2rem', left: '-2rem' },
+    mobileScale: '1.0',
     available: false
   }
 };
@@ -153,6 +171,15 @@ export const DashboardSection: React.FC = () => {
         }
         .animate-fade-in {
           animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        /* Mobile responsive image positioning */
+        @media (max-width: 767px) {
+          img[style*="--mobile-top"] {
+            top: var(--mobile-top) !important;
+            left: var(--mobile-left) !important;
+            transform: rotate(var(--mobile-rotation)) scale(var(--mobile-scale)) !important;
+          }
         }
       `}</style>
 
@@ -270,7 +297,7 @@ export const DashboardSection: React.FC = () => {
               </div>
             ) : (
               <>
-                <div className="max-h-[100%] relative flex-1 flex flex-col items-end px-[1rem] md:px-[2.25rem] z-[0] transition-all duration-300">
+                <div className="max-h-[100%] relative flex-1 flex flex-col items-end px-[1rem] md:px-[2.25rem] z-[2] transition-all duration-300">
                   <h2
                     className="m-0 self-stretch relative text-white uppercase font-normal text-[40px] md:text-[72px] leading-[38px] md:leading-[68px]"
                     style={{
@@ -296,7 +323,9 @@ export const DashboardSection: React.FC = () => {
                       opacity: 0.8,
                     }}
                   >
-                    {config.description}
+                    {config.description.split('\n').map((line, index) => (
+                      <div key={index}>{line}</div>
+                    ))}
                   </div>
                 </div>
                 <img
@@ -307,7 +336,16 @@ export const DashboardSection: React.FC = () => {
                     top: config.position.top,
                     left: config.position.left,
                     transform: `rotate(${config.rotation})`,
-                    opacity: config.available ? 0.8 : 0.4
+                    opacity: config.available ? 0.8 : 0.4,
+                    '--mobile-top': config.mobilePosition.top,
+                    '--mobile-left': config.mobilePosition.left,
+                    '--mobile-rotation': config.mobileRotation,
+                    '--mobile-scale': config.mobileScale,
+                  } as React.CSSProperties & {
+                    '--mobile-top': string;
+                    '--mobile-left': string;
+                    '--mobile-rotation': string;
+                    '--mobile-scale': string;
                   }}
                 />
               </>
