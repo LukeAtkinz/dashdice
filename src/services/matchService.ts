@@ -550,8 +550,8 @@ export class MatchService {
         throw new Error('No score to bank');
       }
       
-      // Calculate new player score
-      const newPlayerScore = currentPlayer.playerScore + matchData.gameData.turnScore;
+      // Calculate new player score (safeguard against undefined/null playerScore)
+      const newPlayerScore = (currentPlayer.playerScore || 0) + matchData.gameData.turnScore;
       
       // Check for win condition
       const roundObjective = matchData.gameData.roundObjective || 100;

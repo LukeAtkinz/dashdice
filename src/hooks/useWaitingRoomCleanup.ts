@@ -26,9 +26,10 @@ export const useWaitingRoomCleanup = (currentRoomId?: string) => {
       return;
       
       // Always clean up on browser close/refresh
-      if (currentSection === 'waiting-room' && currentRoomId && user) {
+      if (currentSection === 'waiting-room' && currentRoomId && user?.uid) {
         try {
-          await WaitingRoomService.leaveRoom(currentRoomId, user.uid);
+          // Use non-null assertion since we've already checked these values above
+          await WaitingRoomService.leaveRoom(currentRoomId!, user!.uid);
           console.log('🧹 Cleaned up waiting room on browser exit:', currentRoomId);
         } catch (error) {
           // Gracefully handle cleanup errors - don't prevent page exit
@@ -49,10 +50,11 @@ export const useWaitingRoomCleanup = (currentRoomId?: string) => {
       }
 
       // When user navigates away and comes back, check if they left waiting room
-      if (document.visibilityState === 'hidden' && user) {
+      if (document.visibilityState === 'hidden' && user?.uid) {
         if (currentSection === 'waiting-room' && currentRoomId) {
           try {
-            await WaitingRoomService.leaveRoom(currentRoomId, user.uid);
+            // Use non-null assertion since we've already checked these values above
+            await WaitingRoomService.leaveRoom(currentRoomId!, user!.uid);
             console.log('🧹 Cleaned up waiting room on page hide:', currentRoomId);
           } catch (error) {
             // Gracefully handle cleanup errors

@@ -212,21 +212,6 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           >
             Waiting for {opponent.playerDisplayName} to choose...
           </p>
-          
-          {/* Debug: Force choice button for development */}
-          <button
-            onClick={() => handleChoice('odd')}
-            disabled={isProcessing || !isInTurnDeciderPhase}
-            className={`px-4 py-2 text-white rounded-lg text-sm font-bold transition-all transform hover:scale-105 border ${
-              isProcessing || !isInTurnDeciderPhase
-                ? 'bg-gray-600 border-gray-400 cursor-not-allowed opacity-50'
-                : 'bg-red-600 hover:bg-red-700 border-red-400'
-            }`}
-            style={{ fontFamily: "Audiowide" }}
-            title="Development: Force choice to unstick"
-          >
-            {isProcessing ? 'PROCESSING...' : '🔧 FORCE ODD (DEV)'}
-          </button>
         </motion.div>
       )}
 
@@ -257,42 +242,6 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
         </motion.div>
       )}
       
-      {/* Always visible debug section for testing - only when in turn decider phase */}
-      {isInTurnDeciderPhase && (
-        <div className="mt-8 p-4 bg-red-900/30 border border-red-500 rounded-lg">
-          <p className="text-white text-sm mb-2">Debug Controls (Turn Decider Phase):</p>
-          <div className="flex gap-4 justify-center">
-            <button
-              onClick={() => handleChoice('odd')}
-              disabled={isProcessing || !isInTurnDeciderPhase}
-              className={`px-4 py-2 text-white rounded-lg text-sm font-bold transition-all z-50 relative ${
-                isProcessing || !isInTurnDeciderPhase 
-                  ? 'bg-gray-600 cursor-not-allowed opacity-50' 
-                  : 'bg-red-600 hover:bg-red-700'
-              }`}
-              style={{ fontFamily: "Audiowide", pointerEvents: 'auto' }}
-            >
-              {isProcessing ? 'PROCESSING...' : 'FORCE ODD'}
-            </button>
-            <button
-              onClick={() => handleChoice('even')}
-              disabled={isProcessing || !isInTurnDeciderPhase}
-              className={`px-4 py-2 text-white rounded-lg text-sm font-bold transition-all z-50 relative ${
-                isProcessing || !isInTurnDeciderPhase 
-                  ? 'bg-gray-600 cursor-not-allowed opacity-50' 
-                  : 'bg-blue-600 hover:bg-blue-700'
-              }`}
-              style={{ fontFamily: "Audiowide", pointerEvents: 'auto' }}
-            >
-              {isProcessing ? 'PROCESSING...' : 'FORCE EVEN'}
-            </button>
-          </div>
-          <div className="mt-2 text-xs text-gray-300">
-            Host: {isHost ? 'Yes' : 'No'} | Chooser: {matchData.gameData.chooserPlayerIndex} | MyTurn: {isMyTurnToDecide ? 'Yes' : 'No'} | HasChoice: {hasChoice ? 'Yes' : 'No'} | Processing: {isProcessing ? 'Yes' : 'No'} | Phase: {matchData.gameData.gamePhase}
-          </div>
-        </div>
-      )}
-
       {/* Show when not in turn decider phase */}
       {!isInTurnDeciderPhase && (
         <div className="mt-8 p-4 bg-green-900/30 border border-green-500 rounded-lg">
