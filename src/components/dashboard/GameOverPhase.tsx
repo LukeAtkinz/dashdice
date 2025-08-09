@@ -289,7 +289,7 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
           className="mb-6"
         >
           <div className="inline-block px-8 py-6 bg-gradient-to-r from-yellow-600/30 to-orange-600/30 border-2 border-yellow-500 rounded-2xl backdrop-blur-sm">
-            <p className="text-2xl text-yellow-300 mb-2">🏆 WINNER 🏆</p>
+            <p className="text-2xl text-yellow-300 mb-2">WINNER</p>
             <p className="text-4xl font-bold text-yellow-400" style={{ fontFamily: "Audiowide" }}>
               {winner}
             </p>

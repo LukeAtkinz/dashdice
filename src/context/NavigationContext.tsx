@@ -18,6 +18,8 @@ interface NavigationContextType {
   previousSection: DashboardSection | null;
   isTransitioning: boolean;
   setIsTransitioning: (transitioning: boolean) => void;
+  isGameOver: boolean;
+  setIsGameOver: (gameOver: boolean) => void;
 }
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
@@ -31,6 +33,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
   const [sectionParams, setSectionParams] = useState<SectionParams>({});
   const [previousSection, setPreviousSection] = useState<DashboardSection | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isGameOver, setIsGameOver] = useState(false);
 
   const setCurrentSection = (section: DashboardSection, params: SectionParams = {}) => {
     console.log('🧭 NavigationContext: setCurrentSection called:', {
@@ -70,6 +73,8 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
         previousSection,
         isTransitioning,
         setIsTransitioning,
+        isGameOver,
+        setIsGameOver,
       }}
     >
       {children}

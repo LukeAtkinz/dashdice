@@ -27,7 +27,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   });
   
   const { user } = useAuth();
-  const { setCurrentSection } = useNavigation();
+  const { setCurrentSection, isGameOver, setIsGameOver } = useNavigation();
   
   console.log('🔍 DEBUG: Match component context:', {
     userUid: user?.uid,
@@ -37,6 +37,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const [matchData, setMatchData] = useState<MatchData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Set game over state for navbar visibility
+  useEffect(() => {
+    if (matchData?.gameData) {
+      setIsGameOver(matchData.gameData.gamePhase === 'gameOver');
+    }
+  }, [matchData?.gameData?.gamePhase, setIsGameOver]);
   
   // Dice animation states for slot machine effect
   const [dice1Animation, setDice1Animation] = useState<{
@@ -418,14 +425,38 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   });
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center gap-[2rem] p-4 md:p-8" style={{ minHeight: '100vh' }}>
+    <>
+      {/* Game Over Screen - Full Screen Overlay positioned to allow navbar */}
+      {matchData.gameData.gamePhase === 'gameOver' && (
+        <div 
+          className="fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          style={{ 
+            flexDirection: 'column',
+            top: '60px', // Leave space for desktop navbar
+            bottom: '80px' // Leave space for mobile navbar
+          }}
+        >
+          <div className="w-full max-w-6xl mx-auto px-4 h-full flex items-center justify-center">
+            <GameOverWrapper
+              matchId={matchData.id || ''}
+              onLeaveMatch={() => setCurrentSection('dashboard')}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Normal Match UI - Hidden when game over */}
+      <div 
+        className={`w-full h-full ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-center gap-[2rem] p-4 md:p-8`} 
+        style={{ minHeight: '100vh' }}
+      >
       {/* Game Arena */}
       <div className="flex items-center justify-center p-4 w-full max-w-[1400px]">
           {/* Desktop Layout */}
-          <div className="hidden md:flex items-center justify-between gap-8" style={{ width: '95vw' }}>
+          <div className="hidden md:flex items-center justify-between gap-8" style={{ width: '100%' }}>
             
             {/* Player 1 (Current User - Left Side) */}
-            <div className="flex-1 max-w-[500px]">
+            <div className="flex-1">
               {/* Player Name Above Container - Left Aligned */}
               <h2 
                 className="text-3xl font-bold text-white mb-4 text-left"
@@ -585,7 +616,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             </div>
 
             {/* Player 2 (Opponent - Right Side) */}
-            <div className="flex-1 max-w-[500px]">
+            <div className="flex-1">
               {/* Player Name Above Container - Right Aligned */}
               <h2 
                 className="text-3xl font-bold text-white mb-4 text-right"
@@ -886,19 +917,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   />
                 </div>
               )}
-
-              {matchData.gameData.gamePhase === 'gameOver' && (
-                <div className="w-full">
-                  <GameOverWrapper
-                    matchId={matchData.id || ''}
-                    onLeaveMatch={() => setCurrentSection('dashboard')}
-                  />
-                </div>
-              )}
             </div>
 
           </div>
         </div>
-    </div>
+      </div>
+    </>
   );
 };

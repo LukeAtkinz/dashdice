@@ -19,7 +19,7 @@ import { createTestMatch } from '@/utils/testMatchData';
 import '@/utils/testUtils'; // Load test utilities for development
 
 const DashboardContent: React.FC = () => {
-  const { currentSection, sectionParams, setCurrentSection } = useNavigation();
+  const { currentSection, sectionParams, setCurrentSection, isGameOver } = useNavigation();
   const { user } = useAuth();
   const { DisplayBackgroundEquip } = useBackground();
   const [userGold] = useState(1000); // Placeholder for user gold
@@ -117,7 +117,7 @@ const DashboardContent: React.FC = () => {
       {/* Main Layout */}
       <div className="relative z-20 h-full flex flex-col" style={{ height: '100vh', maxHeight: '100vh' }}>
         {/* Top Navigation Header */}
-        <header className={`${(currentSection === 'match' || currentSection === 'waiting-room') ? 'hidden' : 'hidden md:flex'} flex-shrink-0 w-full flex-row items-center justify-center gap-[1.25rem] relative z-30 px-[1rem] md:px-[4rem] py-[1rem] md:py-[2rem]`}>
+        <header className={`${((currentSection === 'match' || currentSection === 'waiting-room') && !isGameOver) ? 'hidden' : 'hidden md:flex'} flex-shrink-0 w-full flex-row items-center justify-center gap-[1.25rem] relative z-30 px-[1rem] md:px-[4rem] py-[1rem] md:py-[2rem]`}>
           <div className="flex-1 flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px] w-full max-w-none" style={{ 
             background: DisplayBackgroundEquip?.name === 'On A Mission' 
               ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)'
@@ -153,9 +153,9 @@ const DashboardContent: React.FC = () => {
                 {/* VAULT Button */}
                 <button
                   onClick={() => handleSectionChange('inventory')}
-                  disabled={currentSection === 'match'}
+                  disabled={currentSection === 'match' && !isGameOver}
                   className={`flex cursor-pointer transition-all duration-300 ${
-                    currentSection === 'match' 
+                    currentSection === 'match' && !isGameOver 
                       ? 'opacity-50 cursor-not-allowed' 
                       : 'hover:scale-105 hover:shadow-lg active:scale-95'
                   }`}
@@ -168,7 +168,7 @@ const DashboardContent: React.FC = () => {
                     alignItems: "center",
                     gap: "8px",
                     borderRadius: "18px",
-                    background: currentSection === 'match' 
+                    background: currentSection === 'match' && !isGameOver 
                       ? "#666666" 
                       : DisplayBackgroundEquip?.name === 'On A Mission'
                       ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.2) 100%)'
@@ -297,9 +297,9 @@ const DashboardContent: React.FC = () => {
               {/* PROFILE Button */}
               <button
                 onClick={() => handleSectionChange('profile')}
-                disabled={currentSection === 'match'}
+                disabled={currentSection === 'match' && !isGameOver}
                 className={`flex transition-all duration-300 ${
-                  currentSection === 'match' 
+                  currentSection === 'match' && !isGameOver 
                     ? 'opacity-50 cursor-not-allowed' 
                     : 'cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95'
                 }`}
@@ -312,7 +312,7 @@ const DashboardContent: React.FC = () => {
                   alignItems: "center",
                   gap: "8px",
                   borderRadius: "18px",
-                  background: currentSection === 'match' 
+                  background: currentSection === 'match' && !isGameOver 
                     ? "#666666" 
                     : DisplayBackgroundEquip?.name === 'On A Mission'
                     ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.2) 100%)'
@@ -417,7 +417,7 @@ const DashboardContent: React.FC = () => {
 
         {/* Bottom Navigation for Mobile - Fixed at bottom */}
         <footer 
-          className={`${(currentSection === 'match' || currentSection === 'waiting-room') ? 'hidden' : 'md:hidden'} fixed bottom-0 left-0 right-0 w-[100vw] flex flex-row items-center justify-center z-50`}
+          className={`${((currentSection === 'match' || currentSection === 'waiting-room') && !isGameOver) ? 'hidden' : 'md:hidden'} fixed bottom-0 left-0 right-0 w-[100vw] flex flex-row items-center justify-center z-50`}
           style={{ paddingBottom: 'env(safe-area-inset-bottom)', padding: '0' }}
         >
           <div className="flex flex-row items-center justify-between w-full px-[2vw] py-[15px] shadow-lg" style={{
