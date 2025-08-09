@@ -1070,6 +1070,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           loop
           muted
           playsInline
+          controls={false}
+          webkit-playsinline="true"
+          x5-playsinline="true"
           preload="metadata"
           onLoadStart={() => console.log('Video: Load started')}
           onCanPlay={() => console.log('Video: Can play')}
@@ -1856,6 +1859,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     loop
                     muted
                     playsInline
+                    controls={false}
+                    webkit-playsinline="true"
+                    x5-playsinline="true"
                     preload="metadata"
                     style={{
                       position: 'absolute',

@@ -127,6 +127,10 @@ export const Match: React.FC<MatchProps> = ({ matchId, onBack }) => {
             loop
             muted
             playsInline
+            controls={false}
+            webkit-playsinline="true"
+            x5-playsinline="true"
+            preload="metadata"
             className="absolute inset-0 w-full h-full object-cover z-0"
           >
             <source src={MatchBackgroundEquip.file} type="video/mp4" />

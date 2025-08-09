@@ -11,7 +11,7 @@ const gameConfig = {
   quickfire: { 
     name: 'QUICK\nFIRE', 
     icon: '/Design Elements/finance startup.webp', 
-    description: 'more speed,\nmore pressure',
+    description: 'more speed,\nmore skill',
     rotation: '-70deg',
     mobileRotation: '20deg', // 90 degrees different from desktop
     position: { top: '3rem', left: '-2rem' },
@@ -169,8 +169,30 @@ export const DashboardSection: React.FC = () => {
             transform: translateY(0);
           }
         }
+        
+        @keyframes slideAndFade {
+          from {
+            opacity: 0;
+            transform: translateX(20px) translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0) translateY(0);
+          }
+        }
+        
         .animate-fade-in {
           animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        /* Hover effect for game mode cards */
+        .game-mode-card:hover .game-mode-text {
+          animation: slideAndFade 0.4s ease-out forwards;
+        }
+        
+        .game-mode-card:hover .game-mode-image {
+          animation: slideAndFade 0.5s ease-out 0.1s forwards;
+          opacity: 0;
         }
 
         /* Mobile responsive image positioning */
@@ -190,7 +212,7 @@ export const DashboardSection: React.FC = () => {
             key={mode}
             onMouseEnter={() => setHoveredGameMode(mode)}
             onMouseLeave={() => setHoveredGameMode(null)}
-            className="h-[12rem] md:h-[15.625rem] w-[90vw] md:w-[30rem] rounded-[30px] overflow-hidden shrink-0 flex flex-row items-center justify-start relative text-right text-[2.5rem] md:text-[4rem] text-gainsboro font-audiowide cursor-pointer transition-all duration-300"
+            className="game-mode-card h-[12rem] md:h-[15.625rem] w-[90vw] md:w-[30rem] rounded-[30px] overflow-hidden shrink-0 flex flex-row items-center justify-start relative text-right text-[2.5rem] md:text-[4rem] text-gainsboro font-audiowide cursor-pointer transition-all duration-300"
             style={{
               background: `var(--ui-game-mode-bg, linear-gradient(rgba(37, 37, 37, 0.12), rgba(37, 37, 37, 0.12)), linear-gradient(242.59deg, #192e39 30%, rgba(153, 153, 153, 0)))`
             }}
@@ -297,7 +319,7 @@ export const DashboardSection: React.FC = () => {
               </div>
             ) : (
               <>
-                <div className="max-h-[100%] relative flex-1 flex flex-col items-end px-[1rem] md:px-[2.25rem] z-[2] transition-all duration-300">
+                <div className="game-mode-text max-h-[100%] relative flex-1 flex flex-col items-end px-[1rem] md:px-[2.25rem] z-[2] transition-all duration-300">
                   <h2
                     className="m-0 self-stretch relative text-white uppercase font-normal text-[40px] md:text-[72px] leading-[38px] md:leading-[68px]"
                     style={{
@@ -312,7 +334,7 @@ export const DashboardSection: React.FC = () => {
                     {config.name}
                   </h2>
                   <div
-                    className="w-[50%] relative font-light inline-block text-[14px] md:text-[24px] leading-[14px] md:leading-[24px]"
+                    className="w-[70%] relative font-light inline-block text-[14px] md:text-[24px] leading-[14px] md:leading-[24px]"
                     style={{
                       color: "#FFF",
                       fontFamily: "Montserrat",
@@ -329,7 +351,7 @@ export const DashboardSection: React.FC = () => {
                   </div>
                 </div>
                 <img
-                  className="w-[15rem] md:w-[25.256rem] absolute max-h-none object-contain z-[1] transition-all duration-300 hover:scale-105 hover:opacity-100"
+                  className="game-mode-image w-[15rem] md:w-[25.256rem] absolute max-h-none object-contain z-[1] transition-all duration-300 hover:scale-105 hover:opacity-100"
                   alt={mode}
                   src={config.icon}
                   style={{

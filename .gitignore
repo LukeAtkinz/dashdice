@@ -36,6 +36,17 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Large development assets
+Levels*/
+"Levels as building"/
+Reference/
+*.zip
+*.rar
+*.7z
+
+# Documentation files (keep in git but exclude from deployment)
+# *.md files will be excluded by .vercelignore only
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

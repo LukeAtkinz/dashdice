@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "dashdice-d1b86"
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}

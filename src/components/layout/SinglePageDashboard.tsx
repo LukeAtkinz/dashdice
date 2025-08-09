@@ -70,10 +70,15 @@ const DashboardContent: React.FC = () => {
       if (DisplayBackgroundEquip.type === 'video') {
         return (
           <video
+            key={DisplayBackgroundEquip.file} // Force re-render when video changes
             autoPlay
             loop
             muted
             playsInline
+            controls={false}
+            webkit-playsinline="true"
+            x5-playsinline="true"
+            preload="metadata"
             className="absolute inset-0 w-full h-full object-cover z-0"
           >
             <source src={DisplayBackgroundEquip.file} type="video/mp4" />

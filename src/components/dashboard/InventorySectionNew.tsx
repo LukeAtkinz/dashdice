@@ -192,6 +192,11 @@ export const InventorySection: React.FC = () => {
                     loop
                     muted
                     autoPlay
+                    playsInline
+                    controls={false}
+                    webkit-playsinline="true"
+                    x5-playsinline="true"
+                    preload="metadata"
                   />
                 ) : (
                   <img 

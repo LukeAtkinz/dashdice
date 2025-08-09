@@ -1,0 +1,39 @@
+# Large asset files that shouldn't be deployed
+Levels*/
+"Levels as building"/
+Reference/
+
+# Development files
+*.zip
+*.rar
+*.7z
+
+# Documentation files
+*.md
+ReadMes/
+DEVELOPMENT_BEST_PRACTICES.md
+FIREBASE_BEST_PRACTICES.md
+FIREBASE_FIX_COMPLETE.md
+GAMEDEVELOPMENT.md
+IMPLEMENTATION_COMPLETE.md
+IMPLEMENTATION_SUMMARY.md
+INVENTORY_SYSTEM.md
+MATCH_SYSTEM.md
+MATCHMAKING_BUG_PREVENTION.md
+MATCHMAKING_REBUILD_README.md
+MATCHMAKING_SECURITY_README.md
+MATCHMAKING_STATUS.md
+PHASE_3_COMPLETE.md
+PLAYER_PROFILES_INVENTORY_SYSTEM.md
+PROJECT_OVERVIEW.md
+SECURITY_GUIDE.md
+TESTING_GUIDE.md
+WAITING_ROOM_SYSTEM.md
+*.md
+
+# Scripts
+scripts/
+EMERGENCY_CLEANUP.js
+
+# Service account key (for security)
+serviceAccountKey.json

@@ -14,7 +14,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         loop
         muted
         playsInline
+        controls={false}
         webkit-playsinline="true"
+        x5-playsinline="true"
         preload="auto"
         className="absolute inset-0 w-full h-full object-cover z-0"
       >

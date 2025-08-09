@@ -328,6 +328,9 @@ export class WaitingRoomService {
       if (availableRooms.length > 0) {
         // Join the first available room
         const room = availableRooms[0];
+        if (!room.id) {
+          throw new Error('Room ID is missing');
+        }
         await this.joinRoom(room.id, hostData);
         return { roomId: room.id, isNewRoom: false };
       } else {

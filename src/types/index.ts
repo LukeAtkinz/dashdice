@@ -78,3 +78,45 @@ export interface GameContextType {
   leaveGame: () => Promise<void>;
   updatePlayerReady: (ready: boolean) => Promise<void>;
 }
+
+export interface WaitingRoomPlayer {
+  uid?: string; // Added uid property
+  playerDisplayName?: string; // Made optional
+  playerId?: string; // Made optional
+  displayName?: string; // Added displayName property
+  avatar?: string; // Added avatar property
+  backgroundEquipped?: any; // Added backgroundEquipped property
+  joinedAt?: Date; // Added joinedAt property
+  ready?: boolean; // Added ready property
+  displayBackgroundEquipped?: any; // Made optional
+  matchBackgroundEquipped?: any; // Made optional
+  playerStats?: {
+    bestStreak: number;
+    currentStreak: number;
+    gamesPlayed: number;
+    matchWins: number;
+  };
+}
+
+export interface WaitingRoom {
+  id?: string;
+  createdAt: any;
+  updatedAt?: any; // Added updatedAt property
+  gameMode: string;
+  gameType?: string; // Made optional
+  playersRequired?: number; // Made optional
+  maxPlayers?: number; // Added maxPlayers property
+  currentPlayers?: number; // Added currentPlayers property
+  players?: any[]; // Added players property
+  hostData?: WaitingRoomPlayer; // Made optional
+  opponentData?: WaitingRoomPlayer;
+  gameData?: {
+    type: string;
+    status: string;
+    currentPlayer?: string;
+    winner?: string;
+    turnDecider?: any;
+  };
+  status: string;
+  matchBackground?: any;
+}

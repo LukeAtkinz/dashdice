@@ -452,6 +452,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       loop
                       muted
                       playsInline
+                      controls={false}
+                      webkit-playsinline="true"
+                      x5-playsinline="true"
+                      preload="metadata"
                       className="absolute inset-0 w-full h-full object-cover"
                     >
                       <source src={currentPlayer.matchBackgroundEquipped.file} type="video/mp4" />
@@ -608,6 +612,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       loop
                       muted
                       playsInline
+                      controls={false}
+                      webkit-playsinline="true"
+                      x5-playsinline="true"
+                      preload="metadata"
                       className="absolute inset-0 w-full h-full object-cover"
                     >
                       <source src={opponent.matchBackgroundEquipped.file} type="video/mp4" />
@@ -719,6 +727,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         muted
                         playsInline
                         controls={false}
+                        webkit-playsinline="true"
+                        x5-playsinline="true"
+                        preload="metadata"
                         disablePictureInPicture
                         controlsList="nodownload noplaybackrate"
                         className="absolute inset-0 w-full h-full object-cover"
@@ -795,6 +806,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         muted
                         playsInline
                         controls={false}
+                        webkit-playsinline="true"
+                        x5-playsinline="true"
+                        preload="metadata"
                         disablePictureInPicture
                         controlsList="nodownload noplaybackrate"
                         className="absolute inset-0 w-full h-full object-cover"

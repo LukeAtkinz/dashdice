@@ -1,0 +1,50 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read and write their own user document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Users can read and write waiting room documents
+    match /waitingroom/{roomId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Users can read and write matches they are part of
+    match /matches/{matchId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Users can read and write their own inventory items
+    match /inventory/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Allow reading of public game data (backgrounds, items, etc.)
+    match /backgrounds/{backgroundId} {
+      allow read: if true;
+    }
+    
+    match /items/{itemId} {
+      allow read: if true;
+    }
+    
+    // Users can read and write game sessions they are part of
+    match /gameSessions/{sessionId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Leaderboards - read for all authenticated users, write only by system
+    match /leaderboards/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only server-side operations should write leaderboards
+    }
+    
+    // Statistics - read for all authenticated users
+    match /statistics/{document=**} {
+      allow read: if request.auth != null;
+    }
+  }
+}

@@ -118,6 +118,61 @@ export const InventorySection: React.FC = () => {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: linear-gradient(180deg, #FF2090 0%, #8219C7 100%);
         }
+        
+        /* Responsive height for vault containers */
+        @media (min-width: 768px) {
+          div[data-desktop-height] {
+            height: 615px !important;
+            max-height: 615px !important;
+          }
+          
+          /* Desktop font sizes for inventory items */
+          .inventory-item-title {
+            font-size: 24px !important;
+          }
+          .inventory-item-rarity {
+            font-size: 18px !important;
+          }
+          .inventory-button {
+            height: 52px !important;
+            padding: 4px 24px !important;
+          }
+          .inventory-button-text {
+            font-size: 18px !important;
+          }
+          .preview-title {
+            font-size: 36px !important;
+            margin-bottom: 12px !important;
+          }
+          .preview-rarity {
+            font-size: 24px !important;
+          }
+        }
+        
+        /* Mobile font sizes */
+        @media (max-width: 767px) {
+          .inventory-item-title {
+            font-size: 18px !important;
+          }
+          .inventory-item-rarity {
+            font-size: 14px !important;
+          }
+          .inventory-button {
+            height: 44px !important;
+            padding: 4px 20px !important;
+          }
+          .inventory-button-text {
+            font-size: 16px !important;
+          }
+          .preview-title {
+            font-size: 32px !important;
+            margin-bottom: 8px !important;
+          }
+          .preview-rarity {
+            font-size: 20px !important;
+          }
+        }
+        
         .nav-button {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -235,7 +290,7 @@ export const InventorySection: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 px-4 md:px-8 flex justify-center" style={{ paddingTop: '15px' }}>
-        <div className="flex h-full w-[115vw] md:w-auto pl-[0.5rem] md:pl-0" style={{ maxHeight: '410px', height: '410px', maxWidth: '1600px', gap: '20px' }}>
+        <div className="flex h-full w-[115vw] md:w-auto pl-[0.5rem] md:pl-0" style={{ maxHeight: '410px', height: '410px', maxWidth: '1600px', gap: '20px' }} data-mobile-height="410px" data-desktop-height="615px">
           
           {/* Items List */}
           <div 
@@ -271,10 +326,15 @@ export const InventorySection: React.FC = () => {
                     >
                       {background.isVideo && background.videoUrl && (
                         <video 
+                          key={background.videoUrl} // Force re-render when video changes
                           autoPlay 
                           loop 
                           muted 
                           playsInline 
+                          controls={false}
+                          webkit-playsinline="true"
+                          x5-playsinline="true"
+                          preload="metadata"
                           className="absolute inset-0 w-full h-full object-cover" 
                           style={{ borderRadius: '20px' }}
                         >
@@ -301,20 +361,18 @@ export const InventorySection: React.FC = () => {
                       >
                         <div className="flex items-center gap-3 flex-1">
                           <div className="flex flex-col" style={{ gap: '4px' }}>
-                            <h4 style={{ 
+                            <h4 className="inventory-item-title" style={{ 
                               color: '#E2E2E2', 
                               fontFamily: 'Audiowide', 
-                              fontSize: '18px', 
                               fontWeight: 400, 
                               textTransform: 'uppercase', 
                               textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' 
                             }}>
                               {background.name}
                             </h4>
-                            <p style={{ 
+                            <p className="inventory-item-rarity" style={{ 
                               color: 'rgba(255, 255, 255, 0.9)', 
                               fontFamily: 'Montserrat', 
-                              fontSize: '14px', 
                               fontWeight: 400, 
                               textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' 
                             }}>
@@ -329,12 +387,10 @@ export const InventorySection: React.FC = () => {
                               e.stopPropagation(); 
                               handleEquipBackground(background); 
                             }} 
-                            className="relative transition-all duration-300 hover:scale-105" 
+                            className="inventory-button relative transition-all duration-300 hover:scale-105" 
                             style={{ 
                               display: 'flex', 
                               width: 'fit-content', 
-                              height: '44px', 
-                              padding: '4px 20px', 
                               justifyContent: 'center', 
                               alignItems: 'center', 
                               gap: '10px', 
@@ -344,10 +400,9 @@ export const InventorySection: React.FC = () => {
                               cursor: 'pointer' 
                             }}
                           >
-                            <span style={{ 
+                            <span className="inventory-button-text" style={{ 
                               color: 'var(--ui-button-text)', 
                               fontFamily: 'Audiowide', 
-                              fontSize: '16px', 
                               fontWeight: 400, 
                               textTransform: 'uppercase' 
                             }}>
@@ -358,12 +413,10 @@ export const InventorySection: React.FC = () => {
                         
                         {isBackgroundEquipped(background) && selectedBackground?.id !== background.id && (
                           <div 
-                            className="relative transition-all duration-300" 
+                            className="inventory-button relative transition-all duration-300" 
                             style={{ 
                               display: 'flex', 
                               width: 'fit-content', 
-                              height: '44px', 
-                              padding: '4px 20px', 
                               justifyContent: 'center', 
                               alignItems: 'center', 
                               gap: '10px', 
@@ -372,10 +425,9 @@ export const InventorySection: React.FC = () => {
                               border: 'none'
                             }}
                           >
-                            <span style={{ 
+                            <span className="inventory-button-text" style={{ 
                               color: 'var(--ui-button-text)', 
                               fontFamily: 'Audiowide', 
-                              fontSize: '16px', 
                               fontWeight: 400, 
                               textTransform: 'uppercase' 
                             }}>
@@ -409,26 +461,31 @@ export const InventorySection: React.FC = () => {
               borderRadius: '20px' 
             }}
           >
-            <div className="p-6 h-full flex flex-col" style={{ overflow: 'hidden', position: 'relative' }}>
+            <div className="p-6 flex flex-col" style={{ overflow: 'hidden', position: 'relative' }}>
               {selectedBackground ? (
                 <div 
                   className="relative" 
                   style={{ 
                     display: 'flex', 
                     width: '100%', 
-                    height: '410px', 
                     alignItems: 'center', 
                     borderRadius: '20px', 
                     border: '1px solid #FFF', 
-                    overflow: 'hidden'
+                    overflow: 'hidden',
+                    padding: '20px'
                   }}
                 >
                   {selectedBackground.isVideo && selectedBackground.videoUrl ? (
                     <video 
+                      key={selectedBackground.videoUrl} // Force re-render when video changes
                       autoPlay 
                       loop 
                       muted 
                       playsInline 
+                      controls={false}
+                      webkit-playsinline="true"
+                      x5-playsinline="true"
+                      preload="metadata"
                       className="absolute inset-0 w-full h-full object-cover" 
                       style={{ borderRadius: '20px' }}
                     >
@@ -445,21 +502,19 @@ export const InventorySection: React.FC = () => {
                       }}
                     />
                   )}
-                  <div className="relative z-10 flex flex-col items-center justify-center w-full h-full">
-                    <h2 style={{ 
+                  <div className="relative z-10 flex flex-col items-center justify-center w-full" style={{ minHeight: '300px', padding: '40px 20px' }}>
+                    <h2 className="preview-title" style={{ 
                       color: '#FFF', 
                       fontFamily: 'Audiowide', 
-                      fontSize: '32px', 
                       fontWeight: 400, 
                       textTransform: 'uppercase', 
-                      textShadow: '2px 2px 4px rgba(0,0,0,0.8)' 
+                      textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
                     }}>
                       {selectedBackground.name}
                     </h2>
-                    <p style={{ 
+                    <p className="preview-rarity" style={{ 
                       color: 'rgba(255,255,255,0.9)', 
                       fontFamily: 'Montserrat', 
-                      fontSize: '20px', 
                       fontWeight: 400, 
                       textShadow: '2px 2px 4px rgba(0,0,0,0.8)' 
                     }}>
@@ -473,8 +528,7 @@ export const InventorySection: React.FC = () => {
                   style={{ 
                     display: 'flex', 
                     width: '100%', 
-                    height: '410px', 
-                    padding: '20px 20px 30px 20px', 
+                    padding: '60px 20px', 
                     alignItems: 'center', 
                     borderRadius: '20px', 
                     border: '1px solid #FFF', 
