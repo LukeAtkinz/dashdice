@@ -28,7 +28,8 @@ export const useBrowserRefresh = () => {
           await WaitingRoomService.leaveRoom(sectionParams.roomId, user.uid);
           console.log('🧹 Cleaned up waiting room on browser exit');
         } catch (error) {
-          console.error('❌ Error cleaning up waiting room:', error);
+          // Gracefully handle cleanup errors - don't prevent page exit
+          console.log('⚠️ Cleanup error handled gracefully on browser exit:', error);
         }
       }
     };
@@ -45,17 +46,8 @@ export const useBrowserRefresh = () => {
         }
       }
       
-      // Clean up waiting room if user navigated away
-      if (document.visibilityState === 'hidden' && user) {
-        if (currentSection === 'waiting-room' && sectionParams?.roomId) {
-          try {
-            await WaitingRoomService.leaveRoom(sectionParams.roomId, user.uid);
-            console.log('🧹 Cleaned up waiting room on page hide');
-          } catch (error) {
-            console.error('❌ Error cleaning up waiting room:', error);
-          }
-        }
-      }
+      // NOTE: Waiting room cleanup is handled by useWaitingRoomCleanup hook, not here
+      // This prevents duplicate cleanup attempts that can cause rooms to be deleted immediately
     };
 
     const handlePageShow = (event: PageTransitionEvent) => {

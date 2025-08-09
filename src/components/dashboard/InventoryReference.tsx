@@ -290,7 +290,7 @@ export const InventorySection: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 px-4 md:px-8 flex justify-center" style={{ paddingTop: '15px' }}>
-        <div className="flex h-full w-[115vw] md:w-auto pl-[0.5rem] md:pl-0" style={{ maxHeight: '410px', height: '410px', maxWidth: '1600px', gap: '20px' }} data-mobile-height="410px" data-desktop-height="615px">
+        <div className="flex h-full w-full md:w-auto pl-[0.5rem] md:pl-0" style={{ maxHeight: '410px', height: '410px', maxWidth: '1600px', gap: '20px' }} data-mobile-height="410px" data-desktop-height="615px">
           
           {/* Items List */}
           <div 

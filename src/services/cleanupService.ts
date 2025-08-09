@@ -7,27 +7,36 @@ import { collection, query, where, getDocs, deleteDoc, Timestamp } from 'firebas
 export class CleanupService {
   
   /**
-   * Clean up waiting rooms older than 5 minutes
+   * Clean up waiting rooms older than 30 minutes OR that are empty/abandoned
    */
   static async cleanupWaitingRooms(): Promise<void> {
     try {
       console.log('🧹 Starting waiting room cleanup...');
       
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000); // Changed from 5 to 30 minutes
       const waitingRoomRef = collection(db, 'waitingroom');
       
-      // Query for rooms older than 5 minutes
+      // Query for rooms older than 30 minutes
       const oldRoomsQuery = query(
         waitingRoomRef,
-        where('createdAt', '<', Timestamp.fromDate(fiveMinutesAgo))
+        where('createdAt', '<', Timestamp.fromDate(thirtyMinutesAgo))
       );
       
       const snapshot = await getDocs(oldRoomsQuery);
       const deletePromises: Promise<void>[] = [];
       
       snapshot.forEach((doc) => {
-        console.log(`🗑️ Deleting old waiting room: ${doc.id}`);
-        deletePromises.push(deleteDoc(doc.ref));
+        const data = doc.data();
+        // Only delete rooms that are truly abandoned (no active players or very old)
+        const roomAge = Date.now() - data.createdAt?.toDate()?.getTime();
+        const isVeryOld = roomAge > (30 * 60 * 1000); // 30 minutes
+        
+        if (isVeryOld) {
+          console.log(`🗑️ Deleting old waiting room: ${doc.id} (${Math.round(roomAge / 60000)} minutes old)`);
+          deletePromises.push(deleteDoc(doc.ref));
+        } else {
+          console.log(`⏳ Keeping recent waiting room: ${doc.id} (${Math.round(roomAge / 60000)} minutes old)`);
+        }
       });
       
       await Promise.all(deletePromises);
@@ -90,23 +99,25 @@ export class CleanupService {
 
   /**
    * Initialize automatic cleanup intervals
-   * - Waiting rooms: every 2 minutes
-   * - Matches: every 10 minutes
+   * - Waiting rooms: every 15 minutes (less aggressive)
+   * - Matches: every 20 minutes
    */
   static initializeCleanupScheduler(): void {
-    // Clean waiting rooms every 2 minutes
+    // Clean waiting rooms every 15 minutes (was 2 minutes - too aggressive)
     setInterval(() => {
       this.cleanupWaitingRooms();
-    }, 2 * 60 * 1000);
+    }, 15 * 60 * 1000);
 
-    // Clean matches every 10 minutes
+    // Clean matches every 20 minutes (was 10 minutes)
     setInterval(() => {
       this.cleanupMatches();
-    }, 10 * 60 * 1000);
+    }, 20 * 60 * 1000);
 
-    // Run initial cleanup
-    this.runCleanupCycle();
+    // Run initial cleanup after 5 minutes to let app fully load
+    setTimeout(() => {
+      this.runCleanupCycle();
+    }, 5 * 60 * 1000);
 
-    console.log('📅 Database cleanup scheduler initialized');
+    console.log('📅 Database cleanup scheduler initialized (15min intervals)');
   }
 }

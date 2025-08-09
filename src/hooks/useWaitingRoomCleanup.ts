@@ -12,19 +12,42 @@ export const useWaitingRoomCleanup = (currentRoomId?: string) => {
   const { user } = useAuth();
 
   useEffect(() => {
+    // Add a delay before enabling cleanup to prevent immediate deletion during page load
+    let cleanupEnabled = false;
+    
+    const enableCleanupTimeout = setTimeout(() => {
+      cleanupEnabled = true;
+      console.log('🕒 Waiting room cleanup enabled after 3 second delay');
+    }, 3000); // Wait 3 seconds after component mount
+
     const handleBeforeUnload = async (event: BeforeUnloadEvent) => {
-      // If user is in a waiting room, clean it up before leaving
+      // TEMPORARILY DISABLED: All cleanup to prevent rooms being deleted
+      console.log('🚫 Browser exit cleanup temporarily disabled');
+      return;
+      
+      // Always clean up on browser close/refresh
       if (currentSection === 'waiting-room' && currentRoomId && user) {
         try {
           await WaitingRoomService.leaveRoom(currentRoomId, user.uid);
           console.log('🧹 Cleaned up waiting room on browser exit:', currentRoomId);
         } catch (error) {
-          console.error('❌ Error cleaning up waiting room on browser exit:', error);
+          // Gracefully handle cleanup errors - don't prevent page exit
+          console.log('⚠️ Cleanup error handled gracefully on browser exit:', error);
         }
       }
     };
 
     const handleVisibilityChange = async () => {
+      // TEMPORARILY DISABLED: Visibility-based cleanup to prevent immediate room deletion
+      console.log('🚫 Visibility-based cleanup temporarily disabled');
+      return;
+      
+      // Only cleanup if enough time has passed and user is actually leaving
+      if (!cleanupEnabled) {
+        console.log('⏸️ Cleanup not yet enabled, skipping visibility cleanup');
+        return;
+      }
+
       // When user navigates away and comes back, check if they left waiting room
       if (document.visibilityState === 'hidden' && user) {
         if (currentSection === 'waiting-room' && currentRoomId) {
@@ -32,7 +55,8 @@ export const useWaitingRoomCleanup = (currentRoomId?: string) => {
             await WaitingRoomService.leaveRoom(currentRoomId, user.uid);
             console.log('🧹 Cleaned up waiting room on page hide:', currentRoomId);
           } catch (error) {
-            console.error('❌ Error cleaning up waiting room on page hide:', error);
+            // Gracefully handle cleanup errors
+            console.log('⚠️ Cleanup error handled gracefully on page hide:', error);
           }
         }
       }
@@ -43,6 +67,7 @@ export const useWaitingRoomCleanup = (currentRoomId?: string) => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
+      clearTimeout(enableCleanupTimeout);
       window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
@@ -59,7 +84,8 @@ export const useWaitingRoomCleanup = (currentRoomId?: string) => {
         setCurrentSection('dashboard');
         router.push('/dashboard');
       } catch (error) {
-        console.error('❌ Error manually leaving waiting room:', error);
+        // Gracefully handle cleanup errors - still navigate away
+        console.log('⚠️ Cleanup error handled gracefully during manual leave:', error);
         // Still navigate away even if cleanup fails
         setCurrentSection('dashboard');
         router.push('/dashboard');

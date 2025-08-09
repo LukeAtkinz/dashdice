@@ -170,7 +170,10 @@ export class WaitingRoomService {
       const roomDoc = await getDocs(query(collection(db, this.COLLECTION_NAME), where('__name__', '==', roomId)));
       
       if (roomDoc.empty) {
-        throw new Error('Room not found');
+        // Room not found - likely already moved to matches collection or deleted
+        // This is normal during game transitions, so we log and return gracefully
+        console.log('Room not found during leave operation (likely moved to matches):', roomId);
+        return;
       }
 
       const roomData = roomDoc.docs[0].data();
@@ -196,6 +199,11 @@ export class WaitingRoomService {
       console.log('Successfully left room:', roomId);
     } catch (error) {
       console.error('Error leaving room:', error);
+      // Don't throw the error if it's just a room not found issue
+      if (error instanceof Error && error.message.includes('Room not found')) {
+        console.log('Gracefully handling room not found during cleanup');
+        return;
+      }
       throw error;
     }
   }

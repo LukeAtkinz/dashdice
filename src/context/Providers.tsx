@@ -12,9 +12,10 @@ interface ProvidersProps {
 }
 
 export const Providers: React.FC<ProvidersProps> = ({ children }) => {
-  // Initialize database cleanup on app start
+  // Initialize database cleanup on app start - TEMPORARILY DISABLED
   useEffect(() => {
-    CleanupService.initializeCleanupScheduler();
+    // CleanupService.initializeCleanupScheduler(); // Disabled to prevent matchmaking issues
+    console.log('🚫 Database cleanup temporarily disabled to prevent matchmaking issues');
   }, []);
 
   return (
