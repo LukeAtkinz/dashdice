@@ -269,7 +269,7 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto text-center">
+    <div className="max-w-4xl mx-auto text-center" style={{ flexDirection: 'column', position: 'relative' }}>
       {/* Game Over Title */}
       <motion.div
         initial={{ opacity: 0, scale: 0.5 }}
