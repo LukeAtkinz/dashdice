@@ -379,15 +379,37 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900"
+      >
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mx-auto mb-4"></div>
-          <h2 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: "Audiowide" }}>
-            Loading Match...
-          </h2>
-          <p className="text-gray-300">Connecting to game server</p>
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="rounded-full h-32 w-32 border-b-2 border-white mx-auto mb-4"
+          />
+          <motion.h2 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-2xl font-bold text-white mb-2" 
+            style={{ fontFamily: "Audiowide" }}
+          >
+            Entering Arena...
+          </motion.h2>
+          <motion.p 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-gray-300"
+          >
+            Preparing your match
+          </motion.p>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
@@ -428,8 +450,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     <>
       {/* Game Over Screen - Full Screen Overlay positioned to allow navbar */}
       {matchData.gameData.gamePhase === 'gameOver' && (
-        <div 
-          className="fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+        <motion.div 
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="fixed inset-0 z-40 flex items-center justify-center"
           style={{ 
             flexDirection: 'column',
             top: '60px', // Leave space for desktop navbar
@@ -440,13 +465,23 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             <GameOverWrapper
               matchId={matchData.id || ''}
               onLeaveMatch={() => setCurrentSection('dashboard')}
+              onRematch={(newMatchId) => {
+                console.log('🎮 Match: Navigating to rematch:', newMatchId);
+                setCurrentSection('match', { 
+                  gameMode: matchData.gameMode || 'classic',
+                  matchId: newMatchId 
+                });
+              }}
             />
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Normal Match UI - Hidden when game over */}
-      <div 
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
         className={`w-full h-full ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-center gap-[2rem] p-4 md:p-8`} 
         style={{ minHeight: '100vh' }}
       >
@@ -469,7 +504,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               </h2>
               
               <div
-                className="relative rounded-3xl overflow-hidden shadow-2xl border-4"
+                className="relative rounded-3xl overflow-hidden shadow-2xl border-4 z-20"
                 style={{ 
                   borderColor: currentPlayer.turnActive ? '#00ff00' : '#ffffff',
                   height: '500px'
@@ -580,7 +615,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             </div>
 
             {/* Center Dice Area */}
-            <div className="flex flex-col items-center justify-center min-w-0" style={{ alignSelf: 'center' }}>
+            <div className="flex flex-col items-center justify-center min-w-0 relative z-10" style={{ alignSelf: 'center' }}>
               {/* Phase-specific content */}
               {matchData.gameData.gamePhase === 'turnDecider' && (
                 <TurnDeciderPhase
@@ -606,13 +641,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   onBankScore={handleBankScore}
                 />
               )}
-
-              {matchData.gameData.gamePhase === 'gameOver' && (
-                <GameOverWrapper
-                  matchId={matchData.id || ''}
-                  onLeaveMatch={() => setCurrentSection('dashboard')}
-                />
-              )}
             </div>
 
             {/* Player 2 (Opponent - Right Side) */}
@@ -629,7 +657,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               </h2>
               
               <div
-                className="relative rounded-3xl overflow-hidden shadow-2xl border-4"
+                className="relative rounded-3xl overflow-hidden shadow-2xl border-4 z-20"
                 style={{ 
                   borderColor: opponent.turnActive ? '#00ff00' : '#ffffff',
                   height: '500px'
@@ -764,7 +792,16 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         disablePictureInPicture
                         controlsList="nodownload noplaybackrate"
                         className="absolute inset-0 w-full h-full object-cover"
-                        style={{ pointerEvents: 'none' }}
+                        style={{ 
+                          pointerEvents: 'none',
+                          objectPosition: currentPlayer.matchBackgroundEquipped.name === 'All For Glory' 
+                            ? '60% center' 
+                            : currentPlayer.matchBackgroundEquipped.name === 'On A Mission'
+                            ? '-30% center'
+                            : currentPlayer.matchBackgroundEquipped.name === 'Long Road Ahead'
+                            ? 'right center'
+                            : 'center center'
+                        }}
                       >
                         <source src={currentPlayer.matchBackgroundEquipped.file} type="video/mp4" />
                       </video>
@@ -773,6 +810,15 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         src={currentPlayer.matchBackgroundEquipped.file}
                         alt={currentPlayer.matchBackgroundEquipped.name}
                         className="absolute inset-0 w-full h-full object-cover"
+                        style={{
+                          objectPosition: currentPlayer.matchBackgroundEquipped.name === 'All For Glory' 
+                            ? '60% center' 
+                            : currentPlayer.matchBackgroundEquipped.name === 'On A Mission'
+                            ? '-30% center'
+                            : currentPlayer.matchBackgroundEquipped.name === 'Long Road Ahead'
+                            ? 'right center'
+                            : 'center center'
+                        }}
                       />
                     )
                   ) : (
@@ -843,7 +889,16 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         disablePictureInPicture
                         controlsList="nodownload noplaybackrate"
                         className="absolute inset-0 w-full h-full object-cover"
-                        style={{ pointerEvents: 'none' }}
+                        style={{ 
+                          pointerEvents: 'none',
+                          objectPosition: opponent.matchBackgroundEquipped.name === 'All For Glory' 
+                            ? '60% center' 
+                            : opponent.matchBackgroundEquipped.name === 'On A Mission'
+                            ? '-30% center'
+                            : opponent.matchBackgroundEquipped.name === 'Long Road Ahead'
+                            ? 'right center'
+                            : 'center center'
+                        }}
                       >
                         <source src={opponent.matchBackgroundEquipped.file} type="video/mp4" />
                       </video>
@@ -852,6 +907,15 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         src={opponent.matchBackgroundEquipped.file}
                         alt={opponent.matchBackgroundEquipped.name}
                         className="absolute inset-0 w-full h-full object-cover"
+                        style={{
+                          objectPosition: opponent.matchBackgroundEquipped.name === 'All For Glory' 
+                            ? '60% center' 
+                            : opponent.matchBackgroundEquipped.name === 'On A Mission'
+                            ? '-30% center'
+                            : opponent.matchBackgroundEquipped.name === 'Long Road Ahead'
+                            ? 'right center'
+                            : 'center center'
+                        }}
                       />
                     )
                   ) : (
@@ -921,7 +985,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
           </div>
         </div>
-      </div>
+      </motion.div>
     </>
   );
 };

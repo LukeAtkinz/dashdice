@@ -107,10 +107,10 @@ export class MatchmakingService {
       const waitingRoomRef = await addDoc(collection(db, 'waitingroom'), waitingRoomData);
       
       // Immediately move to matches (skip waiting room phase)
-      await this.moveToMatches(waitingRoomRef.id);
+      const newMatchId = await this.moveToMatches(waitingRoomRef.id);
       
       console.log('✅ MatchmakingService: Rematch waiting room created and moved to matches');
-      return waitingRoomRef.id;
+      return newMatchId; // Return the actual match ID, not the waiting room ID
     } catch (error) {
       console.error('❌ MatchmakingService: Error creating rematch waiting room:', error);
       throw error;

@@ -25,6 +25,7 @@ export interface RematchRoom {
   createdAt: any;
   expiresAt: any;
   status: 'waiting' | 'accepted' | 'expired' | 'cancelled';
+  newMatchId?: string; // Added to store the new match ID when accepted
 }
 
 export class RematchService {
@@ -111,17 +112,21 @@ export class RematchService {
         rematchData.gameType
       );
       
-      // Update rematch room status
-      await setDoc(rematchRef, { ...rematchData, status: 'accepted' }, { merge: true });
+      // Update rematch room status with new match ID
+      await setDoc(rematchRef, { 
+        ...rematchData, 
+        status: 'accepted',
+        newMatchId: newMatchId
+      }, { merge: true });
       
-      // Clean up rematch room after a short delay
+      // Clean up rematch room after a longer delay to give requester time to read newMatchId
       setTimeout(async () => {
         try {
           await deleteDoc(rematchRef);
         } catch (error) {
           console.error('❌ RematchService: Error cleaning up rematch room:', error);
         }
-      }, 5000);
+      }, 10000); // Increased to 10 seconds
       
       console.log('🎮 RematchService: Rematch accepted, new match created:', newMatchId);
       return newMatchId;

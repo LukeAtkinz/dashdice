@@ -418,7 +418,7 @@ const DashboardContent: React.FC = () => {
         {/* Bottom Navigation for Mobile - Fixed at bottom */}
         <footer 
           className={`${((currentSection === 'match' || currentSection === 'waiting-room') && !isGameOver) ? 'hidden' : 'md:hidden'} fixed bottom-0 left-0 right-0 w-[100vw] flex flex-row items-center justify-center z-50`}
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)', padding: '0' }}
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)', padding: '0', opacity: 0.4 }}
         >
           <div className="flex flex-row items-center justify-between w-full px-[2vw] py-[15px] shadow-lg" style={{
             background: DisplayBackgroundEquip?.name === 'On A Mission' 

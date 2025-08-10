@@ -48,6 +48,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         'public' // Default game type
       );
       setRematchRoomId(roomId);
+      setRematchState('waiting'); // Change to waiting after successful creation
     } catch (error) {
       console.error('Error creating rematch room:', error);
       setRematchState('idle');
@@ -94,7 +95,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
 
   const handleLeaveMatch = () => {
     // Cancel any pending rematch
-    if (rematchRoomId && rematchState === 'requesting') {
+    if (rematchRoomId && (rematchState === 'requesting' || rematchState === 'waiting')) {
       RematchService.cancelRematch(rematchRoomId, user?.uid || '');
     }
     
@@ -126,7 +127,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
 
   // Listen for rematch room updates when we're the requester
   useEffect(() => {
-    if (!rematchRoomId || rematchState !== 'requesting') return;
+    if (!rematchRoomId || rematchState !== 'waiting') return;
     
     const unsubscribe = RematchService.subscribeToRematchRoom(
       rematchRoomId,
@@ -138,7 +139,12 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         
         if (rematchData.status === 'accepted') {
           setRematchState('accepted');
-          // The actual match creation is handled in the service
+          
+          // Navigate to the new match if newMatchId is available
+          if (rematchData.newMatchId && onRematch) {
+            console.log('🎮 Navigating to new rematch:', rematchData.newMatchId);
+            onRematch(rematchData.newMatchId);
+          }
         } else if (rematchData.status === 'expired' || rematchData.status === 'cancelled') {
           setRematchState('expired');
         }
@@ -146,7 +152,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
     );
     
     return () => unsubscribe();
-  }, [rematchRoomId, rematchState]);
+  }, [rematchRoomId, rematchState, onRematch]);
 
   return (
     <div className="min-h-screen flex items-center justify-center relative p-8">

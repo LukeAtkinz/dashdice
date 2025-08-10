@@ -121,7 +121,12 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
         
         if (rematchData.status === 'accepted') {
           setRematchState('accepted');
-          // The actual match creation is handled in the service
+          
+          // Navigate to the new match if newMatchId is available
+          if (rematchData.newMatchId && onRematch) {
+            console.log('🎮 GameOverPhase: Navigating to new rematch:', rematchData.newMatchId);
+            onRematch(rematchData.newMatchId);
+          }
         } else if (rematchData.status === 'expired' || rematchData.status === 'cancelled') {
           setRematchState('expired');
         }
@@ -129,7 +134,7 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
     );
     
     return () => unsubscribe();
-  }, [rematchRoomId, rematchState]);
+  }, [rematchRoomId, rematchState, onRematch]);
 
   const handleRematchRequest = async () => {
     if (!user?.uid || rematchState !== 'idle') return;
