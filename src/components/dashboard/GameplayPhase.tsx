@@ -104,9 +104,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   return (
     <>
       <div className="flex flex-col items-center justify-center">
-        {/* Always Visible Game Status Box - Top of Dice Container */}
+        {/* Always Visible Game Status Box - Top of Dice Container - Hidden on mobile */}
         <motion.div 
-          className="mb-6"
+          className="mb-6 hidden md:block"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
@@ -193,10 +193,10 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           </div>
         </motion.div>
 
-        {/* Dice Container with Turn Score Between */}
-        <div className="relative flex flex-col gap-4 mb-4 md:mb-8">
+        {/* Dice Container with Turn Score Between - More spacing */}
+        <div className="relative flex flex-col gap-6 md:gap-8 mb-6 md:mb-8">
           {/* Dice 1 - Slot Machine */}
-          <div className="w-full max-w-[600px] md:w-[600px]" style={{ width: 'min(600px, 80vw)' }}>
+          <div className="w-full max-w-[400px] md:max-w-[600px] md:w-[600px]" style={{ width: 'min(400px, 70vw)' }}>
             <SlotMachineDice
               diceNumber={1}
               animationState={dice1Animation}
@@ -216,16 +216,16 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               className="text-center relative"
             >
-              {/* Turn Score Container - Fixed Position */}
-              <div className="inline-block px-3 md:px-8 py-1.5 md:py-4 bg-yellow-600/30 border-2 border-yellow-500 rounded-2xl backdrop-blur-sm shadow-xl">
+              {/* Turn Score Container - Bigger on Mobile */}
+              <div className="inline-block px-6 md:px-8 py-3 md:py-4 bg-yellow-600/30 border-2 border-yellow-500 rounded-2xl backdrop-blur-sm shadow-xl">
                 <p 
-                  className="text-xs md:text-lg text-yellow-300 mb-0.5 md:mb-1"
+                  className="text-sm md:text-lg text-yellow-300 mb-1 md:mb-1"
                   style={{ fontFamily: "Audiowide" }}
                 >
                   Turn Score
                 </p>
                 <p 
-                  className="text-lg md:text-4xl font-bold text-yellow-400" 
+                  className="text-2xl md:text-4xl font-bold text-yellow-400" 
                   style={{ fontFamily: "Audiowide" }}
                 >
                   {matchData.gameData.turnScore}
@@ -251,7 +251,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           </div>
           
           {/* Dice 2 - Slot Machine */}
-          <div className="w-full max-w-[600px] md:w-[600px]" style={{ width: 'min(600px, 80vw)' }}>
+          <div className="w-full max-w-[400px] md:max-w-[600px] md:w-[600px]" style={{ width: 'min(400px, 70vw)' }}>
             <SlotMachineDice
               diceNumber={2}
               animationState={dice2Animation}

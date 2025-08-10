@@ -153,11 +153,6 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               {isProcessing ? 'PROCESSING...' : 'EVEN'}
             </button>
           </div>
-          
-          {/* Debug info */}
-          <div className="mt-4 text-sm text-gray-400 bg-black/20 p-2 rounded">
-            Host: {isHost ? 'Yes' : 'No'}, Chooser: {matchData.gameData.chooserPlayerIndex}, MyTurn: {isMyTurnToDecide ? 'Yes' : 'No'}
-          </div>
         </motion.div>
       )}
 
@@ -215,8 +210,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
         </motion.div>
       )}
 
-      {/* Show result */}
-      {hasDice && (
+      {/* Show result - delayed until dice animation completes */}
+      {hasDice && !diceAnimation.isSpinning && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

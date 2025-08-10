@@ -155,13 +155,13 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   }, [rematchRoomId, rematchState, onRematch]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative p-8">
+    <div className="min-h-screen flex flex-col items-center justify-center relative p-4 md:p-8 space-y-6">
       {/* Victory/Defeat Announcement */}
       <motion.div
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
-        className="text-center mb-8"
+        className="text-center"
       >
         <motion.h1
           initial={{ opacity: 0, y: -50 }}
@@ -171,23 +171,11 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
           style={{ fontFamily: "Audiowide" }}
         >
           {winner === currentUser.playerDisplayName ? (
-            <span className="text-yellow-400 drop-shadow-lg">🏆 VICTORY! 🏆</span>
+            <span className="text-yellow-400 drop-shadow-lg">VICTORY!</span>
           ) : (
-            <span className="text-red-400 drop-shadow-lg">💀 DEFEAT 💀</span>
+            <span className="text-red-400 drop-shadow-lg">DEFEAT</span>
           )}
         </motion.h1>
-
-        {/* Winner Announcement */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mb-6"
-        >
-          <h2 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: "Audiowide" }}>
-            {winner} WINS!
-          </h2>
-        </motion.div>
 
         {/* Game Over Reason */}
         {reason && (
@@ -195,37 +183,36 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
-            className="mb-8"
           >
             <p className="text-xl text-gray-300">{reason}</p>
           </motion.div>
         )}
       </motion.div>
 
-      {/* Final Scores - Updated Layout */}
+      {/* Final Scores - Horizontal on Mobile, Centered Content */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1 }}
-        className="grid grid-cols-2 gap-8 mb-8"
+        className="grid grid-cols-2 md:grid-cols-2 gap-4 md:gap-8"
       >
         {/* Host Score */}
-        <div className="p-6 bg-white/10 rounded-2xl backdrop-blur-sm border border-gray-400">
-          <p className="text-xl font-bold text-white mb-2" style={{ fontFamily: "Audiowide" }}>
+        <div className="p-6 bg-white/10 rounded-2xl backdrop-blur-sm border border-gray-400 text-center">
+          <p className="text-lg md:text-xl font-bold text-white mb-2" style={{ fontFamily: "Audiowide" }}>
             {matchData.hostData.playerDisplayName}
           </p>
-          <p className="text-3xl font-bold text-white" style={{ fontFamily: "Audiowide" }}>
+          <p className="text-2xl md:text-3xl font-bold text-white" style={{ fontFamily: "Audiowide" }}>
             {matchData.hostData.playerScore}
           </p>
           <p className="text-sm text-gray-300">Final Score</p>
         </div>
 
         {/* Opponent Score */}
-        <div className="p-6 bg-white/10 rounded-2xl backdrop-blur-sm border border-gray-400">
-          <p className="text-xl font-bold text-white mb-2" style={{ fontFamily: "Audiowide" }}>
+        <div className="p-6 bg-white/10 rounded-2xl backdrop-blur-sm border border-gray-400 text-center">
+          <p className="text-lg md:text-xl font-bold text-white mb-2" style={{ fontFamily: "Audiowide" }}>
             {matchData.opponentData.playerDisplayName}
           </p>
-          <p className="text-3xl font-bold text-white" style={{ fontFamily: "Audiowide" }}>
+          <p className="text-2xl md:text-3xl font-bold text-white" style={{ fontFamily: "Audiowide" }}>
             {matchData.opponentData.playerScore}
           </p>
           <p className="text-sm text-gray-300">Final Score</p>
@@ -237,16 +224,16 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.3 }}
-        className="mb-8 p-6 bg-black/20 rounded-2xl backdrop-blur-sm border border-gray-600"
+        className="p-6 bg-black/20 rounded-2xl backdrop-blur-sm border border-gray-600"
       >
         <h3 className="text-lg font-bold text-white mb-6 text-center" style={{ fontFamily: "Audiowide" }}>
           MATCH STATISTICS
         </h3>
         
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
           {/* Left Column - Host Stats */}
           <div className="text-center space-y-4">
-            <h4 className="text-md font-bold text-yellow-400 mb-4" style={{ fontFamily: "Audiowide" }}>
+            <h4 className="text-sm md:text-md font-bold text-yellow-400 mb-4" style={{ fontFamily: "Audiowide" }}>
               {matchData.hostData.playerDisplayName}
             </h4>
             
@@ -273,14 +260,14 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
             </div>
           </div>
           
-          {/* Center Column - Separator */}
-          <div className="flex items-center justify-center">
+          {/* Center Column - Separator - Hidden on Mobile */}
+          <div className="hidden md:flex items-center justify-center">
             <div className="w-px h-48 bg-gradient-to-b from-transparent via-gray-400 to-transparent"></div>
           </div>
           
           {/* Right Column - Opponent Stats */}
           <div className="text-center space-y-4">
-            <h4 className="text-md font-bold text-yellow-400 mb-4" style={{ fontFamily: "Audiowide" }}>
+            <h4 className="text-sm md:text-md font-bold text-yellow-400 mb-4" style={{ fontFamily: "Audiowide" }}>
               {matchData.opponentData.playerDisplayName}
             </h4>
             
@@ -351,12 +338,12 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         </motion.div>
       )}
 
-      {/* Action Buttons */}
+      {/* Action Buttons - Vertical on Mobile */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.6 }}
-        className="flex justify-center gap-4"
+        className="flex flex-col md:flex-row justify-center gap-4"
       >
         <button
           onClick={handleLeaveMatch}

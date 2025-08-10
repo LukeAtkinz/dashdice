@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { MatchService } from '@/services/matchService';
 import { MatchData } from '@/types/match';
@@ -486,9 +486,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         style={{ minHeight: '100vh' }}
       >
       {/* Game Arena */}
-      <div className="flex items-center justify-center p-4 w-full max-w-[1400px]">
+      <div className="flex items-center justify-center p-4" style={{ width: '90vw', maxWidth: '1400px' }}>
           {/* Desktop Layout */}
-          <div className="hidden md:flex items-center justify-between gap-8" style={{ width: '100%' }}>
+          <div className="hidden md:flex items-center justify-between gap-16" style={{ width: '100%' }}>
             
             {/* Player 1 (Current User - Left Side) */}
             <div className="flex-1">
@@ -615,32 +615,50 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             </div>
 
             {/* Center Dice Area */}
-            <div className="flex flex-col items-center justify-center min-w-0 relative z-10" style={{ alignSelf: 'center' }}>
-              {/* Phase-specific content */}
-              {matchData.gameData.gamePhase === 'turnDecider' && (
-                <TurnDeciderPhase
-                  matchData={matchData}
-                  currentPlayer={currentPlayer}
-                  opponent={opponent}
-                  isHost={isHost}
-                  diceAnimation={turnDeciderDiceAnimation}
-                  onChoiceSelect={handleTurnDeciderChoice}
-                  onForceGameplay={handleForceGameplay}
-                />
-              )}
+            <div className="flex flex-col items-center justify-center relative z-10" style={{ alignSelf: 'center', minWidth: '400px', width: '400px' }}>
+              {/* Phase-specific content with transitions */}
+              <AnimatePresence mode="wait">
+                {matchData.gameData.gamePhase === 'turnDecider' && (
+                  <motion.div
+                    key="turnDecider"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -30 }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                  >
+                    <TurnDeciderPhase
+                      matchData={matchData}
+                      currentPlayer={currentPlayer}
+                      opponent={opponent}
+                      isHost={isHost}
+                      diceAnimation={turnDeciderDiceAnimation}
+                      onChoiceSelect={handleTurnDeciderChoice}
+                      onForceGameplay={handleForceGameplay}
+                    />
+                  </motion.div>
+                )}
 
-              {matchData.gameData.gamePhase === 'gameplay' && (
-                <GameplayPhase
-                  matchData={matchData}
-                  currentPlayer={currentPlayer}
-                  opponent={opponent}
-                  isHost={isHost}
-                  dice1Animation={dice1Animation}
-                  dice2Animation={dice2Animation}
-                  onRollDice={handleRollDice}
-                  onBankScore={handleBankScore}
-                />
-              )}
+                {matchData.gameData.gamePhase === 'gameplay' && (
+                  <motion.div
+                    key="gameplay"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -30 }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                  >
+                    <GameplayPhase
+                      matchData={matchData}
+                      currentPlayer={currentPlayer}
+                      opponent={opponent}
+                      isHost={isHost}
+                      dice1Animation={dice1Animation}
+                      dice2Animation={dice2Animation}
+                      onRollDice={handleRollDice}
+                      onBankScore={handleBankScore}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Player 2 (Opponent - Right Side) */}
@@ -751,17 +769,23 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           </div>
 
           {/* Mobile Layout - Stacked */}
-          <div className="md:hidden flex flex-col items-center w-full px-2" style={{ width: '100vw' }}>
+          <div className="md:hidden flex flex-col items-center w-full px-2" style={{ width: '100vw', paddingTop: '16px' }}>
             
             {/* User Profiles Section - Top */}
             <div className="w-full flex justify-between gap-4 mb-6">
               {/* Current Player Profile - Left */}
-              <div className="flex-1">
+              <div className="w-1/2">
                 <h3 
-                  className="text-lg font-bold text-white mb-2 text-center truncate px-2"
+                  className="font-bold text-white mb-2 text-center px-2"
                   style={{ 
                     fontFamily: 'Audiowide',
                     textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                    fontSize: 'clamp(12px, 3.5vw, 16px)',
+                    lineHeight: '1.2',
+                    height: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis'
@@ -774,7 +798,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   className="relative rounded-xl overflow-hidden shadow-lg border-2"
                   style={{ 
                     borderColor: currentPlayer.turnActive ? '#00ff00' : '#ffffff',
-                    height: '120px'
+                    height: '120px',
+                    width: '100%'
                   }}
                 >
                   {/* Player Background */}
@@ -794,13 +819,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         className="absolute inset-0 w-full h-full object-cover"
                         style={{ 
                           pointerEvents: 'none',
-                          objectPosition: currentPlayer.matchBackgroundEquipped.name === 'All For Glory' 
-                            ? '60% center' 
-                            : currentPlayer.matchBackgroundEquipped.name === 'On A Mission'
-                            ? '-30% center'
-                            : currentPlayer.matchBackgroundEquipped.name === 'Long Road Ahead'
-                            ? 'right center'
-                            : 'center center'
+                          objectPosition: 'center center'
                         }}
                       >
                         <source src={currentPlayer.matchBackgroundEquipped.file} type="video/mp4" />
@@ -811,13 +830,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         alt={currentPlayer.matchBackgroundEquipped.name}
                         className="absolute inset-0 w-full h-full object-cover"
                         style={{
-                          objectPosition: currentPlayer.matchBackgroundEquipped.name === 'All For Glory' 
-                            ? '60% center' 
-                            : currentPlayer.matchBackgroundEquipped.name === 'On A Mission'
-                            ? '-30% center'
-                            : currentPlayer.matchBackgroundEquipped.name === 'Long Road Ahead'
-                            ? 'right center'
-                            : 'center center'
+                          objectPosition: 'center center'
                         }}
                       />
                     )
@@ -853,12 +866,18 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               </div>
 
               {/* Opponent Profile - Right */}
-              <div className="flex-1">
+              <div className="w-1/2">
                 <h3 
-                  className="text-lg font-bold text-white mb-2 text-center truncate px-2"
+                  className="font-bold text-white mb-2 text-center px-2"
                   style={{ 
                     fontFamily: 'Audiowide',
                     textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                    fontSize: 'clamp(12px, 3.5vw, 16px)',
+                    lineHeight: '1.2',
+                    height: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis'
@@ -871,7 +890,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   className="relative rounded-xl overflow-hidden shadow-lg border-2"
                   style={{ 
                     borderColor: opponent.turnActive ? '#00ff00' : '#ffffff',
-                    height: '120px'
+                    height: '120px',
+                    width: '100%'
                   }}
                 >
                   {/* Player Background */}
@@ -891,13 +911,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         className="absolute inset-0 w-full h-full object-cover"
                         style={{ 
                           pointerEvents: 'none',
-                          objectPosition: opponent.matchBackgroundEquipped.name === 'All For Glory' 
-                            ? '60% center' 
-                            : opponent.matchBackgroundEquipped.name === 'On A Mission'
-                            ? '-30% center'
-                            : opponent.matchBackgroundEquipped.name === 'Long Road Ahead'
-                            ? 'right center'
-                            : 'center center'
+                          objectPosition: 'center center'
                         }}
                       >
                         <source src={opponent.matchBackgroundEquipped.file} type="video/mp4" />
@@ -908,13 +922,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         alt={opponent.matchBackgroundEquipped.name}
                         className="absolute inset-0 w-full h-full object-cover"
                         style={{
-                          objectPosition: opponent.matchBackgroundEquipped.name === 'All For Glory' 
-                            ? '60% center' 
-                            : opponent.matchBackgroundEquipped.name === 'On A Mission'
-                            ? '-30% center'
-                            : opponent.matchBackgroundEquipped.name === 'Long Road Ahead'
-                            ? 'right center'
-                            : 'center center'
+                          objectPosition: 'center center'
                         }}
                       />
                     )
@@ -952,35 +960,51 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
             {/* Center Dice Area - Middle */}
             <div className="w-full flex flex-col items-center justify-center mb-6">
-              {/* Phase-specific content with mobile modifications */}
-              {matchData.gameData.gamePhase === 'turnDecider' && (
-                <div className="w-full">
-                  <TurnDeciderPhase
-                    matchData={matchData}
-                    currentPlayer={currentPlayer}
-                    opponent={opponent}
-                    isHost={isHost}
-                    diceAnimation={turnDeciderDiceAnimation}
-                    onChoiceSelect={handleTurnDeciderChoice}
-                    onForceGameplay={handleForceGameplay}
-                  />
-                </div>
-              )}
+              {/* Phase-specific content with mobile modifications and transitions */}
+              <AnimatePresence mode="wait">
+                {matchData.gameData.gamePhase === 'turnDecider' && (
+                  <motion.div
+                    key="turnDecider-mobile"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -30 }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    className="w-full"
+                  >
+                    <TurnDeciderPhase
+                      matchData={matchData}
+                      currentPlayer={currentPlayer}
+                      opponent={opponent}
+                      isHost={isHost}
+                      diceAnimation={turnDeciderDiceAnimation}
+                      onChoiceSelect={handleTurnDeciderChoice}
+                      onForceGameplay={handleForceGameplay}
+                    />
+                  </motion.div>
+                )}
 
-              {matchData.gameData.gamePhase === 'gameplay' && (
-                <div className="w-full">
-                  <GameplayPhase
-                    matchData={matchData}
-                    currentPlayer={currentPlayer}
-                    opponent={opponent}
-                    isHost={isHost}
-                    dice1Animation={dice1Animation}
-                    dice2Animation={dice2Animation}
-                    onRollDice={handleRollDice}
-                    onBankScore={handleBankScore}
-                  />
-                </div>
-              )}
+                {matchData.gameData.gamePhase === 'gameplay' && (
+                  <motion.div
+                    key="gameplay-mobile"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -30 }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    className="w-full"
+                  >
+                    <GameplayPhase
+                      matchData={matchData}
+                      currentPlayer={currentPlayer}
+                      opponent={opponent}
+                      isHost={isHost}
+                      dice1Animation={dice1Animation}
+                      dice2Animation={dice2Animation}
+                      onRollDice={handleRollDice}
+                      onBankScore={handleBankScore}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
           </div>
