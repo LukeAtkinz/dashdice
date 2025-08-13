@@ -420,85 +420,77 @@ const DashboardContent: React.FC = () => {
           className="md:hidden fixed bottom-0 left-0 right-0 w-[100vw] flex flex-row items-center justify-center z-50"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)', padding: '0' }}
         >
-          {/* Match Screen Mobile Navigation */}
-          {currentSection === 'match' && !isGameOver && (
-            <div className="flex flex-row items-center justify-between w-full px-[2vw] py-[15px] shadow-lg" style={{
-              background: DisplayBackgroundEquip?.name === 'On A Mission' 
-                ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)'
-                : DisplayBackgroundEquip?.name === 'Long Road Ahead'
-                ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.6) 0%, rgba(76, 29, 149, 0.4) 25%, rgba(30, 27, 75, 0.3) 50%, rgba(30, 58, 138, 0.4) 75%, rgba(59, 130, 246, 0.3) 100%)'
-                : 'rgba(0, 0, 0, 0.6)',
-              backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(8px)' : 'none',
-              borderRadius: '0'
-            }}>
-              <button
-                onClick={() => handleSectionChange('dashboard')}
-                className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[45vw] hover:bg-white/10"
-              >
-                <img src="/Design Elements/CrownLogo.webp" alt="Dashboard" className="w-8 h-8" />
-                <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>DASHBOARD</span>
-              </button>
-              <button
-                onClick={() => {
-                  // TODO: Add rematch functionality
-                  console.log('Rematch clicked');
-                }}
-                className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[45vw] hover:bg-white/10"
-              >
-                <img src="/Design Elements/Crown Mode.webp" alt="Rematch" className="w-8 h-8" />
-                <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>REMATCH</span>
-              </button>
-            </div>
-          )}
-
-          {/* Regular Mobile Navigation */}
-          {(currentSection !== 'match' || isGameOver) && (
-            <div className="flex flex-row items-center justify-between w-full px-[2vw] py-[15px] shadow-lg" style={{
-              background: DisplayBackgroundEquip?.name === 'On A Mission' 
-                ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)'
-                : DisplayBackgroundEquip?.name === 'Long Road Ahead'
-                ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.6) 0%, rgba(76, 29, 149, 0.4) 25%, rgba(30, 27, 75, 0.3) 50%, rgba(30, 58, 138, 0.4) 75%, rgba(59, 130, 246, 0.3) 100%)'
-                : 'rgba(0, 0, 0, 0.6)',
-              backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(8px)' : 'none',
-              borderRadius: '0'
-            }}>
-              <button
-                onClick={() => handleSectionChange('dashboard')}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[20vw] ${
-                  currentSection === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/10'
-                }`}
-              >
-                <img src="/Design Elements/CrownLogo.webp" alt="Play" className="w-8 h-8" />
-                <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PLAY</span>
-              </button>
-              <button
-                disabled
-                className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all cursor-not-allowed opacity-60 flex-1 max-w-[20vw]"
-                title="Friends - Coming Soon!"
-              >
-                <img src="/Design Elements/friends.webp" alt="Friends" className="w-8 h-8" />
-                <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
-              </button>
-              <button
-                onClick={() => handleSectionChange('inventory')}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[20vw] ${
-                  currentSection === 'inventory' ? 'bg-white/20' : 'hover:bg-white/10'
-                }`}
-              >
-                <img src="/Design Elements/Gem Bucket.webp" alt="Vault" className="w-8 h-8" />
-                <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>VAULT</span>
-              </button>
-              <button
-                onClick={() => handleSectionChange('settings')}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[20vw] ${
-                  currentSection === 'settings' ? 'bg-white/20' : 'hover:bg-white/10'
-                }`}
-              >
-                <img src="/Design Elements/Delivery Man.webp" alt="Profile" className="w-8 h-8" />
-                <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PROFILE</span>
-              </button>
-            </div>
-          )}
+          <div className="flex flex-row items-center justify-between w-full px-[2vw] py-[15px] shadow-lg" style={{
+            background: DisplayBackgroundEquip?.name === 'On A Mission' 
+              ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)'
+              : DisplayBackgroundEquip?.name === 'Long Road Ahead'
+              ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.6) 0%, rgba(76, 29, 149, 0.4) 25%, rgba(30, 27, 75, 0.3) 50%, rgba(30, 58, 138, 0.4) 75%, rgba(59, 130, 246, 0.3) 100%)'
+              : 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(8px)' : 'none',
+            borderRadius: '0'
+          }}>
+            {/* Game Over Mobile Navigation - Show DASHBOARD and REMATCH only */}
+            {currentSection === 'match' && isGameOver ? (
+              <>
+                <button
+                  onClick={() => handleSectionChange('dashboard')}
+                  className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[45vw] hover:bg-white/10"
+                >
+                  <img src="/Design Elements/CrownLogo.webp" alt="Dashboard" className="w-8 h-8" />
+                  <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>DASHBOARD</span>
+                </button>
+                <button
+                  onClick={() => {
+                    // TODO: Add rematch functionality
+                    console.log('Rematch clicked from mobile nav');
+                  }}
+                  className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[45vw] hover:bg-white/10"
+                >
+                  <img src="/Design Elements/Crown Mode.webp" alt="Rematch" className="w-8 h-8" />
+                  <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>REMATCH</span>
+                </button>
+              </>
+            ) : (
+              /* Regular Mobile Navigation */
+              <>
+                <button
+                  onClick={() => handleSectionChange('dashboard')}
+                  className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[20vw] ${
+                    currentSection === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/10'
+                  }`}
+                >
+                  <img src="/Design Elements/CrownLogo.webp" alt="Play" className="w-8 h-8" />
+                  <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PLAY</span>
+                </button>
+                <button
+                  disabled
+                  className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all cursor-not-allowed opacity-60 flex-1 max-w-[20vw]"
+                  title="Friends - Coming Soon!"
+                >
+                  <img src="/Design Elements/friends.webp" alt="Friends" className="w-8 h-8" />
+                  <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
+                </button>
+                <button
+                  onClick={() => handleSectionChange('inventory')}
+                  className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[20vw] ${
+                    currentSection === 'inventory' ? 'bg-white/20' : 'hover:bg-white/10'
+                  }`}
+                >
+                  <img src="/Design Elements/Gem Bucket.webp" alt="Vault" className="w-8 h-8" />
+                  <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>VAULT</span>
+                </button>
+                <button
+                  onClick={() => handleSectionChange('settings')}
+                  className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[20vw] ${
+                    currentSection === 'settings' ? 'bg-white/20' : 'hover:bg-white/10'
+                  }`}
+                >
+                  <img src="/Design Elements/Delivery Man.webp" alt="Profile" className="w-8 h-8" />
+                  <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PROFILE</span>
+                </button>
+              </>
+            )}
+          </div>
         </footer>
       </div>
     </div>

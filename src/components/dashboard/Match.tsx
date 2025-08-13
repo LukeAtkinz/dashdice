@@ -482,11 +482,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className={`w-full h-full ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-center gap-[2rem] p-4 md:p-8`} 
-        style={{ minHeight: '100vh' }}
+        className={`w-full h-full ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-center gap-[1rem] p-2 md:p-4`} 
+        style={{ minHeight: '100vh', paddingTop: '2rem' }}
       >
       {/* Game Arena */}
-      <div className="flex items-center justify-center p-4" style={{ width: '90vw', maxWidth: '1400px' }}>
+      <div className="flex items-center justify-center p-4" style={{ width: '90vw' }}>
           {/* Desktop Layout */}
           <div className="hidden md:flex items-center justify-between gap-16" style={{ width: '100%' }}>
             
@@ -507,7 +507,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 className="relative rounded-3xl overflow-hidden shadow-2xl border-4 z-20"
                 style={{ 
                   borderColor: currentPlayer.turnActive ? '#00ff00' : '#ffffff',
-                  height: '500px'
+                  height: '750px'
                 }}
               >
                 {/* Player Background */}
@@ -546,7 +546,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 <div className="absolute inset-0 flex items-center justify-center">
                   {/* Match Score - Large and Centered */}
                   <div 
-                    className="text-8xl font-bold text-white"
+                    className="text-9xl font-bold text-white"
                     style={{ 
                       fontFamily: 'Audiowide',
                       textShadow: '4px 4px 8px rgba(0,0,0,0.8)'
@@ -678,7 +678,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 className="relative rounded-3xl overflow-hidden shadow-2xl border-4 z-20"
                 style={{ 
                   borderColor: opponent.turnActive ? '#00ff00' : '#ffffff',
-                  height: '500px'
+                  height: '750px'
                 }}
               >
                 {/* Player Background */}
@@ -717,7 +717,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 <div className="absolute inset-0 flex items-center justify-center">
                   {/* Match Score - Large and Centered */}
                   <div 
-                    className="text-8xl font-bold text-white"
+                    className="text-9xl font-bold text-white"
                     style={{ 
                       fontFamily: 'Audiowide',
                       textShadow: '4px 4px 8px rgba(0,0,0,0.8)'
@@ -769,7 +769,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           </div>
 
           {/* Mobile Layout - Stacked */}
-          <div className="md:hidden flex flex-col items-center w-full px-2" style={{ width: '100vw', paddingTop: '16px' }}>
+          <div className="md:hidden flex flex-col items-center w-full px-2" style={{ width: '100vw', paddingTop: '8px' }}>
             
             {/* User Profiles Section - Top */}
             <div className="w-full flex justify-between gap-4 mb-6">
