@@ -44,7 +44,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!userSnap.exists()) {
       const { displayName, email, photoURL } = firebaseUser;
       const createdAt = new Date();
-      const defaultBackground = getDefaultBackground();
+      // Set "Long Road Ahead" as the default background for new users
+      const longRoadAheadBackground = AVAILABLE_BACKGROUNDS.find(bg => bg.id === 'long-road-ahead') || getDefaultBackground();
 
       // Ensure displayName is never null - generate from email if needed
       const finalDisplayName = displayName || 
@@ -58,9 +59,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           photoURL,
           createdAt,
           lastLoginAt: createdAt,
-          inventory: [],
-          ownedBackgrounds: AVAILABLE_BACKGROUNDS.map(bg => bg.id), // Grant all backgrounds to new users
-          equippedBackground: defaultBackground.id, // Set default background
+          inventory: {
+            displayBackgroundEquipped: {
+              name: longRoadAheadBackground.name,
+              file: longRoadAheadBackground.filename,
+              type: longRoadAheadBackground.type
+            },
+            matchBackgroundEquipped: {
+              name: longRoadAheadBackground.name,
+              file: longRoadAheadBackground.filename,
+              type: longRoadAheadBackground.type
+            },
+            ownedBackgrounds: AVAILABLE_BACKGROUNDS.map(bg => bg.id) // Grant all backgrounds to new users
+          },
+          ownedBackgrounds: AVAILABLE_BACKGROUNDS.map(bg => bg.id), // Grant all backgrounds to new users (legacy support)
+          equippedBackground: longRoadAheadBackground.id, // Set "Long Road Ahead" as default background
           ...additionalData,
         });
       } catch (error) {

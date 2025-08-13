@@ -143,7 +143,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({ onBackgr
       {/* Background Grid */}
       <div>
         <h3 className="text-lg font-semibold mb-4">Available Backgrounds</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 scrollbar-hide">
           {ownedBackgrounds.map(renderBackgroundPreview)}
         </div>
       </div>

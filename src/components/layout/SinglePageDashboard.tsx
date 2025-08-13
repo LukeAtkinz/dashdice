@@ -15,6 +15,8 @@ import { SettingsSection } from '@/components/dashboard/SettingsSection';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { useBrowserRefresh } from '@/hooks/useBrowserRefresh';
+import { useBackgroundPositioning } from '@/hooks/useBackgroundPositioning';
+import { MobileBackgroundControl } from '@/components/ui/MobileBackgroundControl';
 import { createTestMatch } from '@/utils/testMatchData';
 import '@/utils/testUtils'; // Load test utilities for development
 
@@ -22,6 +24,7 @@ const DashboardContent: React.FC = () => {
   const { currentSection, sectionParams, setCurrentSection, isGameOver } = useNavigation();
   const { user } = useAuth();
   const { DisplayBackgroundEquip } = useBackground();
+  const { getBackgroundPosition } = useBackgroundPositioning();
   const [userGold] = useState(1000); // Placeholder for user gold
   
   console.log('🏠 SinglePageDashboard: Component rendered with:', {
@@ -64,9 +67,42 @@ const DashboardContent: React.FC = () => {
     }
   };
 
+  // Enhanced mobile video autoplay handler
+  const handleVideoLoadStart = (videoElement: HTMLVideoElement) => {
+    // Force autoplay on mobile devices
+    if (typeof window !== 'undefined') {
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // Immediate play attempt
+        videoElement.play().catch(e => {
+          console.log('Initial video autoplay failed:', e);
+          
+          // For iOS, try again after a short delay
+          if (isIOS) {
+            setTimeout(() => {
+              videoElement.play().catch(err => 
+                console.log('Delayed video autoplay failed:', err)
+              );
+            }, 100);
+          }
+        });
+
+        // Set up additional mobile-specific attributes
+        videoElement.setAttribute('webkit-playsinline', 'true');
+        videoElement.setAttribute('x5-playsinline', 'true');
+        videoElement.setAttribute('x5-video-player-type', 'h5');
+        videoElement.setAttribute('x5-video-player-fullscreen', 'false');
+      }
+    }
+  };
+
   // Render background based on equipped display background
   const renderBackground = () => {
     if (DisplayBackgroundEquip) {
+      const positioning = getBackgroundPosition(DisplayBackgroundEquip.name);
+      
       if (DisplayBackgroundEquip.type === 'video') {
         return (
           <video
@@ -79,7 +115,17 @@ const DashboardContent: React.FC = () => {
             webkit-playsinline="true"
             x5-playsinline="true"
             preload="metadata"
-            className="absolute inset-0 w-full h-full object-cover z-0"
+            onLoadStart={(e) => handleVideoLoadStart(e.currentTarget)}
+            onCanPlay={(e) => {
+              // Additional attempt when video can play
+              if (typeof window !== 'undefined' && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                e.currentTarget.play().catch(err => console.log('CanPlay autoplay failed:', err));
+              }
+            }}
+            className={`absolute inset-0 w-full h-full object-cover z-0 scrollbar-hide ${positioning.className}`}
+            style={{
+              objectPosition: positioning.objectPosition
+            }}
           >
             <source src={DisplayBackgroundEquip.file} type="video/mp4" />
           </video>
@@ -89,7 +135,10 @@ const DashboardContent: React.FC = () => {
           <img
             src={DisplayBackgroundEquip.file}
             alt={DisplayBackgroundEquip.name}
-            className="absolute inset-0 w-full h-full object-cover z-0"
+            className={`absolute inset-0 w-full h-full object-cover z-0 ${positioning.className}`}
+            style={{
+              objectPosition: positioning.objectPosition
+            }}
           />
         );
       }
@@ -107,7 +156,17 @@ const DashboardContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen max-h-screen relative overflow-hidden" style={{ height: '100vh', maxHeight: '100vh' }}>
+    <div 
+      className="min-h-screen max-h-screen relative overflow-hidden" 
+      style={{ height: '100vh', maxHeight: '100vh' }}
+      onTouchStart={() => {
+        // Ensure video plays on first touch interaction (mobile Safari requirement)
+        const video = document.querySelector('video');
+        if (video && video.paused) {
+          video.play().catch(e => console.log('Touch-triggered video play failed:', e));
+        }
+      }}
+    >
       {/* Dynamic Background */}
       {renderBackground()}
       
@@ -394,7 +453,7 @@ const DashboardContent: React.FC = () => {
           </main>
         ) : (
           // Regular content with constraints
-          <main className="flex-1 w-full flex items-start justify-center min-h-0 overflow-auto pb-[6rem] md:pb-0" style={{ paddingBottom: 'max(4rem, env(safe-area-inset-bottom) + 4rem)', touchAction: 'pan-y' }}>
+          <main className="flex-1 w-full flex items-start justify-center min-h-0 overflow-auto pb-[6rem] md:pb-0 scrollbar-hide" style={{ paddingBottom: 'max(4rem, env(safe-area-inset-bottom) + 4rem)', touchAction: 'pan-y' }}>
             <div className="w-full max-w-[100rem] flex flex-col items-center justify-center gap-[2rem] py-[2rem] px-[1rem] md:px-[2rem] pr-[1rem] md:pr-[2rem]">
               <AnimatePresence mode="wait">
                 <motion.div
@@ -495,6 +554,9 @@ const DashboardContent: React.FC = () => {
             )}
           </div>
         </footer>
+
+        {/* Mobile Background Position Control */}
+        <MobileBackgroundControl />
       </div>
     </div>
   );

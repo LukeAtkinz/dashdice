@@ -5,6 +5,77 @@
   transition: background 0.3s ease-in-out;
 }
 
+/* Hide scrollbars while maintaining scroll functionality */
+.scrollbar-hide {
+  /* Firefox */
+  scrollbar-width: none;
+  /* Chrome, Safari, and Edge */
+  -ms-overflow-style: none;
+  /* Ensure overflow is hidden for images and videos */
+  overflow: hidden;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Force scrollbar hiding on background videos and images */
+video.scrollbar-hide,
+img.scrollbar-hide {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  overflow: hidden !important;
+}
+
+video.scrollbar-hide::-webkit-scrollbar,
+img.scrollbar-hide::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Mobile background positioning utilities */
+@media (max-width: 767px) {
+  .mobile-bg-left {
+    object-position: left center !important;
+  }
+  
+  .mobile-bg-right {
+    object-position: right center !important;
+  }
+  
+  .mobile-bg-center {
+    object-position: center center !important;
+  }
+  
+  /* Background positioning for main application backgrounds */
+  .mobile-background-video,
+  .mobile-background-image {
+    object-position: 25% center; /* Shift left to show more content area */
+  }
+  
+  /* Custom positioning for specific backgrounds that might need special treatment */
+  .mobile-bg-underwater {
+    object-position: 30% center; /* Underwater scenes work better slightly left */
+  }
+  
+  .mobile-bg-mission {
+    object-position: 20% center; /* Action scenes need more space for UI */
+  }
+  
+  .mobile-bg-newday {
+    object-position: center center; /* Sunrise/sunset scenes centered */
+  }
+
+  /* Mobile video optimization */
+  video {
+    /* Ensure video plays without user interaction on mobile */
+    -webkit-playsinline: true;
+    -moz-playsinline: true;
+    -ms-playsinline: true;
+  }
+}
+
 /* Import Audiowide font */
 @font-face {
   font-family: 'Audiowide';

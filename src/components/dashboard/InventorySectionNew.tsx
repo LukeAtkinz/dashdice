@@ -96,9 +96,9 @@ export const InventorySection: React.FC = () => {
   };
 
   return (
-    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-screen">
+    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] h-full max-h-full overflow-hidden">
       {/* Header */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-8 flex-shrink-0">
         <h1 
           className="text-5xl font-bold text-white mb-4"
           style={{
@@ -120,7 +120,7 @@ export const InventorySection: React.FC = () => {
       </div>
 
       {/* Category Navigation */}
-      <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8">
+      <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8 flex-shrink-0">
         {inventoryCategories.map((category) => (
           <motion.button
             key={category.key}
@@ -158,7 +158,7 @@ export const InventorySection: React.FC = () => {
       </div>
 
       {/* Items Grid */}
-      <div className="w-full max-w-[80rem] flex flex-row items-start justify-center flex-wrap gap-[2rem]">
+      <div className="w-full max-w-[80rem] flex flex-row items-start justify-center flex-wrap gap-[2rem] flex-1 overflow-y-auto scrollbar-hide px-4">
         {getCurrentItems().map((item) => (
           <motion.div
             key={item.id}
@@ -180,14 +180,13 @@ export const InventorySection: React.FC = () => {
             <div 
               className="w-32 h-32 rounded-[15px] flex items-center justify-center text-6xl"
               style={{
-                background: "rgba(255, 255, 255, 0.1)",
                 border: `1px solid ${rarityColors[item.rarity as keyof typeof rarityColors]}`
               }}
             >
               {selectedCategory === 'backgrounds' && item.preview.includes('.') ? (
                 item.preview.includes('.mp4') ? (
                   <video 
-                    className="w-full h-full object-cover rounded-[15px]"
+                    className="w-full h-full object-cover rounded-[15px] scrollbar-hide"
                     src={item.preview}
                     loop
                     muted
@@ -196,13 +195,29 @@ export const InventorySection: React.FC = () => {
                     controls={false}
                     webkit-playsinline="true"
                     x5-playsinline="true"
+                    x5-video-player-type="h5"
+                    x5-video-player-fullscreen="false"
                     preload="metadata"
+                    style={{
+                      /* Ensure no scrollbars appear on background videos */
+                      overflow: 'hidden'
+                    }}
+                    onLoadStart={(e) => {
+                      // Force autoplay on mobile
+                      if (typeof window !== 'undefined' && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                        e.currentTarget.play().catch(err => console.log('Inventory video autoplay failed:', err));
+                      }
+                    }}
                   />
                 ) : (
                   <img 
-                    className="w-full h-full object-cover rounded-[15px]"
+                    className="w-full h-full object-cover rounded-[15px] scrollbar-hide"
                     src={item.preview}
                     alt={item.name}
+                    style={{
+                      /* Ensure no scrollbars appear on background images */
+                      overflow: 'hidden'
+                    }}
                   />
                 )
               ) : (
@@ -308,7 +323,7 @@ export const InventorySection: React.FC = () => {
       {/* Back Button */}
       <motion.button
         onClick={handleBackToDashboard}
-        className="mt-8 flex items-center justify-center gap-2 px-8 py-4 rounded-[20px] transition-all duration-300"
+        className="mt-8 flex items-center justify-center gap-2 px-8 py-4 rounded-[20px] transition-all duration-300 flex-shrink-0"
         style={{
           background: "linear-gradient(135deg, #192E39, #667eea)",
           boxShadow: "0 4px 15px rgba(25, 46, 57, 0.3)",
