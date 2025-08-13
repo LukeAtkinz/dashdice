@@ -312,7 +312,7 @@ export const DashboardSection: React.FC = () => {
                           textTransform: 'uppercase',
                         }}
                       >
-                        LIVE PLAY
+                        BEST OF 1
                       </span>
                     </button>
                     <button
@@ -349,7 +349,7 @@ export const DashboardSection: React.FC = () => {
                           textTransform: 'uppercase',
                         }}
                       >
-                        CUSTOM GAME
+                        BEST OF 3
                       </span>
                     </button>
                   </>
@@ -420,14 +420,14 @@ export const DashboardSection: React.FC = () => {
                   </div>
                 </div>
                 <img
-                  className="game-mode-image w-[15rem] md:w-[25.256rem] absolute max-h-none object-contain z-[1] transition-all duration-300 hover:scale-105 hover:opacity-100"
+                  className="game-mode-image w-[15rem] md:w-[25.256rem] absolute max-h-none object-contain z-[1] transition-all duration-500 ease-in-out hover:scale-110"
                   alt={mode}
                   src={config.icon}
                   style={{
                     top: config.position.top,
                     left: config.position.left,
                     transform: `rotate(${config.rotation})`,
-                    opacity: 0.4, // Same opacity for all images regardless of availability
+                    opacity: hoveredGameMode === mode ? 1.0 : 0.4, // Dynamic opacity based on hover state
                     '--mobile-top': config.mobilePosition.top,
                     '--mobile-left': config.mobilePosition.left,
                     '--mobile-rotation': config.mobileRotation,

@@ -39,6 +39,15 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const [error, setError] = useState<string | null>(null);
   const [showGameOverScreen, setShowGameOverScreen] = useState(false);
   
+  // Turn announcement state
+  const [showTurnAnnouncement, setShowTurnAnnouncement] = useState(false);
+  const [turnAnnouncementData, setTurnAnnouncementData] = useState<{
+    winner: string;
+    isCurrentPlayerFirst: boolean;
+  } | null>(null);
+  const [turnAnnouncementShown, setTurnAnnouncementShown] = useState(false);
+  const [previousGamePhase, setPreviousGamePhase] = useState<string | null>(null);
+  
   // Set game over state for navbar visibility
   useEffect(() => {
     if (matchData?.gameData) {
@@ -58,6 +67,62 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       setShowGameOverScreen(false);
     }
   }, [matchData?.gameData?.gamePhase]);
+  
+  // Turn announcement logic - detect when turn decider completes
+  useEffect(() => {
+    const currentPhase = matchData?.gameData?.gamePhase;
+    
+    // Track phase transitions and only show announcement when transitioning from turnDecider to gameplay
+    if (currentPhase && currentPhase !== previousGamePhase) {
+      setPreviousGamePhase(currentPhase);
+      
+      // Only trigger announcement when transitioning from turnDecider to gameplay
+      if (previousGamePhase === 'turnDecider' && currentPhase === 'gameplay' && 
+          matchData?.gameData?.turnDeciderDice && matchData?.gameData?.turnDeciderChoice &&
+          !turnAnnouncementShown) {
+        
+        // Determine who goes first based on turn decider result
+        const diceValue = matchData.gameData.turnDeciderDice;
+        const choice = matchData.gameData.turnDeciderChoice;
+        const isEven = diceValue % 2 === 0;
+        const choiceMatches = (choice === 'even' && isEven) || (choice === 'odd' && !isEven);
+        
+        // Find who made the choice and who goes first
+        const playerNumber = matchData.gameData.turnDecider;
+        const isHost = matchData.hostData.playerId === user?.uid;
+        const currentPlayerNumber = isHost ? 1 : 2;
+        
+        let winner: string;
+        let isCurrentPlayerFirst: boolean;
+        
+        if (choiceMatches) {
+          // The player who made the choice goes first
+          winner = playerNumber === 1 ? 
+            (matchData.hostData?.playerDisplayName || 'Player 1') : 
+            (matchData.opponentData?.playerDisplayName || 'Player 2');
+          isCurrentPlayerFirst = playerNumber === currentPlayerNumber;
+        } else {
+          // The other player goes first
+          const otherPlayerNumber = playerNumber === 1 ? 2 : 1;
+          winner = otherPlayerNumber === 1 ? 
+            (matchData.hostData?.playerDisplayName || 'Player 1') : 
+            (matchData.opponentData?.playerDisplayName || 'Player 2');
+          isCurrentPlayerFirst = otherPlayerNumber === currentPlayerNumber;
+        }
+        
+        setTurnAnnouncementData({ winner, isCurrentPlayerFirst });
+        setShowTurnAnnouncement(true);
+        setTurnAnnouncementShown(true); // Mark as shown so it doesn't repeat
+        
+        // Hide announcement after 3 seconds
+        setTimeout(() => {
+          setShowTurnAnnouncement(false);
+        }, 3000);
+      }
+    }
+  }, [matchData?.gameData?.gamePhase, matchData?.gameData?.turnDeciderDice, 
+      matchData?.gameData?.turnDeciderChoice, matchData?.hostData, matchData?.opponentData, 
+      user, previousGamePhase, turnAnnouncementShown]);
   
   // Dice animation states for slot machine effect
   const [dice1Animation, setDice1Animation] = useState<{
@@ -660,7 +725,41 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   </motion.div>
                 )}
 
-                {matchData.gameData.gamePhase === 'gameplay' && (
+                {/* Turn Announcement - Shows who goes first */}
+                {showTurnAnnouncement && turnAnnouncementData && (
+                  <motion.div
+                    key="turnAnnouncement"
+                    initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.8, y: -20 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="text-center py-12"
+                  >
+                    <motion.h2
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2, duration: 0.5 }}
+                      className="text-4xl md:text-6xl font-bold mb-4"
+                      style={{ 
+                        fontFamily: "Audiowide",
+                        color: turnAnnouncementData.isCurrentPlayerFirst ? "#FFD700" : "#FF6B6B"
+                      }}
+                    >
+                      {turnAnnouncementData.isCurrentPlayerFirst ? "YOU GO FIRST!" : `${turnAnnouncementData.winner.toUpperCase()} GOES FIRST!`}
+                    </motion.h2>
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.4, duration: 0.5 }}
+                      className="text-xl md:text-2xl text-gray-300"
+                      style={{ fontFamily: "Audiowide" }}
+                    >
+                      GET READY!
+                    </motion.p>
+                  </motion.div>
+                )}
+
+                {matchData.gameData.gamePhase === 'gameplay' && !showTurnAnnouncement && (
                   <motion.div
                     key="gameplay"
                     initial={{ opacity: 0, y: 30 }}
@@ -986,7 +1085,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             </div>
 
             {/* Center Dice Area - Middle */}
-            <div className="w-full flex flex-col items-center justify-center mb-6">
+            <div className="w-full flex flex-col items-center justify-center mb-6" style={{ paddingBottom: '120px' }}>
               {/* Phase-specific content with mobile modifications and transitions */}
               <AnimatePresence mode="wait">
                 {matchData.gameData.gamePhase === 'turnDecider' && (
@@ -1010,7 +1109,41 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   </motion.div>
                 )}
 
-                {matchData.gameData.gamePhase === 'gameplay' && (
+                {/* Turn Announcement - Mobile */}
+                {showTurnAnnouncement && turnAnnouncementData && (
+                  <motion.div
+                    key="turnAnnouncement-mobile"
+                    initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.8, y: -20 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="text-center py-8 w-full"
+                  >
+                    <motion.h2
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2, duration: 0.5 }}
+                      className="text-2xl md:text-4xl font-bold mb-4"
+                      style={{ 
+                        fontFamily: "Audiowide",
+                        color: turnAnnouncementData.isCurrentPlayerFirst ? "#FFD700" : "#FF6B6B"
+                      }}
+                    >
+                      {turnAnnouncementData.isCurrentPlayerFirst ? "YOU GO FIRST!" : `${turnAnnouncementData.winner.toUpperCase()} GOES FIRST!`}
+                    </motion.h2>
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.4, duration: 0.5 }}
+                      className="text-lg md:text-xl text-gray-300"
+                      style={{ fontFamily: "Audiowide" }}
+                    >
+                      GET READY!
+                    </motion.p>
+                  </motion.div>
+                )}
+
+                {matchData.gameData.gamePhase === 'gameplay' && !showTurnAnnouncement && (
                   <motion.div
                     key="gameplay-mobile"
                     initial={{ opacity: 0, y: 30 }}
