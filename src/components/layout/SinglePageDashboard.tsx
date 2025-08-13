@@ -556,6 +556,12 @@ const DashboardContent: React.FC = () => {
               ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)'
               : DisplayBackgroundEquip?.name === 'Long Road Ahead'
               ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.6) 0%, rgba(76, 29, 149, 0.4) 25%, rgba(30, 27, 75, 0.3) 50%, rgba(30, 58, 138, 0.4) 75%, rgba(59, 130, 246, 0.3) 100%)'
+              : DisplayBackgroundEquip?.name === 'New Day'
+              ? 'linear-gradient(0deg, #5a7579 0%, transparent 100%)'
+              : DisplayBackgroundEquip?.name === 'Relax'
+              ? 'linear-gradient(0deg, #407080 0%, transparent 100%)'
+              : DisplayBackgroundEquip?.name === 'Underwater'
+              ? 'linear-gradient(0deg, #00518c 0%, transparent 100%)'
               : 'rgba(0, 0, 0, 0.6)',
             backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(8px)' : 'none',
             borderRadius: '0'

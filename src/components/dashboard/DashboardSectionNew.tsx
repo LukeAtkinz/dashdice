@@ -222,7 +222,9 @@ export const DashboardSection: React.FC = () => {
       `}</style>
 
       {/* Game Mode Container - Match reference exactly */}
-      <div className="w-[100%] overflow-hidden flex flex-row items-center justify-center flex-wrap content-center gap-x-[0.5rem] md:gap-x-[0.687rem] gap-y-[0.5rem] md:gap-y-[0.625rem] px-[1rem] md:px-[2rem]">
+      <div className="w-[100%] overflow-y-auto md:overflow-hidden flex flex-row items-center justify-center flex-wrap content-center gap-x-[0.5rem] md:gap-x-[0.687rem] gap-y-[0.5rem] md:gap-y-[0.625rem] px-[1rem] md:px-[2rem]" style={{
+        WebkitOverflowScrolling: 'touch'
+      }}>
         {Object.entries(gameConfig).map(([mode, config]) => (
           <div
             key={mode}

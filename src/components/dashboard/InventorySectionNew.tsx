@@ -56,13 +56,16 @@ export const InventorySection: React.FC = () => {
   const getNavButtonStyle = (category: any, isSelected: boolean) => {
     if (DisplayBackgroundEquip?.name === 'On A Mission') {
       return {
-        background: isSelected ? 'linear-gradient(135deg, #4A90E2, #2E5BBA)' : 'rgba(74, 144, 226, 0.2)',
+        background: isSelected 
+          ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.2) 100%)'
+          : 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)',
         boxShadow: isSelected 
-          ? "0 4px 15px rgba(74, 144, 226, 0.4)" 
+          ? "0 4px 15px rgba(14, 165, 233, 0.4)" 
           : "0 2px 8px rgba(0, 0, 0, 0.2)",
         minWidth: "140px",
         minHeight: "100px",
-        border: isSelected ? '2px solid #4A90E2' : '2px solid transparent'
+        border: isSelected ? '2px solid rgba(14, 165, 233, 0.6)' : '2px solid transparent',
+        backdropFilter: 'blur(6px)'
       };
     }
     
@@ -79,35 +82,13 @@ export const InventorySection: React.FC = () => {
 
   // Get background-specific styling for equip buttons
   const getEquipButtonStyle = (isEquipped: boolean, buttonType: 'display' | 'match') => {
-    if (DisplayBackgroundEquip?.name === 'On A Mission') {
-      if (buttonType === 'display') {
-        return {
-          background: isEquipped 
-            ? "linear-gradient(135deg, #FFD700, #FFA500)" 
-            : "linear-gradient(135deg, #4A90E2, #2E5BBA)",
-          color: "#FFF",
-          fontFamily: "Audiowide",
-          textTransform: "uppercase" as const,
-        };
-      } else {
-        return {
-          background: isEquipped 
-            ? "linear-gradient(135deg, #FFD700, #FFA500)" 
-            : "linear-gradient(135deg, #4A90E2, #2E5BBA)",
-          color: "#FFF",
-          fontFamily: "Audiowide",
-          textTransform: "uppercase" as const,
-        };
-      }
-    }
-    
-    // Default styling for other backgrounds
+    // Default styling for all backgrounds
     if (buttonType === 'display') {
       return {
         background: isEquipped 
           ? "linear-gradient(135deg, #FFD700, #FFA500)" 
           : "linear-gradient(135deg, #00FF80, #00A855)",
-        color: "#FFF",
+        color: DisplayBackgroundEquip?.name === 'On A Mission' ? "#FFF" : "#FFF",
         fontFamily: "Audiowide",
         textTransform: "uppercase" as const,
       };
@@ -116,7 +97,7 @@ export const InventorySection: React.FC = () => {
         background: isEquipped 
           ? "linear-gradient(135deg, #FFD700, #FFA500)" 
           : "linear-gradient(135deg, #FF0080, #FF4DB8)",
-        color: "#FFF",
+        color: DisplayBackgroundEquip?.name === 'On A Mission' ? "#FFF" : "#FFF",
         fontFamily: "Audiowide",
         textTransform: "uppercase" as const,
       };
