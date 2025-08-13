@@ -52,6 +52,77 @@ export const InventorySection: React.FC = () => {
     setMatchBackgroundEquip
   } = useBackground();
 
+  // Get background-specific styling for navigation buttons
+  const getNavButtonStyle = (category: any, isSelected: boolean) => {
+    if (DisplayBackgroundEquip?.name === 'On A Mission') {
+      return {
+        background: isSelected ? 'linear-gradient(135deg, #4A90E2, #2E5BBA)' : 'rgba(74, 144, 226, 0.2)',
+        boxShadow: isSelected 
+          ? "0 4px 15px rgba(74, 144, 226, 0.4)" 
+          : "0 2px 8px rgba(0, 0, 0, 0.2)",
+        minWidth: "140px",
+        minHeight: "100px",
+        border: isSelected ? '2px solid #4A90E2' : '2px solid transparent'
+      };
+    }
+    
+    return {
+      background: isSelected ? category.color : 'rgba(255, 255, 255, 0.1)',
+      boxShadow: isSelected 
+        ? "0 4px 15px rgba(255, 255, 255, 0.2)" 
+        : "0 2px 8px rgba(0, 0, 0, 0.2)",
+      minWidth: "140px",
+      minHeight: "100px",
+      border: isSelected ? '2px solid #FFD700' : '2px solid transparent'
+    };
+  };
+
+  // Get background-specific styling for equip buttons
+  const getEquipButtonStyle = (isEquipped: boolean, buttonType: 'display' | 'match') => {
+    if (DisplayBackgroundEquip?.name === 'On A Mission') {
+      if (buttonType === 'display') {
+        return {
+          background: isEquipped 
+            ? "linear-gradient(135deg, #FFD700, #FFA500)" 
+            : "linear-gradient(135deg, #4A90E2, #2E5BBA)",
+          color: "#FFF",
+          fontFamily: "Audiowide",
+          textTransform: "uppercase" as const,
+        };
+      } else {
+        return {
+          background: isEquipped 
+            ? "linear-gradient(135deg, #FFD700, #FFA500)" 
+            : "linear-gradient(135deg, #4A90E2, #2E5BBA)",
+          color: "#FFF",
+          fontFamily: "Audiowide",
+          textTransform: "uppercase" as const,
+        };
+      }
+    }
+    
+    // Default styling for other backgrounds
+    if (buttonType === 'display') {
+      return {
+        background: isEquipped 
+          ? "linear-gradient(135deg, #FFD700, #FFA500)" 
+          : "linear-gradient(135deg, #00FF80, #00A855)",
+        color: "#FFF",
+        fontFamily: "Audiowide",
+        textTransform: "uppercase" as const,
+      };
+    } else {
+      return {
+        background: isEquipped 
+          ? "linear-gradient(135deg, #FFD700, #FFA500)" 
+          : "linear-gradient(135deg, #FF0080, #FF4DB8)",
+        color: "#FFF",
+        fontFamily: "Audiowide",
+        textTransform: "uppercase" as const,
+      };
+    }
+  };
+
   const handleBackToDashboard = () => {
     setCurrentSection('dashboard');
   };
@@ -126,15 +197,7 @@ export const InventorySection: React.FC = () => {
             key={category.key}
             onClick={() => setSelectedCategory(category.key)}
             className="flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] transition-all duration-300"
-            style={{
-              background: selectedCategory === category.key ? category.color : 'rgba(255, 255, 255, 0.1)',
-              boxShadow: selectedCategory === category.key 
-                ? "0 4px 15px rgba(255, 255, 255, 0.2)" 
-                : "0 2px 8px rgba(0, 0, 0, 0.2)",
-              minWidth: "140px",
-              minHeight: "100px",
-              border: selectedCategory === category.key ? '2px solid #FFD700' : '2px solid transparent'
-            }}
+            style={getNavButtonStyle(category, selectedCategory === category.key)}
             whileHover={{ 
               scale: 1.05,
               boxShadow: "0 6px 20px rgba(255, 255, 255, 0.3)" 
@@ -256,14 +319,7 @@ export const InventorySection: React.FC = () => {
                 <motion.button
                   onClick={() => handleEquipDisplay(item)}
                   className="px-4 py-2 rounded-[10px] text-sm font-bold w-full"
-                  style={{
-                    background: isEquippedDisplay(item) 
-                      ? "linear-gradient(135deg, #FFD700, #FFA500)" 
-                      : "linear-gradient(135deg, #00FF80, #00A855)",
-                    color: "#FFF",
-                    fontFamily: "Audiowide",
-                    textTransform: "uppercase",
-                  }}
+                  style={getEquipButtonStyle(isEquippedDisplay(item), 'display')}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -272,14 +328,7 @@ export const InventorySection: React.FC = () => {
                 <motion.button
                   onClick={() => handleEquipMatch(item)}
                   className="px-4 py-2 rounded-[10px] text-sm font-bold w-full"
-                  style={{
-                    background: isEquippedMatch(item) 
-                      ? "linear-gradient(135deg, #FFD700, #FFA500)" 
-                      : "linear-gradient(135deg, #FF0080, #FF4DB8)",
-                    color: "#FFF",
-                    fontFamily: "Audiowide",
-                    textTransform: "uppercase",
-                  }}
+                  style={getEquipButtonStyle(isEquippedMatch(item), 'match')}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >

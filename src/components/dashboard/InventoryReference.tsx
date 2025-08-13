@@ -91,9 +91,6 @@ export const InventorySection: React.FC = () => {
     return (
       <div 
         className="h-full w-full flex items-center justify-center" 
-        style={{ 
-          background: 'radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)' 
-        }}
       >
         <div className="text-white text-2xl">Loading inventory...</div>
       </div>
@@ -456,7 +453,6 @@ export const InventorySection: React.FC = () => {
             style={{ 
               width: '40vw', 
               maxWidth: '775px',
-              backdropFilter: 'blur(10px)', 
               overflow: 'hidden', 
               borderRadius: '20px' 
             }}

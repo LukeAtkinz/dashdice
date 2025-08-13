@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
+import { useBackground } from '@/context/BackgroundContext';
 import { MatchmakingService } from '@/services/matchmakingService';
 import { UserService } from '@/services/userService';
 
@@ -12,11 +13,11 @@ const gameConfig = {
     name: 'QUICK\nFIRE', 
     icon: '/Design Elements/Shield.webp', 
     description: 'more speed,\nmore skill',
-    rotation: '10deg',
+    rotation: '6deg',
     mobileRotation: '20deg', // 90 degrees different from desktop
     position: { top: '0rem', left: '-4rem' },
     mobilePosition: { top: '3rem', left: '-2rem' },
-    mobileScale: '1.2', // Slightly bigger on mobile
+    mobileScale: '1.0', // Slightly bigger on mobile
     available: true
   },
   classic: { 
@@ -47,7 +48,7 @@ const gameConfig = {
     description: 'one roll,\none life',
     rotation: '5deg',
     mobileRotation: '5deg',
-    position: { top: '-1rem', left: '-2rem' },
+    position: { top: '-1rem', left: '-5rem' },
     mobilePosition: { top: '-1rem', left: '-2rem' },
     mobileScale: '1.0',
     available: false
@@ -58,7 +59,7 @@ const gameConfig = {
     description: 'no banking,\nno mercy',
     rotation: '0deg',
     mobileRotation: '0deg',
-    position: { top: '1rem', left: '-4rem' },
+    position: { top: '-1rem', left: '-5rem' },
     mobilePosition: { top: '0rem', left: '-4rem' }, // Move up on mobile
     mobileScale: '1.0',
     available: false
@@ -79,8 +80,23 @@ const gameConfig = {
 export const DashboardSection: React.FC = () => {
   const { user } = useAuth();
   const { setCurrentSection } = useNavigation();
+  const { DisplayBackgroundEquip } = useBackground();
   const [hoveredGameMode, setHoveredGameMode] = useState<string | null>(null);
   const [isExiting, setIsExiting] = useState(false);
+
+  // Get background-specific game mode selector styling
+  const getGameModeSelectorBackground = () => {
+    switch (DisplayBackgroundEquip?.name) {
+      case 'Relax':
+        return 'rgba(37, 37, 37, 0.6)';
+      case 'New Day':
+        return 'linear-gradient(135deg, #192E39, transparent)';
+      case 'All For Glory':
+        return 'linear-gradient(135deg, #CC2E2E, transparent)';
+      default:
+        return 'var(--ui-game-mode-bg, linear-gradient(rgba(37, 37, 37, 0.12), rgba(37, 37, 37, 0.12)), linear-gradient(242.59deg, #192e39 30%, rgba(153, 153, 153, 0)))';
+    }
+  };
 
   const handleGameModeAction = async (gameMode: string, action: string) => {
     console.log(`${gameMode} - ${action} clicked`);
@@ -214,7 +230,7 @@ export const DashboardSection: React.FC = () => {
             onMouseLeave={() => setHoveredGameMode(null)}
             className="game-mode-card h-[12rem] md:h-[15.625rem] w-[90vw] md:w-[30rem] rounded-[30px] overflow-hidden shrink-0 flex flex-row items-center justify-start relative text-right text-[2.5rem] md:text-[4rem] text-gainsboro font-audiowide cursor-pointer transition-all duration-300"
             style={{
-              background: `var(--ui-game-mode-bg, linear-gradient(rgba(37, 37, 37, 0.12), rgba(37, 37, 37, 0.12)), linear-gradient(242.59deg, #192e39 30%, rgba(153, 153, 153, 0)))`
+              background: getGameModeSelectorBackground()
             }}
           >
             {hoveredGameMode === mode ? (

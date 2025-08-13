@@ -214,11 +214,9 @@ const DashboardContent: React.FC = () => {
         <header className={`${((currentSection === 'match' || currentSection === 'waiting-room') && !isGameOver) ? 'hidden' : 'hidden md:flex'} flex-shrink-0 w-full flex-row items-center justify-center gap-[1.25rem] relative z-30 px-[1rem] md:px-[4rem] py-[1rem] md:py-[2rem]`}>
           <div className="flex-1 flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px] w-full max-w-none" style={{ 
             background: DisplayBackgroundEquip?.name === 'On A Mission' 
-              ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)'
-              : DisplayBackgroundEquip?.name === 'Long Road Ahead'
-              ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.6) 0%, rgba(76, 29, 149, 0.4) 25%, rgba(30, 27, 75, 0.3) 50%, rgba(30, 58, 138, 0.4) 75%, rgba(59, 130, 246, 0.2) 100%)'
+              ? 'transparent'
               : "var(--ui-navbar-bg)",
-            backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(8px)' : 'none'
+            backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' ? 'none' : 'none'
           }}>
             
             {/* Left Navigation */}
