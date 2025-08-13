@@ -41,8 +41,15 @@ export const useBackgroundPositioning = () => {
     
     if (name.includes('mission')) {
       return {
-        objectPosition: '20% center',
+        objectPosition: '90% center', // Right side positioning for mobile
         className: 'mobile-bg-mission'
+      };
+    }
+    
+    if (name.includes('long road ahead')) {
+      return {
+        objectPosition: '90% center', // Right side positioning for mobile
+        className: 'mobile-bg-longroad'
       };
     }
     

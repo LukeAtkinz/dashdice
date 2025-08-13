@@ -6,14 +6,17 @@ import { useBackgroundPositioning } from '@/hooks/useBackgroundPositioning';
 
 interface MobileBackgroundControlProps {
   className?: string;
+  currentSection?: string;
 }
 
 export const MobileBackgroundControl: React.FC<MobileBackgroundControlProps> = ({ 
-  className = '' 
+  className = '',
+  currentSection
 }) => {
   const { isMobile, setMobilePosition, currentPosition } = useBackgroundPositioning();
 
-  if (!isMobile) return null;
+  // Completely disabled - no background position controls on mobile
+  return null;
 
   const positions = [
     { key: 'left', label: '←', title: 'Move background left' },

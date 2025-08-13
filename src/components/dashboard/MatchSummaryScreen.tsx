@@ -161,13 +161,13 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
-        className="hidden md:block text-center"
+        className="block text-center"
       >
         <motion.h1
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="text-6xl md:text-8xl font-bold mb-4"
+          className="text-4xl md:text-8xl font-bold mb-4"
           style={{ fontFamily: "Audiowide" }}
         >
           {winner === currentUser.playerDisplayName ? (
@@ -184,17 +184,17 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
           >
-            <p className="text-xl text-gray-300">{reason}</p>
+            <p className="text-lg md:text-xl text-gray-300">{reason}</p>
           </motion.div>
         )}
       </motion.div>
 
-      {/* Final Scores - Horizontal on Mobile, Centered Content - Hidden on Mobile */}
+      {/* Final Scores - Horizontal on Mobile, Centered Content */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1 }}
-        className="hidden md:grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-8"
+        className="grid grid-cols-2 gap-2 md:gap-8"
       >
         {/* Host Score */}
         <div className="p-3 md:p-6 bg-white/10 rounded-2xl border border-gray-400 text-center">
@@ -227,18 +227,18 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         </div>
       </motion.div>
 
-      {/* Match Statistics - New 3-Column Layout - Hidden on Mobile */}
+      {/* Match Statistics - New 3-Column Layout */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.3 }}
-        className="hidden md:block p-6 bg-black/20 rounded-2xl border border-gray-600"
+        className="block p-4 md:p-6 bg-black/20 rounded-2xl border border-gray-600"
       >
-        <h3 className="text-lg font-bold text-white mb-6 text-center" style={{ fontFamily: "Audiowide" }}>
+        <h3 className="text-base md:text-lg font-bold text-white mb-4 md:mb-6 text-center" style={{ fontFamily: "Audiowide" }}>
           MATCH STATISTICS
         </h3>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-8">
           {/* Left Column - Host Stats */}
           <div className="text-center space-y-4">
             <h4 className="text-sm md:text-md font-bold text-yellow-400 mb-4" style={{ fontFamily: "Audiowide" }}>
@@ -351,7 +351,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.6 }}
-        className="hidden md:flex flex-col md:flex-row justify-center gap-4"
+        className="flex flex-col md:flex-row justify-center gap-4"
       >
         <button
           onClick={handleLeaveMatch}

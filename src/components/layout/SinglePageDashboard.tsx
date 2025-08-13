@@ -83,14 +83,21 @@ const DashboardContent: React.FC = () => {
     }
   };
 
-  // Enhanced mobile video autoplay handler
+  // Enhanced mobile video autoplay handler with better performance
   const handleVideoLoadStart = (videoElement: HTMLVideoElement) => {
-    // Force autoplay on mobile devices
+    // Force autoplay on mobile devices with performance optimizations
     if (typeof window !== 'undefined') {
       const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       
       if (isMobile) {
+        // Mobile-specific optimizations for faster loading
+        videoElement.setAttribute('webkit-playsinline', 'true');
+        videoElement.setAttribute('x5-playsinline', 'true');
+        videoElement.setAttribute('x5-video-player-type', 'h5');
+        videoElement.setAttribute('x5-video-player-fullscreen', 'false');
+        videoElement.setAttribute('x5-video-orientation', 'portraint');
+        
         // Immediate play attempt
         videoElement.play().catch(e => {
           console.log('Initial video autoplay failed:', e);
@@ -101,15 +108,9 @@ const DashboardContent: React.FC = () => {
               videoElement.play().catch(err => 
                 console.log('Delayed video autoplay failed:', err)
               );
-            }, 100);
+            }, 50); // Reduced delay for faster response
           }
         });
-
-        // Set up additional mobile-specific attributes
-        videoElement.setAttribute('webkit-playsinline', 'true');
-        videoElement.setAttribute('x5-playsinline', 'true');
-        videoElement.setAttribute('x5-video-player-type', 'h5');
-        videoElement.setAttribute('x5-video-player-fullscreen', 'false');
       }
     }
   };
@@ -120,6 +121,8 @@ const DashboardContent: React.FC = () => {
       const positioning = getBackgroundPosition(DisplayBackgroundEquip.name);
       
       if (DisplayBackgroundEquip.type === 'video') {
+        const isMobile = typeof window !== 'undefined' && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
         return (
           <video
             key={DisplayBackgroundEquip.file} // Force re-render when video changes
@@ -130,12 +133,19 @@ const DashboardContent: React.FC = () => {
             controls={false}
             webkit-playsinline="true"
             x5-playsinline="true"
-            preload="metadata"
+            preload={isMobile ? "auto" : "metadata"} // Aggressive preloading on mobile
+            poster={isMobile ? undefined : "/backgrounds/placeholder.jpg"} // Remove poster on mobile for faster loading
             onLoadStart={(e) => handleVideoLoadStart(e.currentTarget)}
             onCanPlay={(e) => {
               // Additional attempt when video can play
-              if (typeof window !== 'undefined' && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+              if (isMobile) {
                 e.currentTarget.play().catch(err => console.log('CanPlay autoplay failed:', err));
+              }
+            }}
+            onLoadedData={(e) => {
+              // Ensure video starts immediately when data is loaded on mobile
+              if (isMobile && e.currentTarget.paused) {
+                e.currentTarget.play().catch(err => console.log('LoadedData autoplay failed:', err));
               }
             }}
             className={`absolute inset-0 w-full h-full object-cover z-0 scrollbar-hide ${positioning.className}`}
@@ -147,10 +157,14 @@ const DashboardContent: React.FC = () => {
           </video>
         );
       } else {
+        const isMobile = typeof window !== 'undefined' && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
         return (
           <img
             src={DisplayBackgroundEquip.file}
             alt={DisplayBackgroundEquip.name}
+            loading={isMobile ? "eager" : "lazy"} // Eager loading on mobile for instant display
+            fetchPriority={isMobile ? "high" : "auto"} // High priority on mobile
             className={`absolute inset-0 w-full h-full object-cover z-0 ${positioning.className}`}
             style={{
               objectPosition: positioning.objectPosition
@@ -173,8 +187,8 @@ const DashboardContent: React.FC = () => {
 
   return (
     <div 
-      className="min-h-screen max-h-screen relative overflow-hidden" 
-      style={{ height: '100vh', maxHeight: '100vh' }}
+      className="min-h-screen relative" 
+      style={{ minHeight: '100vh' }}
       onTouchStart={() => {
         // Ensure video plays on first touch interaction (mobile Safari requirement)
         const video = document.querySelector('video');
@@ -183,14 +197,19 @@ const DashboardContent: React.FC = () => {
         }
       }}
     >
-      {/* Dynamic Background */}
-      {renderBackground()}
+      {/* Background Container with Fixed Position */}
+      <div className="fixed inset-0 w-full h-full overflow-hidden z-0" style={{
+        willChange: 'transform', // Optimize for mobile GPU acceleration
+        transform: 'translateZ(0)' // Force hardware acceleration
+      }}>
+        {renderBackground()}
+      </div>
       
       {/* Overlay for better content visibility - Hidden during game over */}
-      <div className={`${isGameOver ? 'hidden' : 'absolute inset-0 bg-black/30 z-10'}`} />
+      <div className={`${isGameOver ? 'hidden' : 'fixed inset-0 bg-black/30 z-10'}`} />
 
       {/* Main Layout */}
-      <div className="relative z-20 h-full flex flex-col" style={{ height: '100vh', maxHeight: '100vh' }}>
+      <div className="relative z-20 min-h-screen flex flex-col">
         {/* Top Navigation Header */}
         <header className={`${((currentSection === 'match' || currentSection === 'waiting-room') && !isGameOver) ? 'hidden' : 'hidden md:flex'} flex-shrink-0 w-full flex-row items-center justify-center gap-[1.25rem] relative z-30 px-[1rem] md:px-[4rem] py-[1rem] md:py-[2rem]`}>
           <div className="flex-1 flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px] w-full max-w-none" style={{ 
@@ -469,7 +488,11 @@ const DashboardContent: React.FC = () => {
           </main>
         ) : (
           // Regular content with constraints
-          <main className="flex-1 w-full flex items-start justify-center min-h-0 overflow-auto pb-[6rem] md:pb-0 scrollbar-hide" style={{ paddingBottom: 'max(4rem, env(safe-area-inset-bottom) + 4rem)', touchAction: 'pan-y' }}>
+          <main className="flex-1 w-full flex items-start justify-center min-h-0 overflow-y-auto overflow-x-hidden pb-[6rem] md:pb-0 scrollbar-hide" style={{ 
+            paddingBottom: 'max(4rem, env(safe-area-inset-bottom) + 4rem)', 
+            touchAction: 'pan-y',
+            WebkitOverflowScrolling: 'touch' // Smooth scrolling on iOS
+          }}>
             <div className="w-full max-w-[100rem] flex flex-col items-center justify-center gap-[2rem] py-[2rem] px-[1rem] md:px-[2rem] pr-[1rem] md:pr-[2rem]">
               <AnimatePresence mode="wait">
                 <motion.div
@@ -587,7 +610,7 @@ const DashboardContent: React.FC = () => {
         </footer>
 
         {/* Mobile Background Position Control */}
-        <MobileBackgroundControl />
+        <MobileBackgroundControl currentSection={currentSection} />
       </div>
     </div>
   );

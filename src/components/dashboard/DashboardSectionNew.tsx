@@ -10,11 +10,11 @@ import { UserService } from '@/services/userService';
 const gameConfig = {
   quickfire: { 
     name: 'QUICK\nFIRE', 
-    icon: '/Design Elements/finance startup.webp', 
+    icon: '/Design Elements/Shield.webp', 
     description: 'more speed,\nmore skill',
-    rotation: '-70deg',
+    rotation: '10deg',
     mobileRotation: '20deg', // 90 degrees different from desktop
-    position: { top: '3rem', left: '-2rem' },
+    position: { top: '0rem', left: '-4rem' },
     mobilePosition: { top: '3rem', left: '-2rem' },
     mobileScale: '1.2', // Slightly bigger on mobile
     available: true
@@ -36,7 +36,7 @@ const gameConfig = {
     description: 'time runs\nbackwards',
     rotation: '0deg',
     mobileRotation: '0deg',
-    position: { top: '-2rem', left: '-2rem' },
+    position: { top: '-2rem', left: '-5rem' },
     mobilePosition: { top: '-2rem', left: '-3rem' }, // Move left on mobile
     mobileScale: '1.0',
     available: false
@@ -69,7 +69,7 @@ const gameConfig = {
     description: 'rise or fall\ntogether',
     rotation: '0deg',
     mobileRotation: '0deg',
-    position: { top: '-2rem', left: '-2rem' },
+    position: { top: '-2rem', left: '-5rem' },
     mobilePosition: { top: '-2rem', left: '-2rem' },
     mobileScale: '1.0',
     available: false
