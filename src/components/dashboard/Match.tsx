@@ -564,11 +564,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         className={`w-full h-full ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center gap-[1rem] p-2 md:p-4 justify-start md:justify-center`} 
         style={{ 
           minHeight: '100vh', 
-          paddingTop: '1rem'
+          paddingTop: '0.5rem'
         }}
       >
       {/* Game Arena */}
-      <div className="flex items-center justify-center p-4" style={{ width: '90vw' }}>
+      <div className="flex items-center justify-center p-2 md:p-4" style={{ width: '90vw' }}>
           {/* Desktop Layout */}
           <div className="hidden md:flex items-center justify-between gap-16" style={{ width: '100%' }}>
             
@@ -702,7 +702,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             </div>
 
             {/* Center Dice Area */}
-            <div className="flex flex-col items-center justify-center relative z-10" style={{ alignSelf: 'center', minWidth: '600px', width: '600px' }}>
+            <div className="flex flex-col items-center justify-center relative z-10" style={{ alignSelf: 'center', minWidth: '600px', width: '600px', height: '60vh', overflow: 'visible' }}>
               {/* Phase-specific content with transitions */}
               <AnimatePresence mode="wait">
                 {matchData.gameData.gamePhase === 'turnDecider' && (
@@ -895,10 +895,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           </div>
 
           {/* Mobile Layout - Stacked */}
-          <div className="md:hidden flex flex-col items-center w-full" style={{ width: '100vw', paddingTop: '4px' }}>
+          <div className="md:hidden flex flex-col items-center w-full" style={{ width: '100vw', paddingTop: '0px' }}>
             
             {/* User Profiles Section - Top */}
-            <div className="w-full flex justify-between mb-6" style={{ paddingLeft: '10px', paddingRight: '10px', gap: '16px' }}>
+            <div className="w-full flex justify-between mb-3" style={{ paddingLeft: '10px', paddingRight: '10px', gap: '10px' }}>
               {/* Current Player Profile - Left */}
               <div style={{ width: 'calc(50vw - 15px)' }}>
                 <h3 
@@ -1085,7 +1085,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             </div>
 
             {/* Center Dice Area - Middle */}
-            <div className="w-full flex flex-col items-center justify-center mb-6" style={{ paddingBottom: '120px' }}>
+            <div className="w-full flex flex-col items-center justify-center mb-3" style={{ paddingBottom: '120px', paddingTop: '120px', height: '60vh', overflow: 'visible' }}>
               {/* Phase-specific content with mobile modifications and transitions */}
               <AnimatePresence mode="wait">
                 {matchData.gameData.gamePhase === 'turnDecider' && (
@@ -1122,7 +1122,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     <motion.h2
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2, duration: 0.5 }}
+                      transition={{ delay: 0.2, duration: 0.2 }}
                       className="text-2xl md:text-4xl font-bold mb-4"
                       style={{ 
                         fontFamily: "Audiowide",

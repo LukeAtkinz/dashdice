@@ -56,6 +56,40 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
     };
   };
 
+  // Get nav-style button styling to match dashboard/rematch buttons
+  const getNavButtonStyle = (buttonType: 'play' | 'save') => {
+    const baseStyle = {
+      fontFamily: "Audiowide",
+      textTransform: "uppercase" as const,
+      display: 'flex',
+      width: '209px',
+      height: '56px',
+      padding: '4px 16px',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: '10px',
+      borderRadius: '18px',
+      border: '2px solid rgba(255, 255, 255, 0.3)',
+      backdropFilter: 'blur(6px)',
+    };
+
+    if (buttonType === 'play') {
+      return {
+        ...baseStyle,
+        background: "linear-gradient(135deg, #3B82F6 0%, transparent 100%)", // Blue to transparent
+        color: "#FFF",
+        boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)",
+      };
+    } else {
+      return {
+        ...baseStyle,
+        background: "linear-gradient(135deg, #22C55E 0%, transparent 100%)", // Green to transparent  
+        color: "#FFF",
+        boxShadow: "0 4px 15px rgba(34, 197, 94, 0.3)",
+      };
+    }
+  };
+
   // Get mobile container gradient based on equipped background
   const getMobileContainerGradient = () => {
     if (DisplayBackgroundEquip?.name === 'On A Mission') {
@@ -209,10 +243,13 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           </div>
         </motion.div>
 
-        {/* Dice Container with Turn Score Between - Mobile optimized height */}
-        <div className="relative flex flex-col gap-6 md:gap-8 mb-6 md:mb-8 justify-between px-4 md:px-0" style={{
-          minHeight: 'calc(100vh - 320px)', // Space between nav buttons and user profiles on mobile
-          justifyContent: 'space-between'
+        {/* Dice Container with Turn Score Between - Constrained to 60vh */}
+        <div className="relative flex flex-col gap-0 md:gap-3 mb-1 md:mb-3 justify-between px-4 md:px-0" style={{
+          height: '60vh', // Fixed height to fit in container
+          maxHeight: '60vh',
+          overflow: 'visible',
+          justifyContent: 'center',
+          gap: '60px'
         }}>
           {/* Dice 1 - Slot Machine */}
           <div className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" style={{ width: 'min(600px, 70vw)' }}>
@@ -343,19 +380,28 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         }}
       >
         {isMyTurn ? (
-          <div className="flex gap-3 w-full max-w-md">
+          <div className="flex gap-3 w-full justify-center">
             <button
               onClick={onRollDice}
               disabled={!canRoll}
-              className={`flex-1 py-4 rounded-xl text-xl font-bold transition-all transform ${
+              className={`rounded-3xl text-lg font-bold transition-all transform ${
                 canRoll
                   ? 'text-white hover:scale-105 active:scale-95'
                   : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
               }`}
               style={{ 
-                fontFamily: "Audiowide",
-                minHeight: '60px',
-                ...(canRoll ? getButtonGradientStyle('rgba(59, 130, 246, 0.8)') : {})
+                ...(canRoll ? getNavButtonStyle('play') : {
+                  display: 'flex',
+                  width: '209px',
+                  height: '56px',
+                  padding: '4px 16px',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '10px',
+                  borderRadius: '18px',
+                  fontFamily: "Audiowide",
+                  textTransform: "uppercase" as const,
+                }),
               }}
             >
               PLAY
@@ -364,15 +410,24 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             <button
               onClick={onBankScore}
               disabled={!canBank}
-              className={`flex-1 py-4 rounded-xl text-xl font-bold transition-all transform ${
+              className={`rounded-3xl text-lg font-bold transition-all transform ${
                 canBank
                   ? 'text-white hover:scale-105 active:scale-95'
                   : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
               }`}
               style={{ 
-                fontFamily: "Audiowide",
-                minHeight: '60px',
-                ...(canBank ? getButtonGradientStyle('rgba(34, 197, 94, 0.8)') : {})
+                ...(canBank ? getNavButtonStyle('save') : {
+                  display: 'flex',
+                  width: '209px',
+                  height: '56px',
+                  padding: '4px 16px',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '10px',
+                  borderRadius: '18px',
+                  fontFamily: "Audiowide",
+                  textTransform: "uppercase" as const,
+                }),
               }}
             >
               BANK

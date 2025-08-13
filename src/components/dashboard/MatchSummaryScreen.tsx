@@ -38,8 +38,14 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
     const baseStyle = {
       fontFamily: "Audiowide",
       textTransform: "uppercase" as const,
-      minWidth: "140px",
-      minHeight: "100px",
+      display: 'flex',
+      width: '209px',
+      height: '56px',
+      padding: '4px 16px',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: '10px',
+      borderRadius: '18px',
       border: '2px solid rgba(255, 255, 255, 0.3)',
       backdropFilter: 'blur(6px)',
     };
@@ -47,14 +53,14 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
     if (buttonType === 'dashboard') {
       return {
         ...baseStyle,
-        background: "linear-gradient(135deg, #00FF80, #00A855)",
+        background: "linear-gradient(135deg, #00FF80 0%, transparent 100%)", // Green to transparent
         color: "#FFF",
         boxShadow: "0 4px 15px rgba(0, 255, 128, 0.3)",
       };
     } else {
       return {
         ...baseStyle,
-        background: "linear-gradient(135deg, #FF0080, #FF4DB8)",
+        background: "linear-gradient(135deg, #FF0080 0%, transparent 100%)", // Pink to transparent
         color: "#FFF",
         boxShadow: "0 4px 15px rgba(255, 0, 128, 0.3)",
       };
@@ -495,13 +501,12 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
           background: 'rgba(0, 0, 0, 0.3)'
         }}
       >
-        <div className="flex w-full max-w-md gap-4">
+        <div className="flex w-full justify-center gap-4">
           <button
             onClick={onLeaveMatch}
-            className="flex-1 text-white rounded-3xl text-lg font-bold transition-all transform hover:scale-105 active:scale-95 flex flex-col items-center justify-center"
+            className="text-white rounded-3xl text-lg font-bold transition-all transform hover:scale-105 active:scale-95 flex flex-col items-center justify-center"
             style={{
               ...getNavButtonStyle('dashboard'),
-              minHeight: '60px',
             }}
           >
             <span className="text-center">DASHBOARD</span>
@@ -510,10 +515,9 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
           {rematchState === 'idle' && (
             <button
               onClick={handleRequestRematch}
-              className="flex-1 text-white rounded-3xl text-lg font-bold transition-all transform hover:scale-105 active:scale-95 flex flex-col items-center justify-center"
+              className="text-white rounded-3xl text-lg font-bold transition-all transform hover:scale-105 active:scale-95 flex flex-col items-center justify-center"
               style={{
                 ...getNavButtonStyle('rematch'),
-                minHeight: '60px',
               }}
             >
               <span className="text-center">REMATCH</span>
