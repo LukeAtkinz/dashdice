@@ -210,9 +210,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         </motion.div>
 
         {/* Dice Container with Turn Score Between - Mobile optimized height */}
-        <div className="relative flex flex-col gap-6 md:gap-8 mb-6 md:mb-8" style={{
+        <div className="relative flex flex-col gap-6 md:gap-8 mb-6 md:mb-8 justify-between px-4 md:px-0" style={{
           minHeight: 'calc(100vh - 320px)', // Space between nav buttons and user profiles on mobile
-          justifyContent: 'center'
+          justifyContent: 'space-between'
         }}>
           {/* Dice 1 - Slot Machine */}
           <div className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" style={{ width: 'min(600px, 70vw)' }}>
@@ -235,16 +235,16 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               className="text-center relative"
             >
-              {/* Turn Score Container - Bigger on Mobile */}
-              <div className="inline-block px-8 md:px-8 py-6 md:py-4 bg-yellow-600/30 border-2 border-yellow-500 rounded-2xl backdrop-blur-sm shadow-xl">
+              {/* Turn Score Container - Smaller on Mobile */}
+              <div className="inline-block px-4 md:px-8 py-3 md:py-4 bg-yellow-600/30 border-2 border-yellow-500 rounded-2xl backdrop-blur-sm shadow-xl">
                 <p 
-                  className="text-base md:text-lg text-yellow-300 mb-2 md:mb-1"
+                  className="text-sm md:text-lg text-yellow-300 mb-1 md:mb-1"
                   style={{ fontFamily: "Audiowide" }}
                 >
                   Turn Score
                 </p>
                 <p 
-                  className="text-4xl md:text-4xl font-bold text-yellow-400" 
+                  className="text-2xl md:text-4xl font-bold text-yellow-400" 
                   style={{ fontFamily: "Audiowide" }}
                 >
                   {matchData.gameData.turnScore}

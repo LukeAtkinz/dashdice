@@ -4,6 +4,7 @@ import { MatchData } from '@/types/match';
 import { RematchService, RematchRoom } from '@/services/rematchService';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { useAuth } from '@/context/AuthContext';
+import { useBackground } from '@/context/BackgroundContext';
 
 interface MatchSummaryScreenProps {
   matchData: MatchData;
@@ -17,6 +18,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   onRematch
 }) => {
   const { user } = useAuth();
+  const { DisplayBackgroundEquip } = useBackground();
   const [rematchState, setRematchState] = useState<'idle' | 'requesting' | 'waiting' | 'accepted' | 'expired' | 'opponent_left'>('idle');
   const [rematchRoomId, setRematchRoomId] = useState<string | null>(null);
   const [incomingRematch, setIncomingRematch] = useState<RematchRoom | null>(null);
@@ -30,6 +32,34 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   const opponent = isHost ? matchData.opponentData : matchData.hostData;
   const opponentDisplayName = opponent.playerDisplayName;
   const opponentId = opponent.playerId;
+
+  // Get nav-style button styling
+  const getNavButtonStyle = (buttonType: 'dashboard' | 'rematch') => {
+    const baseStyle = {
+      fontFamily: "Audiowide",
+      textTransform: "uppercase" as const,
+      minWidth: "140px",
+      minHeight: "100px",
+      border: '2px solid rgba(255, 255, 255, 0.3)',
+      backdropFilter: 'blur(6px)',
+    };
+
+    if (buttonType === 'dashboard') {
+      return {
+        ...baseStyle,
+        background: "linear-gradient(135deg, #00FF80, #00A855)",
+        color: "#FFF",
+        boxShadow: "0 4px 15px rgba(0, 255, 128, 0.3)",
+      };
+    } else {
+      return {
+        ...baseStyle,
+        background: "linear-gradient(135deg, #FF0080, #FF4DB8)",
+        color: "#FFF",
+        boxShadow: "0 4px 15px rgba(255, 0, 128, 0.3)",
+      };
+    }
+  };
 
   // Rematch handlers
   const handleRequestRematch = async () => {
@@ -155,7 +185,12 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   }, [rematchRoomId, rematchState, onRematch]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center relative p-4 md:p-8 space-y-6">
+    <div className="min-h-screen flex flex-col items-center justify-center relative p-4 md:p-8 space-y-6 pb-24 md:pb-8"
+      style={{
+        touchAction: 'pan-y',
+        WebkitOverflowScrolling: 'touch'
+      }}
+    >
       {/* Victory/Defeat Announcement - Now visible on Mobile */}
       <motion.div
         initial={{ opacity: 0, scale: 0.5 }}
@@ -167,7 +202,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="text-3xl md:text-8xl font-bold mb-4"
+          className="text-6xl md:text-8xl font-bold mb-4"
           style={{ fontFamily: "Audiowide" }}
         >
           {winner === currentUser.playerDisplayName ? (
@@ -183,18 +218,19 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
+            className="hidden md:block"
           >
             <p className="text-base md:text-xl text-gray-300">{reason}</p>
           </motion.div>
         )}
       </motion.div>
 
-      {/* Final Scores - Horizontal on Mobile, Centered Content - Now visible on mobile */}
+      {/* Final Scores - Hidden on Mobile, Visible on Desktop */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1 }}
-        className="grid grid-cols-2 gap-2 md:gap-8"
+        className="hidden md:grid grid-cols-2 gap-2 md:gap-8"
       >
         {/* Host Score */}
         <div className="p-3 md:p-6 bg-white/10 rounded-2xl border border-gray-400 text-center">
@@ -346,12 +382,12 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         </motion.div>
       )}
 
-      {/* Action Buttons - Now visible on mobile with nav style */}
+      {/* Action Buttons - Hidden on mobile, nav style buttons will replace these */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.6 }}
-        className="flex flex-col md:flex-row justify-center gap-4"
+        className="hidden md:flex flex-col md:flex-row justify-center gap-4"
       >
         <button
           onClick={handleLeaveMatch}
@@ -450,6 +486,41 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
           />
         ))}
       </motion.div>
+
+      {/* Mobile Nav-Style Buttons - Fixed at bottom like Play/Save buttons */}
+      <div
+        className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-4 px-4 z-50 backdrop-blur-sm border-t-2 border-white/20"
+        style={{
+          paddingBottom: 'max(1rem, env(safe-area-inset-bottom) + 0.5rem)',
+          background: 'rgba(0, 0, 0, 0.3)'
+        }}
+      >
+        <div className="flex w-full max-w-md gap-4">
+          <button
+            onClick={onLeaveMatch}
+            className="flex-1 text-white rounded-3xl text-lg font-bold transition-all transform hover:scale-105 active:scale-95 flex flex-col items-center justify-center"
+            style={{
+              ...getNavButtonStyle('dashboard'),
+              minHeight: '60px',
+            }}
+          >
+            <span className="text-center">DASHBOARD</span>
+          </button>
+          
+          {rematchState === 'idle' && (
+            <button
+              onClick={handleRequestRematch}
+              className="flex-1 text-white rounded-3xl text-lg font-bold transition-all transform hover:scale-105 active:scale-95 flex flex-col items-center justify-center"
+              style={{
+                ...getNavButtonStyle('rematch'),
+                minHeight: '60px',
+              }}
+            >
+              <span className="text-center">REMATCH</span>
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
