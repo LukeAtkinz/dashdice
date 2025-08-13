@@ -194,28 +194,36 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1 }}
-        className="grid grid-cols-2 md:grid-cols-2 gap-4 md:gap-8"
+        className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-8"
       >
         {/* Host Score */}
-        <div className="p-6 bg-white/10 rounded-2xl backdrop-blur-sm border border-gray-400 text-center">
-          <p className="text-lg md:text-xl font-bold text-white mb-2" style={{ fontFamily: "Audiowide" }}>
+        <div className="p-3 md:p-6 bg-white/10 rounded-2xl border border-gray-400 text-center">
+          <p 
+            className="text-sm md:text-xl font-bold text-white mb-1 md:mb-2 truncate" 
+            style={{ fontFamily: "Audiowide" }}
+            title={matchData.hostData.playerDisplayName}
+          >
             {matchData.hostData.playerDisplayName}
           </p>
-          <p className="text-2xl md:text-3xl font-bold text-white" style={{ fontFamily: "Audiowide" }}>
+          <p className="text-xl md:text-3xl font-bold text-white" style={{ fontFamily: "Audiowide" }}>
             {matchData.hostData.playerScore}
           </p>
-          <p className="text-sm text-gray-300">Final Score</p>
+          <p className="text-xs md:text-sm text-gray-300">Final Score</p>
         </div>
 
         {/* Opponent Score */}
-        <div className="p-6 bg-white/10 rounded-2xl backdrop-blur-sm border border-gray-400 text-center">
-          <p className="text-lg md:text-xl font-bold text-white mb-2" style={{ fontFamily: "Audiowide" }}>
+        <div className="p-3 md:p-6 bg-white/10 rounded-2xl border border-gray-400 text-center">
+          <p 
+            className="text-sm md:text-xl font-bold text-white mb-1 md:mb-2 truncate" 
+            style={{ fontFamily: "Audiowide" }}
+            title={matchData.opponentData.playerDisplayName}
+          >
             {matchData.opponentData.playerDisplayName}
           </p>
-          <p className="text-2xl md:text-3xl font-bold text-white" style={{ fontFamily: "Audiowide" }}>
+          <p className="text-xl md:text-3xl font-bold text-white" style={{ fontFamily: "Audiowide" }}>
             {matchData.opponentData.playerScore}
           </p>
-          <p className="text-sm text-gray-300">Final Score</p>
+          <p className="text-xs md:text-sm text-gray-300">Final Score</p>
         </div>
       </motion.div>
 
@@ -224,7 +232,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.3 }}
-        className="p-6 bg-black/20 rounded-2xl backdrop-blur-sm border border-gray-600"
+        className="p-6 bg-black/20 rounded-2xl border border-gray-600"
       >
         <h3 className="text-lg font-bold text-white mb-6 text-center" style={{ fontFamily: "Audiowide" }}>
           MATCH STATISTICS
@@ -301,7 +309,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="mb-6 p-6 bg-green-600/20 border-2 border-green-400 rounded-2xl backdrop-blur-sm"
+          className="mb-6 p-6 bg-green-600/20 border-2 border-green-400 rounded-2xl"
         >
           <div className="text-center">
             <p className="text-xl font-bold text-green-400 mb-4" style={{ fontFamily: "Audiowide" }}>

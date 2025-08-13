@@ -482,8 +482,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className={`w-full h-full ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-center gap-[1rem] p-2 md:p-4`} 
-        style={{ minHeight: '100vh', paddingTop: '2rem' }}
+        className={`w-full h-full ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center gap-[1rem] p-2 md:p-4 justify-start md:justify-center`} 
+        style={{ 
+          minHeight: '100vh', 
+          paddingTop: '1rem'
+        }}
       >
       {/* Game Arena */}
       <div className="flex items-center justify-center p-4" style={{ width: '90vw' }}>
@@ -507,7 +510,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 className="relative rounded-3xl overflow-hidden shadow-2xl border-4 z-20"
                 style={{ 
                   borderColor: currentPlayer.turnActive ? '#00ff00' : '#ffffff',
-                  height: '750px'
+                  height: '500px'
                 }}
               >
                 {/* Player Background */}
@@ -522,7 +525,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       webkit-playsinline="true"
                       x5-playsinline="true"
                       preload="metadata"
+                      disablePictureInPicture
+                      controlsList="nodownload noplaybackrate"
                       className="absolute inset-0 w-full h-full object-cover"
+                      style={{ 
+                        pointerEvents: 'none'
+                      }}
                     >
                       <source src={currentPlayer.matchBackgroundEquipped.file} type="video/mp4" />
                     </video>
@@ -615,7 +623,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             </div>
 
             {/* Center Dice Area */}
-            <div className="flex flex-col items-center justify-center relative z-10" style={{ alignSelf: 'center', minWidth: '400px', width: '400px' }}>
+            <div className="flex flex-col items-center justify-center relative z-10" style={{ alignSelf: 'center', minWidth: '600px', width: '600px' }}>
               {/* Phase-specific content with transitions */}
               <AnimatePresence mode="wait">
                 {matchData.gameData.gamePhase === 'turnDecider' && (
@@ -678,7 +686,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 className="relative rounded-3xl overflow-hidden shadow-2xl border-4 z-20"
                 style={{ 
                   borderColor: opponent.turnActive ? '#00ff00' : '#ffffff',
-                  height: '750px'
+                  height: '500px'
                 }}
               >
                 {/* Player Background */}
@@ -693,7 +701,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       webkit-playsinline="true"
                       x5-playsinline="true"
                       preload="metadata"
+                      disablePictureInPicture
+                      controlsList="nodownload noplaybackrate"
                       className="absolute inset-0 w-full h-full object-cover"
+                      style={{ 
+                        pointerEvents: 'none'
+                      }}
                     >
                       <source src={opponent.matchBackgroundEquipped.file} type="video/mp4" />
                     </video>

@@ -196,7 +196,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         {/* Dice Container with Turn Score Between - More spacing */}
         <div className="relative flex flex-col gap-6 md:gap-8 mb-6 md:mb-8">
           {/* Dice 1 - Slot Machine */}
-          <div className="w-full max-w-[400px] md:max-w-[600px] md:w-[600px]" style={{ width: 'min(400px, 70vw)' }}>
+          <div className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" style={{ width: 'min(600px, 70vw)' }}>
             <SlotMachineDice
               diceNumber={1}
               animationState={dice1Animation}
@@ -251,7 +251,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           </div>
           
           {/* Dice 2 - Slot Machine */}
-          <div className="w-full max-w-[400px] md:max-w-[600px] md:w-[600px]" style={{ width: 'min(400px, 70vw)' }}>
+          <div className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" style={{ width: 'min(600px, 70vw)' }}>
             <SlotMachineDice
               diceNumber={2}
               animationState={dice2Animation}

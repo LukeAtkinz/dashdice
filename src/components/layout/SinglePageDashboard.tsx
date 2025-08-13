@@ -450,6 +450,9 @@ const DashboardContent: React.FC = () => {
                   <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>REMATCH</span>
                 </button>
               </>
+            ) : currentSection === 'match' || currentSection === 'waiting-room' ? (
+              /* Hidden navigation during match phases - no buttons shown */
+              <></>
             ) : (
               /* Regular Mobile Navigation */
               <>

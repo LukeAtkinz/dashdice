@@ -455,7 +455,7 @@ export class MatchService {
         console.log(`🏆 AUTO-WIN! ${currentPlayer.playerDisplayName} reached ${roundObjective} points without banking!`);
         gameOver = true;
         winner = currentPlayer.playerDisplayName;
-        gameOverReason = `${winner} reached ${roundObjective} points!`;
+        gameOverReason = `Game completed!`;
         
         // Auto-bank the winning score
         if (isHost) {
@@ -585,7 +585,7 @@ export class MatchService {
       if (gameOver) {
         updates['gameData.gamePhase'] = 'gameOver';
         updates['gameData.winner'] = winner;
-        updates['gameData.gameOverReason'] = `${winner} reached ${roundObjective} points!`;
+        updates['gameData.gameOverReason'] = `Game completed!`;
         updates['gameData.status'] = 'completed';
         
         // Both players lose turn
