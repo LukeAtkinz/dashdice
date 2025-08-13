@@ -82,6 +82,7 @@ export const DashboardSection: React.FC = () => {
   const { setCurrentSection } = useNavigation();
   const { DisplayBackgroundEquip } = useBackground();
   const [hoveredGameMode, setHoveredGameMode] = useState<string | null>(null);
+  const [tappedGameMode, setTappedGameMode] = useState<string | null>(null);
   const [isExiting, setIsExiting] = useState(false);
 
   // Get background-specific game mode selector styling
@@ -184,6 +185,10 @@ export const DashboardSection: React.FC = () => {
         filter: isExiting ? "blur(2px)" : "blur(0px)"
       }}
       transition={{ duration: 0.5, ease: "easeOut" }}
+      style={{
+        minHeight: 'auto', // Allow natural height growth
+        overflow: 'visible' // Ensure no clipping
+      }}
     >
       {/* Custom CSS for animations */}
       <style jsx>{`
@@ -233,16 +238,40 @@ export const DashboardSection: React.FC = () => {
         }
       `}</style>
 
-      {/* Game Mode Container - Match reference exactly */}
-      <div className="w-[100%] flex flex-row items-center justify-center flex-wrap content-center gap-x-[0.5rem] md:gap-x-[0.687rem] gap-y-[0.5rem] md:gap-y-[0.625rem] px-[1rem] md:px-[2rem]">
+      {/* Game Mode Container - Ensure proper scrolling */}
+      <div 
+        className="w-[100%] flex flex-row items-center justify-center flex-wrap content-center gap-x-[0.5rem] md:gap-x-[0.687rem] gap-y-[0.5rem] md:gap-y-[0.625rem] px-[1rem] md:px-[2rem]"
+        style={{
+          touchAction: 'pan-y pan-x', // Allow both vertical and horizontal scrolling
+          overflow: 'visible', // Ensure content is not clipped
+          WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
+          minHeight: 'auto', // Allow natural height
+          maxHeight: 'none' // Remove any height constraints
+        }}
+      >
         {Object.entries(gameConfig).map(([mode, config]) => (
           <div
             key={mode}
             onMouseEnter={() => setHoveredGameMode(mode)}
             onMouseLeave={() => setHoveredGameMode(null)}
+            onClick={() => {
+              // On mobile, require explicit tap to show buttons first
+              if (window.innerWidth < 768 && hoveredGameMode !== mode) {
+                setHoveredGameMode(mode);
+                setTappedGameMode(mode);
+                // Clear tap state after 5 seconds if no button is pressed
+                setTimeout(() => {
+                  if (tappedGameMode === mode) {
+                    setTappedGameMode(null);
+                    setHoveredGameMode(null);
+                  }
+                }, 5000);
+              }
+            }}
             className="game-mode-card h-[12rem] md:h-[15.625rem] w-[90vw] md:w-[30rem] rounded-[30px] overflow-hidden shrink-0 flex flex-row items-center justify-start relative text-right text-[2.5rem] md:text-[4rem] text-gainsboro font-audiowide cursor-pointer transition-all duration-300"
             style={{
-              background: getGameModeSelectorBackground()
+              background: getGameModeSelectorBackground(),
+              touchAction: 'manipulation' // Prevent double-tap zoom on mobile
             }}
           >
             {hoveredGameMode === mode ? (
@@ -252,8 +281,13 @@ export const DashboardSection: React.FC = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        e.preventDefault();
                         console.log(`🎮 ${mode.toUpperCase()} LIVE BUTTON CLICKED!`);
                         handleGameModeAction(mode, 'live');
+                      }}
+                      onTouchEnd={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
                       }}
                       className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
                       style={{
@@ -263,7 +297,8 @@ export const DashboardSection: React.FC = () => {
                         alignContent: 'center',
                         justifyContent: 'center',
                         border: 0,
-                        boxShadow: '0 4px 15px rgba(25, 46, 57, 0.3)'
+                        boxShadow: '0 4px 15px rgba(25, 46, 57, 0.3)',
+                        touchAction: 'manipulation'
                       }}
                     >
                       <span
@@ -283,8 +318,13 @@ export const DashboardSection: React.FC = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        e.preventDefault();
                         console.log(`🎮 ${mode.toUpperCase()} CUSTOM BUTTON CLICKED!`);
                         alert('Coming Soon!');
+                      }}
+                      onTouchEnd={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
                       }}
                       className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
                       style={{
@@ -294,7 +334,8 @@ export const DashboardSection: React.FC = () => {
                         alignContent: 'center',
                         justifyContent: 'center',
                         border: 0,
-                        boxShadow: '0 4px 15px rgba(255, 0, 128, 0.3)'
+                        boxShadow: '0 4px 15px rgba(255, 0, 128, 0.3)',
+                        touchAction: 'manipulation'
                       }}
                     >
                       <span
@@ -386,7 +427,7 @@ export const DashboardSection: React.FC = () => {
                     top: config.position.top,
                     left: config.position.left,
                     transform: `rotate(${config.rotation})`,
-                    opacity: config.available ? 0.8 : 0.4,
+                    opacity: 0.4, // Same opacity for all images regardless of availability
                     '--mobile-top': config.mobilePosition.top,
                     '--mobile-left': config.mobilePosition.left,
                     '--mobile-rotation': config.mobileRotation,

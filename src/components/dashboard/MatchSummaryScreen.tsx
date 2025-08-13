@@ -156,18 +156,18 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center relative p-4 md:p-8 space-y-6">
-      {/* Victory/Defeat Announcement - Hidden on Mobile */}
+      {/* Victory/Defeat Announcement - Now visible on Mobile */}
       <motion.div
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
-        className="hidden md:block text-center"
+        className="text-center"
       >
         <motion.h1
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="text-4xl md:text-8xl font-bold mb-4"
+          className="text-3xl md:text-8xl font-bold mb-4"
           style={{ fontFamily: "Audiowide" }}
         >
           {winner === currentUser.playerDisplayName ? (
@@ -184,17 +184,17 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
           >
-            <p className="text-lg md:text-xl text-gray-300">{reason}</p>
+            <p className="text-base md:text-xl text-gray-300">{reason}</p>
           </motion.div>
         )}
       </motion.div>
 
-      {/* Final Scores - Horizontal on Mobile, Centered Content - Hidden on Mobile */}
+      {/* Final Scores - Horizontal on Mobile, Centered Content - Now visible on mobile */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1 }}
-        className="hidden md:grid grid-cols-2 gap-2 md:gap-8"
+        className="grid grid-cols-2 gap-2 md:gap-8"
       >
         {/* Host Score */}
         <div className="p-3 md:p-6 bg-white/10 rounded-2xl border border-gray-400 text-center">
@@ -346,12 +346,12 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         </motion.div>
       )}
 
-      {/* Action Buttons - Vertical on Mobile - Hidden on Mobile */}
+      {/* Action Buttons - Now visible on mobile with nav style */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.6 }}
-        className="hidden md:flex flex-col md:flex-row justify-center gap-4"
+        className="flex flex-col md:flex-row justify-center gap-4"
       >
         <button
           onClick={handleLeaveMatch}

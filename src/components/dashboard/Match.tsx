@@ -37,6 +37,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const [matchData, setMatchData] = useState<MatchData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showGameOverScreen, setShowGameOverScreen] = useState(false);
   
   // Set game over state for navbar visibility
   useEffect(() => {
@@ -44,6 +45,19 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       setIsGameOver(matchData.gameData.gamePhase === 'gameOver');
     }
   }, [matchData?.gameData?.gamePhase, setIsGameOver]);
+
+  // Handle game over delay
+  useEffect(() => {
+    if (matchData?.gameData?.gamePhase === 'gameOver') {
+      const timer = setTimeout(() => {
+        setShowGameOverScreen(true);
+      }, 1000); // 1 second delay
+
+      return () => clearTimeout(timer);
+    } else {
+      setShowGameOverScreen(false);
+    }
+  }, [matchData?.gameData?.gamePhase]);
   
   // Dice animation states for slot machine effect
   const [dice1Animation, setDice1Animation] = useState<{
@@ -448,8 +462,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
   return (
     <>
-      {/* Game Over Screen - Full Screen Overlay positioned to allow navbar */}
-      {matchData.gameData.gamePhase === 'gameOver' && (
+      {/* Game Over Screen - Full Screen Overlay */}
+      {matchData.gameData.gamePhase === 'gameOver' && showGameOverScreen && (
         <motion.div 
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -458,7 +472,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           style={{ 
             flexDirection: 'column',
             top: '60px', // Leave space for desktop navbar
-            bottom: '80px' // Leave space for mobile navbar
+            bottom: '0' // Use full height on mobile since navbar is hidden
           }}
         >
           <div className="w-full max-w-6xl mx-auto px-4 h-full flex items-center justify-center">

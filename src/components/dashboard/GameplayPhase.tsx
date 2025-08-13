@@ -209,8 +209,11 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           </div>
         </motion.div>
 
-        {/* Dice Container with Turn Score Between - More spacing */}
-        <div className="relative flex flex-col gap-6 md:gap-8 mb-6 md:mb-8">
+        {/* Dice Container with Turn Score Between - Mobile optimized height */}
+        <div className="relative flex flex-col gap-6 md:gap-8 mb-6 md:mb-8" style={{
+          minHeight: 'calc(100vh - 320px)', // Space between nav buttons and user profiles on mobile
+          justifyContent: 'center'
+        }}>
           {/* Dice 1 - Slot Machine */}
           <div className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" style={{ width: 'min(600px, 70vw)' }}>
             <SlotMachineDice
@@ -223,7 +226,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             />
           </div>
           
-          {/* Turn Score - Positioned absolutely between dice */}
+          {/* Turn Score - Positioned absolutely between dice - Mobile bigger and more padding */}
           <div 
             className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"
           >
@@ -233,30 +236,30 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               className="text-center relative"
             >
               {/* Turn Score Container - Bigger on Mobile */}
-              <div className="inline-block px-6 md:px-8 py-3 md:py-4 bg-yellow-600/30 border-2 border-yellow-500 rounded-2xl backdrop-blur-sm shadow-xl">
+              <div className="inline-block px-8 md:px-8 py-6 md:py-4 bg-yellow-600/30 border-2 border-yellow-500 rounded-2xl backdrop-blur-sm shadow-xl">
                 <p 
-                  className="text-sm md:text-lg text-yellow-300 mb-1 md:mb-1"
+                  className="text-base md:text-lg text-yellow-300 mb-2 md:mb-1"
                   style={{ fontFamily: "Audiowide" }}
                 >
                   Turn Score
                 </p>
                 <p 
-                  className="text-2xl md:text-4xl font-bold text-yellow-400" 
+                  className="text-4xl md:text-4xl font-bold text-yellow-400" 
                   style={{ fontFamily: "Audiowide" }}
                 >
                   {matchData.gameData.turnScore}
                 </p>
               </div>
               
-              {/* 2X Multiplier Indicator - Absolutely positioned */}
+              {/* 2X Multiplier Indicator - Absolutely positioned - 2x bigger on mobile */}
               {matchData.gameData.hasDoubleMultiplier && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="absolute -right-12 md:-right-24 top-1/2 transform -translate-y-1/2 px-1.5 md:px-4 py-0.5 md:py-2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute -right-16 md:-right-24 top-1/2 transform -translate-y-1/2 px-6 md:px-4 py-3 md:py-2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
                 >
                   <p 
-                    className="text-sm md:text-2xl font-bold text-red-300" 
+                    className="text-xl md:text-2xl font-bold text-red-300" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     2X

@@ -11,15 +11,21 @@
   scrollbar-width: none;
   /* Chrome, Safari, and Edge */
   -ms-overflow-style: none;
-  /* Ensure overflow is hidden for images and videos */
-  overflow: hidden;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
-/* Force scrollbar hiding on background videos and images */
+/* Ensure mobile scrolling works properly */
+@media (max-width: 767px) {
+  .scrollbar-hide {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto !important;
+  }
+}
+
+/* Force scrollbar hiding on background videos and images only */
 video.scrollbar-hide,
 img.scrollbar-hide {
   scrollbar-width: none !important;
