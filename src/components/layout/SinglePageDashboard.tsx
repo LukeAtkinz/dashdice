@@ -27,6 +27,22 @@ const DashboardContent: React.FC = () => {
   const { getBackgroundPosition } = useBackgroundPositioning();
   const [userGold] = useState(1000); // Placeholder for user gold
   
+  // Create button gradient style based on user's display background
+  const getButtonGradientStyle = (baseColor: string) => {
+    if (DisplayBackgroundEquip?.file) {
+      return {
+        background: `var(--ui-button-bg, linear-gradient(243deg, ${baseColor} 25.17%, rgba(153, 153, 153, 0.00) 109.89%))`,
+        backdropFilter: 'blur(5px)',
+        border: '2px solid rgba(255, 255, 255, 0.3)'
+      };
+    }
+    return {
+      background: `linear-gradient(243deg, ${baseColor} 25.17%, rgba(153, 153, 153, 0.00) 109.89%)`,
+      backdropFilter: 'blur(5px)',
+      border: '2px solid rgba(255, 255, 255, 0.3)'
+    };
+  };
+  
   console.log('🏠 SinglePageDashboard: Component rendered with:', {
     currentSection,
     sectionParams,
@@ -479,6 +495,41 @@ const DashboardContent: React.FC = () => {
           className="md:hidden fixed bottom-0 left-0 right-0 w-[100vw] flex flex-row items-center justify-center z-50"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)', padding: '0' }}
         >
+          {/* Game Over Navigation - Use same structure as GameplayPhase */}
+          {currentSection === 'match' && isGameOver ? (
+            <div 
+              className="w-full flex flex-row items-center justify-center py-4 px-4 bg-black/80 backdrop-blur-sm border-t-2 border-white/20"
+              style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom) + 0.5rem)' }}
+            >
+              <div className="flex gap-3 w-full max-w-md">
+                <button
+                  onClick={() => handleSectionChange('dashboard')}
+                  className="flex-1 py-4 rounded-xl text-xl font-bold transition-all transform text-white hover:scale-105 active:scale-95"
+                  style={{ 
+                    fontFamily: "Audiowide",
+                    minHeight: '60px',
+                    ...getButtonGradientStyle('rgba(59, 130, 246, 0.8)')
+                  }}
+                >
+                  DASHBOARD
+                </button>
+                <button
+                  onClick={() => {
+                    // TODO: Add rematch functionality
+                    console.log('Rematch clicked from mobile nav');
+                  }}
+                  className="flex-1 py-4 rounded-xl text-xl font-bold transition-all transform text-white hover:scale-105 active:scale-95"
+                  style={{ 
+                    fontFamily: "Audiowide",
+                    minHeight: '60px',
+                    ...getButtonGradientStyle('rgba(34, 197, 94, 0.8)')
+                  }}
+                >
+                  REMATCH
+                </button>
+              </div>
+            </div>
+          ) : (
           <div className="flex flex-row items-center justify-between w-full px-[2vw] py-[15px] shadow-lg" style={{
             background: DisplayBackgroundEquip?.name === 'On A Mission' 
               ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)'
@@ -488,28 +539,7 @@ const DashboardContent: React.FC = () => {
             backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(8px)' : 'none',
             borderRadius: '0'
           }}>
-            {/* Game Over Mobile Navigation - Show DASHBOARD and REMATCH only */}
-            {currentSection === 'match' && isGameOver ? (
-              <>
-                <button
-                  onClick={() => handleSectionChange('dashboard')}
-                  className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[45vw] hover:bg-white/10"
-                >
-                  <img src="/Design Elements/CrownLogo.webp" alt="Dashboard" className="w-8 h-8" />
-                  <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>DASHBOARD</span>
-                </button>
-                <button
-                  onClick={() => {
-                    // TODO: Add rematch functionality
-                    console.log('Rematch clicked from mobile nav');
-                  }}
-                  className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[45vw] hover:bg-white/10"
-                >
-                  <img src="/Design Elements/Crown Mode.webp" alt="Rematch" className="w-8 h-8" />
-                  <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>REMATCH</span>
-                </button>
-              </>
-            ) : currentSection === 'match' || currentSection === 'waiting-room' ? (
+            {currentSection === 'match' || currentSection === 'waiting-room' ? (
               /* Hidden navigation during match phases - no buttons shown */
               <></>
             ) : (
@@ -553,6 +583,7 @@ const DashboardContent: React.FC = () => {
               </>
             )}
           </div>
+          )}
         </footer>
 
         {/* Mobile Background Position Control */}

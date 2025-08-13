@@ -782,14 +782,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           </div>
 
           {/* Mobile Layout - Stacked */}
-          <div className="md:hidden flex flex-col items-center w-full px-2" style={{ width: '100vw', paddingTop: '8px' }}>
+          <div className="md:hidden flex flex-col items-center w-full" style={{ width: '100vw', paddingTop: '4px' }}>
             
             {/* User Profiles Section - Top */}
-            <div className="w-full flex justify-between gap-4 mb-6">
+            <div className="w-full flex justify-between mb-4" style={{ paddingLeft: '10px', paddingRight: '10px' }}>
               {/* Current Player Profile - Left */}
-              <div className="w-1/2">
+              <div style={{ width: 'calc(50vw - 15px)' }}>
                 <h3 
-                  className="font-bold text-white mb-2 text-center px-2"
+                  className="font-bold text-white mb-2 text-center px-1"
                   style={{ 
                     fontFamily: 'Audiowide',
                     textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
@@ -879,9 +879,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               </div>
 
               {/* Opponent Profile - Right */}
-              <div className="w-1/2">
+              <div style={{ width: 'calc(50vw - 15px)' }}>
                 <h3 
-                  className="font-bold text-white mb-2 text-center px-2"
+                  className="font-bold text-white mb-2 text-center px-1"
                   style={{ 
                     fontFamily: 'Audiowide',
                     textShadow: '2px 2px 4px rgba(0,0,0,0.8)',

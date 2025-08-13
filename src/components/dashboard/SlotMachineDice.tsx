@@ -208,7 +208,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
     <div className="relative rounded-[30px] border border-white/0 overflow-hidden"
          style={{
            display: 'flex',
-           height: 'clamp(200px, 50vw, 300px)',
+           height: 'clamp(150px, 35vw, 300px)', // Reduced from 50vw to 35vw for mobile
            width: '100%',
            padding: '0 clamp(50px, 18vw, 110px)',
            flexDirection: 'row',
@@ -241,7 +241,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
                   backgroundColor: index % 2 === 0 ? 'rgba(0,0,0,0.05)' : 'transparent',
                   color: '#000',
                   fontFamily: 'Orbitron, monospace',
-                  fontSize: 'clamp(120px, 25vw, 200px)',
+                  fontSize: 'clamp(80px, 18vw, 200px)', // Reduced from 25vw to 18vw for mobile
                   fontStyle: 'normal',
                   fontWeight: 500,
                   lineHeight: '42px',
@@ -269,7 +269,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             <span style={{
               color: '#000',
               fontFamily: 'Orbitron, monospace',
-              fontSize: '200px',
+              fontSize: 'clamp(120px, 18vw, 200px)', // Responsive font size for mobile
               fontStyle: 'normal',
               fontWeight: 500,
               lineHeight: '42px',
@@ -305,7 +305,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               style={{
                 color: glowInfo.color,
                 fontFamily: 'Orbitron, monospace',
-                fontSize: '200px',
+                fontSize: 'clamp(120px, 18vw, 200px)', // Responsive font size for mobile
                 fontStyle: 'normal',
                 fontWeight: 500,
                 lineHeight: '42px',
@@ -332,7 +332,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             <span style={{
               color: '#000',
               fontFamily: 'Orbitron, monospace',
-              fontSize: '200px',
+              fontSize: 'clamp(120px, 18vw, 200px)', // Responsive font size for mobile
               fontStyle: 'normal',
               fontWeight: 500,
               lineHeight: '42px',

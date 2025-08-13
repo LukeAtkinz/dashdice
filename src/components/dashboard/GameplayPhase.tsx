@@ -317,8 +317,11 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
 
       {/* Mobile Fixed Bottom Buttons */}
       <div 
-        className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-4 px-4 z-50 bg-black/80 backdrop-blur-sm border-t-2 border-white/20"
-        style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom) + 0.5rem)' }}
+        className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-4 px-4 z-50 backdrop-blur-sm border-t-2 border-white/20"
+        style={{ 
+          paddingBottom: 'max(1rem, env(safe-area-inset-bottom) + 0.5rem)',
+          background: 'rgba(0, 0, 0, 0.3)' // Reduced opacity from 0.8 to 0.3
+        }}
       >
         {isMyTurn ? (
           <div className="flex gap-3 w-full max-w-md">

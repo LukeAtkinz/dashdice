@@ -156,12 +156,12 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center relative p-4 md:p-8 space-y-6">
-      {/* Victory/Defeat Announcement */}
+      {/* Victory/Defeat Announcement - Hidden on Mobile */}
       <motion.div
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
-        className="text-center"
+        className="hidden md:block text-center"
       >
         <motion.h1
           initial={{ opacity: 0, y: -50 }}
@@ -189,12 +189,12 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         )}
       </motion.div>
 
-      {/* Final Scores - Horizontal on Mobile, Centered Content */}
+      {/* Final Scores - Horizontal on Mobile, Centered Content - Hidden on Mobile */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1 }}
-        className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-8"
+        className="hidden md:grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-8"
       >
         {/* Host Score */}
         <div className="p-3 md:p-6 bg-white/10 rounded-2xl border border-gray-400 text-center">
@@ -227,12 +227,12 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         </div>
       </motion.div>
 
-      {/* Match Statistics - New 3-Column Layout */}
+      {/* Match Statistics - New 3-Column Layout - Hidden on Mobile */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.3 }}
-        className="p-6 bg-black/20 rounded-2xl border border-gray-600"
+        className="hidden md:block p-6 bg-black/20 rounded-2xl border border-gray-600"
       >
         <h3 className="text-lg font-bold text-white mb-6 text-center" style={{ fontFamily: "Audiowide" }}>
           MATCH STATISTICS
@@ -346,12 +346,12 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         </motion.div>
       )}
 
-      {/* Action Buttons - Vertical on Mobile */}
+      {/* Action Buttons - Vertical on Mobile - Hidden on Mobile */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.6 }}
-        className="flex flex-col md:flex-row justify-center gap-4"
+        className="hidden md:flex flex-col md:flex-row justify-center gap-4"
       >
         <button
           onClick={handleLeaveMatch}
