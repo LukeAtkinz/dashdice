@@ -785,7 +785,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           <div className="md:hidden flex flex-col items-center w-full" style={{ width: '100vw', paddingTop: '4px' }}>
             
             {/* User Profiles Section - Top */}
-            <div className="w-full flex justify-between mb-4" style={{ paddingLeft: '10px', paddingRight: '10px' }}>
+            <div className="w-full flex justify-between mb-6" style={{ paddingLeft: '10px', paddingRight: '10px', gap: '16px' }}>
               {/* Current Player Profile - Left */}
               <div style={{ width: 'calc(50vw - 15px)' }}>
                 <h3 

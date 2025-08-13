@@ -14,9 +14,9 @@ const gameConfig = {
     icon: '/Design Elements/Shield.webp', 
     description: 'more speed,\nmore skill',
     rotation: '6deg',
-    mobileRotation: '20deg', // 90 degrees different from desktop
+    mobileRotation: '6deg', // 90 degrees different from desktop
     position: { top: '0rem', left: '-4rem' },
-    mobilePosition: { top: '3rem', left: '-2rem' },
+    mobilePosition: { top: '0rem', left: '-2rem' },
     mobileScale: '1.0', // Slightly bigger on mobile
     available: true
   },
@@ -27,7 +27,7 @@ const gameConfig = {
     rotation: '0deg',
     mobileRotation: '0deg',
     position: { top: '-2rem', left: '-2rem' },
-    mobilePosition: { top: '-2rem', left: '-2rem' },
+    mobilePosition: { top: '-1.5rem', left: '-2rem' },
     mobileScale: '1.0',
     available: false
   },
@@ -38,7 +38,7 @@ const gameConfig = {
     rotation: '0deg',
     mobileRotation: '0deg',
     position: { top: '-2rem', left: '-5rem' },
-    mobilePosition: { top: '-2rem', left: '-3rem' }, // Move left on mobile
+    mobilePosition: { top: '-1rem', left: '-2rem' }, // Move left on mobile
     mobileScale: '1.0',
     available: false
   },
@@ -95,6 +95,18 @@ export const DashboardSection: React.FC = () => {
         return 'linear-gradient(135deg, #CC2E2E, transparent)';
       default:
         return 'var(--ui-game-mode-bg, linear-gradient(rgba(37, 37, 37, 0.12), rgba(37, 37, 37, 0.12)), linear-gradient(242.59deg, #192e39 30%, rgba(153, 153, 153, 0)))';
+    }
+  };
+
+  // Get background-specific Live Play button styling
+  const getLivePlayButtonBackground = () => {
+    switch (DisplayBackgroundEquip?.name) {
+      case 'All For Glory':
+        return '#2a2a2a'; // Off-black, lighter than straight black
+      case 'Relax':
+        return '#3c5822'; // Specific green color
+      default:
+        return 'var(--ui-background-container)';
     }
   };
 
@@ -222,9 +234,7 @@ export const DashboardSection: React.FC = () => {
       `}</style>
 
       {/* Game Mode Container - Match reference exactly */}
-      <div className="w-[100%] overflow-y-auto md:overflow-hidden flex flex-row items-center justify-center flex-wrap content-center gap-x-[0.5rem] md:gap-x-[0.687rem] gap-y-[0.5rem] md:gap-y-[0.625rem] px-[1rem] md:px-[2rem]" style={{
-        WebkitOverflowScrolling: 'touch'
-      }}>
+      <div className="w-[100%] flex flex-row items-center justify-center flex-wrap content-center gap-x-[0.5rem] md:gap-x-[0.687rem] gap-y-[0.5rem] md:gap-y-[0.625rem] px-[1rem] md:px-[2rem]">
         {Object.entries(gameConfig).map(([mode, config]) => (
           <div
             key={mode}
@@ -248,7 +258,7 @@ export const DashboardSection: React.FC = () => {
                       className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
                       style={{
                         borderRadius: '30px',
-                        background: 'var(--ui-background-container)',
+                        background: getLivePlayButtonBackground(),
                         height: '80px',
                         alignContent: 'center',
                         justifyContent: 'center',
@@ -274,7 +284,7 @@ export const DashboardSection: React.FC = () => {
                       onClick={(e) => {
                         e.stopPropagation();
                         console.log(`🎮 ${mode.toUpperCase()} CUSTOM BUTTON CLICKED!`);
-                        handleGameModeAction(mode, 'custom');
+                        alert('Coming Soon!');
                       }}
                       className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
                       style={{

@@ -536,8 +536,8 @@ const DashboardContent: React.FC = () => {
                 </button>
                 <button
                   onClick={() => {
-                    // TODO: Add rematch functionality
                     console.log('Rematch clicked from mobile nav');
+                    alert('Coming Soon!');
                   }}
                   className="flex-1 py-4 rounded-xl text-xl font-bold transition-all transform text-white hover:scale-105 active:scale-95"
                   style={{ 

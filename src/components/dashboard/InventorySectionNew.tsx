@@ -88,7 +88,7 @@ export const InventorySection: React.FC = () => {
         background: isEquipped 
           ? "linear-gradient(135deg, #FFD700, #FFA500)" 
           : "linear-gradient(135deg, #00FF80, #00A855)",
-        color: DisplayBackgroundEquip?.name === 'On A Mission' ? "#FFF" : "#FFF",
+        color: "#FFF !important",
         fontFamily: "Audiowide",
         textTransform: "uppercase" as const,
       };
@@ -97,7 +97,7 @@ export const InventorySection: React.FC = () => {
         background: isEquipped 
           ? "linear-gradient(135deg, #FFD700, #FFA500)" 
           : "linear-gradient(135deg, #FF0080, #FF4DB8)",
-        color: DisplayBackgroundEquip?.name === 'On A Mission' ? "#FFF" : "#FFF",
+        color: "#FFF !important",
         fontFamily: "Audiowide",
         textTransform: "uppercase" as const,
       };
@@ -188,7 +188,7 @@ export const InventorySection: React.FC = () => {
             <div className="text-3xl mb-2">{category.icon}</div>
             <span
               style={{
-                color: "#FFF",
+                color: DisplayBackgroundEquip?.name === 'On A Mission' ? "#FFF" : "#FFF",
                 fontFamily: "Audiowide",
                 fontSize: "14px",
                 fontWeight: 400,

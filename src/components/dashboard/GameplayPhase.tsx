@@ -56,6 +56,22 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
     };
   };
 
+  // Get mobile container gradient based on equipped background
+  const getMobileContainerGradient = () => {
+    if (DisplayBackgroundEquip?.name === 'On A Mission') {
+      return 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)';
+    } else if (DisplayBackgroundEquip?.name === 'Long Road Ahead') {
+      return 'linear-gradient(135deg, rgba(124, 58, 237, 0.6) 0%, rgba(76, 29, 149, 0.4) 25%, rgba(30, 27, 75, 0.3) 50%, rgba(30, 58, 138, 0.4) 75%, rgba(59, 130, 246, 0.3) 100%)';
+    } else if (DisplayBackgroundEquip?.name === 'New Day') {
+      return 'linear-gradient(0deg, #5a7579 0%, transparent 100%)';
+    } else if (DisplayBackgroundEquip?.name === 'Relax') {
+      return 'linear-gradient(0deg, #407080 0%, transparent 100%)';
+    } else if (DisplayBackgroundEquip?.name === 'Underwater') {
+      return 'linear-gradient(0deg, #00518c 0%, transparent 100%)';
+    }
+    return 'rgba(0, 0, 0, 0.3)';
+  };
+
   // Get game rule result for display
   const getGameRuleResult = () => {
     const dice1 = matchData.gameData.diceOne;
@@ -320,7 +336,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-4 px-4 z-50 backdrop-blur-sm border-t-2 border-white/20"
         style={{ 
           paddingBottom: 'max(1rem, env(safe-area-inset-bottom) + 0.5rem)',
-          background: 'rgba(0, 0, 0, 0.3)' // Reduced opacity from 0.8 to 0.3
+          background: getMobileContainerGradient()
         }}
       >
         {isMyTurn ? (

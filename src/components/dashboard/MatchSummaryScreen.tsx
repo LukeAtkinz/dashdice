@@ -161,7 +161,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
-        className="block text-center"
+        className="hidden md:block text-center"
       >
         <motion.h1
           initial={{ opacity: 0, y: -50 }}
@@ -189,12 +189,12 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         )}
       </motion.div>
 
-      {/* Final Scores - Horizontal on Mobile, Centered Content */}
+      {/* Final Scores - Horizontal on Mobile, Centered Content - Hidden on Mobile */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1 }}
-        className="grid grid-cols-2 gap-2 md:gap-8"
+        className="hidden md:grid grid-cols-2 gap-2 md:gap-8"
       >
         {/* Host Score */}
         <div className="p-3 md:p-6 bg-white/10 rounded-2xl border border-gray-400 text-center">
@@ -304,12 +304,12 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         </div>
       </motion.div>
 
-      {/* Incoming Rematch Request */}
+      {/* Incoming Rematch Request - Hidden on Mobile */}
       {incomingRematch && (
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="mb-6 p-6 bg-green-600/20 border-2 border-green-400 rounded-2xl"
+          className="hidden md:block mb-6 p-6 bg-green-600/20 border-2 border-green-400 rounded-2xl"
         >
           <div className="text-center">
             <p className="text-xl font-bold text-green-400 mb-4" style={{ fontFamily: "Audiowide" }}>
@@ -351,7 +351,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.6 }}
-        className="flex flex-col md:flex-row justify-center gap-4"
+        className="hidden md:flex flex-col md:flex-row justify-center gap-4"
       >
         <button
           onClick={handleLeaveMatch}

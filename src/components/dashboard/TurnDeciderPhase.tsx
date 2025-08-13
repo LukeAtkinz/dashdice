@@ -98,7 +98,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
     <div className="flex flex-col items-center justify-center">
       {/* Turn Decider Phase - Single Dice with Animation */}
       <div className="flex justify-center mb-8">
-        <div style={{ width: '900px' }}>
+        <div className="w-full max-w-[900px] md:w-[900px]" style={{ width: 'min(90vw, 900px)' }}>
           <SlotMachineDice
             diceNumber={'turnDecider' as any}
             animationState={diceAnimation}
