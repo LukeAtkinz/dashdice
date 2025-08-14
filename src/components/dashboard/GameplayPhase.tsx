@@ -249,7 +249,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           maxHeight: '60vh',
           overflow: 'visible',
           justifyContent: 'center',
-          gap: '60px'
+          gap: '60px',
+          marginTop: '-40px' // Move dice container up on mobile
         }}>
           {/* Dice 1 - Slot Machine */}
           <div className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" style={{ width: 'min(600px, 70vw)' }}>
@@ -373,9 +374,12 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
 
       {/* Mobile Fixed Bottom Buttons */}
       <div 
-        className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-4 px-4 z-50 backdrop-blur-sm border-t-2 border-white/20"
+        className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center z-50 backdrop-blur-sm border-t-2 border-white/20"
         style={{ 
+          paddingTop: '1rem',
           paddingBottom: 'max(1rem, env(safe-area-inset-bottom) + 0.5rem)',
+          paddingLeft: '1rem',
+          paddingRight: '1rem',
           background: getMobileContainerGradient()
         }}
       >
@@ -401,6 +405,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   borderRadius: '18px',
                   fontFamily: "Audiowide",
                   textTransform: "uppercase" as const,
+                  backgroundColor: '#6B7280',
+                  border: '2px solid #6B7280'
                 }),
               }}
             >
@@ -427,6 +433,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   borderRadius: '18px',
                   fontFamily: "Audiowide",
                   textTransform: "uppercase" as const,
+                  backgroundColor: '#6B7280',
+                  border: '2px solid #6B7280'
                 }),
               }}
             >
