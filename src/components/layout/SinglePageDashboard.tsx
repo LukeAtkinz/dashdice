@@ -11,7 +11,6 @@ import { Match } from '@/components/dashboard/Match';
 import { GameWaitingRoom } from '@/components/dashboard/GameWaitingRoom';
 import { InventorySection } from '@/components/dashboard/InventoryReference';
 import { ProfileSection } from '@/components/dashboard/ProfileSection';
-import { SettingsSection } from '@/components/dashboard/SettingsSection';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { useBrowserRefresh } from '@/hooks/useBrowserRefresh';
@@ -504,7 +503,7 @@ const DashboardContent: React.FC = () => {
                   {currentSection === 'dashboard' && <DashboardSection />}
                   {currentSection === 'inventory' && <InventorySection />}
                   {currentSection === 'profile' && <ProfileSection />}
-                  {currentSection === 'settings' && <SettingsSection />}
+                  {currentSection === 'settings' && <ProfileSection />}
                 </motion.div>
               </AnimatePresence>
             </div>

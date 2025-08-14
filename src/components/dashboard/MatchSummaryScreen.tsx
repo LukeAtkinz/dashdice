@@ -503,7 +503,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
       >
         <button
           onClick={onLeaveMatch}
-          className="text-white text-lg font-bold transition-all active:scale-95 flex items-center justify-center"
+          className="text-white text-xl font-bold transition-all active:scale-95 flex items-center justify-center"
           style={{
             width: rematchState === 'idle' ? '50%' : '100%',
             height: '100%',
@@ -511,8 +511,8 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
             textTransform: "uppercase" as const,
             border: 'none',
             borderRadius: '0',
-            background: "linear-gradient(135deg, #00FF80 0%, transparent 100%)",
-            backdropFilter: 'blur(6px)',
+            background: "rgba(0, 255, 128, 0.6)",
+            backdropFilter: 'blur(10px)',
           }}
         >
           <span className="text-center">DASHBOARD</span>
@@ -521,7 +521,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         {rematchState === 'idle' && (
           <button
             onClick={handleRequestRematch}
-            className="text-white text-lg font-bold transition-all active:scale-95 flex items-center justify-center"
+            className="text-white text-xl font-bold transition-all active:scale-95 flex items-center justify-center"
             style={{
               width: '50%',
               height: '100%',
@@ -529,8 +529,8 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
               textTransform: "uppercase" as const,
               border: 'none',
               borderRadius: '0',
-              background: "linear-gradient(135deg, #FF0080 0%, transparent 100%)",
-              backdropFilter: 'blur(6px)',
+              background: "rgba(255, 0, 128, 0.6)",
+              backdropFilter: 'blur(10px)',
             }}
           >
             <span className="text-center">REMATCH</span>

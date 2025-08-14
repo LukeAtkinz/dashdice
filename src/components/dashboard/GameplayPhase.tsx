@@ -156,7 +156,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
       <div className="flex flex-col items-center justify-center">
         {/* Always Visible Game Status Box - Top of Dice Container - Hidden on mobile */}
         <motion.div 
-          className="mb-6 hidden md:block"
+          className="mb-8 hidden md:block"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
@@ -295,7 +295,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 <motion.div
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="absolute -right-16 md:-right-24 top-1/2 transform -translate-y-1/2 px-6 md:px-4 py-3 md:py-2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute -right-20 md:-right-24 top-1/2 transform -translate-y-1/2 px-6 md:px-4 py-3 md:py-2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
                 >
                   <p 
                     className="text-xl md:text-2xl font-bold text-red-300" 
@@ -386,10 +386,10 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             <button
               onClick={onRollDice}
               disabled={!canRoll}
-              className={`text-lg font-bold transition-all ${
+              className={`text-xl font-bold transition-all ${
                 canRoll
                   ? 'text-white active:scale-95'
-                  : 'bg-gray-600 text-gray-300 cursor-not-allowed'
+                  : 'text-gray-300 cursor-not-allowed'
               }`}
               style={{ 
                 width: '50%',
@@ -401,8 +401,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 textTransform: "uppercase" as const,
                 border: 'none',
                 borderRadius: '0',
-                background: canRoll ? "linear-gradient(135deg, #3B82F6 0%, transparent 100%)" : '#6B7280',
-                backdropFilter: 'blur(6px)',
+                background: canRoll ? "rgba(59, 130, 246, 0.6)" : 'rgba(107, 114, 128, 0.6)',
+                backdropFilter: 'blur(10px)',
               }}
             >
               PLAY
@@ -411,10 +411,10 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             <button
               onClick={onBankScore}
               disabled={!canBank}
-              className={`text-lg font-bold transition-all ${
+              className={`text-xl font-bold transition-all ${
                 canBank
                   ? 'text-white active:scale-95'
-                  : 'bg-gray-600 text-gray-300 cursor-not-allowed'
+                  : 'text-gray-300 cursor-not-allowed'
               }`}
               style={{ 
                 width: '50%',
@@ -426,8 +426,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 textTransform: "uppercase" as const,
                 border: 'none',
                 borderRadius: '0',
-                background: canBank ? "linear-gradient(135deg, #22C55E 0%, transparent 100%)" : '#6B7280',
-                backdropFilter: 'blur(6px)',
+                background: canBank ? "rgba(34, 197, 94, 0.6)" : 'rgba(107, 114, 128, 0.6)',
+                backdropFilter: 'blur(10px)',
               }}
             >
               BANK
