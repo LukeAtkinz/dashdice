@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
+import { useBackground } from '@/context/BackgroundContext';
 import { validateDisplayName } from '@/utils/contentModeration';
 
 // Inline form hook
@@ -50,6 +51,7 @@ const useForm = <T extends Record<string, string>>(initialValues: T) => {
 export const ProfileSection: React.FC = () => {
   const { user, signOut, updateUserProfile } = useAuth();
   const { currentSection } = useNavigation();
+  const { DisplayBackgroundEquip } = useBackground();
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'profile' | 'settings'>('profile');
   
@@ -78,6 +80,54 @@ export const ProfileSection: React.FC = () => {
     language: 'en',
     animationSpeed: 'normal'
   });
+
+  // Get background-based styling
+  const getBackgroundStyle = () => {
+    if (DisplayBackgroundEquip?.name === 'On A Mission') {
+      return {
+        cardBackground: 'rgba(14, 165, 233, 0.15)',
+        borderColor: 'rgba(14, 165, 233, 0.3)',
+        textPrimary: '#0EA5E9',
+        textSecondary: 'rgba(14, 165, 233, 0.8)'
+      };
+    } else if (DisplayBackgroundEquip?.name === 'Long Road Ahead') {
+      return {
+        cardBackground: 'rgba(124, 58, 237, 0.15)',
+        borderColor: 'rgba(124, 58, 237, 0.3)',
+        textPrimary: '#7C3AED',
+        textSecondary: 'rgba(124, 58, 237, 0.8)'
+      };
+    } else if (DisplayBackgroundEquip?.name === 'New Day') {
+      return {
+        cardBackground: 'rgba(90, 117, 121, 0.15)',
+        borderColor: 'rgba(90, 117, 121, 0.3)',
+        textPrimary: '#5A7579',
+        textSecondary: 'rgba(90, 117, 121, 0.8)'
+      };
+    } else if (DisplayBackgroundEquip?.name === 'Relax') {
+      return {
+        cardBackground: 'rgba(64, 112, 128, 0.15)',
+        borderColor: 'rgba(64, 112, 128, 0.3)',
+        textPrimary: '#407080',
+        textSecondary: 'rgba(64, 112, 128, 0.8)'
+      };
+    } else if (DisplayBackgroundEquip?.name === 'Underwater') {
+      return {
+        cardBackground: 'rgba(0, 81, 140, 0.15)',
+        borderColor: 'rgba(0, 81, 140, 0.3)',
+        textPrimary: '#00518C',
+        textSecondary: 'rgba(0, 81, 140, 0.8)'
+      };
+    }
+    return {
+      cardBackground: 'rgba(59, 130, 246, 0.15)',
+      borderColor: 'rgba(59, 130, 246, 0.3)',
+      textPrimary: '#3B82F6',
+      textSecondary: 'rgba(59, 130, 246, 0.8)'
+    };
+  };
+
+  const bgStyle = getBackgroundStyle();
 
   const handleUpdateProfile = profileForm.handleSubmit(async (values) => {
     try {
@@ -162,207 +212,485 @@ export const ProfileSection: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-4">
-      {/* Navigation Tabs - Mobile Full Width, Desktop Styled */}
-      <Card>
-        <CardContent className="p-2 md:p-4">
-          <div className="flex md:flex-row flex-col md:space-x-2 space-y-2 md:space-y-0">
-            <Button
-              variant={activeTab === 'profile' ? 'primary' : 'secondary'}
-              onClick={() => setActiveTab('profile')}
-              className="w-full md:w-auto flex-1 md:flex-none text-sm md:text-base font-semibold"
-            >
-              PROFILE
-            </Button>
-            <Button
-              variant={activeTab === 'settings' ? 'primary' : 'secondary'}
-              onClick={() => setActiveTab('settings')}
-              className="w-full md:w-auto flex-1 md:flex-none text-sm md:text-base font-semibold"
-            >
-              SETTINGS
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="space-y-4 md:space-y-6">
+      {/* Navigation Tabs - Matching Inventory Component Style */}
+      <div 
+        className="rounded-3xl p-3 md:p-4 backdrop-blur-md border"
+        style={{
+          background: bgStyle.cardBackground,
+          borderColor: bgStyle.borderColor,
+          backdropFilter: 'blur(10px)'
+        }}
+      >
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant={activeTab === 'profile' ? 'primary' : 'outline'}
+            onClick={() => setActiveTab('profile')}
+            className="flex items-center space-x-2 text-sm md:text-base font-audiowide"
+            style={{
+              fontFamily: 'Audiowide',
+              background: activeTab === 'profile' ? bgStyle.textPrimary : 'transparent',
+              borderColor: bgStyle.borderColor,
+              color: activeTab === 'profile' ? '#FFFFFF' : bgStyle.textPrimary
+            }}
+          >
+            <span>👤</span>
+            <span>PROFILE</span>
+            <span className="bg-white bg-opacity-20 px-1.5 py-0.5 rounded text-xs">
+              Personal
+            </span>
+          </Button>
+          <Button
+            variant={activeTab === 'settings' ? 'primary' : 'outline'}
+            onClick={() => setActiveTab('settings')}
+            className="flex items-center space-x-2 text-sm md:text-base font-audiowide"
+            style={{
+              fontFamily: 'Audiowide',
+              background: activeTab === 'settings' ? bgStyle.textPrimary : 'transparent',
+              borderColor: bgStyle.borderColor,
+              color: activeTab === 'settings' ? '#FFFFFF' : bgStyle.textPrimary
+            }}
+          >
+            <span>⚙️</span>
+            <span>SETTINGS</span>
+            <span className="bg-white bg-opacity-20 px-1.5 py-0.5 rounded text-xs">
+              Game
+            </span>
+          </Button>
+        </div>
+      </div>
 
       {/* Profile Tab Content */}
       {activeTab === 'profile' && (
-        <div className="space-y-6">
-          <div className="text-center">
-            <h1 className="text-3xl font-orbitron font-bold text-gray-900 mb-2">
-              Profile
+        <div className="space-y-4 md:space-y-6">
+          {/* Profile Header */}
+          <div 
+            className="text-center rounded-3xl p-6 md:p-8 backdrop-blur-md border"
+            style={{
+              background: bgStyle.cardBackground,
+              borderColor: bgStyle.borderColor,
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <h1 
+              className="text-2xl md:text-4xl font-bold mb-2 md:mb-4"
+              style={{ 
+                fontFamily: 'Audiowide', 
+                color: bgStyle.textPrimary,
+                textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+              }}
+            >
+              PROFILE
             </h1>
-            <p className="text-gray-600">
-              Manage your account and view achievements
+            <p 
+              className="text-sm md:text-lg"
+              style={{ 
+                fontFamily: 'Audiowide', 
+                color: bgStyle.textSecondary 
+              }}
+            >
+              Manage your account and achievements
             </p>
           </div>
 
           {/* Profile Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleUpdateProfile} className="space-y-4">
-                <div className="flex items-center space-x-4 mb-6">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-2xl text-white font-bold">
-                    {user?.displayName?.charAt(0)?.toUpperCase() || '?'}
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold">{user?.displayName || 'Unknown User'}</h3>
-                    <p className="text-gray-600">Member since {user?.createdAt?.toLocaleDateString()}</p>
-                  </div>
+          <div 
+            className="rounded-3xl p-4 md:p-6 backdrop-blur-md border"
+            style={{
+              background: bgStyle.cardBackground,
+              borderColor: bgStyle.borderColor,
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <h2 
+              className="text-lg md:text-xl font-bold mb-4 md:mb-6"
+              style={{ 
+                fontFamily: 'Audiowide', 
+                color: bgStyle.textPrimary 
+              }}
+            >
+              PROFILE INFORMATION
+            </h2>
+            <form onSubmit={handleUpdateProfile} className="space-y-4 md:space-y-6">
+              <div className="flex items-center space-x-4 mb-6">
+                <div 
+                  className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center text-xl md:text-2xl text-white font-bold border-2"
+                  style={{
+                    background: `linear-gradient(135deg, ${bgStyle.textPrimary} 0%, ${bgStyle.textSecondary} 100%)`,
+                    borderColor: bgStyle.borderColor
+                  }}
+                >
+                  {user?.displayName?.charAt(0)?.toUpperCase() || '?'}
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Display Name
-                  </label>
-                  <Input
-                    type="text"
-                    value={profileForm.values.displayName}
-                    onChange={(e) => profileForm.handleChange('displayName', e.target.value)}
-                    error={profileForm.errors.displayName}
-                    placeholder="Enter your display name"
-                    maxLength={12}
-                    helperText="2-12 characters, no inappropriate content"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address
-                  </label>
-                  <Input
-                    type="email"
-                    value={profileForm.values.email}
-                    onChange={(e) => profileForm.handleChange('email', e.target.value)}
-                    placeholder="Enter your email"
-                    disabled
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Email cannot be changed at this time
+                  <h3 
+                    className="text-base md:text-lg font-semibold"
+                    style={{ 
+                      fontFamily: 'Audiowide', 
+                      color: bgStyle.textPrimary 
+                    }}
+                  >
+                    {user?.displayName || 'Unknown User'}
+                  </h3>
+                  <p 
+                    className="text-sm md:text-base"
+                    style={{ color: bgStyle.textSecondary }}
+                  >
+                    Member since {user?.createdAt?.toLocaleDateString()}
                   </p>
                 </div>
+              </div>
 
-                {successMessage && (
-                  <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded-md">
-                    {successMessage}
-                  </div>
-                )}
+              <div>
+                <label 
+                  className="block text-sm font-medium mb-2"
+                  style={{ 
+                    fontFamily: 'Audiowide', 
+                    color: bgStyle.textPrimary 
+                  }}
+                >
+                  Display Name
+                </label>
+                <Input
+                  type="text"
+                  value={profileForm.values.displayName}
+                  onChange={(e) => profileForm.handleChange('displayName', e.target.value)}
+                  error={profileForm.errors.displayName}
+                  placeholder="Enter your display name"
+                  maxLength={12}
+                  helperText="2-12 characters, no inappropriate content"
+                  className="rounded-2xl"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    borderColor: bgStyle.borderColor,
+                    color: bgStyle.textPrimary
+                  }}
+                />
+              </div>
 
-                <div className="flex space-x-3">
-                  <Button
-                    type="submit"
-                    disabled={profileForm.isSubmitting}
-                  >
-                    {profileForm.isSubmitting ? 'Updating...' : 'Update Profile'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="danger"
-                    onClick={handleSignOut}
-                  >
-                    Sign Out
-                  </Button>
+              <div>
+                <label 
+                  className="block text-sm font-medium mb-2"
+                  style={{ 
+                    fontFamily: 'Audiowide', 
+                    color: bgStyle.textPrimary 
+                  }}
+                >
+                  Email Address
+                </label>
+                <Input
+                  type="email"
+                  value={profileForm.values.email}
+                  onChange={(e) => profileForm.handleChange('email', e.target.value)}
+                  placeholder="Enter your email"
+                  disabled
+                  className="rounded-2xl"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    borderColor: bgStyle.borderColor,
+                    color: bgStyle.textSecondary
+                  }}
+                />
+                <p 
+                  className="text-xs mt-1"
+                  style={{ color: bgStyle.textSecondary }}
+                >
+                  Email cannot be changed at this time
+                </p>
+              </div>
+
+              {successMessage && (
+                <div 
+                  className="p-3 border rounded-2xl"
+                  style={{
+                    background: 'rgba(34, 197, 94, 0.2)',
+                    borderColor: 'rgba(34, 197, 94, 0.5)',
+                    color: '#22C55E'
+                  }}
+                >
+                  {successMessage}
                 </div>
-              </form>
-            </CardContent>
-          </Card>
+              )}
+
+              <div className="flex space-x-3">
+                <Button
+                  type="submit"
+                  disabled={profileForm.isSubmitting}
+                  className="rounded-2xl font-audiowide"
+                  style={{
+                    background: bgStyle.textPrimary,
+                    fontFamily: 'Audiowide'
+                  }}
+                >
+                  {profileForm.isSubmitting ? 'UPDATING...' : 'UPDATE PROFILE'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSignOut}
+                  className="rounded-2xl font-audiowide"
+                  style={{
+                    borderColor: '#EF4444',
+                    color: '#EF4444',
+                    fontFamily: 'Audiowide'
+                  }}
+                >
+                  SIGN OUT
+                </Button>
+              </div>
+            </form>
+          </div>
 
           {/* Account Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Account Statistics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">24</div>
-                  <div className="text-sm text-gray-600">Games Played</div>
+          <div 
+            className="rounded-3xl p-4 md:p-6 backdrop-blur-md border"
+            style={{
+              background: bgStyle.cardBackground,
+              borderColor: bgStyle.borderColor,
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <h2 
+              className="text-lg md:text-xl font-bold mb-4 md:mb-6"
+              style={{ 
+                fontFamily: 'Audiowide', 
+                color: bgStyle.textPrimary 
+              }}
+            >
+              ACCOUNT STATISTICS
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div 
+                  className="text-2xl md:text-3xl font-bold"
+                  style={{ 
+                    fontFamily: 'Audiowide', 
+                    color: bgStyle.textPrimary 
+                  }}
+                >
+                  24
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">16</div>
-                  <div className="text-sm text-gray-600">Games Won</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">42</div>
-                  <div className="text-sm text-gray-600">Items Collected</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600">5</div>
-                  <div className="text-sm text-gray-600">Current Streak</div>
+                <div 
+                  className="text-xs md:text-sm mt-1"
+                  style={{ 
+                    fontFamily: 'Audiowide', 
+                    color: bgStyle.textSecondary 
+                  }}
+                >
+                  GAMES PLAYED
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              <div className="text-center">
+                <div 
+                  className="text-2xl md:text-3xl font-bold"
+                  style={{ 
+                    fontFamily: 'Audiowide', 
+                    color: '#22C55E' 
+                  }}
+                >
+                  16
+                </div>
+                <div 
+                  className="text-xs md:text-sm mt-1"
+                  style={{ 
+                    fontFamily: 'Audiowide', 
+                    color: bgStyle.textSecondary 
+                  }}
+                >
+                  GAMES WON
+                </div>
+              </div>
+              <div className="text-center">
+                <div 
+                  className="text-2xl md:text-3xl font-bold"
+                  style={{ 
+                    fontFamily: 'Audiowide', 
+                    color: '#A855F7' 
+                  }}
+                >
+                  42
+                </div>
+                <div 
+                  className="text-xs md:text-sm mt-1"
+                  style={{ 
+                    fontFamily: 'Audiowide', 
+                    color: bgStyle.textSecondary 
+                  }}
+                >
+                  ITEMS COLLECTED
+                </div>
+              </div>
+              <div className="text-center">
+                <div 
+                  className="text-2xl md:text-3xl font-bold"
+                  style={{ 
+                    fontFamily: 'Audiowide', 
+                    color: '#F59E0B' 
+                  }}
+                >
+                  5
+                </div>
+                <div 
+                  className="text-xs md:text-sm mt-1"
+                  style={{ 
+                    fontFamily: 'Audiowide', 
+                    color: bgStyle.textSecondary 
+                  }}
+                >
+                  CURRENT STREAK
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Achievements */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Achievements</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {achievements.map((achievement, index) => (
-                  <div
-                    key={index}
-                    className={`flex items-center space-x-3 p-3 rounded-lg ${
-                      achievement.completed ? 'bg-green-50 border border-green-200' : 'bg-gray-50'
-                    }`}
-                  >
-                    <div className={`text-2xl ${achievement.completed ? '' : 'grayscale opacity-50'}`}>
-                      {achievement.icon}
-                    </div>
-                    <div className="flex-1">
-                      <div className={`font-medium ${achievement.completed ? 'text-green-800' : 'text-gray-700'}`}>
-                        {achievement.name}
-                      </div>
-                      <div className={`text-sm ${achievement.completed ? 'text-green-600' : 'text-gray-500'}`}>
-                        {achievement.description}
-                      </div>
-                    </div>
-                    {achievement.completed && (
-                      <div className="text-green-600 font-semibold text-sm">
-                        ✓ Completed
-                      </div>
-                    )}
+          <div 
+            className="rounded-3xl p-4 md:p-6 backdrop-blur-md border"
+            style={{
+              background: bgStyle.cardBackground,
+              borderColor: bgStyle.borderColor,
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <h2 
+              className="text-lg md:text-xl font-bold mb-4 md:mb-6"
+              style={{ 
+                fontFamily: 'Audiowide', 
+                color: bgStyle.textPrimary 
+              }}
+            >
+              ACHIEVEMENTS
+            </h2>
+            <div className="space-y-3">
+              {achievements.map((achievement, index) => (
+                <div
+                  key={index}
+                  className="flex items-center space-x-3 p-3 md:p-4 rounded-2xl border"
+                  style={{
+                    background: achievement.completed 
+                      ? 'rgba(34, 197, 94, 0.2)' 
+                      : 'rgba(255, 255, 255, 0.05)',
+                    borderColor: achievement.completed 
+                      ? 'rgba(34, 197, 94, 0.5)' 
+                      : bgStyle.borderColor
+                  }}
+                >
+                  <div className={`text-2xl ${achievement.completed ? '' : 'grayscale opacity-50'}`}>
+                    {achievement.icon}
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  <div className="flex-1">
+                    <div 
+                      className="font-medium text-sm md:text-base"
+                      style={{ 
+                        fontFamily: 'Audiowide',
+                        color: achievement.completed ? '#22C55E' : bgStyle.textPrimary
+                      }}
+                    >
+                      {achievement.name}
+                    </div>
+                    <div 
+                      className="text-xs md:text-sm mt-1"
+                      style={{ 
+                        color: achievement.completed ? 'rgba(34, 197, 94, 0.8)' : bgStyle.textSecondary
+                      }}
+                    >
+                      {achievement.description}
+                    </div>
+                  </div>
+                  {achievement.completed && (
+                    <div 
+                      className="font-semibold text-xs md:text-sm"
+                      style={{ 
+                        fontFamily: 'Audiowide',
+                        color: '#22C55E' 
+                      }}
+                    >
+                      ✓ COMPLETED
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
       {/* Settings Tab Content */}
       {activeTab === 'settings' && (
-        <div className="space-y-6">
-          <div className="text-center">
-            <h1 className="text-3xl font-orbitron font-bold text-gray-900 mb-2">
-              Settings
+        <div className="space-y-4 md:space-y-6">
+          {/* Settings Header */}
+          <div 
+            className="text-center rounded-3xl p-6 md:p-8 backdrop-blur-md border"
+            style={{
+              background: bgStyle.cardBackground,
+              borderColor: bgStyle.borderColor,
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <h1 
+              className="text-2xl md:text-4xl font-bold mb-2 md:mb-4"
+              style={{ 
+                fontFamily: 'Audiowide', 
+                color: bgStyle.textPrimary,
+                textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+              }}
+            >
+              SETTINGS
             </h1>
-            <p className="text-gray-600">
+            <p 
+              className="text-sm md:text-lg"
+              style={{ 
+                fontFamily: 'Audiowide', 
+                color: bgStyle.textSecondary 
+              }}
+            >
               Customize your gaming experience
             </p>
           </div>
 
           {/* General Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>General</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div 
+            className="rounded-3xl p-4 md:p-6 backdrop-blur-md border"
+            style={{
+              background: bgStyle.cardBackground,
+              borderColor: bgStyle.borderColor,
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <h2 
+              className="text-lg md:text-xl font-bold mb-4 md:mb-6"
+              style={{ 
+                fontFamily: 'Audiowide', 
+                color: bgStyle.textPrimary 
+              }}
+            >
+              GENERAL
+            </h2>
+            <div className="space-y-4 md:space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-medium">Notifications</div>
-                  <div className="text-sm text-gray-600">Receive game alerts and updates</div>
+                  <div 
+                    className="font-medium text-sm md:text-base"
+                    style={{ 
+                      fontFamily: 'Audiowide', 
+                      color: bgStyle.textPrimary 
+                    }}
+                  >
+                    NOTIFICATIONS
+                  </div>
+                  <div 
+                    className="text-xs md:text-sm mt-1"
+                    style={{ color: bgStyle.textSecondary }}
+                  >
+                    Receive game alerts and updates
+                  </div>
                 </div>
                 <button
                   onClick={() => handleToggle('notifications')}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    settings.notifications ? 'bg-blue-600' : 'bg-gray-200'
-                  }`}
+                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+                  style={{
+                    background: settings.notifications ? bgStyle.textPrimary : 'rgba(107, 114, 128, 0.5)'
+                  }}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -374,14 +702,28 @@ export const ProfileSection: React.FC = () => {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-medium">Sound Effects</div>
-                  <div className="text-sm text-gray-600">Enable game sound effects</div>
+                  <div 
+                    className="font-medium text-sm md:text-base"
+                    style={{ 
+                      fontFamily: 'Audiowide', 
+                      color: bgStyle.textPrimary 
+                    }}
+                  >
+                    SOUND EFFECTS
+                  </div>
+                  <div 
+                    className="text-xs md:text-sm mt-1"
+                    style={{ color: bgStyle.textSecondary }}
+                  >
+                    Enable game sound effects
+                  </div>
                 </div>
                 <button
                   onClick={() => handleToggle('soundEffects')}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    settings.soundEffects ? 'bg-blue-600' : 'bg-gray-200'
-                  }`}
+                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+                  style={{
+                    background: settings.soundEffects ? bgStyle.textPrimary : 'rgba(107, 114, 128, 0.5)'
+                  }}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -393,14 +735,28 @@ export const ProfileSection: React.FC = () => {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-medium">Auto-Save</div>
-                  <div className="text-sm text-gray-600">Automatically save game progress</div>
+                  <div 
+                    className="font-medium text-sm md:text-base"
+                    style={{ 
+                      fontFamily: 'Audiowide', 
+                      color: bgStyle.textPrimary 
+                    }}
+                  >
+                    AUTO-SAVE
+                  </div>
+                  <div 
+                    className="text-xs md:text-sm mt-1"
+                    style={{ color: bgStyle.textSecondary }}
+                  >
+                    Automatically save game progress
+                  </div>
                 </div>
                 <button
                   onClick={() => handleToggle('autoSave')}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    settings.autoSave ? 'bg-blue-600' : 'bg-gray-200'
-                  }`}
+                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+                  style={{
+                    background: settings.autoSave ? bgStyle.textPrimary : 'rgba(107, 114, 128, 0.5)'
+                  }}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -409,19 +765,45 @@ export const ProfileSection: React.FC = () => {
                   />
                 </button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Audio Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Audio</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+          <div 
+            className="rounded-3xl p-4 md:p-6 backdrop-blur-md border"
+            style={{
+              background: bgStyle.cardBackground,
+              borderColor: bgStyle.borderColor,
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <h2 
+              className="text-lg md:text-xl font-bold mb-4 md:mb-6"
+              style={{ 
+                fontFamily: 'Audiowide', 
+                color: bgStyle.textPrimary 
+              }}
+            >
+              AUDIO
+            </h2>
+            <div className="space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="font-medium">Music Volume</label>
-                  <span className="text-sm text-gray-600">{settings.musicVolume}%</span>
+                  <label 
+                    className="font-medium text-sm md:text-base"
+                    style={{ 
+                      fontFamily: 'Audiowide', 
+                      color: bgStyle.textPrimary 
+                    }}
+                  >
+                    MUSIC VOLUME
+                  </label>
+                  <span 
+                    className="text-sm"
+                    style={{ color: bgStyle.textSecondary }}
+                  >
+                    {settings.musicVolume}%
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -429,14 +811,30 @@ export const ProfileSection: React.FC = () => {
                   max="100"
                   value={settings.musicVolume}
                   onChange={(e) => handleSliderChange('musicVolume', parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, ${bgStyle.textPrimary} 0%, ${bgStyle.textPrimary} ${settings.musicVolume}%, rgba(107, 114, 128, 0.3) ${settings.musicVolume}%, rgba(107, 114, 128, 0.3) 100%)`
+                  }}
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="font-medium">Sound Effects Volume</label>
-                  <span className="text-sm text-gray-600">{settings.sfxVolume}%</span>
+                  <label 
+                    className="font-medium text-sm md:text-base"
+                    style={{ 
+                      fontFamily: 'Audiowide', 
+                      color: bgStyle.textPrimary 
+                    }}
+                  >
+                    SOUND EFFECTS VOLUME
+                  </label>
+                  <span 
+                    className="text-sm"
+                    style={{ color: bgStyle.textSecondary }}
+                  >
+                    {settings.sfxVolume}%
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -444,78 +842,155 @@ export const ProfileSection: React.FC = () => {
                   max="100"
                   value={settings.sfxVolume}
                   onChange={(e) => handleSliderChange('sfxVolume', parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, ${bgStyle.textPrimary} 0%, ${bgStyle.textPrimary} ${settings.sfxVolume}%, rgba(107, 114, 128, 0.3) ${settings.sfxVolume}%, rgba(107, 114, 128, 0.3) 100%)`
+                  }}
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Appearance Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Appearance</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div 
+            className="rounded-3xl p-4 md:p-6 backdrop-blur-md border"
+            style={{
+              background: bgStyle.cardBackground,
+              borderColor: bgStyle.borderColor,
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <h2 
+              className="text-lg md:text-xl font-bold mb-4 md:mb-6"
+              style={{ 
+                fontFamily: 'Audiowide', 
+                color: bgStyle.textPrimary 
+              }}
+            >
+              APPEARANCE
+            </h2>
+            <div className="space-y-4 md:space-y-6">
               <div>
-                <label className="block font-medium mb-2">Theme</label>
+                <label 
+                  className="block font-medium mb-2 text-sm md:text-base"
+                  style={{ 
+                    fontFamily: 'Audiowide', 
+                    color: bgStyle.textPrimary 
+                  }}
+                >
+                  THEME
+                </label>
                 <select
                   value={settings.theme}
                   onChange={(e) => handleSelectChange('theme', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 rounded-2xl focus:outline-none focus:ring-2 text-sm md:text-base"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    borderColor: bgStyle.borderColor,
+                    color: bgStyle.textPrimary,
+                    border: `2px solid ${bgStyle.borderColor}`,
+                    fontFamily: 'Audiowide'
+                  }}
                 >
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                  <option value="auto">Auto</option>
+                  <option value="light" style={{ background: '#1a1a1a', color: '#fff' }}>LIGHT</option>
+                  <option value="dark" style={{ background: '#1a1a1a', color: '#fff' }}>DARK</option>
+                  <option value="auto" style={{ background: '#1a1a1a', color: '#fff' }}>AUTO</option>
                 </select>
               </div>
 
               <div>
-                <label className="block font-medium mb-2">Animation Speed</label>
+                <label 
+                  className="block font-medium mb-2 text-sm md:text-base"
+                  style={{ 
+                    fontFamily: 'Audiowide', 
+                    color: bgStyle.textPrimary 
+                  }}
+                >
+                  ANIMATION SPEED
+                </label>
                 <select
                   value={settings.animationSpeed}
                   onChange={(e) => handleSelectChange('animationSpeed', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 rounded-2xl focus:outline-none focus:ring-2 text-sm md:text-base"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    borderColor: bgStyle.borderColor,
+                    color: bgStyle.textPrimary,
+                    border: `2px solid ${bgStyle.borderColor}`,
+                    fontFamily: 'Audiowide'
+                  }}
                 >
-                  <option value="slow">Slow</option>
-                  <option value="normal">Normal</option>
-                  <option value="fast">Fast</option>
+                  <option value="slow" style={{ background: '#1a1a1a', color: '#fff' }}>SLOW</option>
+                  <option value="normal" style={{ background: '#1a1a1a', color: '#fff' }}>NORMAL</option>
+                  <option value="fast" style={{ background: '#1a1a1a', color: '#fff' }}>FAST</option>
                 </select>
               </div>
 
               <div>
-                <label className="block font-medium mb-2">Language</label>
+                <label 
+                  className="block font-medium mb-2 text-sm md:text-base"
+                  style={{ 
+                    fontFamily: 'Audiowide', 
+                    color: bgStyle.textPrimary 
+                  }}
+                >
+                  LANGUAGE
+                </label>
                 <select
                   value={settings.language}
                   onChange={(e) => handleSelectChange('language', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 rounded-2xl focus:outline-none focus:ring-2 text-sm md:text-base"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    borderColor: bgStyle.borderColor,
+                    color: bgStyle.textPrimary,
+                    border: `2px solid ${bgStyle.borderColor}`,
+                    fontFamily: 'Audiowide'
+                  }}
                 >
-                  <option value="en">English</option>
-                  <option value="es">Spanish</option>
-                  <option value="fr">French</option>
-                  <option value="de">German</option>
+                  <option value="en" style={{ background: '#1a1a1a', color: '#fff' }}>ENGLISH</option>
+                  <option value="es" style={{ background: '#1a1a1a', color: '#fff' }}>SPANISH</option>
+                  <option value="fr" style={{ background: '#1a1a1a', color: '#fff' }}>FRENCH</option>
+                  <option value="de" style={{ background: '#1a1a1a', color: '#fff' }}>GERMAN</option>
                 </select>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Action Buttons */}
-          <Card>
-            <CardContent className="flex space-x-3">
+          <div 
+            className="rounded-3xl p-4 md:p-6 backdrop-blur-md border"
+            style={{
+              background: bgStyle.cardBackground,
+              borderColor: bgStyle.borderColor,
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3">
               <Button
                 onClick={handleSaveSettings}
-                className="flex-1"
+                className="flex-1 rounded-2xl font-audiowide text-sm md:text-base py-3"
+                style={{
+                  background: bgStyle.textPrimary,
+                  fontFamily: 'Audiowide'
+                }}
               >
-                Save Settings
+                SAVE SETTINGS
               </Button>
               <Button
-                variant="secondary"
+                variant="outline"
                 onClick={handleResetSettings}
-                className="flex-1"
+                className="flex-1 rounded-2xl font-audiowide text-sm md:text-base py-3"
+                style={{
+                  borderColor: bgStyle.borderColor,
+                  color: bgStyle.textPrimary,
+                  fontFamily: 'Audiowide'
+                }}
               >
-                Reset to Defaults
+                RESET TO DEFAULTS
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       )}
     </div>

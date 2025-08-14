@@ -401,8 +401,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 textTransform: "uppercase" as const,
                 border: 'none',
                 borderRadius: '0',
-                background: canRoll ? "rgba(59, 130, 246, 0.6)" : 'rgba(107, 114, 128, 0.6)',
-                backdropFilter: 'blur(10px)',
+                background: canRoll ? "rgba(59, 130, 246, 0.4)" : 'rgba(107, 114, 128, 0.4)',
+                backdropFilter: 'blur(2px)',
               }}
             >
               PLAY
@@ -426,8 +426,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 textTransform: "uppercase" as const,
                 border: 'none',
                 borderRadius: '0',
-                background: canBank ? "rgba(34, 197, 94, 0.6)" : 'rgba(107, 114, 128, 0.6)',
-                backdropFilter: 'blur(10px)',
+                background: canBank ? "rgba(34, 197, 94, 0.4)" : 'rgba(107, 114, 128, 0.4)',
+                backdropFilter: 'blur(2px)',
               }}
             >
               BANK

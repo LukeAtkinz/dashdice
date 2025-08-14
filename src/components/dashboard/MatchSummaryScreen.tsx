@@ -511,8 +511,8 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
             textTransform: "uppercase" as const,
             border: 'none',
             borderRadius: '0',
-            background: "rgba(0, 255, 128, 0.6)",
-            backdropFilter: 'blur(10px)',
+            background: "rgba(0, 255, 128, 0.4)",
+            backdropFilter: 'blur(2px)',
           }}
         >
           <span className="text-center">DASHBOARD</span>
@@ -529,8 +529,8 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
               textTransform: "uppercase" as const,
               border: 'none',
               borderRadius: '0',
-              background: "rgba(255, 0, 128, 0.6)",
-              backdropFilter: 'blur(10px)',
+              background: "rgba(255, 0, 128, 0.4)",
+              backdropFilter: 'blur(2px)',
             }}
           >
             <span className="text-center">REMATCH</span>

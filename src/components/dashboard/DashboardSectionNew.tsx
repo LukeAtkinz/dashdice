@@ -288,8 +288,10 @@ export const DashboardSection: React.FC = () => {
                       onTouchEnd={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
+                        console.log(`🎮 ${mode.toUpperCase()} LIVE TOUCH END!`);
+                        handleGameModeAction(mode, 'live');
                       }}
-                      className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
+                      className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300 pointer-events-auto"
                       style={{
                         borderRadius: '30px',
                         background: getLivePlayButtonBackground(),
@@ -298,11 +300,14 @@ export const DashboardSection: React.FC = () => {
                         justifyContent: 'center',
                         border: 0,
                         boxShadow: '0 4px 15px rgba(25, 46, 57, 0.3)',
-                        touchAction: 'manipulation'
+                        touchAction: 'manipulation',
+                        zIndex: 10,
+                        position: 'relative',
+                        cursor: 'pointer'
                       }}
                     >
                       <span
-                        className="text-[20px] md:text-[28px] leading-[24px] md:leading-[40px]"
+                        className="text-[20px] md:text-[28px] leading-[24px] md:leading-[40px] pointer-events-none"
                         style={{
                           color: '#E2E2E2',
                           textAlign: 'center',
@@ -325,8 +330,10 @@ export const DashboardSection: React.FC = () => {
                       onTouchEnd={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
+                        console.log(`🎮 ${mode.toUpperCase()} CUSTOM TOUCH END!`);
+                        alert('Coming Soon!');
                       }}
-                      className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300"
+                      className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300 pointer-events-auto"
                       style={{
                         borderRadius: '30px',
                         background: 'var(--ui-button-bg)',
@@ -335,11 +342,14 @@ export const DashboardSection: React.FC = () => {
                         justifyContent: 'center',
                         border: 0,
                         boxShadow: '0 4px 15px rgba(255, 0, 128, 0.3)',
-                        touchAction: 'manipulation'
+                        touchAction: 'manipulation',
+                        zIndex: 10,
+                        position: 'relative',
+                        cursor: 'pointer'
                       }}
                     >
                       <span
-                        className="text-[20px] md:text-[28px] leading-[24px] md:leading-[40px]"
+                        className="text-[20px] md:text-[28px] leading-[24px] md:leading-[40px] pointer-events-none"
                         style={{
                           color: '#E2E2E2',
                           textAlign: 'center',
