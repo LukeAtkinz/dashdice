@@ -162,9 +162,10 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           transition={{ duration: 0.3 }}
         >
           <div 
-            className="inline-block px-4 md:px-8 py-3 md:py-4 border-2 border-white/30 rounded-2xl backdrop-blur-sm min-w-[250px] md:min-w-[300px]"
+            className="inline-block px-4 md:px-8 py-3 md:py-4 border-2 border-white/30 rounded-2xl min-w-[250px] md:min-w-[300px]"
             style={{
-              background: "linear-gradient(135deg, rgba(120, 119, 198, 0.6) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(120, 119, 198, 0.6) 100%), linear-gradient(180deg, rgba(53, 51, 205, 0.8) 0%, rgba(114, 9, 183, 0.8) 100%)"
+              background: "rgba(0, 0, 0, 0.3)",
+              backdropFilter: "blur(5px)"
             }}
           >
             {!isMyTurn ? (
@@ -374,40 +375,34 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
 
       {/* Mobile Fixed Bottom Buttons */}
       <div 
-        className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center z-50 backdrop-blur-sm border-t-2 border-white/20"
+        className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-stretch z-50 backdrop-blur-sm"
         style={{ 
-          paddingTop: '1rem',
-          paddingBottom: 'max(1rem, env(safe-area-inset-bottom) + 0.5rem)',
-          paddingLeft: '1rem',
-          paddingRight: '1rem',
+          height: 'max(70px, env(safe-area-inset-bottom) + 70px)',
           background: getMobileContainerGradient()
         }}
       >
         {isMyTurn ? (
-          <div className="flex gap-3 w-full justify-center">
+          <>
             <button
               onClick={onRollDice}
               disabled={!canRoll}
-              className={`rounded-3xl text-lg font-bold transition-all transform ${
+              className={`text-lg font-bold transition-all ${
                 canRoll
-                  ? 'text-white hover:scale-105 active:scale-95'
-                  : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
+                  ? 'text-white active:scale-95'
+                  : 'bg-gray-600 text-gray-300 cursor-not-allowed'
               }`}
               style={{ 
-                ...(canRoll ? getNavButtonStyle('play') : {
-                  display: 'flex',
-                  width: '209px',
-                  height: '56px',
-                  padding: '4px 16px',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  gap: '10px',
-                  borderRadius: '18px',
-                  fontFamily: "Audiowide",
-                  textTransform: "uppercase" as const,
-                  backgroundColor: '#6B7280',
-                  border: '2px solid #6B7280'
-                }),
+                width: '50%',
+                height: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                fontFamily: "Audiowide",
+                textTransform: "uppercase" as const,
+                border: 'none',
+                borderRadius: '0',
+                background: canRoll ? "linear-gradient(135deg, #3B82F6 0%, transparent 100%)" : '#6B7280',
+                backdropFilter: 'blur(6px)',
               }}
             >
               PLAY
@@ -416,33 +411,30 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             <button
               onClick={onBankScore}
               disabled={!canBank}
-              className={`rounded-3xl text-lg font-bold transition-all transform ${
+              className={`text-lg font-bold transition-all ${
                 canBank
-                  ? 'text-white hover:scale-105 active:scale-95'
-                  : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
+                  ? 'text-white active:scale-95'
+                  : 'bg-gray-600 text-gray-300 cursor-not-allowed'
               }`}
               style={{ 
-                ...(canBank ? getNavButtonStyle('save') : {
-                  display: 'flex',
-                  width: '209px',
-                  height: '56px',
-                  padding: '4px 16px',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  gap: '10px',
-                  borderRadius: '18px',
-                  fontFamily: "Audiowide",
-                  textTransform: "uppercase" as const,
-                  backgroundColor: '#6B7280',
-                  border: '2px solid #6B7280'
-                }),
+                width: '50%',
+                height: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                fontFamily: "Audiowide",
+                textTransform: "uppercase" as const,
+                border: 'none',
+                borderRadius: '0',
+                background: canBank ? "linear-gradient(135deg, #22C55E 0%, transparent 100%)" : '#6B7280',
+                backdropFilter: 'blur(6px)',
               }}
             >
               BANK
             </button>
-          </div>
+          </>
         ) : (
-          <div className="text-center w-full">
+          <div className="w-full h-full flex items-center justify-center">
             <p 
               className="text-gray-300 text-lg"
               style={{ 

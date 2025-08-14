@@ -495,35 +495,47 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
 
       {/* Mobile Nav-Style Buttons - Fixed at bottom like Play/Save buttons */}
       <div
-        className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center justify-center py-4 px-4 z-50 backdrop-blur-sm border-t-2 border-white/20"
+        className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-stretch z-50 backdrop-blur-sm"
         style={{
-          paddingBottom: 'max(1rem, env(safe-area-inset-bottom) + 0.5rem)',
+          height: 'max(70px, env(safe-area-inset-bottom) + 70px)',
           background: 'rgba(0, 0, 0, 0.3)'
         }}
       >
-        <div className="flex w-full justify-center gap-4">
+        <button
+          onClick={onLeaveMatch}
+          className="text-white text-lg font-bold transition-all active:scale-95 flex items-center justify-center"
+          style={{
+            width: rematchState === 'idle' ? '50%' : '100%',
+            height: '100%',
+            fontFamily: "Audiowide",
+            textTransform: "uppercase" as const,
+            border: 'none',
+            borderRadius: '0',
+            background: "linear-gradient(135deg, #00FF80 0%, transparent 100%)",
+            backdropFilter: 'blur(6px)',
+          }}
+        >
+          <span className="text-center">DASHBOARD</span>
+        </button>
+        
+        {rematchState === 'idle' && (
           <button
-            onClick={onLeaveMatch}
-            className="text-white rounded-3xl text-lg font-bold transition-all transform hover:scale-105 active:scale-95 flex flex-col items-center justify-center"
+            onClick={handleRequestRematch}
+            className="text-white text-lg font-bold transition-all active:scale-95 flex items-center justify-center"
             style={{
-              ...getNavButtonStyle('dashboard'),
+              width: '50%',
+              height: '100%',
+              fontFamily: "Audiowide",
+              textTransform: "uppercase" as const,
+              border: 'none',
+              borderRadius: '0',
+              background: "linear-gradient(135deg, #FF0080 0%, transparent 100%)",
+              backdropFilter: 'blur(6px)',
             }}
           >
-            <span className="text-center">DASHBOARD</span>
+            <span className="text-center">REMATCH</span>
           </button>
-          
-          {rematchState === 'idle' && (
-            <button
-              onClick={handleRequestRematch}
-              className="text-white rounded-3xl text-lg font-bold transition-all transform hover:scale-105 active:scale-95 flex flex-col items-center justify-center"
-              style={{
-                ...getNavButtonStyle('rematch'),
-              }}
-            >
-              <span className="text-center">REMATCH</span>
-            </button>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
