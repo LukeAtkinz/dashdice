@@ -159,7 +159,7 @@ export const Match: React.FC<MatchProps> = ({ matchId, onBack }) => {
 
   if (!matchData) {
     return (
-      <div className="min-h-screen relative overflow-hidden flex items-center justify-center">
+      <div className="min-h-screen relative flex items-center justify-center">{/* Removed overflow-hidden */}
         {renderBackground()}
         <div className="relative z-20 text-white text-2xl">Loading match...</div>
       </div>
@@ -170,7 +170,7 @@ export const Match: React.FC<MatchProps> = ({ matchId, onBack }) => {
   const opponent = isHost ? matchData.opponentData : matchData.hostData;
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative">{/* Removed overflow-hidden */}
       {renderBackground()}
       
       {/* Overlay for better content visibility */}

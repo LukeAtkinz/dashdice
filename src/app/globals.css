@@ -157,7 +157,7 @@ body {
 /* Mobile viewport fixes */
 html, body {
   height: 100%;
-  overflow: hidden; /* Prevent scrolling */
+  /* Removed overflow: hidden to allow scrolling */
 }
 
 /* Mobile viewport height fixes */
@@ -175,8 +175,7 @@ html, body {
     height: 100dvh; /* Dynamic viewport height for modern browsers */
     max-height: 100vh;
     max-height: 100dvh;
-    overflow: hidden;
-    position: fixed;
+    /* Removed overflow: hidden and position: fixed to allow scrolling */
     width: 100%;
     touch-action: manipulation; /* Allow touch interactions but prevent bounce */
   }

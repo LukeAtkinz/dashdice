@@ -148,7 +148,7 @@ export const InventorySection: React.FC = () => {
   };
 
   return (
-    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] h-full max-h-full overflow-hidden">
+    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full">{/* Changed overflow-hidden to allow scrolling, removed max-h-full constraint */}
       {/* Header */}
       <div className="text-center mb-8 flex-shrink-0">
         <h1 

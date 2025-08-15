@@ -7,7 +7,7 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative">{/* Removed overflow-hidden to allow scrolling */}
       {/* Video Background */}
       <video
         autoPlay
