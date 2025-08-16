@@ -95,17 +95,29 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
     if (!incomingRematch || !user?.uid) return;
     
     try {
-      console.log('🎮 Accepting rematch...');
+      console.log('🎮 Accepting rematch...', { rematchId: incomingRematch.id, userId: user.uid });
       setRematchState('waiting');
       setIncomingRematch(null); // Clear the incoming request
       
       const newMatchId = await RematchService.acceptRematch(incomingRematch.id, user.uid);
       console.log('✅ Rematch accepted, new match ID:', newMatchId);
       
-      // Navigate to new match
-      if (onRematch) {
-        onRematch(newMatchId);
-      }
+      // Verify match exists before navigating
+      const verifyAndNavigate = async () => {
+        try {
+          // Simple check - try to navigate immediately and let the Match component handle loading
+          if (onRematch) {
+            console.log('🎮 Calling onRematch with newMatchId:', newMatchId);
+            onRematch(newMatchId);
+          }
+        } catch (error) {
+          console.error('❌ Error navigating to rematch:', error);
+          setRematchState('idle');
+        }
+      };
+      
+      // Add a delay to ensure the match is fully created and ready
+      setTimeout(verifyAndNavigate, 2000); // 2 seconds delay
     } catch (error) {
       console.error('❌ Error accepting rematch:', error);
       setRematchState('idle');
@@ -179,7 +191,11 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
           // Navigate to the new match if newMatchId is available
           if (rematchData.newMatchId && onRematch) {
             console.log('🎮 Navigating to new rematch:', rematchData.newMatchId);
-            onRematch(rematchData.newMatchId);
+            
+            // Add a longer delay to ensure proper state cleanup and match readiness
+            setTimeout(() => {
+              onRematch(rematchData.newMatchId!);
+            }, 2000); // Increased to 2 seconds
           }
         } else if (rematchData.status === 'expired' || rematchData.status === 'cancelled') {
           setRematchState('expired');
@@ -493,12 +509,84 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         ))}
       </motion.div>
 
+      {/* Mobile Incoming Rematch Request - Above nav buttons */}
+      {incomingRematch && (
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="md:hidden fixed bottom-20 left-4 right-4 z-40 p-4 bg-green-600/90 border-2 border-green-400 rounded-2xl backdrop-blur-sm"
+        >
+          <div className="text-center">
+            <p className="text-lg font-bold text-white mb-3" style={{ fontFamily: "Audiowide" }}>
+              {opponentDisplayName} wants a rematch!
+            </p>
+            <div className="flex justify-center items-center gap-3">
+              <CountdownTimer
+                initialSeconds={10}
+                onComplete={() => {
+                  setIncomingRematch(null);
+                  setRematchState('expired');
+                }}
+                isActive={true}
+                size="small"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={handleAcceptRematch}
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold text-sm transition-all"
+                  style={{ fontFamily: "Audiowide" }}
+                >
+                  ACCEPT
+                </button>
+                <button
+                  onClick={() => setIncomingRematch(null)}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-sm transition-all"
+                  style={{ fontFamily: "Audiowide" }}
+                >
+                  DECLINE
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Mobile Rematch Status Display - Above nav buttons */}
+      {(rematchState === 'waiting' || rematchState === 'requesting') && (
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="md:hidden fixed bottom-20 left-4 right-4 z-40 p-4 bg-blue-600/90 border-2 border-blue-400 rounded-2xl backdrop-blur-sm"
+        >
+          <div className="text-center">
+            {rematchState === 'waiting' && (
+              <span className="text-white font-bold text-lg" style={{ fontFamily: "Audiowide" }}>
+                REMATCH ACCEPTED - STARTING GAME...
+              </span>
+            )}
+            {rematchState === 'requesting' && (
+              <div className="flex items-center justify-center gap-3">
+                <CountdownTimer
+                  initialSeconds={10}
+                  onComplete={handleRematchTimeout}
+                  isActive={true}
+                  size="small"
+                />
+                <span className="text-white font-bold text-lg" style={{ fontFamily: "Audiowide" }}>
+                  WAITING FOR {opponentDisplayName}
+                </span>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
+
       {/* Mobile Nav-Style Buttons - Fixed at bottom like Play/Save buttons */}
       <div
         className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-stretch z-50 backdrop-blur-sm"
         style={{
           height: 'max(70px, env(safe-area-inset-bottom) + 70px)',
-          background: 'rgba(0, 0, 0, 0.3)'
+          
         }}
       >
         <button
@@ -510,8 +598,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
             fontFamily: "Audiowide",
             textTransform: "uppercase" as const,
             border: 'none',
-            borderRadius: '0',
-            background: "rgba(0, 255, 128, 0.4)",
+            borderRadius: '0',          
             backdropFilter: 'blur(2px)',
           }}
         >
@@ -529,7 +616,6 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
               textTransform: "uppercase" as const,
               border: 'none',
               borderRadius: '0',
-              background: "rgba(255, 0, 128, 0.4)",
               backdropFilter: 'blur(2px)',
             }}
           >

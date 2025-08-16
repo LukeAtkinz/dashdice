@@ -10,7 +10,7 @@ import { MatchSection } from '@/components/dashboard/MatchSectionNew';
 import { Match } from '@/components/dashboard/Match';
 import { GameWaitingRoom } from '@/components/dashboard/GameWaitingRoom';
 import { InventorySection } from '@/components/dashboard/InventoryReference';
-import { ProfileSection } from '@/components/dashboard/ProfileSection';
+import ProfileSection from '@/components/dashboard/ProfileSection';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { useBrowserRefresh } from '@/hooks/useBrowserRefresh';
@@ -468,6 +468,7 @@ const DashboardContent: React.FC = () => {
               >
                 {currentSection === 'match' && (
                   <Match 
+                    key={`match-${sectionParams.matchId || "dev-room-123"}`}
                     gameMode={sectionParams.gameMode}
                     roomId={sectionParams.matchId || "dev-room-123"}
                   />

@@ -158,6 +158,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     console.log('🎮 Match: Subscribing to match:', roomId);
     setLoading(true);
     setError(null);
+    setMatchData(null); // Clear previous match data
+    
+    // Reset all game state when switching matches
+    setShowGameOverScreen(false);
+    setTurnAnnouncementShown(false);
+    setDice1Animation({ isSpinning: false, currentNumber: 1, finalNumber: null, reelSpeed: 0.1 });
+    setDice2Animation({ isSpinning: false, currentNumber: 1, finalNumber: null, reelSpeed: 0.1 });
+    setTurnDeciderDiceAnimation({ isSpinning: false, currentNumber: 1, finalNumber: null, reelSpeed: 0.1 });
 
     const unsubscribe = MatchService.subscribeToMatch(roomId, (data) => {
       if (data) {
@@ -176,6 +184,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     });
 
     return () => {
+      console.log('🎮 Match: Unsubscribing from match:', roomId);
       unsubscribe();
     };
   }, [roomId, user]);
@@ -546,6 +555,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               onLeaveMatch={() => setCurrentSection('dashboard')}
               onRematch={(newMatchId) => {
                 console.log('🎮 Match: Navigating to rematch:', newMatchId);
+                
+                // Clear any existing match data to force fresh load
+                setMatchData(null);
+                setLoading(true);
+                setError(null);
+                
+                // Navigate to new match with fresh state
                 setCurrentSection('match', { 
                   gameMode: matchData.gameMode || 'classic',
                   matchId: newMatchId 

@@ -228,10 +228,19 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               className="text-xl font-bold text-green-400"
               style={{ fontFamily: 'Audiowide' }}
             >
-              {((matchData.gameData.turnDeciderChoice === 'odd' && matchData.gameData.turnDeciderDice! % 2 === 1) ||
-                (matchData.gameData.turnDeciderChoice === 'even' && matchData.gameData.turnDeciderDice! % 2 === 0))
-                ? `${isMyTurnToDecide ? 'YOU' : opponent.playerDisplayName} GO FIRST!`
-                : `${isMyTurnToDecide ? opponent.playerDisplayName : 'YOU'} GO FIRST!`}
+              {(() => {
+                // Determine if the choice was correct
+                const choiceWasCorrect = (matchData.gameData.turnDeciderChoice === 'odd' && matchData.gameData.turnDeciderDice! % 2 === 1) ||
+                                        (matchData.gameData.turnDeciderChoice === 'even' && matchData.gameData.turnDeciderDice! % 2 === 0);
+                
+                // If choice was correct, the chooser goes first
+                // If choice was wrong, the other player goes first
+                if (choiceWasCorrect) {
+                  return `${isMyTurnToDecide ? 'YOU' : opponent.playerDisplayName} GO FIRST!`;
+                } else {
+                  return `${isMyTurnToDecide ? opponent.playerDisplayName : 'YOU'} GO FIRST!`;
+                }
+              })()}
             </p>
           </div>
         </motion.div>

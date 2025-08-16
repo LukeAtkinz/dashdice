@@ -401,7 +401,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 textTransform: "uppercase" as const,
                 border: 'none',
                 borderRadius: '0',
-                background: canRoll ? "rgba(59, 130, 246, 0.4)" : 'rgba(107, 114, 128, 0.4)',
+                background: canRoll ? "rgba(59, 130, 246, 0.0 )" : 'rgba(107, 114, 128, 0.4)',
                 backdropFilter: 'blur(2px)',
               }}
             >
@@ -426,7 +426,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 textTransform: "uppercase" as const,
                 border: 'none',
                 borderRadius: '0',
-                background: canBank ? "rgba(34, 197, 94, 0.4)" : 'rgba(107, 114, 128, 0.4)',
+                background: canBank ? "rgba(34, 197, 94, 0.0)" : 'rgba(107, 114, 128, 0.4)',
                 backdropFilter: 'blur(2px)',
               }}
             >

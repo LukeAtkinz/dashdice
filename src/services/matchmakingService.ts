@@ -105,12 +105,16 @@ export class MatchmakingService {
       
       // Create waiting room temporarily
       const waitingRoomRef = await addDoc(collection(db, 'waitingroom'), waitingRoomData);
+      console.log('✅ MatchmakingService: Rematch waiting room created:', waitingRoomRef.id);
       
-      // Immediately move to matches (skip waiting room phase)
+      // Add a small delay to ensure proper database state
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Move to matches (skip waiting room phase)
       const newMatchId = await this.moveToMatches(waitingRoomRef.id);
       
-      console.log('✅ MatchmakingService: Rematch waiting room created and moved to matches');
-      return newMatchId; // Return the actual match ID, not the waiting room ID
+      console.log('✅ MatchmakingService: Rematch moved to matches:', newMatchId);
+      return newMatchId; // Return the actual match ID
     } catch (error) {
       console.error('❌ MatchmakingService: Error creating rematch waiting room:', error);
       throw error;
@@ -202,11 +206,9 @@ export class MatchmakingService {
           // Add game state to hostData
           hostData: {
             ...roomData.hostData,
-            gameState: {
-              turnActive: false, // No one active during pregame
-              playerScore: 0,
-              roundScore: 0
-            },
+            turnActive: false, // No one active during pregame
+            playerScore: 0,
+            roundScore: 0,
             // Initialize match statistics
             matchStats: {
               banks: 0,
@@ -218,11 +220,9 @@ export class MatchmakingService {
           // Add game state to opponentData
           opponentData: {
             ...roomData.opponentData,
-            gameState: {
-              turnActive: false, // No one active during pregame
-              playerScore: 0,
-              roundScore: 0
-            },
+            turnActive: false, // No one active during pregame
+            playerScore: 0,
+            roundScore: 0,
             // Initialize match statistics
             matchStats: {
               banks: 0,
