@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-export type DashboardSection = 'dashboard' | 'waiting-room' | 'match' | 'inventory' | 'profile' | 'settings';
+export type DashboardSection = 'dashboard' | 'waiting-room' | 'match' | 'inventory' | 'achievements' | 'friends' | 'profile' | 'settings';
 
 interface SectionParams {
   gameMode?: string;

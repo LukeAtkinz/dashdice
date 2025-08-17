@@ -5,6 +5,8 @@ import { AuthProvider } from './AuthContext';
 import { InventoryProvider } from './InventoryContext';
 import { GameProvider } from './GameContext';
 import { BackgroundProvider } from './BackgroundContext';
+import { AchievementProvider } from './AchievementContext';
+import { FriendsProvider } from './FriendsContext';
 import { CleanupService } from '@/services/cleanupService';
 
 interface ProvidersProps {
@@ -22,9 +24,13 @@ export const Providers: React.FC<ProvidersProps> = ({ children }) => {
     <AuthProvider>
       <BackgroundProvider>
         <InventoryProvider>
-          <GameProvider>
-            {children}
-          </GameProvider>
+          <AchievementProvider>
+            <FriendsProvider>
+              <GameProvider>
+                {children}
+              </GameProvider>
+            </FriendsProvider>
+          </AchievementProvider>
         </InventoryProvider>
       </BackgroundProvider>
     </AuthProvider>

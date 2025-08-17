@@ -15,6 +15,7 @@ import { auth, db } from '@/services/firebase';
 import { User, AuthContextType } from '@/types';
 import { AVAILABLE_BACKGROUNDS, getDefaultBackground } from '@/config/backgrounds';
 import { UserService } from '@/services/userService';
+import { FriendsService } from '@/services/friendsService';
 import { validateDisplayName, formatDisplayName, generateDisplayNameFromEmail } from '@/utils/contentModeration';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -52,6 +53,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         additionalData?.displayName || 
         generateDisplayNameFromEmail(email || '');
 
+      // Generate unique friend code
+      const friendCode = await FriendsService.generateUniqueFriendCode();
+
       try {
         await setDoc(userRef, {
           displayName: additionalData?.displayName || finalDisplayName,
@@ -59,6 +63,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           photoURL,
           createdAt,
           lastLoginAt: createdAt,
+          friendCode,
+          isOnline: false,
+          status: 'offline',
+          privacy: {
+            allowFriendRequests: true,
+            showOnlineStatus: true,
+            allowGameInvites: true,
+            showActivity: true
+          },
           inventory: {
             displayBackgroundEquipped: {
               name: longRoadAheadBackground.name,

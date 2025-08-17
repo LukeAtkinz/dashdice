@@ -8,6 +8,17 @@ export interface User {
   inventory: InventoryItem[];
   ownedBackgrounds: string[]; // Array of background IDs
   equippedBackground?: string; // Currently equipped background ID
+  friendCode?: string; // Unique 8-character friend code
+  isOnline?: boolean;
+  lastSeen?: Date;
+  currentGame?: string; // Game session ID if in game
+  status?: 'online' | 'away' | 'busy' | 'offline';
+  privacy?: {
+    allowFriendRequests: boolean;
+    showOnlineStatus: boolean;
+    allowGameInvites: boolean;
+    showActivity: boolean;
+  };
 }
 
 export interface InventoryItem {

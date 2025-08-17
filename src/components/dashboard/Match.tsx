@@ -9,6 +9,7 @@ import { useNavigation } from '@/context/NavigationContext';
 import { TurnDeciderPhase } from './TurnDeciderPhase';
 import { GameplayPhase } from './GameplayPhase';
 import { GameOverWrapper } from './GameOverWrapper';
+import { useGameAchievements } from '@/hooks/useGameAchievements';
 import { db } from '@/services/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
@@ -28,6 +29,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   
   const { user } = useAuth();
   const { setCurrentSection, isGameOver, setIsGameOver } = useNavigation();
+  const { recordGameCompletion } = useGameAchievements();
   
   console.log('🔍 DEBUG: Match component context:', {
     userUid: user?.uid,
@@ -51,9 +53,28 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   // Set game over state for navbar visibility
   useEffect(() => {
     if (matchData?.gameData) {
-      setIsGameOver(matchData.gameData.gamePhase === 'gameOver');
+      const isGameOverNow = matchData.gameData.gamePhase === 'gameOver';
+      setIsGameOver(isGameOverNow);
+      
+      // Track achievement when game ends
+      if (isGameOverNow && matchData.gameData.winner && user?.uid) {
+        const isHost = matchData.hostData.playerId === user.uid;
+        const playerWon = matchData.gameData.winner === (isHost ? 'host' : 'opponent');
+        
+        // Collect dice rolls from the game (this would be more comprehensive in a real implementation)
+        const diceRolls: number[] = [];
+        
+        // Record game completion for achievements
+        recordGameCompletion(playerWon, diceRolls, {
+          gameMode: 'classic',
+          finalScore: isHost ? matchData.hostData.playerScore : matchData.opponentData?.playerScore || 0,
+          opponentScore: isHost ? matchData.opponentData?.playerScore || 0 : matchData.hostData.playerScore
+        }).catch(error => {
+          console.error('Error recording game achievements:', error);
+        });
+      }
     }
-  }, [matchData?.gameData?.gamePhase, setIsGameOver]);
+  }, [matchData?.gameData?.gamePhase, matchData?.gameData?.winner, setIsGameOver, recordGameCompletion, user?.uid, matchData?.hostData, matchData?.opponentData]);
 
   // Handle game over delay
   useEffect(() => {
