@@ -140,7 +140,6 @@ export default function FriendsMini({ maxFriends = 5, onViewAll }: FriendsMiniPr
             <FriendCard
               key={friend.id}
               friend={friend}
-              presence={friend.presence}
               compact
             />
           ))}

@@ -9,6 +9,31 @@ import FriendRequests from './FriendRequests';
 import GameInvitations from './GameInvitations';
 import AddFriend from './AddFriend';
 
+// CSS for custom button styling
+const buttonStyles = `
+  .custom-inventory-button {
+    background: var(--ui-inventory-button-bg, linear-gradient(135deg, #2a1810 0%, #1a0f08 100%));
+    border: 2px solid var(--ui-inventory-button-border, #8b7355);
+    color: var(--ui-inventory-button-text, #f4f1eb);
+    transition: all 0.3s ease;
+    font-family: 'Audiowide', monospace;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  }
+  
+  .custom-inventory-button:hover {
+    background: var(--ui-inventory-button-hover-bg, linear-gradient(135deg, #3a2420 0%, #2a1810 100%));
+    border-color: var(--ui-inventory-button-hover-border, #a68b5b);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 115, 85, 0.3);
+  }
+  
+  .custom-inventory-button.active {
+    background: var(--ui-inventory-button-active-bg, linear-gradient(135deg, #4a3020 0%, #3a2420 100%));
+    border-color: var(--ui-inventory-button-active-border, #c9a96e);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+`;
+
 interface FriendsDashboardProps {
   className?: string;
 }
@@ -91,7 +116,9 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
   }, [gameInvitations.length, pendingRequests.length, activeTab]);
 
   return (
-    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full">
+    <>
+      <style jsx>{buttonStyles}</style>
+      <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full">
       {/* Header */}
       <div className="text-center mb-8 flex-shrink-0">
         <h1 
@@ -106,31 +133,23 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
         </h1>
       </div>
 
-      {/* Navigation Tabs - Matching Inventory Style */}
+      {/* Navigation Tabs - Using Inventory Template */}
       <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8 flex-shrink-0">
         {tabs.map((tab) => (
-          <motion.button
+          <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className="flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] transition-all duration-300"
-            style={getNavButtonStyle(tab, activeTab === tab.id)}
-            whileHover={{ 
-              scale: 1.05,
-              boxShadow: "0 6px 20px rgba(255, 255, 255, 0.3)" 
-            }}
-            whileTap={{ scale: 0.95 }}
+            className={`
+              custom-inventory-button
+              flex flex-col items-center justify-center gap-2 p-4 rounded-[20px]
+              transition-all duration-300
+              h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px]
+              ${activeTab === tab.id ? 'active' : ''}
+            `}
           >
             <div className="flex flex-col items-center gap-2">
               <div className="flex items-center gap-2">
-                <span
-                  style={{
-                    color: DisplayBackgroundEquip?.name === 'On A Mission' ? "#FFF" : "#FFF",
-                    fontFamily: "Audiowide",
-                    fontSize: "16px",
-                    fontWeight: 400,
-                    textTransform: "uppercase",
-                  }}
-                >
+                <span className="text-base md:text-lg font-audiowide uppercase">
                   {tab.label}
                 </span>
                 {/* Count badge */}
@@ -161,7 +180,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
                 </span>
               )}
             </div>
-          </motion.button>
+          </button>
         ))}
       </div>
 
@@ -248,5 +267,6 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
         </div>
       )}
     </div>
+    </>
   );
 }

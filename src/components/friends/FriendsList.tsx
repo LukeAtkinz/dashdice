@@ -242,8 +242,6 @@ export default function FriendsList({
             <FriendCard
               key={friend.id}
               friend={friend}
-              presence={friend.presence}
-              onRemoveFriend={handleRemoveFriend}
               compact={compact}
             />
           ))}

@@ -2,6 +2,16 @@
 Levels*/
 "Levels as building"/
 Reference/
+public/Design Elements/Achivements/Design/
+public/Design Elements/Achivements/PNG'S/
+
+# Large 3D model files
+*.blend
+*.fbx
+*.obj
+*.3ds
+*.max
+*.glb
 
 # Development files
 *.zip

@@ -1,10 +1,34 @@
-// Achievements Dashboard Component
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAchievements } from '@/context/AchievementContext';
 import AchievementCard from './AchievementCard';
 import { AchievementCategory } from '@/types/achievements';
+
+// CSS for custom button styling
+const buttonStyles = `
+  .custom-inventory-button {
+    background: var(--ui-inventory-button-bg, linear-gradient(135deg, #2a1810 0%, #1a0f08 100%));
+    border: 2px solid var(--ui-inventory-button-border, #8b7355);
+    color: var(--ui-inventory-button-text, #f4f1eb);
+    transition: all 0.3s ease;
+    font-family: 'Audiowide', monospace;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  }
+  
+  .custom-inventory-button:hover {
+    background: var(--ui-inventory-button-hover-bg, linear-gradient(135deg, #3a2420 0%, #2a1810 100%));
+    border-color: var(--ui-inventory-button-hover-border, #a68b5b);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 115, 85, 0.3);
+  }
+  
+  .custom-inventory-button.active {
+    background: var(--ui-inventory-button-active-bg, linear-gradient(135deg, #4a3020 0%, #3a2420 100%));
+    border-color: var(--ui-inventory-button-active-border, #c9a96e);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+`;
 
 export default function AchievementsDashboard() {
   const { 
@@ -55,7 +79,9 @@ export default function AchievementsDashboard() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-2 md:px-6 py-2 md:py-6">
+    <>
+      <style jsx>{buttonStyles}</style>
+      <div className="max-w-6xl mx-auto px-2 md:px-6 py-2 md:py-6">
       {/* Header Section */}
       <div className="w-full px-2 md:px-4 py-2 md:py-4 pb-[0.5rem] md:pb-[1rem]">
         <h1
@@ -106,11 +132,9 @@ export default function AchievementsDashboard() {
               key={category.id}
               onClick={() => setSelectedCategory(category.id)}
               className={`
+                custom-inventory-button
                 flex items-center space-x-2 px-3 md:px-4 py-2 rounded-lg transition-colors text-sm md:text-base
-                ${selectedCategory === category.id 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }
+                ${selectedCategory === category.id ? 'active' : ''}
               `}
             >
               <span>{category.icon}</span>
@@ -168,5 +192,6 @@ export default function AchievementsDashboard() {
         )}
       </div>
     </div>
+    </>
   );
 }
