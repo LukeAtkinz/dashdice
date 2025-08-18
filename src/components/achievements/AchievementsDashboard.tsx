@@ -55,20 +55,36 @@ export default function AchievementsDashboard() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: "Audiowide" }}>Achievements</h1>
-        
-        {/* Progress Overview */}
-        <div className="bg-gray-800 rounded-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-xl font-semibold text-white" style={{ fontFamily: "Audiowide" }}>Overall Progress</h2>
+    <div className="max-w-6xl mx-auto px-2 md:px-6 py-2 md:py-6">
+      {/* Header Section */}
+      <div className="w-full px-2 md:px-4 py-2 md:py-4 pb-[0.5rem] md:pb-[1rem]">
+        <h1
+          className="text-2xl md:text-4xl lg:text-5xl font-normal mb-4 md:mb-6"
+          style={{
+            color: "#FFF",
+            fontFamily: "Audiowide",
+            fontStyle: "normal",
+            fontWeight: 400,
+            textTransform: "uppercase",
+            textAlign: "center",
+            margin: 0,
+            textShadow: "0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4), 0 0 60px rgba(255, 215, 0, 0.2)"
+          }}
+        >
+          ACHIEVEMENTS
+        </h1>
+      </div>
+
+      {/* Progress Overview */}
+      <div className="px-2 md:px-4 mb-6">
+        <div className="bg-gray-800 rounded-lg p-4 md:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
+            <div className="text-center sm:text-left">
+              <h2 className="text-lg md:text-xl font-semibold text-white" style={{ fontFamily: "Audiowide" }}>Overall Progress</h2>
               <p className="text-gray-400" style={{ fontFamily: "Montserrat" }}>{completedCount} of {totalCount} achievements unlocked</p>
             </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-blue-400" style={{ fontFamily: "Audiowide" }}>{completionPercentage}%</div>
+            <div className="text-center sm:text-right">
+              <div className="text-2xl md:text-3xl font-bold text-blue-400" style={{ fontFamily: "Audiowide" }}>{completionPercentage}%</div>
               <div className="text-sm text-gray-400" style={{ fontFamily: "Montserrat" }}>Complete</div>
             </div>
           </div>
@@ -83,27 +99,30 @@ export default function AchievementsDashboard() {
       </div>
 
       {/* Category Filters */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        {categories.map(category => (
-          <button
-            key={category.id}
-            onClick={() => setSelectedCategory(category.id)}
-            className={`
-              flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors
-              ${selectedCategory === category.id 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              }
-            `}
-          >
-            <span>{category.icon}</span>
-            <span className="font-audiowide">{category.name}</span>
-          </button>
-        ))}
+      <div className="px-2 md:px-4 mb-6">
+        <div className="flex flex-wrap gap-2">
+          {categories.map(category => (
+            <button
+              key={category.id}
+              onClick={() => setSelectedCategory(category.id)}
+              className={`
+                flex items-center space-x-2 px-3 md:px-4 py-2 rounded-lg transition-colors text-sm md:text-base
+                ${selectedCategory === category.id 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }
+              `}
+            >
+              <span>{category.icon}</span>
+              <span className="font-audiowide">{category.name}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* View Filters */}
-      <div className="flex items-center space-x-4 mb-6">
+      <div className="px-2 md:px-4 mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
         <label className="flex items-center space-x-2 text-gray-300">
           <input
             type="checkbox"
@@ -123,28 +142,31 @@ export default function AchievementsDashboard() {
           />
           <span className="font-montserrat">Show In Progress</span>
         </label>
-      </div>
-
-      {/* Achievements Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-        {visibleAchievements.map(achievement => (
-          <AchievementCard
-            key={achievement.id}
-            achievement={achievement}
-            size="medium"
-            showProgress={true}
-            showName={true}
-          />
-        ))}
-      </div>
-
-      {/* Empty State */}
-      {visibleAchievements.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-gray-400 text-lg font-audiowide">No achievements found</div>
-          <p className="text-gray-500 mt-2 font-montserrat">Try adjusting your filters or start playing to unlock achievements!</p>
         </div>
-      )}
+      </div>
+
+      {/* Achievements Grid - 2 per row on desktop, 1 on mobile */}
+      <div className="px-2 md:px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          {visibleAchievements.map(achievement => (
+            <AchievementCard
+              key={achievement.id}
+              achievement={achievement}
+              size="medium"
+              showProgress={true}
+              showName={true}
+            />
+          ))}
+        </div>
+
+        {/* Empty State */}
+        {visibleAchievements.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-gray-400 text-lg font-audiowide">No achievements found</div>
+            <p className="text-gray-500 mt-2 font-montserrat">Try adjusting your filters or start playing to unlock achievements!</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

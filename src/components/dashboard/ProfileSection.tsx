@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
+import { useUserStats } from '@/hooks/useUserStats';
 import { validateDisplayName } from '@/utils/contentModeration';
 
 // Inline form hook
@@ -53,6 +54,7 @@ const ProfileSection: React.FC = () => {
   const { user, signOut, updateUserProfile } = useAuth();
   const { currentSection } = useNavigation();
   const { DisplayBackgroundEquip } = useBackground();
+  const { stats, loading: statsLoading, error: statsError } = useUserStats();
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'profile' | 'settings'>('profile');
   
@@ -219,14 +221,6 @@ const ProfileSection: React.FC = () => {
         >
           {activeTab === 'profile' ? 'Profile' : 'Settings'}
         </h1>
-        <p 
-          className="text-xl text-white/80"
-          style={{
-            fontFamily: "Montserrat",
-          }}
-        >
-          {activeTab === 'profile' ? 'Manage your account and view achievements' : 'Customize your gaming experience'}
-        </p>
       </div>
 
       {/* Navigation Tabs - Matching Inventory Style */}
@@ -345,22 +339,56 @@ const ProfileSection: React.FC = () => {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-400 font-audiowide">24</div>
+                  <div className="text-2xl font-bold text-blue-400 font-audiowide">
+                    {statsLoading ? '...' : (stats?.gamesPlayed || 0)}
+                  </div>
                   <div className="text-sm text-gray-300 font-montserrat">Games Played</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-400 font-audiowide">16</div>
+                  <div className="text-2xl font-bold text-green-400 font-audiowide">
+                    {statsLoading ? '...' : (stats?.matchWins || 0)}
+                  </div>
                   <div className="text-sm text-gray-300 font-montserrat">Games Won</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-400 font-audiowide">42</div>
+                  <div className="text-2xl font-bold text-purple-400 font-audiowide">
+                    {statsLoading ? '...' : (stats?.itemsCollected || 0)}
+                  </div>
                   <div className="text-sm text-gray-300 font-montserrat">Items Collected</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-400 font-audiowide">5</div>
+                  <div className="text-2xl font-bold text-orange-400 font-audiowide">
+                    {statsLoading ? '...' : (stats?.currentStreak || 0)}
+                  </div>
                   <div className="text-sm text-gray-300 font-montserrat">Current Streak</div>
                 </div>
               </div>
+              
+              {/* Additional stats row */}
+              <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-600">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-yellow-400 font-audiowide">
+                    {statsLoading ? '...' : (stats?.bestStreak || 0)}
+                  </div>
+                  <div className="text-sm text-gray-300 font-montserrat">Best Streak</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-cyan-400 font-audiowide">
+                    {statsLoading ? '...' : (
+                      stats?.gamesPlayed 
+                        ? Math.round(((stats.matchWins || 0) / stats.gamesPlayed) * 100)
+                        : 0
+                    )}%
+                  </div>
+                  <div className="text-sm text-gray-300 font-montserrat">Win Rate</div>
+                </div>
+              </div>
+              
+              {statsError && (
+                <div className="mt-4 text-center text-red-400 text-sm font-montserrat">
+                  {statsError}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

@@ -104,14 +104,6 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
         >
           Friends
         </h1>
-        <p 
-          className="text-xl text-white/80"
-          style={{
-            fontFamily: "Montserrat",
-          }}
-        >
-          Connect with other players
-        </p>
       </div>
 
       {/* Navigation Tabs - Matching Inventory Style */}
