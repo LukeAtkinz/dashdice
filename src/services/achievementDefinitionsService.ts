@@ -24,6 +24,65 @@ class AchievementDefinitionsService {
   private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
   private listeners: Set<Unsubscribe> = new Set();
 
+  // Function to get achievement icon path from name
+  private getAchievementIcon(achievementName: string): string {
+    // Create a mapping from achievement names to image files
+    const imageMap: Record<string, string> = {
+      'First Roll': '/Design Elements/Achivements/First Roll.webp',
+      'Rolling Strong': '/Design Elements/Achivements/Rolling Strong.webp',
+      'Dice Master': '/Design Elements/Achivements/Dice Master.webp',
+      'Champion': '/Design Elements/Achivements/Champion.webp',
+      'Circle of Fate': '/Design Elements/Achivements/Circle of Fate.webp',
+      'Clock Breaker': '/Design Elements/Achivements/Clock Breaker.webp',
+      'Cosmic Alignment': '/Design Elements/Achivements/Cosmic Aligment.webp',
+      'Cursed Hands': '/Design Elements/Achivements/Cursed Hands.webp',
+      'Dice Dragon': '/Design Elements/Achivements/Dice Dragon.webp',
+      'Dice God': '/Design Elements/Achivements/Dice God.webp',
+      'Dice Gremlin': '/Design Elements/Achivements/Dice Gremlin.webp',
+      'Dice Jester': '/Design Elements/Achivements/Dice Jester.webp',
+      'Doomed Streak': '/Design Elements/Achivements/Doomed Streak.webp',
+      'Duelist': '/Design Elements/Achivements/Duelist.webp',
+      'Equinox': '/Design Elements/Achivements/Equinox.webp',
+      'First Blood': '/Design Elements/Achivements/First Blood.webp',
+      'Fortune\'s Child': '/Design Elements/Achivements/Fortunes Child.webp',
+      'Guildmaster': '/Design Elements/Achivements/Guildmaster.webp',
+      'Immortal Sovereign': '/Design Elements/Achivements/Immortal Sovereign.webp',
+      'Iron Will': '/Design Elements/Achivements/Iron Will.webp',
+      'Legend Born': '/Design Elements/Achivements/Legend Born.webp',
+      'Legendborn': '/Design Elements/Achivements/Legend Born.webp', // Alternative name for same achievement
+      'Lucky Streak': '/Design Elements/Achivements/Lucky Streak.webp',
+      'Lunar Eclipse': '/Design Elements/Achivements/Lunar Ecclipse.webp',
+      'Marathoner': '/Design Elements/Achivements/Marathoner.webp',
+      'Mind Over Matter': '/Design Elements/Achivements/Mind Over Matter.webp',
+      'Nemesis': '/Design Elements/Achivements/Nemesis.webp',
+      'Rollception': '/Design Elements/Achivements/Rollception.webp',
+      'Snake Whisperer': '/Design Elements/Achivements/Snake Whisperer.webp',
+      'Solar Eclipse': '/Design Elements/Achivements/Solar Eclipse.webp',
+      'Storm Bringer': '/Design Elements/Achivements/StromBringer.webp',
+      'Stormbringer': '/Design Elements/Achivements/StromBringer.webp', // Alternative name for same achievement
+      'The Ascended': '/Design Elements/Achivements/The Ascended.webp',
+      'The Balance': '/Design Elements/Achivements/The Balance.webp',
+      'The Challenger': '/Design Elements/Achivements/The Challanger.webp',
+      'The Chosen One': '/Design Elements/Achivements/The Chosen One.webp',
+      'The Closer': '/Design Elements/Achivements/The Closer.webp',
+      'The Convergence': '/Design Elements/Achivements/The Convergence.webp',
+      'The Crusher': '/Design Elements/Achivements/The Cursher.webp',
+      'The Fated': '/Design Elements/Achivements/The Fated.webp',
+      'Twin Titans': '/Design Elements/Achivements/Titan Twins.webp',
+      'Unlucky Pal': '/Design Elements/Achivements/Unlucky Pal.webp',
+      'Victory\'s Child': '/Design Elements/Achivements/Victory\'s Child.webp',
+      // Additional achievements that may need icons (using fallback emojis for now)
+      'Perfect Run': '🎯',
+      'First Victory': '🏆',
+      'Snake Eyes Master': '👁️',
+      'Unstoppable': '🚀',
+      'Social Butterfly': '🦋',
+      'Perfect Combination': '✨'
+    };
+
+    return imageMap[achievementName] || '🎲'; // Fallback to emoji if no image found
+  }
+
   // Default achievements fallback
   private getDefaultAchievements(): AchievementDefinition[] {
     return [
@@ -42,7 +101,7 @@ class AchievementDefinitionsService {
         rewards: {
           points: 5
         },
-        icon: '🎲',
+        icon: this.getAchievementIcon('First Roll'),
         rarity_color: '#6b7280',
         isActive: true,
         isHidden: false,
@@ -64,7 +123,7 @@ class AchievementDefinitionsService {
         rewards: {
           points: 25
         },
-        icon: '🏆',
+        icon: this.getAchievementIcon('Rolling Strong'),
         rarity_color: '#6b7280',
         isActive: true,
         isHidden: false,
@@ -90,7 +149,7 @@ class AchievementDefinitionsService {
         rewards: {
           points: 50
         },
-        icon: '🎯',
+        icon: this.getAchievementIcon('Dice Master'),
         rarity_color: '#3b82f6',
         isActive: true,
         isHidden: false,
@@ -113,7 +172,7 @@ class AchievementDefinitionsService {
           points: 100,
           title: 'Champion'
         },
-        icon: '👑',
+        icon: this.getAchievementIcon('Champion'),
         rarity_color: '#f59e0b',
         isActive: true,
         isHidden: false,
@@ -137,7 +196,7 @@ class AchievementDefinitionsService {
           points: 30,
           badge: 'Gremlin'
         },
-        icon: '🎲',
+        icon: this.getAchievementIcon('Dice Gremlin'),
         rarity_color: '#6b7280',
         isActive: true,
         isHidden: false,
@@ -161,7 +220,7 @@ class AchievementDefinitionsService {
           badge: 'Dragon',
           title: 'Dragon'
         },
-        icon: '🐉',
+        icon: this.getAchievementIcon('Dice Dragon'),
         rarity_color: '#8b5cf6',
         isActive: true,
         isHidden: false,
@@ -187,7 +246,7 @@ class AchievementDefinitionsService {
           title: 'Dice God',
           specialPrivileges: ['golden_dice', 'god_mode_cosmetics']
         },
-        icon: '⚡',
+        icon: this.getAchievementIcon('Dice God'),
         rarity_color: '#dc2626',
         isActive: true,
         isHidden: false,
@@ -216,7 +275,7 @@ class AchievementDefinitionsService {
           points: 50,
           badge: 'Triple Roll'
         },
-        icon: '🔄',
+        icon: this.getAchievementIcon('Rollception'),
         rarity_color: '#3b82f6',
         isActive: true,
         isHidden: false,
@@ -226,7 +285,7 @@ class AchievementDefinitionsService {
       // Time-Based Achievements
       {
         id: 'the_clockbreaker',
-        name: 'The Clockbreaker',
+        name: 'Clock Breaker',
         description: 'Play at least one game every hour for 24 hours',
         category: 'special',
         type: 'time_based',
@@ -247,7 +306,7 @@ class AchievementDefinitionsService {
           title: 'The Clockbreaker',
           specialPrivileges: ['time_master']
         },
-        icon: '⏰',
+        icon: this.getAchievementIcon('Clock Breaker'),
         rarity_color: '#f59e0b',
         isActive: true,
         isHidden: false,
@@ -270,7 +329,7 @@ class AchievementDefinitionsService {
           points: 75,
           badge: 'Iron Will'
         },
-        icon: '🛡️',
+        icon: this.getAchievementIcon('Iron Will'),
         rarity_color: '#3b82f6',
         isActive: true,
         isHidden: false,
@@ -295,7 +354,7 @@ class AchievementDefinitionsService {
           badge: 'Marathoner',
           title: 'Marathoner'
         },
-        icon: '🏃',
+        icon: this.getAchievementIcon('Marathoner'),
         rarity_color: '#8b5cf6',
         isActive: true,
         isHidden: false,

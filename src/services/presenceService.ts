@@ -98,12 +98,18 @@ export class PresenceService {
 
       // Also update user document
       const userRef = doc(db, 'users', userId);
-      await updateDoc(userRef, {
+      const updateData: any = {
         isOnline: presenceData.isOnline ?? true,
         lastSeen: serverTimestamp(),
         status: presenceData.status || 'online',
-        currentGame: presenceData.currentGame || null,
-      });
+      };
+      
+      // Only include currentGame if it's provided and not undefined
+      if (presenceData.currentGame !== undefined) {
+        updateData.currentGame = presenceData.currentGame;
+      }
+      
+      await updateDoc(userRef, updateData);
     } catch (error) {
       console.error('Error updating presence:', error);
     }
@@ -115,7 +121,6 @@ export class PresenceService {
       await this.updatePresence(userId, {
         isOnline: false,
         status: 'offline',
-        currentGame: undefined,
       });
     } catch (error) {
       console.error('Error setting user offline:', error);
