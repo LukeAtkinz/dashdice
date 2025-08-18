@@ -19,8 +19,16 @@ export default function AchievementsMini({ maxDisplay = 5 }: AchievementsMiniPro
 
   if (isLoading) {
     return (
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h3 className="text-xl font-semibold text-white mb-4">Achievements</h3>
+      <div 
+        className="w-[80vw] max-w-[1600px] mx-auto rounded-lg p-6 relative overflow-hidden"
+        style={{
+          borderRadius: '20px',
+          background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)'
+        }}
+      >
+        <h3 className="text-xl font-audiowide text-white mb-4 uppercase">Achievements</h3>
         <div className="flex justify-center items-center h-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         </div>
@@ -40,12 +48,20 @@ export default function AchievementsMini({ maxDisplay = 5 }: AchievementsMiniPro
   const completionPercentage = getCompletionPercentage();
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+    <div 
+      className="w-[80vw] max-w-[1600px] mx-auto rounded-lg p-6 relative overflow-hidden"
+      style={{
+        borderRadius: '20px',
+        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)'
+      }}
+    >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-semibold text-white">Achievements</h3>
+        <h3 className="text-xl font-audiowide text-white uppercase">Achievements</h3>
         <div className="text-right">
           <div className="text-lg font-bold text-blue-400">{completionPercentage}%</div>
-          <div className="text-sm text-gray-400">Complete</div>
+          <div className="text-sm text-gray-400 font-montserrat">Complete</div>
         </div>
       </div>
       
@@ -57,12 +73,15 @@ export default function AchievementsMini({ maxDisplay = 5 }: AchievementsMiniPro
         />
       </div>
 
-      {/* Recent Achievements */}
-      {recentAchievements.length > 0 ? (
-        <div>
-          <h4 className="text-sm font-medium text-gray-300 mb-3">Recent Unlocks</h4>
-          <div className="flex gap-3 overflow-x-auto">
-            {recentAchievements.map(userAchievement => {
+      {/* Achievements Display */}
+      <div>
+        <h4 className="text-sm font-medium text-gray-300 mb-3 font-audiowide uppercase">
+          {recentAchievements.length > 0 ? 'Recent Unlocks' : 'Available Achievements'}
+        </h4>
+        <div className="flex gap-3 overflow-x-auto">
+          {recentAchievements.length > 0 ? (
+            // Show recent unlocked achievements
+            recentAchievements.map(userAchievement => {
               const achievement = allAchievements.find(a => a.id === userAchievement.achievementId);
               return achievement ? (
                 <AchievementCard
@@ -73,23 +92,28 @@ export default function AchievementsMini({ maxDisplay = 5 }: AchievementsMiniPro
                   showName={false}
                 />
               ) : null;
-            })}
-          </div>
+            })
+          ) : (
+            // Show first few achievements even if not unlocked
+            allAchievements.slice(0, maxDisplay).map(achievement => (
+              <AchievementCard
+                key={achievement.id}
+                achievement={achievement}
+                size="small"
+                showProgress={false}
+                showName={false}
+              />
+            ))
+          )}
         </div>
-      ) : (
-        <div className="text-center py-6">
-          <div className="text-gray-400 text-lg mb-2">🎯</div>
-          <p className="text-gray-400 text-sm">No achievements unlocked yet</p>
-          <p className="text-gray-500 text-xs mt-1">Start playing to earn your first achievement!</p>
-        </div>
-      )}
+      </div>
 
       {/* Stats */}
       <div className="mt-4 pt-4 border-t border-gray-700">
         <div className="flex justify-between items-center text-sm">
           <div className="flex items-center gap-2">
-            <span className="text-gray-400">Unlocked:</span>
-            <span className="text-white">{completedAchievements.length} / {allAchievements.length}</span>
+            <span className="text-gray-400 font-montserrat">Unlocked:</span>
+            <span className="text-white font-audiowide">{completedAchievements.length} / {allAchievements.length}</span>
           </div>
           <button
             onClick={() => {
@@ -99,7 +123,7 @@ export default function AchievementsMini({ maxDisplay = 5 }: AchievementsMiniPro
                 window.dispatchEvent(navigationEvent);
               }
             }}
-            className="text-blue-400 hover:text-blue-300 text-xs font-medium transition-colors"
+            className="text-blue-400 hover:text-blue-300 text-xs font-medium transition-colors font-audiowide uppercase"
           >
             SEE ALL
           </button>

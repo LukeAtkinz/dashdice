@@ -98,7 +98,7 @@ export const InventorySection: React.FC = () => {
   }
 
   return (
-    <div className="h-full w-full flex flex-col">
+    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full">
       {/* Custom scrollbar styles and navigation animations */}
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
@@ -212,19 +212,14 @@ export const InventorySection: React.FC = () => {
         }
       `}</style>
 
-      {/* Title Section */}
-      <div className="w-full flex flex-col items-center justify-center gap-[1rem] py-[0.5rem] md:py-[1rem] pb-[0.5rem] md:pb-[1rem]">
+      {/* Header */}
+      <div className="text-center mb-8 flex-shrink-0">
         <h1
-          className="text-5xl md:text-7xl leading-12 md:leading-[70px]"
+          className="text-5xl font-bold text-white mb-4"
           style={{
-            color: "#FFF",
             fontFamily: "Audiowide",
-            fontStyle: "normal",
-            fontWeight: 400,
             textTransform: "uppercase",
-            textAlign: "center",
-            margin: 0,
-            textShadow: "0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4), 0 0 60px rgba(255, 215, 0, 0.2)"
+            textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
           }}
         >
           VAULT
@@ -232,7 +227,7 @@ export const InventorySection: React.FC = () => {
       </div>
 
       {/* Navigation */}
-      <div className="w-full px-4 md:px-8 py-2 md:py-4 pb-[0.5rem] md:pb-[1rem]">
+      <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8 flex-shrink-0">
         <div className="flex items-center justify-center gap-2 md:gap-4">
           <button
             onClick={() => handleTabChange('display')}
@@ -285,8 +280,8 @@ export const InventorySection: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 px-4 md:px-8 flex justify-center" style={{ paddingTop: '15px' }}>
+      {/* Content */}
+      <div className="w-full max-w-[80rem] flex-1 overflow-y-auto scrollbar-hide px-4">
         <div className="flex h-full w-full md:w-auto pl-[0.5rem] md:pl-0" style={{ maxHeight: '410px', height: '410px', maxWidth: '1600px', gap: '20px' }} data-mobile-height="410px" data-desktop-height="615px">
           
           {/* Items List */}
@@ -547,3 +542,5 @@ export const InventorySection: React.FC = () => {
     </div>
   );
 };
+
+export default InventorySection;

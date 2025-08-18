@@ -28,6 +28,32 @@ const buttonStyles = `
     border-color: var(--ui-inventory-button-active-border, #c9a96e);
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
   }
+  
+  /* Inventory-style navigation button hover effects */
+  .nav-button {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .nav-button:hover {
+    animation: navPulse 0.6s ease-in-out;
+    box-shadow: 0 8px 25px rgba(255, 0, 128, 0.3);
+    transform: scale(1.05);
+  }
+  .nav-button:active {
+    animation: navClick 0.2s ease-in-out;
+    transform: scale(0.95);
+  }
+  .nav-button.active {
+    box-shadow: 0 6px 20px rgba(255, 0, 128, 0.4);
+  }
+  @keyframes navPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  @keyframes navClick {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+  }
 `;
 
 export default function AchievementsDashboard() {

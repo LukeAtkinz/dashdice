@@ -32,6 +32,32 @@ const buttonStyles = `
     border-color: var(--ui-inventory-button-active-border, #c9a96e);
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
   }
+  
+  /* Inventory-style navigation button hover effects */
+  .nav-button {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .nav-button:hover {
+    animation: navPulse 0.6s ease-in-out;
+    box-shadow: 0 8px 25px rgba(255, 0, 128, 0.3);
+    transform: scale(1.05);
+  }
+  .nav-button:active {
+    animation: navClick 0.2s ease-in-out;
+    transform: scale(0.95);
+  }
+  .nav-button.active {
+    box-shadow: 0 6px 20px rgba(255, 0, 128, 0.4);
+  }
+  @keyframes navPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  @keyframes navClick {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+  }
 `;
 
 interface FriendsDashboardProps {
@@ -42,7 +68,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
   const { friends, pendingRequests, gameInvitations, getOnlineFriendsCount } = useFriends();
   const { hasInvitations } = useGameInvitationNotifications();
   const { DisplayBackgroundEquip } = useBackground();
-  const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'invitations' | 'add'>('friends');
+  const [activeTab, setActiveTab] = useState<'friends' | 'manage' | 'invitations'>('friends');
 
   const onlineFriendsCount = getOnlineFriendsCount?.() || 0;
 
@@ -55,8 +81,8 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       color: 'linear-gradient(135deg, #667eea, #764ba2)'
     },
     {
-      id: 'requests' as const,
-      label: 'Requests',
+      id: 'manage' as const,
+      label: 'Manage Friends',
       count: pendingRequests.length,
       isActive: pendingRequests.length > 0,
       color: 'linear-gradient(135deg, #FF0080, #FF4DB8)'
@@ -67,12 +93,6 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       count: gameInvitations.length,
       isActive: hasInvitations,
       color: 'linear-gradient(135deg, #00FF80, #00A855)'
-    },
-    {
-      id: 'add' as const,
-      label: 'Add Friend',
-      count: 0,
-      color: 'linear-gradient(135deg, #FFD700, #FFA500)'
     }
   ];
 
@@ -104,13 +124,13 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
     };
   };
 
-  // Auto-switch to requests/invitations when they arrive
+  // Auto-switch to manage/invitations when they arrive
   React.useEffect(() => {
     if (activeTab === 'friends') {
       if (gameInvitations.length > 0) {
         setActiveTab('invitations');
       } else if (pendingRequests.length > 0) {
-        setActiveTab('requests');
+        setActiveTab('manage');
       }
     }
   }, [gameInvitations.length, pendingRequests.length, activeTab]);
@@ -140,16 +160,32 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`
-              custom-inventory-button
+              nav-button
               flex flex-col items-center justify-center gap-2 p-4 rounded-[20px]
               transition-all duration-300
               h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px]
               ${activeTab === tab.id ? 'active' : ''}
             `}
+            style={{
+              display: 'flex',
+              width: 'fit-content',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '10px',
+              borderRadius: '18px',
+              border: 0,
+              background: activeTab === tab.id ? 'var(--ui-inventory-button-bg, var(--ui-button-bg))' : 'rgba(255, 255, 255, 0.1)',
+              cursor: 'pointer',
+            }}
           >
             <div className="flex flex-col items-center gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-base md:text-lg font-audiowide uppercase">
+                <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
+                  color: activeTab === tab.id ? 'var(--ui-inventory-button-text, var(--ui-button-text))' : '#FFF', 
+                  fontFamily: 'Audiowide', 
+                  fontWeight: 400, 
+                  textTransform: 'uppercase' 
+                }}>
                   {tab.label}
                 </span>
                 {/* Count badge */}
@@ -168,9 +204,9 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
               {/* Online badge for friends */}
               {tab.id === 'friends' && tab.badge && (
                 <span 
-                  className="px-2 py-0.5 text-xs rounded-full mt-1"
+                  className="px-2 py-0.5 text-xs mt-1 md:rounded-full rounded-[20px]"
                   style={{
-                    background: 'linear-gradient(135deg, #00FF80, #00A855)',
+                    background: 'black',
                     color: '#FFF',
                     fontFamily: 'Montserrat',
                     fontSize: '10px'
@@ -190,31 +226,61 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
           <FriendsList showAddButton={false} />
         )}
         
-        {activeTab === 'requests' && (
-          <FriendRequests />
+        {activeTab === 'manage' && (
+          <div className="space-y-6">
+            {/* Mobile: Stack vertically, Desktop: Side by side */}
+            <div className="flex flex-col lg:flex-row gap-6">
+              {/* Friend Requests Section */}
+              <div className="flex-1">
+                <h3 className="text-xl font-audiowide text-white mb-4 uppercase">
+                  Friend Requests
+                  {pendingRequests.length > 0 && (
+                    <span className="ml-2 text-sm bg-red-500 text-white px-2 py-1 rounded-full">
+                      {pendingRequests.length}
+                    </span>
+                  )}
+                </h3>
+                {pendingRequests.length > 0 ? (
+                  <FriendRequests />
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-3">
+                      <div className="text-2xl">📬</div>
+                    </div>
+                    <p className="text-gray-500 dark:text-gray-400 mb-1 font-audiowide">No friend requests</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 font-montserrat">
+                      When someone sends you a friend request, it will appear here
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Add Friend Section */}
+              <div className="flex-1">
+                <h3 className="text-xl font-audiowide text-white mb-4 uppercase">Add Friend</h3>
+                <div 
+                  className="relative overflow-hidden"
+                  style={{
+                    borderRadius: '20px',
+                    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)'
+                  }}
+                >
+                  <div className="p-6">
+                    <AddFriend onSuccess={() => setActiveTab('friends')} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
         
         {activeTab === 'invitations' && (
           <GameInvitations />
         )}
-        
-        {activeTab === 'add' && (
-          <AddFriend onSuccess={() => setActiveTab('friends')} />
-        )}
 
         {/* Empty States */}
-        {activeTab === 'requests' && pendingRequests.length === 0 && (
-          <div className="text-center py-8">
-            <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-3">
-              <div className="text-2xl">📬</div>
-            </div>
-            <p className="text-gray-500 dark:text-gray-400 mb-1 font-audiowide">No friend requests</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500 font-montserrat">
-              When someone sends you a friend request, it will appear here
-            </p>
-          </div>
-        )}
-
         {activeTab === 'invitations' && gameInvitations.length === 0 && (
           <div className="text-center py-8">
             <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-3">
@@ -229,7 +295,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       </div>
 
       {/* Notification badges for inactive tabs */}
-      {activeTab !== 'requests' && pendingRequests.length > 0 && (
+      {activeTab !== 'manage' && pendingRequests.length > 0 && (
         <div className="fixed top-4 right-4 z-50">
           <div className="bg-green-500 text-white px-3 py-2 rounded-lg shadow-lg flex items-center gap-2">
             <div className="text-lg">📬</div>
@@ -237,7 +303,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
               {pendingRequests.length} friend request{pendingRequests.length !== 1 ? 's' : ''}
             </span>
             <button
-              onClick={() => setActiveTab('requests')}
+              onClick={() => setActiveTab('manage')}
               className="ml-2 text-green-200 hover:text-white"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
