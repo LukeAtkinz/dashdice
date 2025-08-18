@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useFriends, useGameInvitationNotifications } from '@/context/FriendsContext';
+import { useBackground } from '@/context/BackgroundContext';
 import FriendsList from './FriendsList';
 import FriendRequests from './FriendRequests';
 import GameInvitations from './GameInvitations';
@@ -14,6 +16,7 @@ interface FriendsDashboardProps {
 export default function FriendsDashboard({ className = '' }: FriendsDashboardProps) {
   const { friends, pendingRequests, gameInvitations, getOnlineFriendsCount } = useFriends();
   const { hasInvitations } = useGameInvitationNotifications();
+  const { DisplayBackgroundEquip } = useBackground();
   const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'invitations' | 'add'>('friends');
 
   const onlineFriendsCount = getOnlineFriendsCount?.() || 0;
@@ -24,45 +27,57 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       label: 'Friends',
       count: friends.length,
       badge: onlineFriendsCount > 0 ? `${onlineFriendsCount} online` : undefined,
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-        </svg>
-      )
+      color: 'linear-gradient(135deg, #667eea, #764ba2)'
     },
     {
       id: 'requests' as const,
       label: 'Requests',
       count: pendingRequests.length,
       isActive: pendingRequests.length > 0,
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-        </svg>
-      )
+      color: 'linear-gradient(135deg, #FF0080, #FF4DB8)'
     },
     {
       id: 'invitations' as const,
       label: 'Game Invites',
       count: gameInvitations.length,
       isActive: hasInvitations,
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg>
-      )
+      color: 'linear-gradient(135deg, #00FF80, #00A855)'
     },
     {
       id: 'add' as const,
       label: 'Add Friend',
       count: 0,
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-        </svg>
-      )
+      color: 'linear-gradient(135deg, #FFD700, #FFA500)'
     }
   ];
+
+  // Get background-specific styling for navigation buttons (matching inventory)
+  const getNavButtonStyle = (tab: any, isSelected: boolean) => {
+    if (DisplayBackgroundEquip?.name === 'On A Mission') {
+      return {
+        background: isSelected 
+          ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.2) 100%)'
+          : 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)',
+        boxShadow: isSelected 
+          ? "0 4px 15px rgba(14, 165, 233, 0.4)" 
+          : "0 2px 8px rgba(0, 0, 0, 0.2)",
+        minWidth: "140px",
+        minHeight: "100px",
+        border: isSelected ? '2px solid rgba(14, 165, 233, 0.6)' : '2px solid transparent',
+        backdropFilter: 'blur(6px)'
+      };
+    }
+    
+    return {
+      background: isSelected ? tab.color : 'rgba(255, 255, 255, 0.1)',
+      boxShadow: isSelected 
+        ? "0 4px 15px rgba(255, 255, 255, 0.2)" 
+        : "0 2px 8px rgba(0, 0, 0, 0.2)",
+      minWidth: "140px",
+      minHeight: "100px",
+      border: isSelected ? '2px solid #FFD700' : '2px solid transparent'
+    };
+  };
 
   // Auto-switch to requests/invitations when they arrive
   React.useEffect(() => {
@@ -76,53 +91,90 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
   }, [gameInvitations.length, pendingRequests.length, activeTab]);
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 ${className}`}>
-      {/* Header with Tabs */}
-      <div className="border-b border-gray-200 dark:border-gray-700">
-        <nav className="flex space-x-0">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`
-                flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all
-                ${activeTab === tab.id
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
-                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                }
-              `}
-            >
-              {tab.icon}
-              <span className="font-audiowide">{tab.label}</span>
-              
-              {/* Count badge */}
-              {tab.count > 0 && (
-                <span className={`
-                  px-2 py-0.5 text-xs rounded-full min-w-[1.25rem] h-5 flex items-center justify-center
-                  ${tab.isActive 
-                    ? 'bg-red-500 text-white animate-pulse' 
-                    : activeTab === tab.id
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-                  }
-                `}>
-                  {tab.count}
+    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full">
+      {/* Header */}
+      <div className="text-center mb-8 flex-shrink-0">
+        <h1 
+          className="text-5xl font-bold text-white mb-4"
+          style={{
+            fontFamily: "Audiowide",
+            textTransform: "uppercase",
+            textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
+          }}
+        >
+          Friends
+        </h1>
+        <p 
+          className="text-xl text-white/80"
+          style={{
+            fontFamily: "Montserrat",
+          }}
+        >
+          Connect with other players
+        </p>
+      </div>
+
+      {/* Navigation Tabs - Matching Inventory Style */}
+      <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8 flex-shrink-0">
+        {tabs.map((tab) => (
+          <motion.button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className="flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] transition-all duration-300"
+            style={getNavButtonStyle(tab, activeTab === tab.id)}
+            whileHover={{ 
+              scale: 1.05,
+              boxShadow: "0 6px 20px rgba(255, 255, 255, 0.3)" 
+            }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex items-center gap-2">
+                <span
+                  style={{
+                    color: DisplayBackgroundEquip?.name === 'On A Mission' ? "#FFF" : "#FFF",
+                    fontFamily: "Audiowide",
+                    fontSize: "16px",
+                    fontWeight: 400,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {tab.label}
                 </span>
-              )}
-              
+                {/* Count badge */}
+                {tab.count > 0 && (
+                  <span className={`
+                    px-2 py-0.5 text-xs rounded-full min-w-[1.25rem] h-5 flex items-center justify-center font-audiowide
+                    ${tab.isActive 
+                      ? 'bg-red-500 text-white animate-pulse' 
+                      : 'bg-white/20 text-white'
+                    }
+                  `}>
+                    {tab.count}
+                  </span>
+                )}
+              </div>
               {/* Online badge for friends */}
               {tab.id === 'friends' && tab.badge && (
-                <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs rounded-full">
+                <span 
+                  className="px-2 py-0.5 text-xs rounded-full mt-1"
+                  style={{
+                    background: 'linear-gradient(135deg, #00FF80, #00A855)',
+                    color: '#FFF',
+                    fontFamily: 'Montserrat',
+                    fontSize: '10px'
+                  }}
+                >
                   {tab.badge}
                 </span>
               )}
-            </button>
-          ))}
-        </nav>
+            </div>
+          </motion.button>
+        ))}
       </div>
 
       {/* Content */}
-      <div className="p-6">
+      <div className="w-full max-w-[80rem] flex-1 overflow-y-auto scrollbar-hide px-4">
         {activeTab === 'friends' && (
           <FriendsList showAddButton={false} />
         )}
@@ -143,9 +195,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
         {activeTab === 'requests' && pendingRequests.length === 0 && (
           <div className="text-center py-8">
             <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-3">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-              </svg>
+              <div className="text-2xl">📬</div>
             </div>
             <p className="text-gray-500 dark:text-gray-400 mb-1 font-audiowide">No friend requests</p>
             <p className="text-sm text-gray-400 dark:text-gray-500 font-montserrat">
@@ -157,9 +207,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
         {activeTab === 'invitations' && gameInvitations.length === 0 && (
           <div className="text-center py-8">
             <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-3">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+              <div className="text-2xl">⚡</div>
             </div>
             <p className="text-gray-500 dark:text-gray-400 mb-1 font-audiowide">No game invitations</p>
             <p className="text-sm text-gray-400 dark:text-gray-500 font-montserrat">
@@ -173,9 +221,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       {activeTab !== 'requests' && pendingRequests.length > 0 && (
         <div className="fixed top-4 right-4 z-50">
           <div className="bg-green-500 text-white px-3 py-2 rounded-lg shadow-lg flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-            </svg>
+            <div className="text-lg">📬</div>
             <span className="text-sm font-montserrat">
               {pendingRequests.length} friend request{pendingRequests.length !== 1 ? 's' : ''}
             </span>
@@ -194,9 +240,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       {activeTab !== 'invitations' && gameInvitations.length > 0 && (
         <div className="fixed top-16 right-4 z-50">
           <div className="bg-blue-500 text-white px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-pulse">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
+            <div className="text-lg">⚡</div>
             <span className="text-sm font-montserrat">
               {gameInvitations.length} game invitation{gameInvitations.length !== 1 ? 's' : ''}
             </span>

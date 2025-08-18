@@ -1099,9 +1099,7 @@ class AchievementDefinitionsService {
       const achievementsRef = collection(db, 'achievementDefinitions');
       const q = query(
         achievementsRef,
-        where('isActive', '==', true),
-        orderBy('category'),
-        orderBy('order', 'asc')
+        where('isActive', '==', true)
       );
 
       const snapshot = await getDocs(q);
@@ -1114,6 +1112,14 @@ class AchievementDefinitionsService {
           data.id = doc.id;
           achievements.push(data);
           this.cache.set(doc.id, data);
+        });
+
+        // Sort achievements by category and order (client-side to avoid Firebase index requirement)
+        achievements.sort((a, b) => {
+          if (a.category !== b.category) {
+            return a.category.localeCompare(b.category);
+          }
+          return (a.order || 0) - (b.order || 0);
         });
 
         this.lastCacheUpdate = Date.now();
@@ -1231,9 +1237,7 @@ class AchievementDefinitionsService {
     const achievementsRef = collection(db, 'achievementDefinitions');
     const q = query(
       achievementsRef,
-      where('isActive', '==', true),
-      orderBy('category'),
-      orderBy('order', 'asc')
+      where('isActive', '==', true)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -1244,6 +1248,14 @@ class AchievementDefinitionsService {
         data.id = doc.id;
         achievements.push(data);
         this.cache.set(doc.id, data);
+      });
+
+      // Sort achievements by category and order (client-side to avoid Firebase index requirement)
+      achievements.sort((a, b) => {
+        if (a.category !== b.category) {
+          return a.category.localeCompare(b.category);
+        }
+        return (a.order || 0) - (b.order || 0);
       });
 
       // If no achievements in database, use defaults

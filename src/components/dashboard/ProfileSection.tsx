@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
+import { useBackground } from '@/context/BackgroundContext';
 import { validateDisplayName } from '@/utils/contentModeration';
 
 // Inline form hook
@@ -50,8 +52,51 @@ const useForm = <T extends Record<string, string>>(initialValues: T) => {
 const ProfileSection: React.FC = () => {
   const { user, signOut, updateUserProfile } = useAuth();
   const { currentSection } = useNavigation();
+  const { DisplayBackgroundEquip } = useBackground();
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'profile' | 'settings'>('profile');
+  
+  // Navigation tabs for profile/settings
+  const tabs = [
+    {
+      id: 'profile' as const,
+      label: 'Profile',
+      color: 'linear-gradient(135deg, #667eea, #764ba2)'
+    },
+    {
+      id: 'settings' as const,
+      label: 'Settings',
+      color: 'linear-gradient(135deg, #FF0080, #FF4DB8)'
+    }
+  ];
+
+  // Get background-specific styling for navigation buttons (matching inventory)
+  const getNavButtonStyle = (tab: any, isSelected: boolean) => {
+    if (DisplayBackgroundEquip?.name === 'On A Mission') {
+      return {
+        background: isSelected 
+          ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.2) 100%)'
+          : 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)',
+        boxShadow: isSelected 
+          ? "0 4px 15px rgba(14, 165, 233, 0.4)" 
+          : "0 2px 8px rgba(0, 0, 0, 0.2)",
+        minWidth: "140px",
+        minHeight: "100px",
+        border: isSelected ? '2px solid rgba(14, 165, 233, 0.6)' : '2px solid transparent',
+        backdropFilter: 'blur(6px)'
+      };
+    }
+    
+    return {
+      background: isSelected ? tab.color : 'rgba(255, 255, 255, 0.1)',
+      boxShadow: isSelected 
+        ? "0 4px 15px rgba(255, 255, 255, 0.2)" 
+        : "0 2px 8px rgba(0, 0, 0, 0.2)",
+      minWidth: "140px",
+      minHeight: "100px",
+      border: isSelected ? '2px solid #FFD700' : '2px solid transparent'
+    };
+  };
   
   // Set active tab based on current section
   useEffect(() => {
@@ -161,73 +206,83 @@ const ProfileSection: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 font-audiowide">Profile & Settings</h1>
-          <p className="text-gray-600 mt-2 font-montserrat">
-            Manage your account and customize your experience
-          </p>
-        </div>
+    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full">
+      {/* Header */}
+      <div className="text-center mb-8 flex-shrink-0">
+        <h1 
+          className="text-5xl font-bold text-white mb-4"
+          style={{
+            fontFamily: "Audiowide",
+            textTransform: "uppercase",
+            textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
+          }}
+        >
+          {activeTab === 'profile' ? 'Profile' : 'Settings'}
+        </h1>
+        <p 
+          className="text-xl text-white/80"
+          style={{
+            fontFamily: "Montserrat",
+          }}
+        >
+          {activeTab === 'profile' ? 'Manage your account and view achievements' : 'Customize your gaming experience'}
+        </p>
       </div>
 
-      {/* Navigation Tabs - Exact same style as inventory */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={activeTab === 'profile' ? 'primary' : 'outline'}
-              size="sm"
-              onClick={() => setActiveTab('profile')}
-              className="flex items-center space-x-2"
+      {/* Navigation Tabs - Matching Inventory Style */}
+      <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8 flex-shrink-0">
+        {tabs.map((tab) => (
+          <motion.button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className="flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] transition-all duration-300"
+            style={getNavButtonStyle(tab, activeTab === tab.id)}
+            whileHover={{ 
+              scale: 1.05,
+              boxShadow: "0 6px 20px rgba(255, 255, 255, 0.3)" 
+            }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <span
+              style={{
+                color: DisplayBackgroundEquip?.name === 'On A Mission' ? "#FFF" : "#FFF",
+                fontFamily: "Audiowide",
+                fontSize: "16px",
+                fontWeight: 400,
+                textTransform: "uppercase",
+              }}
             >
-              <span>👤</span>
-              <span className="font-audiowide">Profile</span>
-            </Button>
-            <Button
-              variant={activeTab === 'settings' ? 'primary' : 'outline'}
-              size="sm"
-              onClick={() => setActiveTab('settings')}
-              className="flex items-center space-x-2"
-            >
-              <span>⚙️</span>
-              <span className="font-audiowide">Settings</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+              {tab.label}
+            </span>
+          </motion.button>
+        ))}
+      </div>
 
-      {/* Profile Tab Content */}
-      {activeTab === 'profile' && (
-        <div className="space-y-6">
-          <div className="text-center">
-            <h1 className="text-3xl font-orbitron font-bold text-gray-900 mb-2 font-audiowide">
-              Profile
-            </h1>
-            <p className="text-gray-600 font-montserrat">
-              Manage your account and view achievements
-            </p>
-          </div>
+      {/* Content */}
+      <div className="w-full max-w-[80rem] flex-1 overflow-y-auto scrollbar-hide px-4">
 
-          {/* Profile Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-            </CardHeader>
-            <CardContent>
+        {/* Profile Tab Content */}
+        {activeTab === 'profile' && (
+          <div className="space-y-6">
+            {/* Profile Information */}
+            <Card className="bg-black bg-opacity-60 border-gray-600 text-white">
+              <CardHeader>
+                <CardTitle className="text-white font-audiowide">Profile Information</CardTitle>
+              </CardHeader>
+              <CardContent>
               <form onSubmit={handleUpdateProfile} className="space-y-4">
                 <div className="flex items-center space-x-4 mb-6">
                   <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-2xl text-white font-bold">
                     {user?.displayName?.charAt(0)?.toUpperCase() || '?'}
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold font-audiowide">{user?.displayName || 'Unknown User'}</h3>
-                    <p className="text-gray-600 font-montserrat">Member since {user?.createdAt?.toLocaleDateString()}</p>
+                    <h3 className="text-lg font-semibold font-audiowide text-white">{user?.displayName || 'Unknown User'}</h3>
+                    <p className="text-gray-300 font-montserrat">Member since {user?.createdAt?.toLocaleDateString()}</p>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 font-montserrat">
+                  <label className="block text-sm font-medium text-gray-300 mb-2 font-montserrat">
                     Display Name
                   </label>
                   <Input
@@ -242,7 +297,7 @@ const ProfileSection: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 font-montserrat">
+                  <label className="block text-sm font-medium text-gray-300 mb-2 font-montserrat">
                     Email Address
                   </label>
                   <Input
@@ -252,7 +307,7 @@ const ProfileSection: React.FC = () => {
                     placeholder="Enter your email"
                     disabled
                   />
-                  <p className="text-xs text-gray-500 mt-1 font-montserrat">
+                  <p className="text-xs text-gray-400 mt-1 font-montserrat">
                     Email cannot be changed at this time
                   </p>
                 </div>
@@ -283,92 +338,47 @@ const ProfileSection: React.FC = () => {
           </Card>
 
           {/* Account Stats */}
-          <Card>
+          <Card className="bg-black bg-opacity-60 border-gray-600 text-white">
             <CardHeader>
-              <CardTitle>Account Statistics</CardTitle>
+              <CardTitle className="text-white font-audiowide">Account Statistics</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600 font-audiowide">24</div>
-                  <div className="text-sm text-gray-600 font-montserrat">Games Played</div>
+                  <div className="text-2xl font-bold text-blue-400 font-audiowide">24</div>
+                  <div className="text-sm text-gray-300 font-montserrat">Games Played</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600 font-audiowide">16</div>
-                  <div className="text-sm text-gray-600 font-montserrat">Games Won</div>
+                  <div className="text-2xl font-bold text-green-400 font-audiowide">16</div>
+                  <div className="text-sm text-gray-300 font-montserrat">Games Won</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600 font-audiowide">42</div>
-                  <div className="text-sm text-gray-600 font-montserrat">Items Collected</div>
+                  <div className="text-2xl font-bold text-purple-400 font-audiowide">42</div>
+                  <div className="text-sm text-gray-300 font-montserrat">Items Collected</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600 font-audiowide">5</div>
-                  <div className="text-sm text-gray-600 font-montserrat">Current Streak</div>
+                  <div className="text-2xl font-bold text-orange-400 font-audiowide">5</div>
+                  <div className="text-sm text-gray-300 font-montserrat">Current Streak</div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Achievements */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Achievements</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {achievements.map((achievement, index) => (
-                  <div
-                    key={index}
-                    className={`flex items-center space-x-3 p-3 rounded-lg ${
-                      achievement.completed ? 'bg-green-50 border border-green-200' : 'bg-gray-50'
-                    }`}
-                  >
-                    <div className={`text-2xl ${achievement.completed ? '' : 'grayscale opacity-50'}`}>
-                      {achievement.icon}
-                    </div>
-                    <div className="flex-1">
-                      <div className={`font-medium font-audiowide ${achievement.completed ? 'text-green-800' : 'text-gray-700'}`}>
-                        {achievement.name}
-                      </div>
-                      <div className={`text-sm font-montserrat ${achievement.completed ? 'text-green-600' : 'text-gray-500'}`}>
-                        {achievement.description}
-                      </div>
-                    </div>
-                    {achievement.completed && (
-                      <div className="text-green-600 font-semibold text-sm font-audiowide">
-                        ✓ Completed
-                      </div>
-                    )}
-                  </div>
-                ))}
               </div>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* Settings Tab Content */}
-      {activeTab === 'settings' && (
-        <div className="space-y-6">
-          <div className="text-center">
-            <h1 className="text-3xl font-orbitron font-bold text-gray-900 mb-2 font-audiowide">
-              Settings
-            </h1>
-            <p className="text-gray-600 font-montserrat">
-              Customize your gaming experience
-            </p>
-          </div>
-
-          {/* General Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>General</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        {/* Settings Tab Content */}
+        {activeTab === 'settings' && (
+          <div className="space-y-6">
+            {/* General Settings */}
+            <Card className="bg-black bg-opacity-60 border-gray-600 text-white">
+              <CardHeader>
+                <CardTitle className="text-white font-audiowide">General</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-medium font-audiowide">Notifications</div>
-                  <div className="text-sm text-gray-600 font-montserrat">Receive game alerts and updates</div>
+                  <div className="font-medium font-audiowide text-white">Notifications</div>
+                  <div className="text-sm text-gray-300 font-montserrat">Receive game alerts and updates</div>
                 </div>
                 <button
                   onClick={() => handleToggle('notifications')}
@@ -386,8 +396,8 @@ const ProfileSection: React.FC = () => {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-medium font-audiowide">Sound Effects</div>
-                  <div className="text-sm text-gray-600 font-montserrat">Enable game sound effects</div>
+                  <div className="font-medium font-audiowide text-white">Sound Effects</div>
+                  <div className="text-sm text-gray-300 font-montserrat">Enable game sound effects</div>
                 </div>
                 <button
                   onClick={() => handleToggle('soundEffects')}
@@ -425,15 +435,15 @@ const ProfileSection: React.FC = () => {
           </Card>
 
           {/* Audio Settings */}
-          <Card>
+          <Card className="bg-black bg-opacity-60 border-gray-600 text-white">
             <CardHeader>
-              <CardTitle>Audio</CardTitle>
+              <CardTitle className="text-white font-audiowide">Audio</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="font-medium font-audiowide">Music Volume</label>
-                  <span className="text-sm text-gray-600 font-audiowide">{settings.musicVolume}%</span>
+                  <label className="font-medium font-audiowide text-white">Music Volume</label>
+                  <span className="text-sm text-gray-300 font-audiowide">{settings.musicVolume}%</span>
                 </div>
                 <input
                   type="range"
@@ -447,8 +457,8 @@ const ProfileSection: React.FC = () => {
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="font-medium font-audiowide">Sound Effects Volume</label>
-                  <span className="text-sm text-gray-600 font-audiowide">{settings.sfxVolume}%</span>
+                  <label className="font-medium font-audiowide text-white">Sound Effects Volume</label>
+                  <span className="text-sm text-gray-300 font-audiowide">{settings.sfxVolume}%</span>
                 </div>
                 <input
                   type="range"
@@ -463,13 +473,13 @@ const ProfileSection: React.FC = () => {
           </Card>
 
           {/* Appearance Settings */}
-          <Card>
+          <Card className="bg-black bg-opacity-60 border-gray-600 text-white">
             <CardHeader>
-              <CardTitle>Appearance</CardTitle>
+              <CardTitle className="text-white font-audiowide">Appearance</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="block font-medium mb-2 font-audiowide">Theme</label>
+                <label className="block font-medium mb-2 font-audiowide text-white">Theme</label>
                 <select
                   value={settings.theme}
                   onChange={(e) => handleSelectChange('theme', e.target.value)}
@@ -482,7 +492,7 @@ const ProfileSection: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-medium mb-2 font-audiowide">Animation Speed</label>
+                <label className="block font-medium mb-2 font-audiowide text-white">Animation Speed</label>
                 <select
                   value={settings.animationSpeed}
                   onChange={(e) => handleSelectChange('animationSpeed', e.target.value)}
@@ -495,7 +505,7 @@ const ProfileSection: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-medium mb-2 font-audiowide">Language</label>
+                <label className="block font-medium mb-2 font-audiowide text-white">Language</label>
                 <select
                   value={settings.language}
                   onChange={(e) => handleSelectChange('language', e.target.value)}
@@ -511,7 +521,7 @@ const ProfileSection: React.FC = () => {
           </Card>
 
           {/* Action Buttons */}
-          <Card>
+          <Card className="bg-black bg-opacity-60 border-gray-600 text-white">
             <CardContent className="flex space-x-3">
               <Button
                 onClick={handleSaveSettings}
@@ -530,6 +540,7 @@ const ProfileSection: React.FC = () => {
           </Card>
         </div>
       )}
+      </div>
     </div>
   );
 };
