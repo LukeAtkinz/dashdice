@@ -60,22 +60,22 @@ export default function AchievementCard({
     const baseClasses = "rounded-[20px] transition-all duration-300 hover:scale-[1.02] cursor-pointer";
     
     if (isCompleted) {
-      return `${baseClasses} bg-gradient-to-br from-transparent to-yellow-500/40 shadow-lg shadow-yellow-500/20`;
+      return `${baseClasses} bg-gradient-to-br from-transparent to-yellow-500/40 md:to-yellow-500/40 to-yellow-500/60 shadow-lg shadow-yellow-500/20`;
     }
     
     switch (achievement.difficulty) {
       case 'common':
-        return `${baseClasses} bg-gradient-to-br from-transparent to-gray-600/30 hover:to-gray-500/40`;
+        return `${baseClasses} bg-gradient-to-br from-transparent to-gray-600/50 md:to-gray-600/30 hover:to-gray-500/60 md:hover:to-gray-500/40`;
       case 'rare':
-        return `${baseClasses} bg-gradient-to-br from-transparent to-blue-600/30 hover:to-blue-500/40`;
+        return `${baseClasses} bg-gradient-to-br from-transparent to-blue-600/50 md:to-blue-600/30 hover:to-blue-500/60 md:hover:to-blue-500/40`;
       case 'epic':
-        return `${baseClasses} bg-gradient-to-br from-transparent to-purple-600/30 hover:to-purple-500/40`;
+        return `${baseClasses} bg-gradient-to-br from-transparent to-purple-600/50 md:to-purple-600/30 hover:to-purple-500/60 md:hover:to-purple-500/40`;
       case 'legendary':
-        return `${baseClasses} bg-gradient-to-br from-transparent to-orange-600/30 hover:to-orange-500/40`;
+        return `${baseClasses} bg-gradient-to-br from-transparent to-orange-600/50 md:to-orange-600/30 hover:to-orange-500/60 md:hover:to-orange-500/40`;
       case 'mythic':
-        return `${baseClasses} bg-gradient-to-br from-transparent to-red-600/30 hover:to-red-500/40`;
+        return `${baseClasses} bg-gradient-to-br from-transparent to-red-600/50 md:to-red-600/30 hover:to-red-500/60 md:hover:to-red-500/40`;
       default:
-        return `${baseClasses} bg-gradient-to-br from-transparent to-gray-600/30`;
+        return `${baseClasses} bg-gradient-to-br from-transparent to-gray-600/50 md:to-gray-600/30`;
     }
   };
 
