@@ -93,7 +93,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
               `}
             >
               {tab.icon}
-              <span>{tab.label}</span>
+              <span className="font-audiowide">{tab.label}</span>
               
               {/* Count badge */}
               {tab.count > 0 && (
@@ -147,8 +147,8 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
               </svg>
             </div>
-            <p className="text-gray-500 dark:text-gray-400 mb-1">No friend requests</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-gray-500 dark:text-gray-400 mb-1 font-audiowide">No friend requests</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 font-montserrat">
               When someone sends you a friend request, it will appear here
             </p>
           </div>
@@ -161,8 +161,8 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <p className="text-gray-500 dark:text-gray-400 mb-1">No game invitations</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-gray-500 dark:text-gray-400 mb-1 font-audiowide">No game invitations</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 font-montserrat">
               When friends invite you to games, invitations will appear here
             </p>
           </div>
@@ -176,7 +176,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
             </svg>
-            <span className="text-sm">
+            <span className="text-sm font-montserrat">
               {pendingRequests.length} friend request{pendingRequests.length !== 1 ? 's' : ''}
             </span>
             <button
@@ -197,7 +197,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            <span className="text-sm">
+            <span className="text-sm font-montserrat">
               {gameInvitations.length} game invitation{gameInvitations.length !== 1 ? 's' : ''}
             </span>
             <button

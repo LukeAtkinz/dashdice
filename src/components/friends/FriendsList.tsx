@@ -116,10 +116,10 @@ export default function FriendsList({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white font-audiowide">
             Friends
           </h2>
-          <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 font-montserrat">
             <span>({friends.length})</span>
             {onlineFriendsCount > 0 && (
               <>
@@ -205,8 +205,8 @@ export default function FriendsList({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                 </svg>
               </div>
-              <p className="text-gray-500 dark:text-gray-400">No friends yet</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500">
+              <p className="text-gray-500 dark:text-gray-400 font-audiowide">No friends yet</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 font-montserrat">
                 Add friends using their friend codes to start playing together!
               </p>
               {showAddButton && (
@@ -223,7 +223,7 @@ export default function FriendsList({
             </div>
           ) : (
             <div className="space-y-2">
-              <p className="text-gray-500 dark:text-gray-400">No friends match your filters</p>
+              <p className="text-gray-500 dark:text-gray-400 font-audiowide">No friends match your filters</p>
               <button
                 onClick={() => {
                   setSearchTerm('');

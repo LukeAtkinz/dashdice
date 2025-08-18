@@ -58,18 +58,18 @@ export default function AchievementsDashboard() {
     <div className="max-w-6xl mx-auto p-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-4">Achievements</h1>
+        <h1 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: "Audiowide" }}>Achievements</h1>
         
         {/* Progress Overview */}
         <div className="bg-gray-800 rounded-lg p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-xl font-semibold text-white">Overall Progress</h2>
-              <p className="text-gray-400">{completedCount} of {totalCount} achievements unlocked</p>
+              <h2 className="text-xl font-semibold text-white" style={{ fontFamily: "Audiowide" }}>Overall Progress</h2>
+              <p className="text-gray-400" style={{ fontFamily: "Montserrat" }}>{completedCount} of {totalCount} achievements unlocked</p>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold text-blue-400">{completionPercentage}%</div>
-              <div className="text-sm text-gray-400">Complete</div>
+              <div className="text-3xl font-bold text-blue-400" style={{ fontFamily: "Audiowide" }}>{completionPercentage}%</div>
+              <div className="text-sm text-gray-400" style={{ fontFamily: "Montserrat" }}>Complete</div>
             </div>
           </div>
           
@@ -97,7 +97,7 @@ export default function AchievementsDashboard() {
             `}
           >
             <span>{category.icon}</span>
-            <span>{category.name}</span>
+            <span className="font-audiowide">{category.name}</span>
           </button>
         ))}
       </div>
@@ -111,7 +111,7 @@ export default function AchievementsDashboard() {
             onChange={(e) => setShowCompleted(e.target.checked)}
             className="rounded"
           />
-          <span>Show Completed</span>
+          <span className="font-montserrat">Show Completed</span>
         </label>
         
         <label className="flex items-center space-x-2 text-gray-300">
@@ -121,7 +121,7 @@ export default function AchievementsDashboard() {
             onChange={(e) => setShowIncomplete(e.target.checked)}
             className="rounded"
           />
-          <span>Show In Progress</span>
+          <span className="font-montserrat">Show In Progress</span>
         </label>
       </div>
 
@@ -141,8 +141,8 @@ export default function AchievementsDashboard() {
       {/* Empty State */}
       {visibleAchievements.length === 0 && (
         <div className="text-center py-12">
-          <div className="text-gray-400 text-lg">No achievements found</div>
-          <p className="text-gray-500 mt-2">Try adjusting your filters or start playing to unlock achievements!</p>
+          <div className="text-gray-400 text-lg font-audiowide">No achievements found</div>
+          <p className="text-gray-500 mt-2 font-montserrat">Try adjusting your filters or start playing to unlock achievements!</p>
         </div>
       )}
     </div>

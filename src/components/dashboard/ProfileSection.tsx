@@ -164,8 +164,8 @@ const ProfileSection: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Profile & Settings</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-gray-900 font-audiowide">Profile & Settings</h1>
+          <p className="text-gray-600 mt-2 font-montserrat">
             Manage your account and customize your experience
           </p>
         </div>
@@ -182,7 +182,7 @@ const ProfileSection: React.FC = () => {
               className="flex items-center space-x-2"
             >
               <span>👤</span>
-              <span>Profile</span>
+              <span className="font-audiowide">Profile</span>
             </Button>
             <Button
               variant={activeTab === 'settings' ? 'primary' : 'outline'}
@@ -191,7 +191,7 @@ const ProfileSection: React.FC = () => {
               className="flex items-center space-x-2"
             >
               <span>⚙️</span>
-              <span>Settings</span>
+              <span className="font-audiowide">Settings</span>
             </Button>
           </div>
         </CardContent>
@@ -201,10 +201,10 @@ const ProfileSection: React.FC = () => {
       {activeTab === 'profile' && (
         <div className="space-y-6">
           <div className="text-center">
-            <h1 className="text-3xl font-orbitron font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-orbitron font-bold text-gray-900 mb-2 font-audiowide">
               Profile
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 font-montserrat">
               Manage your account and view achievements
             </p>
           </div>
@@ -221,13 +221,13 @@ const ProfileSection: React.FC = () => {
                     {user?.displayName?.charAt(0)?.toUpperCase() || '?'}
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold">{user?.displayName || 'Unknown User'}</h3>
-                    <p className="text-gray-600">Member since {user?.createdAt?.toLocaleDateString()}</p>
+                    <h3 className="text-lg font-semibold font-audiowide">{user?.displayName || 'Unknown User'}</h3>
+                    <p className="text-gray-600 font-montserrat">Member since {user?.createdAt?.toLocaleDateString()}</p>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2 font-montserrat">
                     Display Name
                   </label>
                   <Input
@@ -242,7 +242,7 @@ const ProfileSection: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2 font-montserrat">
                     Email Address
                   </label>
                   <Input
@@ -252,7 +252,7 @@ const ProfileSection: React.FC = () => {
                     placeholder="Enter your email"
                     disabled
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 mt-1 font-montserrat">
                     Email cannot be changed at this time
                   </p>
                 </div>
@@ -290,20 +290,20 @@ const ProfileSection: React.FC = () => {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">24</div>
-                  <div className="text-sm text-gray-600">Games Played</div>
+                  <div className="text-2xl font-bold text-blue-600 font-audiowide">24</div>
+                  <div className="text-sm text-gray-600 font-montserrat">Games Played</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">16</div>
-                  <div className="text-sm text-gray-600">Games Won</div>
+                  <div className="text-2xl font-bold text-green-600 font-audiowide">16</div>
+                  <div className="text-sm text-gray-600 font-montserrat">Games Won</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">42</div>
-                  <div className="text-sm text-gray-600">Items Collected</div>
+                  <div className="text-2xl font-bold text-purple-600 font-audiowide">42</div>
+                  <div className="text-sm text-gray-600 font-montserrat">Items Collected</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600">5</div>
-                  <div className="text-sm text-gray-600">Current Streak</div>
+                  <div className="text-2xl font-bold text-orange-600 font-audiowide">5</div>
+                  <div className="text-sm text-gray-600 font-montserrat">Current Streak</div>
                 </div>
               </div>
             </CardContent>
@@ -327,15 +327,15 @@ const ProfileSection: React.FC = () => {
                       {achievement.icon}
                     </div>
                     <div className="flex-1">
-                      <div className={`font-medium ${achievement.completed ? 'text-green-800' : 'text-gray-700'}`}>
+                      <div className={`font-medium font-audiowide ${achievement.completed ? 'text-green-800' : 'text-gray-700'}`}>
                         {achievement.name}
                       </div>
-                      <div className={`text-sm ${achievement.completed ? 'text-green-600' : 'text-gray-500'}`}>
+                      <div className={`text-sm font-montserrat ${achievement.completed ? 'text-green-600' : 'text-gray-500'}`}>
                         {achievement.description}
                       </div>
                     </div>
                     {achievement.completed && (
-                      <div className="text-green-600 font-semibold text-sm">
+                      <div className="text-green-600 font-semibold text-sm font-audiowide">
                         ✓ Completed
                       </div>
                     )}
@@ -351,10 +351,10 @@ const ProfileSection: React.FC = () => {
       {activeTab === 'settings' && (
         <div className="space-y-6">
           <div className="text-center">
-            <h1 className="text-3xl font-orbitron font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-orbitron font-bold text-gray-900 mb-2 font-audiowide">
               Settings
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 font-montserrat">
               Customize your gaming experience
             </p>
           </div>
@@ -367,8 +367,8 @@ const ProfileSection: React.FC = () => {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-medium">Notifications</div>
-                  <div className="text-sm text-gray-600">Receive game alerts and updates</div>
+                  <div className="font-medium font-audiowide">Notifications</div>
+                  <div className="text-sm text-gray-600 font-montserrat">Receive game alerts and updates</div>
                 </div>
                 <button
                   onClick={() => handleToggle('notifications')}
@@ -386,8 +386,8 @@ const ProfileSection: React.FC = () => {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-medium">Sound Effects</div>
-                  <div className="text-sm text-gray-600">Enable game sound effects</div>
+                  <div className="font-medium font-audiowide">Sound Effects</div>
+                  <div className="text-sm text-gray-600 font-montserrat">Enable game sound effects</div>
                 </div>
                 <button
                   onClick={() => handleToggle('soundEffects')}
@@ -405,8 +405,8 @@ const ProfileSection: React.FC = () => {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-medium">Auto-Save</div>
-                  <div className="text-sm text-gray-600">Automatically save game progress</div>
+                  <div className="font-medium font-audiowide">Auto-Save</div>
+                  <div className="text-sm text-gray-600 font-montserrat">Automatically save game progress</div>
                 </div>
                 <button
                   onClick={() => handleToggle('autoSave')}
@@ -432,8 +432,8 @@ const ProfileSection: React.FC = () => {
             <CardContent className="space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="font-medium">Music Volume</label>
-                  <span className="text-sm text-gray-600">{settings.musicVolume}%</span>
+                  <label className="font-medium font-audiowide">Music Volume</label>
+                  <span className="text-sm text-gray-600 font-audiowide">{settings.musicVolume}%</span>
                 </div>
                 <input
                   type="range"
@@ -447,8 +447,8 @@ const ProfileSection: React.FC = () => {
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="font-medium">Sound Effects Volume</label>
-                  <span className="text-sm text-gray-600">{settings.sfxVolume}%</span>
+                  <label className="font-medium font-audiowide">Sound Effects Volume</label>
+                  <span className="text-sm text-gray-600 font-audiowide">{settings.sfxVolume}%</span>
                 </div>
                 <input
                   type="range"
@@ -469,11 +469,11 @@ const ProfileSection: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="block font-medium mb-2">Theme</label>
+                <label className="block font-medium mb-2 font-audiowide">Theme</label>
                 <select
                   value={settings.theme}
                   onChange={(e) => handleSelectChange('theme', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-montserrat"
                 >
                   <option value="light">Light</option>
                   <option value="dark">Dark</option>
@@ -482,11 +482,11 @@ const ProfileSection: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-medium mb-2">Animation Speed</label>
+                <label className="block font-medium mb-2 font-audiowide">Animation Speed</label>
                 <select
                   value={settings.animationSpeed}
                   onChange={(e) => handleSelectChange('animationSpeed', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-montserrat"
                 >
                   <option value="slow">Slow</option>
                   <option value="normal">Normal</option>
@@ -495,11 +495,11 @@ const ProfileSection: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-medium mb-2">Language</label>
+                <label className="block font-medium mb-2 font-audiowide">Language</label>
                 <select
                   value={settings.language}
                   onChange={(e) => handleSelectChange('language', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-montserrat"
                 >
                   <option value="en">English</option>
                   <option value="es">Spanish</option>

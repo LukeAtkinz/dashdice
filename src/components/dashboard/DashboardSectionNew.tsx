@@ -8,7 +8,6 @@ import { useBackground } from '@/context/BackgroundContext';
 import { MatchmakingService } from '@/services/matchmakingService';
 import { UserService } from '@/services/userService';
 import AchievementsMini from '@/components/achievements/AchievementsMini';
-import FriendsMini from '@/components/friends/FriendsMini';
 
 const gameConfig = {
   quickfire: { 
@@ -86,10 +85,6 @@ export const DashboardSection: React.FC = () => {
   const [hoveredGameMode, setHoveredGameMode] = useState<string | null>(null);
   const [tappedGameMode, setTappedGameMode] = useState<string | null>(null);
   const [isExiting, setIsExiting] = useState(false);
-
-  const handleFriendsNavigation = () => {
-    setCurrentSection('friends');
-  };
 
   // Get background-specific game mode selector styling
   const getGameModeSelectorBackground = () => {
@@ -464,11 +459,6 @@ export const DashboardSection: React.FC = () => {
       {/* Achievements Preview Section */}
       <div className="w-full max-w-[90vw] md:max-w-[30rem] mt-4">
         <AchievementsMini maxDisplay={3} />
-      </div>
-      
-      {/* Friends Preview Section */}
-      <div className="w-full max-w-[90vw] md:max-w-[30rem] mt-4">
-        <FriendsMini maxFriends={5} onViewAll={handleFriendsNavigation} />
       </div>
     </motion.div>
   );

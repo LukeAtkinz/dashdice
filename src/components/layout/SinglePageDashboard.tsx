@@ -18,6 +18,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { useBrowserRefresh } from '@/hooks/useBrowserRefresh';
 import { useBackgroundPositioning } from '@/hooks/useBackgroundPositioning';
+import { useOnlinePlayerCount } from '@/hooks/useOnlinePlayerCount';
+import NotificationBadge from '@/components/ui/NotificationBadge';
 import { MobileBackgroundControl } from '@/components/ui/MobileBackgroundControl';
 import { createTestMatch } from '@/utils/testMatchData';
 import '@/utils/testUtils'; // Load test utilities for development
@@ -27,6 +29,7 @@ const DashboardContent: React.FC = () => {
   const { user } = useAuth();
   const { DisplayBackgroundEquip } = useBackground();
   const { getBackgroundPosition } = useBackgroundPositioning();
+  const onlinePlayerCount = useOnlinePlayerCount();
   const [userGold] = useState(1000); // Placeholder for user gold
   
   // Create button gradient style based on user's display background
@@ -314,7 +317,7 @@ const DashboardContent: React.FC = () => {
                 <button
                   onClick={() => handleSectionChange('friends')}
                   disabled={currentSection === 'match' && !isGameOver}
-                  className={`flex cursor-pointer transition-all duration-300 ${
+                  className={`relative flex cursor-pointer transition-all duration-300 ${
                     currentSection === 'match' && !isGameOver 
                       ? 'opacity-50 cursor-not-allowed' 
                       : 'hover:scale-105 hover:shadow-lg active:scale-95'
@@ -349,7 +352,7 @@ const DashboardContent: React.FC = () => {
                       justifyContent: "center"
                     }}
                   >
-                    👥
+                    <img src="/Design Elements/friends.webp" alt="Friends" className="w-8 h-8" />
                   </div>
                   <span
                     style={{
@@ -363,6 +366,7 @@ const DashboardContent: React.FC = () => {
                   >
                     FRIENDS
                   </span>
+                  <NotificationBadge count={onlinePlayerCount} />
                 </button>
 
                 {/* SHOP Button - Disabled for future implementation */}
@@ -617,12 +621,13 @@ const DashboardContent: React.FC = () => {
               </button>
               <button
                 onClick={() => handleSectionChange('friends')}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[22vw] ${
+                className={`relative flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[22vw] ${
                   currentSection === 'friends' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <div className="w-8 h-8 text-2xl flex items-center justify-center">👥</div>
+                <img src="/Design Elements/friends.webp" alt="Friends" className="w-8 h-8" />
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
+                <NotificationBadge count={onlinePlayerCount} />
               </button>
               <button
                 onClick={() => handleSectionChange('inventory')}
