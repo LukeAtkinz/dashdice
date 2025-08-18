@@ -40,6 +40,16 @@ export interface GameState {
   createdAt: Date;
   updatedAt: Date;
   winner?: string;
+  gameMode?: string; // Added game mode support
+  modeSpecificData?: any; // Mode-specific data storage
+  currentTurn?: {
+    playerId: string;
+    rolls: { dice1: number; dice2: number; total: number }[];
+    turnScore: number;
+    startTime: number;
+  };
+  scores?: { [playerId: string]: number }; // Player scores
+  currentPlayerIndex?: number; // Current player index
 }
 
 export interface GamePlayer {
@@ -58,6 +68,9 @@ export interface Match {
   updatedAt: Date;
   winner?: string;
   gameType: 'ranked' | 'casual' | 'tournament';
+  gameMode?: string; // Added game mode support
+  modeSpecificData?: any; // Mode-specific data storage
+  scores?: { [playerId: string]: number }; // Player scores
 }
 
 export interface AuthContextType {

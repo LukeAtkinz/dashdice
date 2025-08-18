@@ -130,6 +130,12 @@ export class GameInvitationService {
   // Get user's game invitations
   static async getUserGameInvitations(userId: string): Promise<GameInvitation[]> {
     try {
+      // Temporarily disable complex queries until indexes are ready
+      console.log('GameInvitation service: getUserGameInvitations temporarily disabled until Firebase indexes are ready');
+      return [];
+      
+      // Original query (commented out until indexes are built):
+      /*
       const invitationsQuery = query(
         collection(db, 'gameInvitations'),
         where('toUserId', '==', userId),
@@ -155,6 +161,7 @@ export class GameInvitationService {
       });
 
       return validInvitations;
+      */
     } catch (error) {
       console.error('Error getting user game invitations:', error);
       return [];
@@ -163,6 +170,13 @@ export class GameInvitationService {
 
   // Subscribe to user's game invitations
   static subscribeToGameInvitations(userId: string, callback: (invitations: GameInvitation[]) => void): () => void {
+    // Temporarily disable complex queries until indexes are ready
+    console.log('GameInvitation service: subscribeToGameInvitations temporarily disabled until Firebase indexes are ready');
+    callback([]);
+    return () => {}; // Return empty unsubscribe function
+    
+    // Original query (commented out until indexes are built):
+    /*
     const invitationsQuery = query(
       collection(db, 'gameInvitations'),
       where('toUserId', '==', userId),
@@ -189,6 +203,7 @@ export class GameInvitationService {
 
       callback(validInvitations);
     });
+    */
   }
 
   // Create game session from invitation

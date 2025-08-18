@@ -9,6 +9,7 @@ import { MatchmakingService } from '@/services/matchmakingService';
 import { UserService } from '@/services/userService';
 import AchievementsMini from '@/components/achievements/AchievementsMini';
 import FriendsMini from '@/components/friends/FriendsMini';
+import GameModesMini from '@/components/game/GameModesMini';
 
 const gameConfig = {
   quickfire: { 
@@ -16,57 +17,57 @@ const gameConfig = {
     icon: '/Design Elements/Shield.webp', 
     description: 'more speed,\nmore skill',
     rotation: '6deg',
-    mobileRotation: '6deg', // 90 degrees different from desktop
+    mobileRotation: '6deg',
     position: { top: '0rem', left: '-4rem' },
     mobilePosition: { top: '0rem', left: '-2rem' },
-    mobileScale: '1.0', // Slightly bigger on mobile
+    mobileScale: '1.0',
     available: true
   },
   classic: { 
     name: 'CLASSIC\nMODE', 
     icon: '/Design Elements/Crown Mode.webp', 
-    description: 'full force,\nfull focus',
+    description: 'first to 50,\nbest of 3',
     rotation: '0deg',
     mobileRotation: '0deg',
     position: { top: '-2rem', left: '-2rem' },
     mobilePosition: { top: '-1.5rem', left: '-2rem' },
     mobileScale: '1.0',
-    available: false
+    available: true // Enable classic mode
   },
-  zerohour: { 
+  'zero-hour': { 
     name: 'ZERO\nHOUR', 
     icon: '/Design Elements/time out.webp', 
-    description: 'time runs\nbackwards',
+    description: 'countdown\nto victory',
     rotation: '0deg',
     mobileRotation: '0deg',
     position: { top: '-2rem', left: '-5rem' },
-    mobilePosition: { top: '-1rem', left: '-2rem' }, // Move left on mobile
+    mobilePosition: { top: '-1rem', left: '-2rem' },
     mobileScale: '1.0',
-    available: false
+    available: true // Enable zero hour mode
   },
-  lastline: { 
+  'last-line': { 
     name: 'LAST\nLINE', 
     icon: '/Design Elements/skull.webp', 
-    description: 'one roll,\none life',
+    description: 'one roll,\nhighest wins',
     rotation: '5deg',
     mobileRotation: '5deg',
     position: { top: '-1rem', left: '-5rem' },
     mobilePosition: { top: '-1rem', left: '-2rem' },
     mobileScale: '1.0',
-    available: false
+    available: true // Enable last line mode
   },
-  truegrit: { 
+  'true-grit': { 
     name: 'TRUE\nGRIT', 
     icon: '/Design Elements/Castle.webp', 
     description: 'no banking,\nno mercy',
     rotation: '0deg',
     mobileRotation: '0deg',
     position: { top: '-1rem', left: '-5rem' },
-    mobilePosition: { top: '0rem', left: '-4rem' }, // Move up on mobile
+    mobilePosition: { top: '0rem', left: '-4rem' },
     mobileScale: '1.0',
-    available: false
+    available: true // Enable true grit mode
   },
-  tagteam: { 
+  'tag-team': { 
     name: 'TAG\nTEAM', 
     icon: '/Design Elements/friends.webp', 
     description: 'rise or fall\ntogether',
@@ -75,7 +76,7 @@ const gameConfig = {
     position: { top: '-2rem', left: '-5rem' },
     mobilePosition: { top: '-2rem', left: '-2rem' },
     mobileScale: '1.0',
-    available: false
+    available: false // Keep tag team disabled for now
   }
 };
 
@@ -459,6 +460,11 @@ export const DashboardSection: React.FC = () => {
             )}
           </div>
         ))}
+      </div>
+      
+      {/* Game Modes Quick Select */}
+      <div className="w-full max-w-[90vw] md:max-w-[30rem] mt-4">
+        <GameModesMini />
       </div>
       
       {/* Achievements Preview Section */}

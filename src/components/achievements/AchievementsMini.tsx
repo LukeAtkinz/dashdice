@@ -70,6 +70,7 @@ export default function AchievementsMini({ maxDisplay = 5 }: AchievementsMiniPro
                   achievement={achievement}
                   size="small"
                   showProgress={false}
+                  showName={false}
                 />
               ) : null;
             })}

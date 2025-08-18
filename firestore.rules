@@ -5,6 +5,81 @@ service cloud.firestore {
     // Users can read and write their own user document
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null; // Allow reading other users for friend features
+    }
+    
+    // Achievement Definitions - Read-only for all authenticated users
+    match /achievementDefinitions/{achievementId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only admin can write
+    }
+
+    // User Achievements - users can read/write their own achievements
+    match /userAchievements/{achievementId} {
+      allow read, write: if request.auth != null && 
+        (resource == null || resource.data.userId == request.auth.uid);
+    }
+    
+    // Achievement Progress - users can read/write their own progress
+    match /achievementProgress/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Achievement Notifications - users can read/write their own notifications
+    match /achievementNotifications/{notificationId} {
+      allow read, write: if request.auth != null && 
+        (resource == null || resource.data.userId == request.auth.uid);
+    }
+    
+    // Daily/Hourly Metrics for achievement tracking
+    match /dailyMetrics/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    match /hourlyMetrics/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Friend Stats for achievements
+    match /friendStats/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // User Achievements (legacy path)
+    match /users/{userId}/achievements/{achievementId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Friends System - Temporary permissive rules for development
+    match /friends/{friendshipId} {
+      allow read, write: if request.auth != null; // Simplified for development
+    }
+
+    match /friendRequests/{requestId} {
+      allow read, write: if request.auth != null; // Simplified for development
+    }
+
+    match /gameInvitations/{invitationId} {
+      allow read, write: if request.auth != null; // Simplified for development
+    }
+
+    match /presence/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Game Modes - Read-only for all authenticated users
+    match /gameModes/{modeId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only admin can write
+    }
+
+    // Games
+    match /games/{gameId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid in resource.data.players;
+      allow create: if request.auth != null && 
+        request.auth.uid in request.resource.data.players;
     }
     
     // Users can read and write waiting room documents

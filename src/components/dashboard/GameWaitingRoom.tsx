@@ -142,13 +142,25 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       name: 'Classic Mode', 
       description: 'Traditional dice gameplay'
     },
+    'zero-hour': { 
+      name: 'Zero Hour', 
+      description: 'Race against time'
+    },
     zerohour: { 
       name: 'Zero Hour', 
       description: 'Race against time'
     },
+    'last-line': { 
+      name: 'Last Line', 
+      description: 'Sudden death showdown'
+    },
     lastline: { 
       name: 'Last Line', 
       description: 'Sudden death showdown'
+    },
+    'true-grit': { 
+      name: 'True Grit', 
+      description: 'One turn, one chance'
     },
     truegrit: { 
       name: 'True Grit', 

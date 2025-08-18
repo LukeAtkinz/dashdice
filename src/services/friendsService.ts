@@ -18,6 +18,7 @@ import {
   limit
 } from 'firebase/firestore';
 import { db } from '@/services/firebase';
+import AchievementTrackingService from '@/services/achievementTrackingService';
 import { 
   FriendRelationship, 
   FriendRequest, 
@@ -126,9 +127,10 @@ export class FriendsService {
         return { success: false, error: 'This user has already sent you a friend request' };
       }
 
-      // Check user's privacy settings
-      if (!targetUser.privacy?.allowFriendRequests) {
-        return { success: false, error: 'This user is not accepting friend requests' };
+      // Check user's privacy settings (default to allowing friend requests if not set)
+      const allowFriendRequests = targetUser.privacy?.allowFriendRequests !== false;
+      if (!allowFriendRequests) {
+        return { success: false, error: 'This user is not accepting friend requests for all users' };
       }
 
       // Create friend request
@@ -189,6 +191,16 @@ export class FriendsService {
         friendId: request.fromUserId,
         ...friendshipData
       });
+
+      // Track achievement for both users adding a friend
+      const achievementService = AchievementTrackingService.getInstance();
+      try {
+        await achievementService.recordFriendAdded(request.fromUserId);
+        await achievementService.recordFriendAdded(request.toUserId);
+      } catch (achievementError) {
+        console.error('Error tracking friend added achievement:', achievementError);
+        // Don't fail the friend request if achievement tracking fails
+      }
 
       return true;
     } catch (error) {
@@ -279,6 +291,7 @@ export class FriendsService {
       return friends;
     } catch (error) {
       console.error('Error getting user friends:', error);
+      console.log('Friends service: Returning empty friends list due to database error');
       return [];
     }
   }
@@ -286,21 +299,40 @@ export class FriendsService {
   // Get pending friend requests
   static async getPendingRequests(userId: string): Promise<FriendRequest[]> {
     try {
+      console.log('🔍 Getting pending friend requests for user:', userId);
+      
+      // Use simple query to avoid index issues
       const requestsQuery = query(
         collection(db, 'friendRequests'),
         where('toUserId', '==', userId),
-        where('status', '==', 'pending'),
-        orderBy('createdAt', 'desc')
+        where('status', '==', 'pending')
       );
       
       const snapshot = await getDocs(requestsQuery);
-      return snapshot.docs.map(doc => ({
+      const requests = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as FriendRequest[];
+      
+      console.log(`📬 Found ${requests.length} pending friend request(s)`);
+      return requests;
+      
     } catch (error) {
-      console.error('Error getting pending requests:', error);
-      return [];
+      console.error('❌ Error getting pending requests:', error);
+      // If complex query fails, try simple approach
+      try {
+        console.log('⚡ Falling back to simple query...');
+        const allRequestsSnapshot = await getDocs(collection(db, 'friendRequests'));
+        const userRequests = allRequestsSnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter((req: any) => req.toUserId === userId && req.status === 'pending') as FriendRequest[];
+          
+        console.log(`📬 Fallback found ${userRequests.length} pending request(s)`);
+        return userRequests;
+      } catch (fallbackError) {
+        console.error('❌ Fallback query also failed:', fallbackError);
+        return [];
+      }
     }
   }
 
@@ -340,20 +372,47 @@ export class FriendsService {
 
   // Subscribe to pending friend requests
   static subscribeToPendingRequests(userId: string, callback: (requests: FriendRequest[]) => void): () => void {
-    const requestsQuery = query(
-      collection(db, 'friendRequests'),
-      where('toUserId', '==', userId),
-      where('status', '==', 'pending'),
-      orderBy('createdAt', 'desc')
-    );
+    try {
+      // Try the optimized query first
+      const requestsQuery = query(
+        collection(db, 'friendRequests'),
+        where('toUserId', '==', userId),
+        where('status', '==', 'pending'),
+        orderBy('createdAt', 'desc')
+      );
 
-    return onSnapshot(requestsQuery, (snapshot) => {
-      const requests = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as FriendRequest[];
-      callback(requests);
-    });
+      return onSnapshot(requestsQuery, (snapshot) => {
+        const requests = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as FriendRequest[];
+        callback(requests);
+      }, (error) => {
+        console.warn('Index not ready, falling back to simple query:', error);
+        
+        // Fallback to simple query without orderBy
+        const fallbackQuery = query(
+          collection(db, 'friendRequests'),
+          where('toUserId', '==', userId),
+          where('status', '==', 'pending')
+        );
+
+        return onSnapshot(fallbackQuery, (snapshot) => {
+          const requests = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })) as FriendRequest[];
+          
+          // Sort manually by createdAt
+          requests.sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
+          callback(requests);
+        });
+      });
+    } catch (error) {
+      console.error('Error subscribing to pending requests:', error);
+      callback([]);
+      return () => {};
+    }
   }
 
   // Helper: Get existing friendship

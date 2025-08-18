@@ -50,30 +50,65 @@ export const AchievementProvider: React.FC<AchievementProviderProps> = ({ childr
 
     try {
       setIsLoading(true);
+      console.log('🎯 Initializing achievement system...');
 
-      // Initialize user achievements if needed
-      await trackingService.initializeUserAchievements(user.uid);
+      // Initialize user achievements if needed (don't throw on failure)
+      try {
+        await trackingService.initializeUserAchievements(user.uid);
+      } catch (initError) {
+        console.log('⚠️ Achievement initialization failed, continuing with read-only mode');
+      }
 
-      // Load achievement definitions
-      const achievements = await definitionsService.getAllAchievements();
-      setAllAchievements(achievements);
+      // Load achievement definitions (with fallback)
+      try {
+        const achievements = await definitionsService.getAllAchievements();
+        setAllAchievements(achievements);
+        console.log(`✅ Loaded ${achievements.length} achievement definitions`);
+      } catch (defError) {
+        console.error('❌ Failed to load achievement definitions:', defError);
+        // Achievements should still show from fallback system
+        setAllAchievements([]);
+      }
 
-      // Load user progress
-      const progress = await trackingService.getUserProgress(user.uid);
-      setUserProgress(progress);
+      // Load user progress (graceful failure)
+      try {
+        const progress = await trackingService.getUserProgress(user.uid);
+        setUserProgress(progress);
+      } catch (progressError) {
+        console.log('⚠️ Could not load user progress, starting fresh');
+        setUserProgress(null);
+      }
 
-      // Load user achievements
-      const userAchs = await trackingService.getUserAchievements(user.uid);
-      setUserAchievements(userAchs);
+      // Load user achievements (graceful failure)
+      try {
+        const userAchs = await trackingService.getUserAchievements(user.uid);
+        setUserAchievements(userAchs);
+      } catch (userAchError) {
+        console.log('⚠️ Could not load user achievements, starting fresh');
+        setUserAchievements([]);
+      }
 
-      // Load notifications
-      const notifs = await trackingService.getUserNotifications(user.uid);
-      setNotifications(notifs);
+      // Load notifications (graceful failure)
+      try {
+        const notifs = await trackingService.getUserNotifications(user.uid);
+        setNotifications(notifs);
+      } catch (notifError) {
+        console.log('⚠️ Could not load notifications');
+        setNotifications([]);
+      }
 
       setIsLoading(false);
+      console.log('✅ Achievement system initialization complete');
     } catch (error) {
-      console.error('Error initializing achievements:', error);
+      console.error('❌ Critical error initializing achievements:', error);
+      // Even on critical error, don't leave in loading state
       setIsLoading(false);
+      
+      // Set empty arrays so UI can still show achievement placeholders
+      setAllAchievements([]);
+      setUserAchievements([]);
+      setUserProgress(null);
+      setNotifications([]);
     }
   }, [user, definitionsService, trackingService]);
 
@@ -135,8 +170,28 @@ export const AchievementProvider: React.FC<AchievementProviderProps> = ({ childr
    * Context methods
    */
   const getAchievementProgress = useCallback((achievementId: string): UserAchievement | undefined => {
-    return userAchievements.find(ua => ua.achievementId === achievementId);
-  }, [userAchievements]);
+    // First check if user has a record for this achievement
+    const existingProgress = userAchievements.find(ua => ua.achievementId === achievementId);
+    if (existingProgress) {
+      return existingProgress;
+    }
+    
+    // If no user achievement record exists, create a default one for display
+    const achievementDef = allAchievements.find(a => a.id === achievementId);
+    if (achievementDef) {
+      return {
+        id: `temp-${achievementId}`,
+        userId: user?.uid || '',
+        achievementId: achievementId,
+        isCompleted: false,
+        progress: 0,
+        lastUpdated: new Date() as any, // This will be converted to Timestamp when saved
+        metadata: {}
+      } as UserAchievement;
+    }
+    
+    return undefined;
+  }, [userAchievements, allAchievements, user]);
 
   const getAchievementsByCategory = useCallback((category: AchievementCategory): AchievementDefinition[] => {
     return allAchievements.filter(achievement => achievement.category === category);

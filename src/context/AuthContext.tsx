@@ -113,11 +113,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       if (userSnap.exists()) {
         const userData = userSnap.data();
+        
+        // If user doesn't have a friend code, generate one
+        let friendCode = userData.friendCode;
+        if (!friendCode) {
+          try {
+            friendCode = await FriendsService.generateUniqueFriendCode();
+            await updateDoc(userRef, { friendCode });
+          } catch (error) {
+            console.error('Error generating friend code for existing user:', error);
+            // If we can't generate one now, it will be generated on next login
+          }
+        }
+        
         return {
           uid,
           email: userData.email,
           displayName: userData.displayName,
           photoURL: userData.photoURL,
+          friendCode: friendCode,
           createdAt: userData.createdAt?.toDate() || new Date(),
           lastLoginAt: userData.lastLoginAt?.toDate() || new Date(),
           inventory: userData.inventory || [],

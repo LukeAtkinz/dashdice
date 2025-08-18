@@ -16,6 +16,7 @@ import { db } from '@/services/firebase';
 import { MatchData, GamePhase, RollPhase, TurnDeciderChoice } from '@/types/match';
 import { UserService } from './userService';
 import { CompletedMatchService } from './completedMatchService';
+import { GameModeService } from './gameModeService';
 
 export class MatchService {
   /**
@@ -374,6 +375,15 @@ export class MatchService {
       
       const matchData = matchSnapshot.data() as MatchData;
       const currentTurnScore = matchData.gameData.turnScore || 0;
+      const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
+      const currentPlayerScore = currentPlayer.playerScore || 0;
+      
+      // Get game mode configuration
+      const gameMode = await GameModeService.getGameMode(matchData.gameMode || 'classic');
+      if (!gameMode) {
+        console.error('❌ Game mode not found:', matchData.gameMode);
+        return;
+      }
       
       let newTurnScore = currentTurnScore;
       let turnOver = false;
@@ -381,81 +391,115 @@ export class MatchService {
       let gameOver = false;
       let winner = '';
       let gameOverReason = '';
+      let eliminatePlayer = false;
       
-      // Game Rules Processing
-      const currentMultiplier = matchData.gameData.hasDoubleMultiplier || false;
+      // Calculate dice values and check for patterns
+      const diceSum = dice1 + dice2;
+      const isDouble = dice1 === dice2;
+      const isSingleOne = (dice1 === 1 && dice2 !== 1) || (dice2 === 1 && dice1 !== 1);
+      const isDoubleOne = dice1 === 1 && dice2 === 1;
+      const isDoubleSix = dice1 === 6 && dice2 === 6;
       
-      // Rule 1: Single 1 - Turn over, no score added (clears multiplier)
-      if ((dice1 === 1 && dice2 !== 1) || (dice2 === 1 && dice1 !== 1)) {
-        console.log('🎲 Single 1 rolled - Turn over, no score added');
+      // Process roll using game mode service for special elimination rules
+      if (isSingleOne && gameMode.rules.eliminationRules.singleOne) {
+        console.log('🎲 Single 1 rolled - Player eliminated');
+        eliminatePlayer = true;
         turnOver = true;
-        newTurnScore = 0; // Don't add to player score
+        // In Last Line, their current turn score becomes their final score
+        if (gameMode.id === 'last-line') {
+          newTurnScore = currentTurnScore; // Keep current score, don't add the 1
+        } else {
+          newTurnScore = 0;
+        }
       }
-      // Rule 2: Double 6 - Turn over, player score reset to 0 (clears multiplier)
-      else if (dice1 === 6 && dice2 === 6) {
-        console.log('🎲 Double 6 rolled - Player score reset to 0');
-        turnOver = true;
-        resetPlayerScore = true;
-        newTurnScore = 0;
+      // Handle double 6s based on game mode
+      else if (isDoubleSix) {
+        switch (gameMode.rules.eliminationRules.doubleSix) {
+          case 'reset':
+            console.log('🎲 Double 6 rolled - Player score reset to starting score');
+            resetPlayerScore = true;
+            turnOver = true;
+            newTurnScore = 0;
+            break;
+          case 'score':
+            console.log('🎲 Double 6 rolled - Score with multiplier');
+            newTurnScore = currentTurnScore + (diceSum * 2); // x2 multiplier for double 6
+            turnOver = false;
+            break;
+          default:
+            // Classic mode behavior
+            console.log('🎲 Double 6 rolled - Player score reset to 0');
+            resetPlayerScore = true;
+            turnOver = true;
+            newTurnScore = 0;
+        }
       }
-      // Rule 3: Double 1 (Snake Eyes) - +20 to turn score, continue playing (no multiplier effect)
-      else if (dice1 === 1 && dice2 === 1) {
+      // Handle double 1 (Snake Eyes) - special +20 rule for classic modes
+      else if (isDoubleOne && gameMode.id === 'classic') {
         console.log('🎲 Snake Eyes rolled - +20 to turn score');
         newTurnScore = currentTurnScore + 20;
-        turnOver = false; // Continue playing
+        turnOver = false;
       }
-      // Rule 4: Other Doubles (22, 33, 44, 55) - Set 2x multiplier and add dice sum normally
-      else if (dice1 === dice2) {
-        const diceSum = dice1 + dice2;
-        // Doubles themselves don't get multiplied - they just activate the multiplier for future rolls
+      // Handle single 1 (non-elimination modes)
+      else if (isSingleOne && !gameMode.rules.eliminationRules.singleOne) {
+        console.log('🎲 Single 1 rolled - Turn over, no score added');
+        turnOver = true;
+        newTurnScore = 0;
+      }
+      // Handle other doubles
+      else if (isDouble) {
         newTurnScore = currentTurnScore + diceSum;
-        console.log(`🎲 Double ${dice1}s rolled - ${diceSum} points added, 2x multiplier activated for rest of turn`);
-        turnOver = false; // Continue playing
-        // Multiplier will be set in updates below
+        console.log(`🎲 Double ${dice1}s rolled - ${diceSum} points added`);
+        
+        // Check if doubles grant extra roll in this game mode
+        if (gameMode.rules.specialRules?.doubleGrantsExtraRoll) {
+          turnOver = false; // Extra roll granted
+        } else {
+          // Classic mode: activate multiplier for future rolls
+          turnOver = false;
+        }
       }
-      // Normal scoring - add dice sum to turn score (apply multiplier if active)
+      // Normal scoring
       else {
-        const diceSum = dice1 + dice2;
+        const currentMultiplier = matchData.gameData.hasDoubleMultiplier || false;
         const scoreToAdd = currentMultiplier ? diceSum * 2 : diceSum;
         newTurnScore = currentTurnScore + scoreToAdd;
         console.log(`🎲 Normal roll: ${dice1} + ${dice2} = ${diceSum}${currentMultiplier ? ' (x2 = ' + scoreToAdd + ')' : ''}, Turn score: ${newTurnScore}`);
-        turnOver = false; // Continue playing
+        turnOver = false;
       }
       
-      // Prepare updates (declare early for auto-win logic)
+      // Prepare updates
       const updates: any = {
         'gameData.isRolling': false,
-        'gameData.rollPhase': deleteField(), // Use deleteField() instead of null
+        'gameData.rollPhase': deleteField(),
         'gameData.turnScore': newTurnScore,
       };
       
-      // 📊 STATISTICS TRACKING
-      const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
-      const currentPlayerScore = currentPlayer.playerScore || 0;
+      // Statistics tracking
       const playerStatsPath = isHost ? 'hostData.matchStats' : 'opponentData.matchStats';
       const currentStats = currentPlayer.matchStats || { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0 };
       
-      // Track doubles
-      if (dice1 === dice2) {
+      if (isDouble) {
         updates[`${playerStatsPath}.doubles`] = currentStats.doubles + 1;
       }
       
-      // Track biggest turn score
       if (newTurnScore > currentStats.biggestTurnScore) {
         updates[`${playerStatsPath}.biggestTurnScore`] = newTurnScore;
       }
       
-      // Track last dice sum
-      updates[`${playerStatsPath}.lastDiceSum`] = dice1 + dice2;
+      updates[`${playerStatsPath}.lastDiceSum`] = diceSum;
       
-      // 🏆 AUTO-WIN LOGIC: Check if player + turn score reaches round objective
-      const roundObjective = matchData.gameData.roundObjective || 100; // Use stored objective
+      // Auto-win logic for reaching target score
+      const targetScore = gameMode.rules.targetScore;
+      const shouldCheckAutoWin = gameMode.rules.scoreDirection === 'up' && 
+                                currentPlayerScore + newTurnScore >= targetScore && 
+                                !turnOver && !eliminatePlayer;
       
-      if (currentPlayerScore + newTurnScore >= roundObjective && !turnOver) {
-        console.log(`🏆 AUTO-WIN! ${currentPlayer.playerDisplayName} reached ${roundObjective} points without banking!`);
+      if (shouldCheckAutoWin) {
+        console.log(`🏆 AUTO-WIN! ${currentPlayer.playerDisplayName} reached ${targetScore} points!`);
         gameOver = true;
         winner = currentPlayer.playerDisplayName;
-        gameOverReason = `Game completed!`;
+        gameOverReason = 'Game completed!';
         
         // Auto-bank the winning score
         if (isHost) {
@@ -464,59 +508,63 @@ export class MatchService {
           updates['opponentData.playerScore'] = currentPlayerScore + newTurnScore;
         }
         
-        // Clear turn score since it's been auto-banked
         updates['gameData.turnScore'] = 0;
-        turnOver = true; // Effectively end the turn
+        turnOver = true;
         
         // Set game over state
         updates['gameData.gamePhase'] = 'gameOver';
         updates['gameData.winner'] = winner;
         updates['gameData.gameOverReason'] = gameOverReason;
         updates['gameData.status'] = 'completed';
-        
-        // Both players lose turn
         updates['hostData.turnActive'] = false;
         updates['opponentData.turnActive'] = false;
       }
       
-      // Handle double multiplier logic
-      if (dice1 === dice2 && dice1 !== 1 && dice1 !== 6) {
-        // Set multiplier for doubles (22, 33, 44, 55)
-        updates['gameData.hasDoubleMultiplier'] = true;
-      } else if (turnOver) {
-        // Clear multiplier when turn ends
-        updates['gameData.hasDoubleMultiplier'] = false;
+      // Handle double multiplier logic (Classic mode)
+      if (gameMode.id === 'classic') {
+        if (dice1 === dice2 && dice1 !== 1 && dice1 !== 6) {
+          updates['gameData.hasDoubleMultiplier'] = true;
+        } else if (turnOver) {
+          updates['gameData.hasDoubleMultiplier'] = false;
+        }
       }
-      // Note: Snake eyes (11) doesn't affect multiplier state
       
       // Handle turn over scenarios
-      if (turnOver) {
-        updates['gameData.turnScore'] = 0; // Reset turn score
+      if (turnOver || eliminatePlayer) {
+        updates['gameData.turnScore'] = 0;
         
-        // Handle player score reset (double 6)
+        // Handle player score reset (double 6 in Zero Hour)
         if (resetPlayerScore) {
+          const resetScore = gameMode.rules.startingScore;
           if (isHost) {
-            updates['hostData.playerScore'] = 0;
+            updates['hostData.playerScore'] = resetScore;
           } else {
-            updates['opponentData.playerScore'] = 0;
+            updates['opponentData.playerScore'] = resetScore;
           }
         }
         
-        // Switch turns using existing system
+        // Handle Last Line elimination - player's turn score becomes final score
+        if (eliminatePlayer && gameMode.id === 'last-line') {
+          if (isHost) {
+            updates['hostData.playerScore'] = newTurnScore;
+          } else {
+            updates['opponentData.playerScore'] = newTurnScore;
+          }
+          updates['gameData.turnScore'] = 0;
+        }
+        
+        // Switch turns
         updates['hostData.turnActive'] = !isHost;
         updates['opponentData.turnActive'] = isHost;
       }
       
       await updateDoc(matchRef, updates);
       
-      // 📊 UPDATE USER STATS: If game over, update user profiles
+      // Update user stats if game over
       if (gameOver && winner) {
         const winnerId = isHost ? matchData.hostData.playerId : matchData.opponentData.playerId;
         await this.updateUserStats(matchData, winnerId);
-        
-        // ⚠️ NOTE: Match stays active until players leave or start rematch
-        // This allows GameOverPhase to continue reading match data
-        console.log('✅ Auto-win stats updated - match remains active for game over screen');
+        console.log('✅ Game over stats updated');
       }
       
     } catch (error) {
@@ -550,17 +598,51 @@ export class MatchService {
         throw new Error('No score to bank');
       }
       
-      // Calculate new player score (safeguard against undefined/null playerScore)
-      const newPlayerScore = (currentPlayer.playerScore || 0) + matchData.gameData.turnScore;
+      // Get game mode configuration
+      const gameMode = await GameModeService.getGameMode(matchData.gameMode || 'classic');
+      if (!gameMode) {
+        console.error('❌ Game mode not found:', matchData.gameMode);
+        throw new Error('Game mode not found');
+      }
       
-      // Check for win condition
-      const roundObjective = matchData.gameData.roundObjective || 100;
+      // Check if banking is allowed in this game mode
+      if (!gameMode.rules.allowBanking) {
+        throw new Error('Banking is not allowed in this game mode');
+      }
+      
+      // Calculate new player score based on game mode direction
+      let newPlayerScore;
+      if (gameMode.rules.scoreDirection === 'down') {
+        // Zero Hour: subtract banked score from current score
+        newPlayerScore = (currentPlayer.playerScore || 0) - matchData.gameData.turnScore;
+      } else {
+        // Classic and other modes: add banked score to current score
+        newPlayerScore = (currentPlayer.playerScore || 0) + matchData.gameData.turnScore;
+      }
+      
+      // Check for win condition based on game mode
+      const targetScore = gameMode.rules.targetScore;
       let gameOver = false;
       let winner = '';
       
-      if (newPlayerScore >= roundObjective) {
-        gameOver = true;
-        winner = currentPlayer.playerDisplayName;
+      if (gameMode.rules.scoreDirection === 'down') {
+        // Zero Hour: win by reaching exactly 0
+        if (newPlayerScore <= 0) {
+          if (gameMode.rules.specialRules?.exactScoreRequired && newPlayerScore < 0) {
+            // Overshoot in Zero Hour - reset to starting score
+            newPlayerScore = gameMode.rules.startingScore;
+            console.log('🎯 Overshoot in Zero Hour - score reset to starting value');
+          } else if (newPlayerScore === 0) {
+            gameOver = true;
+            winner = currentPlayer.playerDisplayName;
+          }
+        }
+      } else {
+        // Classic and other modes: win by reaching target score
+        if (newPlayerScore >= targetScore) {
+          gameOver = true;
+          winner = currentPlayer.playerDisplayName;
+        }
       }
       
       // Prepare updates

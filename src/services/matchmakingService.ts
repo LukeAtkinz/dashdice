@@ -13,6 +13,7 @@ import {
   writeBatch
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { GameModeService } from './gameModeService';
 
 export class MatchmakingService {
   
@@ -180,6 +181,10 @@ export class MatchmakingService {
         const roomData = roomSnap.data();
         console.log('✅ MatchmakingService: Found room data:', roomData);
         
+        // Get game mode configuration to determine starting score
+        const gameMode = await GameModeService.getGameMode(roomData.gameMode || 'classic');
+        const startingScore = gameMode?.rules.startingScore || 0;
+        
         // Create enhanced data for matches collection
         const matchData = {
           ...roomData,
@@ -193,7 +198,7 @@ export class MatchmakingService {
             diceOne: 0,
             diceTwo: 0,
             roundObjective: this.getRoundObjective(roomData.gameMode || 'classic'),
-            startingScore: 0,
+            startingScore: startingScore,
             status: 'pregame',
             isPregame: true,
             gamePhase: 'turnDecider',
@@ -207,7 +212,7 @@ export class MatchmakingService {
           hostData: {
             ...roomData.hostData,
             turnActive: false, // No one active during pregame
-            playerScore: 0,
+            playerScore: startingScore,
             roundScore: 0,
             // Initialize match statistics
             matchStats: {
@@ -221,7 +226,7 @@ export class MatchmakingService {
           opponentData: {
             ...roomData.opponentData,
             turnActive: false, // No one active during pregame
-            playerScore: 0,
+            playerScore: startingScore,
             roundScore: 0,
             // Initialize match statistics
             matchStats: {

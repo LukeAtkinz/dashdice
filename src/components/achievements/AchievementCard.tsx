@@ -9,12 +9,14 @@ interface AchievementCardProps {
   achievement: AchievementDefinition;
   size?: 'small' | 'medium' | 'large';
   showProgress?: boolean;
+  showName?: boolean;
 }
 
 export default function AchievementCard({ 
   achievement, 
   size = 'medium', 
-  showProgress = true 
+  showProgress = true,
+  showName = true
 }: AchievementCardProps) {
   const { getAchievementProgress } = useAchievements();
   
@@ -41,8 +43,14 @@ export default function AchievementCard({
     large: 'w-32 h-32 text-base'
   };
 
+  const nameClasses = {
+    small: 'text-xs mt-1',
+    medium: 'text-sm mt-2',
+    large: 'text-base mt-2'
+  };
+
   return (
-    <div className={`relative group ${isCompleted ? 'cursor-pointer' : ''}`}>
+    <div className={`relative group ${isCompleted ? 'cursor-pointer' : ''} flex flex-col items-center`}>
       {/* Achievement Icon */}
       <div className={`
         ${sizeClasses[size]} 
@@ -50,16 +58,25 @@ export default function AchievementCard({
         bg-gradient-to-br ${getDifficultyColor(achievement.difficulty)}
         flex items-center justify-center
         transition-all duration-300 hover:scale-105
-        ${isCompleted ? 'opacity-100' : 'opacity-60'}
+        ${isCompleted ? 'opacity-100' : 'opacity-50 grayscale'}
         ${achievement.isHidden && !isCompleted ? 'opacity-30' : ''}
       `}>
-        {isCompleted ? (
-          <div className="w-3/4 h-3/4 flex items-center justify-center text-white text-2xl font-bold">
-            🏆
-          </div>
-        ) : (
-          <div className="text-white text-2xl">🔒</div>
-        )}
+        <div className="w-3/4 h-3/4 flex items-center justify-center text-white text-2xl font-bold">
+          {isCompleted ? achievement.icon : (
+            <div className="relative">
+              <span className="text-xl opacity-60">{achievement.icon}</span>
+              {!isCompleted && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-6 h-6 bg-gray-800 bg-opacity-80 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
         
         {/* Completion Badge */}
         {isCompleted && (
@@ -78,6 +95,19 @@ export default function AchievementCard({
             className="bg-blue-500 h-2 rounded-full transition-all duration-300"
             style={{ width: `${progressPercentage}%` }}
           />
+        </div>
+      )}
+
+      {/* Achievement Name */}
+      {showName && (
+        <div className={`${nameClasses[size]} text-center text-white font-medium px-1`}>
+          <div className={`
+            ${isCompleted ? 'opacity-100' : 'opacity-70'} 
+            ${size === 'small' ? 'max-w-16' : size === 'medium' ? 'max-w-24' : 'max-w-32'}
+            leading-tight
+          `}>
+            {achievement.name}
+          </div>
         </div>
       )}
 

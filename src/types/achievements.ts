@@ -159,6 +159,9 @@ export interface GameMetrics {
   friends_added: number;
   messages_sent: number;
   games_with_friends: number;
+  friend_wins: number;
+  max_wins_against_single_friend: number;
+  max_losses_to_single_friend_streak: number;
   
   // Progression metrics
   level: number;
@@ -170,11 +173,42 @@ export interface GameMetrics {
   total_playtime: number; // in minutes
   daily_logins: number;
   consecutive_days_played: number;
+  daily_games_played: number;
+  hourly_game_streak: number;
   
   // Special game events
   perfect_games: number; // Games won without losing a round
   comeback_wins: number; // Games won after being behind
   last_second_wins: number; // Games won in final turn
+  
+  // Streak metrics
+  same_number_streak: number; // For Rollception achievement
+  consecutive_games_streak: number; // For Iron Will achievement
+  
+  // Pattern-based metrics for eclipse achievements
+  game_only_even_rolls: number;
+  game_only_odd_rolls: number;
+  game_equal_odd_even: number;
+  sequential_1_to_6: number;
+  
+  // Victory condition metrics
+  exact_winning_roll: number;
+  exact_losing_roll: number;
+  game_all_high_rolls: number;
+  win_by_one_point: number;
+  win_by_fifty_plus: number;
+  win_without_sixes: number;
+  
+  // Special pattern metrics
+  triple_snake_eyes_game: number;
+  five_double_sixes_game: number;
+  one_six_consecutive: number;
+  ten_sixes_in_match: number;
+  ten_ones_in_match: number;
+  three_sixes_streak: number;
+  three_ones_streak: number;
+  five_doubles_in_game: number;
+  same_number_three_streak: number;
 }
 
 // Achievement evaluation result
