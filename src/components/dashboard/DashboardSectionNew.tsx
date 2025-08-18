@@ -9,7 +9,6 @@ import { MatchmakingService } from '@/services/matchmakingService';
 import { UserService } from '@/services/userService';
 import AchievementsMini from '@/components/achievements/AchievementsMini';
 import FriendsMini from '@/components/friends/FriendsMini';
-import GameModesMini from '@/components/game/GameModesMini';
 
 const gameConfig = {
   quickfire: { 
@@ -460,11 +459,6 @@ export const DashboardSection: React.FC = () => {
             )}
           </div>
         ))}
-      </div>
-      
-      {/* Game Modes Quick Select */}
-      <div className="w-full max-w-[90vw] md:max-w-[30rem] mt-4">
-        <GameModesMini />
       </div>
       
       {/* Achievements Preview Section */}

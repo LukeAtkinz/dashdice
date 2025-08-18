@@ -63,6 +63,19 @@ const DashboardContent: React.FC = () => {
     });
   }, [currentSection, sectionParams]);
 
+  // Handle achievements navigation event
+  useEffect(() => {
+    const handleAchievementsNavigation = () => {
+      setCurrentSection('achievements');
+    };
+
+    window.addEventListener('navigate-to-achievements', handleAchievementsNavigation);
+    
+    return () => {
+      window.removeEventListener('navigate-to-achievements', handleAchievementsNavigation);
+    };
+  }, [setCurrentSection]);
+
   const handleSectionChange = async (section: string) => {
     // This function is only for manual button clicks, not for programmatic navigation
     // When GameWaitingRoom calls setCurrentSection directly, it bypasses this function
@@ -294,61 +307,6 @@ const DashboardContent: React.FC = () => {
                     }}
                   >
                     VAULT
-                  </span>
-                </button>
-
-                {/* ACHIEVEMENTS Button */}
-                <button
-                  onClick={() => handleSectionChange('achievements')}
-                  disabled={currentSection === 'match' && !isGameOver}
-                  className={`flex cursor-pointer transition-all duration-300 ${
-                    currentSection === 'match' && !isGameOver 
-                      ? 'opacity-50 cursor-not-allowed' 
-                      : 'hover:scale-105 hover:shadow-lg active:scale-95'
-                  }`}
-                  style={{
-                    display: "flex",
-                    width: "180px",
-                    height: "48px",
-                    padding: "8px 16px",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: "8px",
-                    borderRadius: "18px",
-                    background: currentSection === 'match' && !isGameOver 
-                      ? "#666666" 
-                      : DisplayBackgroundEquip?.name === 'On A Mission'
-                      ? 'linear-gradient(135deg, rgba(255, 165, 0, 0.8) 0%, rgba(255, 140, 0, 0.4) 50%, rgba(255, 215, 0, 0.2) 100%)'
-                      : DisplayBackgroundEquip?.name === 'Long Road Ahead'
-                      ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.8) 0%, rgba(255, 165, 0, 0.6) 25%, rgba(255, 140, 0, 0.4) 50%, rgba(218, 165, 32, 0.6) 75%, rgba(255, 215, 0, 0.4) 100%)'
-                      : "#FFD700",
-                    border: "none",
-                    backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(6px)' : 'none'
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      fontSize: "24px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center"
-                    }}
-                  >
-                    🏆
-                  </div>
-                  <span
-                    style={{
-                      color: "#FFF",
-                      fontFamily: "Audiowide",
-                      fontSize: "20px",
-                      fontStyle: "normal",
-                      fontWeight: 400,
-                      lineHeight: "20px"
-                    }}
-                  >
-                    ACHIEVE
                   </span>
                 </button>
 
@@ -650,7 +608,7 @@ const DashboardContent: React.FC = () => {
             }}>
               <button
                 onClick={() => handleSectionChange('dashboard')}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
+                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[22vw] ${
                   currentSection === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
@@ -658,17 +616,8 @@ const DashboardContent: React.FC = () => {
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PLAY</span>
               </button>
               <button
-                onClick={() => handleSectionChange('achievements')}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
-                  currentSection === 'achievements' ? 'bg-white/20' : 'hover:bg-white/10'
-                }`}
-              >
-                <div className="w-8 h-8 text-2xl flex items-center justify-center">🏆</div>
-                <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>ACHIEVE</span>
-              </button>
-              <button
                 onClick={() => handleSectionChange('friends')}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
+                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[22vw] ${
                   currentSection === 'friends' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
@@ -677,7 +626,7 @@ const DashboardContent: React.FC = () => {
               </button>
               <button
                 onClick={() => handleSectionChange('inventory')}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
+                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[22vw] ${
                   currentSection === 'inventory' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
@@ -686,7 +635,7 @@ const DashboardContent: React.FC = () => {
               </button>
               <button
                 onClick={() => handleSectionChange('settings')}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
+                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[22vw] ${
                   currentSection === 'settings' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >

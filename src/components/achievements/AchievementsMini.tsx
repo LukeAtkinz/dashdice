@@ -86,9 +86,23 @@ export default function AchievementsMini({ maxDisplay = 5 }: AchievementsMiniPro
 
       {/* Stats */}
       <div className="mt-4 pt-4 border-t border-gray-700">
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-400">Unlocked:</span>
-          <span className="text-white">{completedAchievements.length} / {allAchievements.length}</span>
+        <div className="flex justify-between items-center text-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400">Unlocked:</span>
+            <span className="text-white">{completedAchievements.length} / {allAchievements.length}</span>
+          </div>
+          <button
+            onClick={() => {
+              // Navigate to achievements section
+              if (typeof window !== 'undefined') {
+                const navigationEvent = new CustomEvent('navigate-to-achievements');
+                window.dispatchEvent(navigationEvent);
+              }
+            }}
+            className="text-blue-400 hover:text-blue-300 text-xs font-medium transition-colors"
+          >
+            SEE ALL
+          </button>
         </div>
       </div>
     </div>
