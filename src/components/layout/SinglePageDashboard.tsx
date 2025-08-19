@@ -14,6 +14,7 @@ import ProfileSection from '@/components/dashboard/ProfileSection';
 import AchievementNotificationDisplay from '@/components/achievements/AchievementNotification';
 import AchievementsDashboard from '@/components/achievements/AchievementsDashboard';
 import FriendsDashboard from '@/components/friends/FriendsDashboard';
+import InvitationPopupManager from '@/components/friends/InvitationPopupManager';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { useBrowserRefresh } from '@/hooks/useBrowserRefresh';
@@ -654,6 +655,9 @@ const DashboardContent: React.FC = () => {
         
         {/* Achievement Notifications */}
         <AchievementNotificationDisplay />
+        
+        {/* Game Invitation Popups */}
+        <InvitationPopupManager />
       </div>
     </div>
   );

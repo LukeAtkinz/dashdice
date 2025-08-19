@@ -10,13 +10,15 @@ interface AchievementCardProps {
   size?: 'small' | 'medium' | 'large';
   showProgress?: boolean;
   showName?: boolean;
+  isMiniCard?: boolean; // New prop to detect mini mode
 }
 
 export default function AchievementCard({ 
   achievement, 
   size = 'medium', 
   showProgress = true,
-  showName = true
+  showName = true,
+  isMiniCard = false
 }: AchievementCardProps) {
   const { getAchievementProgress } = useAchievements();
   
@@ -62,7 +64,9 @@ export default function AchievementCard({
   const getSizeClasses = () => {
     switch (size) {
       case 'small':
-        return 'w-64 min-w-64 p-3'; // Fixed small size - compact but shows all content
+        return isMiniCard 
+          ? 'w-64 min-w-64 p-3' // Mini card style with more space
+          : 'w-64 min-w-64 p-3'; // Regular small size
       case 'large':
         return 'w-full max-w-md p-8';
       default: // medium
@@ -99,7 +103,11 @@ export default function AchievementCard({
       {/* Main Content Area */}
       <div className={`flex gap-${size === 'small' ? '2' : '4'} mb-${size === 'small' ? '2' : '4'} flex-1 relative z-10`}>
         {/* Icon Section */}
-        <div className={`flex-shrink-0 ${size === 'small' ? 'w-12 h-12' : 'w-20 h-20'} flex items-center justify-center relative`}>
+        <div className={`flex-shrink-0 ${
+          size === 'small' 
+            ? (isMiniCard ? 'w-16 h-16' : 'w-12 h-12') // Bigger icon for mini cards
+            : 'w-20 h-20'
+        } flex items-center justify-center relative`}>
           {renderIcon()}
           {/* Fallback emoji (hidden by default, shown if image fails) */}
           {achievement.icon.startsWith('/') && (
@@ -137,7 +145,7 @@ export default function AchievementCard({
           
           {/* For small cards without name, show a compact version */}
           {!showName && (
-            <div className="text-center">
+            <div className={isMiniCard ? "text-left" : "text-center"}>
               <h3 className="text-white font-bold text-xs font-audiowide mb-1 leading-tight">
                 {achievement.name}
               </h3>
@@ -161,10 +169,12 @@ export default function AchievementCard({
               <span className={`text-gray-400 font-audiowide ${size === 'small' ? 'text-sm' : 'text-lg'}`}>/{target}</span>
             </div>
             
-            {/* Points reward */}
-            <div className={`text-yellow-400 ${size === 'small' ? 'text-xs' : 'text-sm'} font-montserrat`}>
-              +{achievement.rewards.points} pts
-            </div>
+            {/* Points reward - only show if not a mini card */}
+            {!isMiniCard && (
+              <div className={`text-yellow-400 ${size === 'small' ? 'text-xs' : 'text-sm'} font-montserrat`}>
+                +{achievement.rewards.points} pts
+              </div>
+            )}
           </div>
 
           {/* Horizontal Progress Bar */}
@@ -188,8 +198,8 @@ export default function AchievementCard({
         </div>
       )}
 
-      {/* Points-only display for small cards without progress */}
-      {!showProgress && (
+      {/* Points-only display for small cards without progress - but not for mini cards */}
+      {!showProgress && !isMiniCard && (
         <div className="mt-auto relative z-10">
           <div className="text-center">
             <div className={`text-yellow-400 ${size === 'small' ? 'text-xs' : 'text-sm'} font-montserrat font-bold`}>

@@ -70,7 +70,7 @@ export class GameModeService {
           scoreDirection: 'up',
           eliminationRules: {
             singleOne: false,
-            doubleOne: true,
+            doubleOne: false, // Quickfire: double 1s should be +20 and continue turn
             doubleSix: 'reset'
           }
         },
@@ -100,7 +100,7 @@ export class GameModeService {
           scoreDirection: 'up',
           eliminationRules: {
             singleOne: false,
-            doubleOne: true,
+            doubleOne: false, // Classic: double 1s should be +20 and continue turn
             doubleSix: 'reset'
           }
         },
@@ -130,7 +130,7 @@ export class GameModeService {
           scoreDirection: 'down',
           eliminationRules: {
             singleOne: false,
-            doubleOne: true,
+            doubleOne: false, // Zero Hour: double 1s should be -20 and continue turn
             doubleSix: 'reset'
           },
           specialRules: {

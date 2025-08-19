@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { FriendWithStatus } from '@/types/friends';
 import { useFriends } from '@/context/FriendsContext';
+import MiniGameModeSelector from './MiniGameModeSelector';
 import { useBackground } from '@/context/BackgroundContext';
 
 interface FriendCardProps {
@@ -61,6 +62,8 @@ export default function FriendCard({ friend, compact = false, showActions = true
   const { removeFriend, sendGameInvitation, friendPresences } = useFriends();
   const [isRemoving, setIsRemoving] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
+  const [showGameModeSelector, setShowGameModeSelector] = useState(false);
+  const [selectedGameMode, setSelectedGameMode] = useState('classic');
 
   // Get presence from context
   const presence = friendPresences?.[friend.friendId];
@@ -82,12 +85,22 @@ export default function FriendCard({ friend, compact = false, showActions = true
   const handleGameInvite = async () => {
     setIsInviting(true);
     try {
-      await sendGameInvitation(friend.friendId, 'classic');
+      await sendGameInvitation(friend.friendId, selectedGameMode);
+      setShowGameModeSelector(false); // Collapse selector after invitation sent
     } catch (error) {
       console.error('Error sending game invitation:', error);
     } finally {
       setIsInviting(false);
     }
+  };
+
+  const handleGameModeSelect = (gameMode: string) => {
+    setSelectedGameMode(gameMode);
+  };
+
+  const toggleGameModeSelector = () => {
+    if (presenceStatus === 'offline') return; // Don't expand if friend is offline
+    setShowGameModeSelector(!showGameModeSelector);
   };
 
   const getStatusColor = (status: string) => {
@@ -181,11 +194,11 @@ export default function FriendCard({ friend, compact = false, showActions = true
           {showActions && (
             <div className="flex gap-2">
               <button
-                onClick={handleGameInvite}
-                disabled={isInviting || presenceStatus === 'offline'}
+                onClick={toggleGameModeSelector}
+                disabled={presenceStatus === 'offline'}
                 className="px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded font-montserrat transition-colors"
               >
-                {isInviting ? 'Inviting...' : 'Invite'}
+                {showGameModeSelector ? 'Cancel' : 'Invite'}
               </button>
               <button
                 className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded font-montserrat transition-colors"
@@ -202,6 +215,29 @@ export default function FriendCard({ friend, compact = false, showActions = true
             </div>
           )}
         </div>
+        
+        {/* Game Mode Selector - appears when invite is clicked */}
+        {showGameModeSelector && (
+          <div className="mt-3 space-y-2">
+            <div className="text-white text-sm font-medium font-audiowide">
+              Choose Game Mode:
+            </div>
+            <MiniGameModeSelector
+              onGameModeSelect={handleGameModeSelect}
+              isDisabled={presenceStatus === 'offline'}
+              className="mb-2"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={handleGameInvite}
+                disabled={isInviting}
+                className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded font-montserrat transition-colors"
+              >
+                {isInviting ? 'Sending Invite...' : `Invite to ${selectedGameMode.charAt(0).toUpperCase() + selectedGameMode.slice(1)}`}
+              </button>
+            </div>
+          </div>
+        )}
         
         {presence?.lastSeen && presenceStatus === 'offline' && (
           <div className="text-white text-xs font-montserrat opacity-75">

@@ -414,8 +414,14 @@ export class MatchService {
           console.log('🎲 Double 1 rolled - Turn over (True Grit rule)');
           turnOver = true;
           newTurnScore = 0;
+        } else if (gameMode.id === 'zero-hour') {
+          // Zero Hour: Double 1 is -20 to turn score and activate 2x multiplier
+          console.log('🎲 Snake Eyes rolled in Zero Hour - -20 to turn score, 2x activated');
+          newTurnScore = currentTurnScore - 20;
+          turnOver = false;
+          // Will activate 2x multiplier later after updates object is created
         } else {
-          // All other modes (Classic, Quickfire, Last Line, Zero Hour): Snake Eyes +20 rule
+          // All other modes (Classic, Quickfire, Last Line): Snake Eyes +20 rule
           console.log('🎲 Snake Eyes rolled - +20 to turn score');
           newTurnScore = currentTurnScore + 20;
           turnOver = false;
@@ -496,6 +502,11 @@ export class MatchService {
         'gameData.rollPhase': deleteField(),
         'gameData.turnScore': newTurnScore,
       };
+      
+      // Activate 2x multiplier for double 1s in modes that continue turn (Classic, Quickfire, Zero Hour)
+      if (isDoubleOne && !gameMode.rules.eliminationRules.doubleOne) {
+        updates['gameData.hasDoubleMultiplier'] = true;
+      }
       
       // Statistics tracking
       const playerStatsPath = isHost ? 'hostData.matchStats' : 'opponentData.matchStats';

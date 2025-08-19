@@ -67,9 +67,6 @@ export default function AchievementsMini({ maxDisplay = 12 }: AchievementsMiniPr
 
       {/* Achievements Display */}
       <div>
-        <h4 className="text-sm font-medium text-gray-300 mb-3 font-audiowide uppercase">
-          {recentAchievements.length > 0 ? 'Recent Unlocks' : 'Available Achievements'}
-        </h4>
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex gap-3 pb-2 min-w-max" style={{ scrollBehavior: 'smooth' }}>
             {recentAchievements.length > 0 ? (
@@ -83,6 +80,7 @@ export default function AchievementsMini({ maxDisplay = 12 }: AchievementsMiniPr
                       size="small"
                       showProgress={false}
                       showName={false}
+                      isMiniCard={true}
                     />
                   </div>
                 ) : null;
@@ -96,6 +94,7 @@ export default function AchievementsMini({ maxDisplay = 12 }: AchievementsMiniPr
                     size="small"
                     showProgress={false}
                     showName={false}
+                    isMiniCard={true}
                   />
                 </div>
               ))

@@ -212,12 +212,15 @@ export const Match: React.FC<MatchProps> = ({ matchId, onBack }) => {
               <div className="text-white space-y-2">
                 <p>Score: {currentPlayer.gameState.playerScore}</p>
                 <p>Round Score: {currentPlayer.gameState.roundScore}</p>
-                <p className={currentPlayer.gameState.turnActive ? 'text-green-400 font-bold' : ''}>
-                  {matchData.gameData.isPregame 
-                    ? (matchData.gameData.chooserPlayerIndex === (isHost ? 1 : 2) ? 'CHOOSE ODD/EVEN' : 'WAITING...') 
-                    : (currentPlayer.gameState.turnActive ? 'YOUR TURN' : 'Waiting...')
-                  }
-                </p>
+                {/* Hide turn indicators for True Grit and Last Line modes */}
+                {matchData.gameData.gameMode !== 'true-grit' && matchData.gameData.gameMode !== 'last-line' && (
+                  <p className={currentPlayer.gameState.turnActive ? 'text-green-400 font-bold' : ''}>
+                    {matchData.gameData.isPregame 
+                      ? (matchData.gameData.chooserPlayerIndex === (isHost ? 1 : 2) ? 'CHOOSE ODD/EVEN' : 'WAITING...') 
+                      : (currentPlayer.gameState.turnActive ? 'YOUR TURN' : 'Waiting...')
+                    }
+                  </p>
+                )}
               </div>
             </div>
 
@@ -329,12 +332,15 @@ export const Match: React.FC<MatchProps> = ({ matchId, onBack }) => {
               <div className="text-white space-y-2">
                 <p>Score: {opponent.gameState.playerScore}</p>
                 <p>Round Score: {opponent.gameState.roundScore}</p>
-                <p className={opponent.gameState.turnActive ? 'text-red-400 font-bold' : ''}>
-                  {matchData.gameData.isPregame 
-                    ? (matchData.gameData.chooserPlayerIndex === (isHost ? 2 : 1) ? 'CHOOSING...' : 'WAITING...') 
-                    : (opponent.gameState.turnActive ? 'THEIR TURN' : 'Waiting...')
-                  }
-                </p>
+                {/* Hide turn indicators for True Grit and Last Line modes */}
+                {matchData.gameData.gameMode !== 'true-grit' && matchData.gameData.gameMode !== 'last-line' && (
+                  <p className={opponent.gameState.turnActive ? 'text-red-400 font-bold' : ''}>
+                    {matchData.gameData.isPregame 
+                      ? (matchData.gameData.chooserPlayerIndex === (isHost ? 2 : 1) ? 'CHOOSING...' : 'WAITING...') 
+                      : (opponent.gameState.turnActive ? 'THEIR TURN' : 'Waiting...')
+                    }
+                  </p>
+                )}
               </div>
             </div>
 
