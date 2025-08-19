@@ -101,7 +101,7 @@ export default function AchievementCard({
   return (
     <div className={`${getRarityClasses()} ${getSizeClasses()} bg-gray-800/80 backdrop-blur-sm flex flex-col relative overflow-hidden`}>
       {/* Main Content Area */}
-      <div className={`flex gap-${size === 'small' ? '2' : '4'} mb-${size === 'small' ? '2' : '4'} flex-1 relative z-10`}>
+      <div className={`flex gap-${size === 'small' ? (isMiniCard ? '4' : '2') : '4'} mb-${size === 'small' ? '2' : '4'} flex-1 relative z-10`}>
         {/* Icon Section */}
         <div className={`flex-shrink-0 ${
           size === 'small' 
@@ -146,7 +146,7 @@ export default function AchievementCard({
           {/* For small cards without name, show a compact version */}
           {!showName && (
             <div className={isMiniCard ? "text-left" : "text-center"}>
-              <h3 className="text-white font-bold text-xs font-audiowide mb-1 leading-tight">
+              <h3 className={`text-white font-bold ${isMiniCard ? 'text-sm' : 'text-xs'} font-audiowide mb-1 leading-tight`}>
                 {achievement.name}
               </h3>
               <p className="text-gray-400 text-xs font-montserrat leading-relaxed line-clamp-2">

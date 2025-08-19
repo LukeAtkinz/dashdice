@@ -333,3 +333,30 @@ html, body {
 .animate-slide-in-right {
   animation: slide-in-right 0.3s ease-out;
 }
+
+/* Glow effect for achievement percentage */
+.glow-text {
+  text-shadow: 
+    0 0 5px #60a5fa,
+    0 0 10px #60a5fa,
+    0 0 15px #60a5fa,
+    0 0 20px #60a5fa;
+}
+
+/* Carousel animation for achievements */
+@keyframes carousel {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-carousel {
+  animation: carousel 60s linear infinite;
+}
+
+.achievements-carousel:hover .animate-carousel {
+  animation-play-state: paused;
+}

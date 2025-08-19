@@ -25,10 +25,20 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     
+    // User Achievement Progress (subcollection)
+    match /users/{userId}/achievementProgress/{progressId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
     // Achievement Notifications - users can read/write their own notifications
     match /achievementNotifications/{notificationId} {
       allow read, write: if request.auth != null && 
         (resource == null || resource.data.userId == request.auth.uid);
+    }
+    
+    // User Notifications (subcollection)
+    match /users/{userId}/notifications/{notificationId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     
     // Daily/Hourly Metrics for achievement tracking
