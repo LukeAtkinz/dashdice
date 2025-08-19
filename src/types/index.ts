@@ -1,3 +1,9 @@
+export interface Background {
+  name: string;
+  file: string;
+  type: 'image' | 'video' | 'gradient';
+}
+
 export interface User {
   uid: string;
   email: string;
@@ -5,9 +11,13 @@ export interface User {
   photoURL?: string;
   createdAt: Date;
   lastLoginAt: Date;
-  inventory: InventoryItem[];
-  ownedBackgrounds: string[]; // Array of background IDs
-  equippedBackground?: string; // Currently equipped background ID
+  inventory: InventoryItem[] | {
+    displayBackgroundEquipped?: Background | string;
+    matchBackgroundEquipped?: Background | string;
+    ownedBackgrounds?: string[];
+  };
+  ownedBackgrounds: string[]; // Array of background IDs (legacy)
+  equippedBackground?: string; // Currently equipped background ID (legacy)
   friendCode?: string; // Unique 8-character friend code
   isOnline?: boolean;
   lastSeen?: Date;

@@ -71,8 +71,8 @@ class AchievementDefinitionsService {
       'Twin Titans': '/Design Elements/Achivements/Titan Twins.webp',
       'Unlucky Pal': '/Design Elements/Achivements/Unlucky Pal.webp',
       'Victory\'s Child': '/Design Elements/Achivements/Victory\'s Child.webp',
-      // Additional achievements that may need icons (using fallback emojis for now)
-      'Perfect Run': '🎯',
+      // Additional achievements that may need icons (now with proper paths)
+      'Perfect Run': '/Design Elements/Achivements/The Closer.webp', // Using The Closer for Perfect Run
       'First Victory': '🏆',
       'Snake Eyes Master': '👁️',
       'Unstoppable': '🚀',
@@ -378,7 +378,7 @@ class AchievementDefinitionsService {
           points: 25,
           badge: 'Challenger'
         },
-        icon: '🤝',
+        icon: this.getAchievementIcon('The Challenger'),
         rarity_color: '#6b7280',
         isActive: true,
         isHidden: false,
@@ -401,7 +401,7 @@ class AchievementDefinitionsService {
           points: 50,
           badge: 'Circle Member'
         },
-        icon: '⭕',
+        icon: this.getAchievementIcon('Circle of Fate'),
         rarity_color: '#6b7280',
         isActive: true,
         isHidden: false,
@@ -427,7 +427,7 @@ class AchievementDefinitionsService {
           title: 'Guildmaster',
           specialPrivileges: ['guild_leader']
         },
-        icon: '🏛️',
+        icon: this.getAchievementIcon('Guildmaster'),
         rarity_color: '#8b5cf6',
         isActive: true,
         isHidden: false,
@@ -452,7 +452,7 @@ class AchievementDefinitionsService {
           points: 30,
           badge: 'Duelist'
         },
-        icon: '⚔️',
+        icon: this.getAchievementIcon('Duelist'),
         rarity_color: '#6b7280',
         isActive: true,
         isHidden: false,
@@ -477,7 +477,7 @@ class AchievementDefinitionsService {
           badge: 'Nemesis',
           title: 'Nemesis'
         },
-        icon: '😈',
+        icon: this.getAchievementIcon('Nemesis'),
         rarity_color: '#3b82f6',
         isActive: true,
         isHidden: false,
@@ -501,7 +501,7 @@ class AchievementDefinitionsService {
           points: 50,
           badge: 'Unlucky Pal'
         },
-        icon: '😅',
+        icon: this.getAchievementIcon('Unlucky Pal'),
         rarity_color: '#3b82f6',
         isActive: true,
         isHidden: false,
@@ -530,7 +530,7 @@ class AchievementDefinitionsService {
           points: 75,
           badge: 'Solar Eclipse'
         },
-        icon: '☀️',
+        icon: this.getAchievementIcon('Solar Eclipse'),
         rarity_color: '#f59e0b',
         isActive: true,
         isHidden: false,
@@ -557,7 +557,7 @@ class AchievementDefinitionsService {
           points: 75,
           badge: 'Lunar Eclipse'
         },
-        icon: '🌙',
+        icon: this.getAchievementIcon('Lunar Eclipse'),
         rarity_color: '#8b5cf6',
         isActive: true,
         isHidden: false,
@@ -585,7 +585,7 @@ class AchievementDefinitionsService {
           badge: 'Equinox',
           title: 'Balancer'
         },
-        icon: '⚖️',
+        icon: this.getAchievementIcon('Equinox'),
         rarity_color: '#8b5cf6',
         isActive: true,
         isHidden: false,
@@ -617,7 +617,7 @@ class AchievementDefinitionsService {
           title: 'The Convergence',
           specialPrivileges: ['cosmic_dice']
         },
-        icon: '🌌',
+        icon: this.getAchievementIcon('The Convergence'),
         rarity_color: '#f59e0b',
         isActive: true,
         isHidden: false,
@@ -642,7 +642,7 @@ class AchievementDefinitionsService {
           badge: 'Chosen One',
           title: 'The Chosen One'
         },
-        icon: '⭐',
+        icon: this.getAchievementIcon('The Chosen One'),
         rarity_color: '#f59e0b',
         isActive: true,
         isHidden: false,
@@ -665,7 +665,7 @@ class AchievementDefinitionsService {
           points: 100,
           badge: 'Fated One'
         },
-        icon: '💀',
+        icon: this.getAchievementIcon('The Fated'),
         rarity_color: '#6b7280',
         isActive: true,
         isHidden: false,
@@ -693,7 +693,7 @@ class AchievementDefinitionsService {
           badge: 'Perfect Runner',
           title: 'Perfect Runner'
         },
-        icon: '🏃‍♂️',
+        icon: this.getAchievementIcon('Perfect Run'),
         rarity_color: '#8b5cf6',
         isActive: true,
         isHidden: false,
@@ -717,7 +717,7 @@ class AchievementDefinitionsService {
           points: 75,
           badge: 'The Closer'
         },
-        icon: '🎯',
+        icon: this.getAchievementIcon('The Closer'),
         rarity_color: '#3b82f6',
         isActive: true,
         isHidden: false,
@@ -741,7 +741,7 @@ class AchievementDefinitionsService {
           badge: 'The Crusher',
           title: 'The Crusher'
         },
-        icon: '💥',
+        icon: this.getAchievementIcon('The Crusher'),
         rarity_color: '#dc2626',
         isActive: true,
         isHidden: false,
@@ -766,7 +766,7 @@ class AchievementDefinitionsService {
           badge: 'Mind Master',
           title: 'Mind Over Matter'
         },
-        icon: '🧠',
+        icon: this.getAchievementIcon('Mind Over Matter'),
         rarity_color: '#8b5cf6',
         isActive: true,
         isHidden: false,
@@ -789,7 +789,7 @@ class AchievementDefinitionsService {
           points: 100,
           badge: 'Snake Whisperer'
         },
-        icon: '🐍',
+        icon: this.getAchievementIcon('Snake Whisperer'),
         rarity_color: '#22c55e',
         isActive: true,
         isHidden: false,
@@ -814,7 +814,7 @@ class AchievementDefinitionsService {
           title: 'Twin Titans',
           specialPrivileges: ['titan_dice']
         },
-        icon: '👯',
+        icon: this.getAchievementIcon('Twin Titans'),
         rarity_color: '#f59e0b',
         isActive: true,
         isHidden: false,
@@ -837,7 +837,7 @@ class AchievementDefinitionsService {
           points: 50,
           badge: 'The Balance'
         },
-        icon: '⚖️',
+        icon: this.getAchievementIcon('The Balance'),
         rarity_color: '#6b7280',
         isActive: true,
         isHidden: false,
@@ -862,7 +862,7 @@ class AchievementDefinitionsService {
           badge: "Fortune's Child",
           title: "Fortune's Child"
         },
-        icon: '🍀',
+        icon: this.getAchievementIcon("Fortune's Child"),
         rarity_color: '#22c55e',
         isActive: true,
         isHidden: false,
@@ -885,7 +885,7 @@ class AchievementDefinitionsService {
           points: 75,
           badge: 'Cursed Hands'
         },
-        icon: '👻',
+        icon: this.getAchievementIcon('Cursed Hands'),
         rarity_color: '#6b7280',
         isActive: true,
         isHidden: false,
@@ -909,7 +909,7 @@ class AchievementDefinitionsService {
           points: 100,
           badge: 'Lucky Streak'
         },
-        icon: '🎰',
+        icon: this.getAchievementIcon('Lucky Streak'),
         rarity_color: '#f59e0b',
         isActive: true,
         isHidden: false,
@@ -932,7 +932,7 @@ class AchievementDefinitionsService {
           points: 75,
           badge: 'Doomed Streak'
         },
-        icon: '💀',
+        icon: this.getAchievementIcon('Doomed Streak'),
         rarity_color: '#6b7280',
         isActive: true,
         isHidden: false,
@@ -956,7 +956,7 @@ class AchievementDefinitionsService {
           badge: 'Dice Jester',
           title: 'Dice Jester'
         },
-        icon: '🃏',
+        icon: this.getAchievementIcon('Dice Jester'),
         rarity_color: '#8b5cf6',
         isActive: true,
         isHidden: false,
@@ -979,7 +979,7 @@ class AchievementDefinitionsService {
           points: 100,
           badge: 'Cosmic Alignment'
         },
-        icon: '🌌',
+        icon: this.getAchievementIcon('Cosmic Alignment'),
         rarity_color: '#8b5cf6',
         isActive: true,
         isHidden: false,
@@ -1003,7 +1003,7 @@ class AchievementDefinitionsService {
           points: 25,
           badge: 'First Blood'
         },
-        icon: '🩸',
+        icon: this.getAchievementIcon('First Blood'),
         rarity_color: '#dc2626',
         isActive: true,
         isHidden: false,
@@ -1026,7 +1026,7 @@ class AchievementDefinitionsService {
           points: 50,
           badge: "Victory's Child"
         },
-        icon: '🏆',
+        icon: this.getAchievementIcon("Victory's Child"),
         rarity_color: '#f59e0b',
         isActive: true,
         isHidden: false,
@@ -1050,7 +1050,7 @@ class AchievementDefinitionsService {
           badge: 'Stormbringer',
           title: 'Stormbringer'
         },
-        icon: '⛈️',
+        icon: this.getAchievementIcon('Stormbringer'),
         rarity_color: '#3b82f6',
         isActive: true,
         isHidden: false,
@@ -1076,7 +1076,7 @@ class AchievementDefinitionsService {
           title: 'The Ascended',
           specialPrivileges: ['ascended_aura']
         },
-        icon: '👑',
+        icon: this.getAchievementIcon('The Ascended'),
         rarity_color: '#8b5cf6',
         isActive: true,
         isHidden: false,
@@ -1102,7 +1102,7 @@ class AchievementDefinitionsService {
           title: 'Legendborn',
           specialPrivileges: ['legend_status', 'golden_crown']
         },
-        icon: '⚡',
+        icon: this.getAchievementIcon('Legendborn'),
         rarity_color: '#f59e0b',
         isActive: true,
         isHidden: false,
@@ -1128,7 +1128,7 @@ class AchievementDefinitionsService {
           title: 'Immortal King/Queen',
           specialPrivileges: ['immortal_status', 'divine_crown', 'god_mode_unlocked']
         },
-        icon: '👑',
+        icon: this.getAchievementIcon('Immortal Sovereign'),
         rarity_color: '#dc2626',
         isActive: true,
         isHidden: false,

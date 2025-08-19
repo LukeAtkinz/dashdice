@@ -9,7 +9,7 @@ interface AchievementsMiniProps {
   maxDisplay?: number;
 }
 
-export default function AchievementsMini({ maxDisplay = 5 }: AchievementsMiniProps) {
+export default function AchievementsMini({ maxDisplay = 12 }: AchievementsMiniProps) {
   const { 
     allAchievements, 
     userAchievements,
@@ -57,36 +57,11 @@ export default function AchievementsMini({ maxDisplay = 5 }: AchievementsMiniPro
         border: '1px solid rgba(255, 255, 255, 0.1)'
       }}
     >
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between pb-[0.5rem] md:pb-[1rem]">
         <h3 className="text-xl font-audiowide text-white uppercase">Achievements</h3>
         <div className="text-right">
           <div className="text-lg font-bold text-blue-400">{completionPercentage}%</div>
           <div className="text-sm text-gray-400 font-montserrat">Complete</div>
-        </div>
-      </div>
-      
-      {/* Overall Progress Card - Styled with 20px border and blurred opaque background */}
-      <div 
-        className="mb-6 p-4 rounded-3xl"
-        style={{
-          border: '20px solid rgba(255, 255, 255, 0.2)',
-          background: 'rgba(255, 255, 255, 0.6)',
-          backdropFilter: 'blur(10px)'
-        }}
-      >
-        {/* Progress Bar */}
-        <div className="w-full bg-gray-700 rounded-full h-3">
-          <div 
-            className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500"
-            style={{ width: `${completionPercentage}%` }}
-          />
-        </div>
-        
-        {/* Progress Text */}
-        <div className="text-center mt-2">
-          <span className="text-gray-800 font-audiowide text-sm">
-            Overall Progress: {completionPercentage}%
-          </span>
         </div>
       </div>
 
@@ -95,33 +70,37 @@ export default function AchievementsMini({ maxDisplay = 5 }: AchievementsMiniPro
         <h4 className="text-sm font-medium text-gray-300 mb-3 font-audiowide uppercase">
           {recentAchievements.length > 0 ? 'Recent Unlocks' : 'Available Achievements'}
         </h4>
-        <div className="flex gap-3 overflow-x-auto">
-          {recentAchievements.length > 0 ? (
-            // Show recent unlocked achievements
-            recentAchievements.map(userAchievement => {
-              const achievement = allAchievements.find(a => a.id === userAchievement.achievementId);
-              return achievement ? (
-                <AchievementCard
-                  key={userAchievement.id}
-                  achievement={achievement}
-                  size="small"
-                  showProgress={false}
-                  showName={false}
-                />
-              ) : null;
-            })
-          ) : (
-            // Show first few achievements even if not unlocked
-            allAchievements.slice(0, maxDisplay).map(achievement => (
-              <AchievementCard
-                key={achievement.id}
-                achievement={achievement}
-                size="small"
-                showProgress={false}
-                showName={false}
-              />
-            ))
-          )}
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="flex gap-3 pb-2 min-w-max" style={{ scrollBehavior: 'smooth' }}>
+            {recentAchievements.length > 0 ? (
+              // Show recent unlocked achievements (increased to show more)
+              recentAchievements.slice(0, Math.min(15, recentAchievements.length)).map(userAchievement => {
+                const achievement = allAchievements.find(a => a.id === userAchievement.achievementId);
+                return achievement ? (
+                  <div key={userAchievement.id} className="flex-shrink-0">
+                    <AchievementCard
+                      achievement={achievement}
+                      size="small"
+                      showProgress={false}
+                      showName={false}
+                    />
+                  </div>
+                ) : null;
+              })
+            ) : (
+              // Show more achievements even if not unlocked (increased from 5 to 15)
+              allAchievements.slice(0, Math.min(15, allAchievements.length)).map(achievement => (
+                <div key={achievement.id} className="flex-shrink-0">
+                  <AchievementCard
+                    achievement={achievement}
+                    size="small"
+                    showProgress={false}
+                    showName={false}
+                  />
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
 

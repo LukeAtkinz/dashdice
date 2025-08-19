@@ -28,13 +28,16 @@ export default function AchievementCard({
 
   // Render icon - check if it's an image path or emoji
   const renderIcon = () => {
+    const iconSize = size === 'small' ? 'w-full h-full' : 'w-full h-full';
+    const textSize = size === 'small' ? 'text-2xl' : 'text-6xl';
+    
     if (achievement.icon.startsWith('/')) {
       // It's an image path
       return (
         <img
           src={achievement.icon}
           alt={achievement.name}
-          className="w-full h-full object-contain"
+          className={`${iconSize} object-contain`}
           onError={(e) => {
             // Fallback to emoji if image fails to load
             e.currentTarget.style.display = 'none';
@@ -48,10 +51,22 @@ export default function AchievementCard({
     } else {
       // It's an emoji or text
       return (
-        <span className="text-6xl">
+        <span className={textSize}>
           {achievement.icon}
         </span>
       );
+    }
+  };
+
+  // Get size-specific classes
+  const getSizeClasses = () => {
+    switch (size) {
+      case 'small':
+        return 'w-64 min-w-64 p-3'; // Fixed small size - compact but shows all content
+      case 'large':
+        return 'w-full max-w-md p-8';
+      default: // medium
+        return 'w-full p-6';
     }
   };
 
@@ -80,16 +95,16 @@ export default function AchievementCard({
   };
 
   return (
-    <div className={`${getRarityClasses()} bg-gray-800/80 backdrop-blur-sm p-6 flex flex-col relative overflow-hidden`}>
+    <div className={`${getRarityClasses()} ${getSizeClasses()} bg-gray-800/80 backdrop-blur-sm flex flex-col relative overflow-hidden`}>
       {/* Main Content Area */}
-      <div className="flex gap-4 mb-4 flex-1 relative z-10">
-        {/* Icon Section - 80% height */}
-        <div className="flex-shrink-0 w-20 h-20 flex items-center justify-center relative">
+      <div className={`flex gap-${size === 'small' ? '2' : '4'} mb-${size === 'small' ? '2' : '4'} flex-1 relative z-10`}>
+        {/* Icon Section */}
+        <div className={`flex-shrink-0 ${size === 'small' ? 'w-12 h-12' : 'w-20 h-20'} flex items-center justify-center relative`}>
           {renderIcon()}
           {/* Fallback emoji (hidden by default, shown if image fails) */}
           {achievement.icon.startsWith('/') && (
             <span 
-              className="text-6xl hidden"
+              className={`${size === 'small' ? 'text-2xl' : 'text-6xl'} hidden`}
               style={{ display: 'none' }}
             >
               🏆
@@ -98,69 +113,98 @@ export default function AchievementCard({
           
           {/* Completion checkmark */}
           {isCompleted && (
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs">✓</span>
+            <div className={`absolute ${size === 'small' ? '-top-1 -right-1 w-3 h-3' : '-top-2 -right-2 w-6 h-6'} bg-green-500 rounded-full flex items-center justify-center`}>
+              <span className={`text-white ${size === 'small' ? 'text-xs' : 'text-xs'}`}>✓</span>
             </div>
           )}
         </div>
 
         {/* Text Content */}
         <div className="flex-1 min-w-0">
-          {/* Achievement Name */}
-          <h3 className="text-white font-bold text-lg md:text-xl lg:text-2xl font-audiowide mb-2 leading-tight">
-            {achievement.name}
-          </h3>
+          {/* Achievement Name - Only show if not explicitly hidden */}
+          {showName && (
+            <h3 className={`text-white font-bold ${size === 'small' ? 'text-sm' : 'text-lg md:text-xl lg:text-2xl'} font-audiowide mb-1 leading-tight`}>
+              {achievement.name}
+            </h3>
+          )}
           
-          {/* Achievement Description */}
-          <p className="text-gray-400 text-sm font-montserrat leading-relaxed">
-            {achievement.description}
-          </p>
+          {/* Achievement Description - Only show if name is shown */}
+          {showName && (
+            <p className={`text-gray-400 ${size === 'small' ? 'text-xs' : 'text-sm'} font-montserrat leading-relaxed`}>
+              {achievement.description}
+            </p>
+          )}
+          
+          {/* For small cards without name, show a compact version */}
+          {!showName && (
+            <div className="text-center">
+              <h3 className="text-white font-bold text-xs font-audiowide mb-1 leading-tight">
+                {achievement.name}
+              </h3>
+              <p className="text-gray-400 text-xs font-montserrat leading-relaxed line-clamp-2">
+                {achievement.description}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Progress Section */}
-      <div className="mt-auto relative z-10">
-        {/* Progress Numbers - styled like overall progress */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-bold text-blue-400 font-audiowide">
-              {isCompleted ? target : progress}
+      {/* Progress Section - Only show if showProgress is true */}
+      {showProgress && (
+        <div className="mt-auto relative z-10">
+          {/* Progress Numbers - styled like overall progress */}
+          <div className={`flex items-center justify-between mb-${size === 'small' ? '2' : '3'}`}>
+            <div className="flex items-baseline gap-1">
+              <span className={`${size === 'small' ? 'text-lg' : 'text-2xl'} font-bold text-blue-400 font-audiowide`}>
+                {isCompleted ? target : progress}
+              </span>
+              <span className={`text-gray-400 font-audiowide ${size === 'small' ? 'text-sm' : 'text-lg'}`}>/{target}</span>
+            </div>
+            
+            {/* Points reward */}
+            <div className={`text-yellow-400 ${size === 'small' ? 'text-xs' : 'text-sm'} font-montserrat`}>
+              +{achievement.rewards.points} pts
+            </div>
+          </div>
+
+          {/* Horizontal Progress Bar */}
+          <div className={`w-full bg-gray-700 rounded-full ${size === 'small' ? 'h-1' : 'h-2'}`}>
+            <div 
+              className={`${size === 'small' ? 'h-1' : 'h-2'} rounded-full transition-all duration-500 ${
+                isCompleted 
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-500'
+                  : 'bg-gradient-to-r from-blue-500 to-purple-500'
+              }`}
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
+          
+          {/* Progress percentage */}
+          <div className="text-right mt-1">
+            <span className={`${size === 'small' ? 'text-xs' : 'text-xs'} text-gray-500 font-montserrat`}>
+              {Math.round(progressPercentage)}%
             </span>
-            <span className="text-gray-400 font-audiowide text-lg">/{target}</span>
-          </div>
-          
-          {/* Points reward */}
-          <div className="text-yellow-400 text-sm font-montserrat">
-            +{achievement.rewards.points} pts
           </div>
         </div>
+      )}
 
-        {/* Horizontal Progress Bar */}
-        <div className="w-full bg-gray-700 rounded-full h-2">
-          <div 
-            className={`h-2 rounded-full transition-all duration-500 ${
-              isCompleted 
-                ? 'bg-gradient-to-r from-green-500 to-emerald-500'
-                : 'bg-gradient-to-r from-blue-500 to-purple-500'
-            }`}
-            style={{ width: `${progressPercentage}%` }}
-          />
+      {/* Points-only display for small cards without progress */}
+      {!showProgress && (
+        <div className="mt-auto relative z-10">
+          <div className="text-center">
+            <div className={`text-yellow-400 ${size === 'small' ? 'text-xs' : 'text-sm'} font-montserrat font-bold`}>
+              +{achievement.rewards.points} pts
+            </div>
+          </div>
         </div>
-        
-        {/* Progress percentage */}
-        <div className="text-right mt-1">
-          <span className="text-xs text-gray-500 font-montserrat">
-            {Math.round(progressPercentage)}%
-          </span>
-        </div>
-      </div>
+      )}
 
       {/* Lock overlay for hidden achievements */}
       {achievement.isHidden && !isCompleted && (
         <div className="absolute inset-0 bg-black/70 rounded-[20px] flex items-center justify-center z-20">
           <div className="text-center">
-            <span className="text-4xl mb-2 block">🔒</span>
-            <span className="text-gray-400 text-sm font-montserrat">Hidden Achievement</span>
+            <span className={`${size === 'small' ? 'text-2xl' : 'text-4xl'} mb-2 block`}>🔒</span>
+            <span className={`text-gray-400 ${size === 'small' ? 'text-xs' : 'text-sm'} font-montserrat`}>Hidden Achievement</span>
           </div>
         </div>
       )}

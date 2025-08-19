@@ -13,19 +13,37 @@ interface FriendCardProps {
 
 // Function to get background style for friend card
 const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
-  // Check if friend has an equipped background
-  if (friend.friendData?.equippedBackground) {
+  // Type assertion to handle the actual nested inventory structure
+  const friendData = friend.friendData as any;
+  
+  // Check if friend has display background equipped in the new nested structure
+  if (friendData?.inventory?.displayBackgroundEquipped) {
+    const background = friendData.inventory.displayBackgroundEquipped;
+    // Handle both string URLs and background objects
+    const backgroundUrl = typeof background === 'string' ? background : background.file;
+    if (backgroundUrl) {
+      return {
+        backgroundImage: `url(${backgroundUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      };
+    }
+  }
+  
+  // Fallback: Check legacy equippedBackground field
+  if (friendData?.equippedBackground) {
     return {
-      backgroundImage: `url(${friend.friendData.equippedBackground})`,
+      backgroundImage: `url(${friendData.equippedBackground})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat'
     };
   }
   
-  // Fallback: Check if they have any background in their inventory
-  if (friend.friendData?.inventory && Array.isArray(friend.friendData.inventory)) {
-    const backgroundItem = friend.friendData.inventory.find(item => item.type === 'background');
+  // Final fallback: Check if they have any background in their inventory array
+  if (friendData?.inventory && Array.isArray(friendData.inventory)) {
+    const backgroundItem = friendData.inventory.find((item: any) => item.type === 'background');
     if (backgroundItem) {
       return {
         backgroundImage: `url(${backgroundItem.imageUrl})`,
