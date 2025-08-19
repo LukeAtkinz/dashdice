@@ -788,14 +788,32 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         userUid: user.uid
       });
 
-      // Get round objective based on game mode
+      // Get round objective and starting score based on game mode
       const getRoundObjective = (mode: string): number => {
         switch (mode.toLowerCase()) {
           case 'quickfire': return 50;
           case 'classic': return 100;
-          case 'zerohour': return 150;
-          case 'lastline': return 200;
+          case 'zero-hour':
+          case 'zerohour': return 0;    // Zero Hour targets 0
+          case 'last-line':
+          case 'lastline': return 100;  // Highest roll comparison
+          case 'true-grit':
+          case 'truegrit': return 100;  // Highest single turn
           default: return 100;
+        }
+      };
+
+      const getStartingScore = (mode: string): number => {
+        switch (mode.toLowerCase()) {
+          case 'quickfire': return 0;
+          case 'classic': return 0;
+          case 'zero-hour':
+          case 'zerohour': return 100;  // Zero Hour starts at 100
+          case 'last-line':
+          case 'lastline': return 0;   // Last Line starts at 0
+          case 'true-grit':
+          case 'truegrit': return 0;   // True Grit starts at 0
+          default: return 0;
         }
       };
 
@@ -818,7 +836,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         hostData: {
           ...roomData.hostData,
           turnActive: false, // Will be set by turn decider
-          playerScore: 0,
+          playerScore: getStartingScore(roomData.gameMode),
           roundScore: 0
         },
         
@@ -826,7 +844,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         opponentData: roomData.opponentData ? {
           ...roomData.opponentData,
           turnActive: false, // Will be set by turn decider
-          playerScore: 0,
+          playerScore: getStartingScore(roomData.gameMode),
           roundScore: 0
         } : undefined,
         
@@ -840,7 +858,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           diceOne: 0,
           diceTwo: 0,
           roundObjective: roomData.gameData?.roundObjective || getRoundObjective(roomData.gameMode),
-          startingScore: roomData.gameData?.startingScore || 0,
+          startingScore: roomData.gameData?.startingScore || getStartingScore(roomData.gameMode),
           status: 'active',
           startedAt: serverTimestamp(),
           // Start with turn decider phase so players can choose who goes first
@@ -1195,7 +1213,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   return (
     <div style={{ 
       width: '100%', 
-      height: '100%', 
+      height: '100vh', 
+      maxHeight: '100vh',
       display: 'flex', 
       alignItems: 'center', 
       justifyContent: 'center',

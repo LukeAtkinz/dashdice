@@ -77,12 +77,13 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       id: 'friends' as const,
       label: 'Friends',
       count: friends.length,
-      badge: onlineFriendsCount > 0 ? `${onlineFriendsCount} online` : undefined,
+      badge: undefined, // Removed online count display
       color: 'linear-gradient(135deg, #667eea, #764ba2)'
     },
     {
       id: 'manage' as const,
       label: 'Manage Friends',
+      mobileLabel: 'Manage', // Mobile short label
       count: pendingRequests.length,
       isActive: pendingRequests.length > 0,
       color: 'linear-gradient(135deg, #FF0080, #FF4DB8)'
@@ -90,6 +91,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
     {
       id: 'invitations' as const,
       label: 'Game Invites',
+      mobileLabel: 'Invites', // Mobile short label
       count: gameInvitations.length,
       isActive: hasInvitations,
       color: 'linear-gradient(135deg, #00FF80, #00A855)'
@@ -186,7 +188,8 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
                   fontWeight: 400, 
                   textTransform: 'uppercase' 
                 }}>
-                  {tab.label}
+                  <span className="hidden md:inline">{tab.label}</span>
+                  <span className="md:hidden">{tab.mobileLabel || tab.label}</span>
                 </span>
                 {/* Count badge */}
                 {tab.count > 0 && (
@@ -257,9 +260,11 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
 
               {/* Add Friend Section */}
               <div className="flex-1">
-                <h3 className="text-xl font-audiowide text-white mb-4 uppercase">Add Friend</h3>
+                <div className="text-center mb-6">
+                  <h3 className="text-xl font-audiowide text-white uppercase">Add Friend</h3>
+                </div>
                 <div 
-                  className="relative overflow-hidden"
+                  className="relative overflow-hidden p-6"
                   style={{
                     borderRadius: '20px',
                     background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%)',
@@ -267,9 +272,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
                     border: '1px solid rgba(255, 255, 255, 0.1)'
                   }}
                 >
-                  <div className="p-6">
-                    <AddFriend onSuccess={() => setActiveTab('friends')} />
-                  </div>
+                  <AddFriend onSuccess={() => setActiveTab('friends')} />
                 </div>
               </div>
             </div>

@@ -59,7 +59,7 @@ export const SettingsSection: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-orbitron font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-orbitron font-bold text-black mb-2">
           Settings
         </h1>
       </div>
@@ -73,7 +73,7 @@ export const SettingsSection: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <div className="font-medium">Notifications</div>
-              <div className="text-sm text-gray-600">Receive game alerts and updates</div>
+              <div className="text-sm text-black">Receive game alerts and updates</div>
             </div>
             <button
               onClick={() => handleToggle('notifications')}
@@ -92,7 +92,7 @@ export const SettingsSection: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <div className="font-medium">Auto-Save</div>
-              <div className="text-sm text-gray-600">Automatically save game progress</div>
+              <div className="text-sm text-black">Automatically save game progress</div>
             </div>
             <button
               onClick={() => handleToggle('autoSave')}
@@ -109,7 +109,7 @@ export const SettingsSection: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-black mb-2">
               Theme
             </label>
             <select
@@ -124,7 +124,7 @@ export const SettingsSection: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-black mb-2">
               Language
             </label>
             <select
@@ -151,7 +151,7 @@ export const SettingsSection: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <div className="font-medium">Sound Effects</div>
-              <div className="text-sm text-gray-600">Play sound effects during gameplay</div>
+              <div className="text-sm text-black">Play sound effects during gameplay</div>
             </div>
             <button
               onClick={() => handleToggle('soundEffects')}
@@ -168,7 +168,7 @@ export const SettingsSection: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-black mb-2">
               Music Volume: {settings.musicVolume}%
             </label>
             <input
@@ -182,7 +182,7 @@ export const SettingsSection: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-black mb-2">
               SFX Volume: {settings.sfxVolume}%
             </label>
             <input
@@ -204,7 +204,7 @@ export const SettingsSection: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-black mb-2">
               Animation Speed
             </label>
             <select
@@ -241,7 +241,7 @@ export const SettingsSection: React.FC = () => {
           <CardTitle>Data Management</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="text-sm text-gray-600 space-y-2">
+          <div className="text-sm text-black space-y-2">
             <p>Manage your account data and privacy settings.</p>
           </div>
           <div className="flex space-x-3">

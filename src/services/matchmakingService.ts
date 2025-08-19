@@ -160,9 +160,30 @@ export class MatchmakingService {
     switch (gameMode.toLowerCase()) {
       case 'quickfire': return 50;
       case 'classic': return 100;
-      case 'zerohour': return 150;
-      case 'lastline': return 200;
+      case 'zero-hour':
+      case 'zerohour': return 0;  // Zero Hour starts at 100, targets 0
+      case 'last-line':
+      case 'lastline': return 100; // Highest roll comparison
+      case 'true-grit':
+      case 'truegrit': return 100; // Highest single turn
       default: return 100;
+    }
+  }
+
+  /**
+   * Get starting score based on game mode
+   */
+  static getStartingScore(gameMode: string): number {
+    switch (gameMode.toLowerCase()) {
+      case 'quickfire': return 0;
+      case 'classic': return 0;
+      case 'zero-hour':
+      case 'zerohour': return 100;  // Zero Hour starts at 100
+      case 'last-line':
+      case 'lastline': return 0;   // Last Line starts at 0
+      case 'true-grit':
+      case 'truegrit': return 0;   // True Grit starts at 0
+      default: return 0;
     }
   }
 

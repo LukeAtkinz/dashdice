@@ -392,7 +392,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   : 'text-gray-300 cursor-not-allowed'
               }`}
               style={{ 
-                width: '50%',
+                width: (matchData.gameMode === 'true-grit' || matchData.gameMode === 'last-line') ? '100%' : '50%',
                 height: '100%',
                 display: 'flex',
                 justifyContent: 'center',
@@ -408,30 +408,33 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               PLAY
             </button>
             
-            <button
-              onClick={onBankScore}
-              disabled={!canBank}
-              className={`text-xl font-bold transition-all ${
-                canBank
-                  ? 'text-white active:scale-95'
-                  : 'text-gray-300 cursor-not-allowed'
-              }`}
-              style={{ 
-                width: '50%',
-                height: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                fontFamily: "Audiowide",
-                textTransform: "uppercase" as const,
-                border: 'none',
-                borderRadius: '0',
-                background: canBank ? "rgba(34, 197, 94, 0.0)" : 'rgba(107, 114, 128, 0.4)',
-                backdropFilter: 'blur(2px)',
-              }}
-            >
-              BANK
-            </button>
+            {/* Only show bank button for modes other than True Grit and Last Line on mobile */}
+            {matchData.gameMode !== 'true-grit' && matchData.gameMode !== 'last-line' && (
+              <button
+                onClick={onBankScore}
+                disabled={!canBank}
+                className={`text-xl font-bold transition-all ${
+                  canBank
+                    ? 'text-white active:scale-95'
+                    : 'text-gray-300 cursor-not-allowed'
+                }`}
+                style={{ 
+                  width: '50%',
+                  height: '100%',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  fontFamily: "Audiowide",
+                  textTransform: "uppercase" as const,
+                  border: 'none',
+                  borderRadius: '0',
+                  background: canBank ? "rgba(34, 197, 94, 0.0)" : 'rgba(107, 114, 128, 0.4)',
+                  backdropFilter: 'blur(2px)',
+                }}
+              >
+                BANK
+              </button>
+            )}
           </>
         ) : (
           <div className="w-full h-full flex items-center justify-center">

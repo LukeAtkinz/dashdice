@@ -65,12 +65,29 @@ export default function AchievementsMini({ maxDisplay = 5 }: AchievementsMiniPro
         </div>
       </div>
       
-      {/* Progress Bar */}
-      <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
-        <div 
-          className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500"
-          style={{ width: `${completionPercentage}%` }}
-        />
+      {/* Overall Progress Card - Styled with 20px border and blurred opaque background */}
+      <div 
+        className="mb-6 p-4 rounded-3xl"
+        style={{
+          border: '20px solid rgba(255, 255, 255, 0.2)',
+          background: 'rgba(255, 255, 255, 0.6)',
+          backdropFilter: 'blur(10px)'
+        }}
+      >
+        {/* Progress Bar */}
+        <div className="w-full bg-gray-700 rounded-full h-3">
+          <div 
+            className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500"
+            style={{ width: `${completionPercentage}%` }}
+          />
+        </div>
+        
+        {/* Progress Text */}
+        <div className="text-center mt-2">
+          <span className="text-gray-800 font-audiowide text-sm">
+            Overall Progress: {completionPercentage}%
+          </span>
+        </div>
       </div>
 
       {/* Achievements Display */}

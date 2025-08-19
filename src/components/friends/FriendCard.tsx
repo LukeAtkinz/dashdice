@@ -93,13 +93,22 @@ export default function FriendCard({ friend, compact = false, showActions = true
   if (compact) {
     return (
       <div 
-        className="relative bg-gray-800 rounded-lg p-3 hover:bg-gray-700 transition-colors overflow-hidden"
-        style={getFriendBackgroundStyle(friend)}
+        className="relative overflow-hidden transition-colors"
+        style={{
+          ...getFriendBackgroundStyle(friend),
+          borderRadius: '20px'
+        }}
       >
-        {/* Dark overlay for text readability */}
-        <div className="absolute inset-0 bg-black bg-opacity-40 rounded-lg"></div>
+        {/* Dark overlay gradient for text readability - left (black) to right (transparent) */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)',
+            borderRadius: '20px'
+          }}
+        ></div>
         
-        <div className="relative z-10 flex items-center gap-3">
+        <div className="relative z-10 flex items-center gap-3 p-3">
           <div className="relative">
             <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
               <span className="text-white font-bold font-audiowide">
@@ -119,13 +128,22 @@ export default function FriendCard({ friend, compact = false, showActions = true
 
   return (
     <div 
-      className="relative bg-gray-800 rounded-lg p-4 hover:bg-gray-700 transition-all duration-200 overflow-hidden"
-      style={getFriendBackgroundStyle(friend)}
+      className="relative overflow-hidden transition-all duration-200"
+      style={{
+        ...getFriendBackgroundStyle(friend),
+        borderRadius: '20px'
+      }}
     >
-      {/* Dark overlay for text readability */}
-      <div className="absolute inset-0 bg-black bg-opacity-40 rounded-lg"></div>
+      {/* Dark overlay gradient for text readability - left (black) to right (transparent) */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          background: 'linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)',
+          borderRadius: '20px'
+        }}
+      ></div>
       
-      <div className="relative z-10">
+      <div className="relative z-10 p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -152,11 +170,16 @@ export default function FriendCard({ friend, compact = false, showActions = true
                 {isInviting ? 'Inviting...' : 'Invite'}
               </button>
               <button
+                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded font-montserrat transition-colors"
+              >
+                Chat
+              </button>
+              <button
                 onClick={handleRemoveFriend}
                 disabled={isRemoving}
-                className="px-3 py-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded font-montserrat transition-colors"
+                className="px-3 py-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded font-montserrat transition-colors"
               >
-                {isRemoving ? 'Removing...' : 'Remove'}
+                {isRemoving ? 'Managing...' : 'Manage'}
               </button>
             </div>
           )}

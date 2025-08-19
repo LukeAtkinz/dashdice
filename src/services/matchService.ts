@@ -405,11 +405,20 @@ export class MatchService {
         console.log('🎲 Single 1 rolled - Player eliminated');
         eliminatePlayer = true;
         turnOver = true;
-        // In Last Line, their current turn score becomes their final score
-        if (gameMode.id === 'last-line') {
-          newTurnScore = currentTurnScore; // Keep current score, don't add the 1
-        } else {
+        newTurnScore = 0;
+      }
+      // Handle double 1 (Snake Eyes or Turn End)
+      else if (isDoubleOne) {
+        if (gameMode.rules.eliminationRules.doubleOne) {
+          // True Grit: Double 1 ends turn (but doesn't eliminate player)
+          console.log('🎲 Double 1 rolled - Turn over (True Grit rule)');
+          turnOver = true;
           newTurnScore = 0;
+        } else {
+          // All other modes (Classic, Quickfire, Last Line, Zero Hour): Snake Eyes +20 rule
+          console.log('🎲 Snake Eyes rolled - +20 to turn score');
+          newTurnScore = currentTurnScore + 20;
+          turnOver = false;
         }
       }
       // Handle double 6s based on game mode
@@ -422,41 +431,42 @@ export class MatchService {
             newTurnScore = 0;
             break;
           case 'score':
-            console.log('🎲 Double 6 rolled - Score with multiplier');
-            newTurnScore = currentTurnScore + (diceSum * 2); // x2 multiplier for double 6
+            console.log('🎲 Double 6 rolled - Scores normally');
+            newTurnScore = currentTurnScore + diceSum;
             turnOver = false;
             break;
           default:
-            // Classic mode behavior
+            // Classic mode behavior - reset score
             console.log('🎲 Double 6 rolled - Player score reset to 0');
             resetPlayerScore = true;
             turnOver = true;
             newTurnScore = 0;
         }
       }
-      // Handle double 1 (Snake Eyes) - special +20 rule for classic modes
-      else if (isDoubleOne && gameMode.id === 'classic') {
-        console.log('🎲 Snake Eyes rolled - +20 to turn score');
-        newTurnScore = currentTurnScore + 20;
-        turnOver = false;
-      }
       // Handle single 1 (non-elimination modes)
       else if (isSingleOne && !gameMode.rules.eliminationRules.singleOne) {
-        console.log('🎲 Single 1 rolled - Turn over, no score added');
-        turnOver = true;
-        newTurnScore = 0;
+        if (gameMode.id === 'true-grit') {
+          // True Grit: Single 1 ends turn, but score is banked (not lost)
+          console.log('🎲 True Grit: Single 1 rolled - Turn over, score banked');
+          turnOver = true;
+          // Keep the current turn score to be banked
+        } else {
+          // Other modes: Single 1 ends turn, no score added
+          console.log('🎲 Single 1 rolled - Turn over, no score added');
+          turnOver = true;
+          newTurnScore = 0;
+        }
       }
       // Handle other doubles
       else if (isDouble) {
         newTurnScore = currentTurnScore + diceSum;
         console.log(`🎲 Double ${dice1}s rolled - ${diceSum} points added`);
         
-        // Check if doubles grant extra roll in this game mode
-        if (gameMode.rules.specialRules?.doubleGrantsExtraRoll) {
-          turnOver = false; // Extra roll granted
+        // In most modes, doubles don't grant extra rolls (except classic with multiplier)
+        if (gameMode.id === 'classic' || gameMode.id === 'quickfire') {
+          turnOver = false; // Classic mode: activate multiplier for future rolls
         } else {
-          // Classic mode: activate multiplier for future rolls
-          turnOver = false;
+          turnOver = false; // Continue turn
         }
       }
       // Normal scoring
@@ -466,6 +476,18 @@ export class MatchService {
         newTurnScore = currentTurnScore + scoreToAdd;
         console.log(`🎲 Normal roll: ${dice1} + ${dice2} = ${diceSum}${currentMultiplier ? ' (x2 = ' + scoreToAdd + ')' : ''}, Turn score: ${newTurnScore}`);
         turnOver = false;
+      }
+      
+      // Special rule for Last Line: Only 1 roll allowed, then turn ends
+      if (gameMode.id === 'last-line') {
+        console.log('🎲 Last Line mode - Turn ends after 1 roll');
+        turnOver = true;
+      }
+      
+      // Special rule for True Grit: Only 1 turn per player, turn ends after any roll
+      if (gameMode.id === 'true-grit') {
+        console.log('🎲 True Grit mode - Turn ends after 1 roll');
+        turnOver = true;
       }
       
       // Prepare updates
@@ -489,12 +511,81 @@ export class MatchService {
       
       updates[`${playerStatsPath}.lastDiceSum`] = diceSum;
       
+      // Special handling for Last Line mode - auto-bank the roll score
+      if (gameMode.id === 'last-line') {
+        const playerScoreUpdate = newTurnScore;
+        
+        if (isHost) {
+          updates['hostData.playerScore'] = playerScoreUpdate;
+        } else {
+          updates['opponentData.playerScore'] = playerScoreUpdate;
+        }
+        newTurnScore = 0; // Reset turn score since it's banked automatically
+        updates['gameData.turnScore'] = 0;
+        
+        // Check if Last Line mode is complete immediately after banking
+        const hostFinalScore = isHost ? playerScoreUpdate : matchData.hostData.playerScore;
+        const opponentFinalScore = !isHost ? playerScoreUpdate : matchData.opponentData.playerScore;
+        
+        // Both players have completed their rolls if both have scores > 0
+        if (hostFinalScore > 0 && opponentFinalScore > 0) {
+          let winnerId = '';
+          
+          if (hostFinalScore > opponentFinalScore) {
+            winner = matchData.hostData.playerDisplayName;
+            winnerId = matchData.hostData.playerId;
+          } else if (opponentFinalScore > hostFinalScore) {
+            winner = matchData.opponentData.playerDisplayName;
+            winnerId = matchData.opponentData.playerId;
+          } else {
+            // Tie game
+            winner = 'Tie';
+            winnerId = ''; // No winner for tie
+          }
+          
+          gameOver = true;
+          gameOverReason = `Highest roll wins! ${winner}`;
+          
+          // Set game over state immediately
+          updates['gameData.gamePhase'] = 'gameOver';
+          updates['gameData.winner'] = winner;
+          updates['gameData.gameOverReason'] = gameOverReason;
+          updates['gameData.status'] = 'completed';
+          updates['hostData.turnActive'] = false;
+          updates['opponentData.turnActive'] = false;
+          
+          console.log(`🏆 Last Line Complete! Winner: ${winner} (Host: ${hostFinalScore}, Opponent: ${opponentFinalScore})`);
+          
+          // Update the match in Firebase first
+          await updateDoc(matchRef, updates);
+          
+          // Then update user stats if there's a winner
+          if (winnerId) {
+            await this.updateUserStats(matchData, winnerId);
+            console.log('✅ Last Line stats updated - match completed');
+          }
+          
+          return; // Exit early to prevent further processing
+        }
+      }
+      
+      // Special handling for True Grit mode - auto-bank when turn ends
+      if (gameMode.id === 'true-grit' && turnOver) {
+        if (isHost) {
+          updates['hostData.playerScore'] = newTurnScore;
+        } else {
+          updates['opponentData.playerScore'] = newTurnScore;
+        }
+        newTurnScore = 0; // Reset turn score since it's banked automatically
+        updates['gameData.turnScore'] = 0;
+      }
+      
       // Auto-win logic for reaching target score
       const targetScore = gameMode.rules.targetScore;
       const shouldCheckAutoWin = gameMode.rules.scoreDirection === 'up' && 
                                 currentPlayerScore + newTurnScore >= targetScore && 
                                 !turnOver && !eliminatePlayer;
-      
+
       if (shouldCheckAutoWin) {
         console.log(`🏆 AUTO-WIN! ${currentPlayer.playerDisplayName} reached ${targetScore} points!`);
         gameOver = true;
@@ -519,8 +610,50 @@ export class MatchService {
         updates['hostData.turnActive'] = false;
         updates['opponentData.turnActive'] = false;
       }
-      
-      // Handle double multiplier logic (Classic mode)
+
+      // Auto-win logic for Zero Hour - reaching 0 or below
+      const shouldCheckZeroHourWin = gameMode.rules.scoreDirection === 'down' && 
+                                   currentPlayerScore - newTurnScore <= 0 && 
+                                   !turnOver && !eliminatePlayer;
+
+      if (shouldCheckZeroHourWin) {
+        const newScore = currentPlayerScore - newTurnScore;
+        
+        if (newScore === 0) {
+          console.log(`🏆 ZERO HOUR WIN! ${currentPlayer.playerDisplayName} reached exactly 0!`);
+          gameOver = true;
+          winner = currentPlayer.playerDisplayName;
+          gameOverReason = 'Zero Hour completed!';
+          
+          // Auto-bank the winning score (subtract turn score to reach 0)
+          if (isHost) {
+            updates['hostData.playerScore'] = 0;
+          } else {
+            updates['opponentData.playerScore'] = 0;
+          }
+          
+          updates['gameData.turnScore'] = 0;
+          turnOver = true;
+          
+          // Set game over state
+          updates['gameData.gamePhase'] = 'gameOver';
+          updates['gameData.winner'] = winner;
+          updates['gameData.gameOverReason'] = gameOverReason;
+          updates['gameData.status'] = 'completed';
+          updates['hostData.turnActive'] = false;
+          updates['opponentData.turnActive'] = false;
+        } else if (gameMode.rules.specialRules?.exactScoreRequired && newScore < 0) {
+          // Overshoot in Zero Hour - reset to starting score
+          console.log('🎯 Overshoot in Zero Hour during turn - score reset to starting value');
+          if (isHost) {
+            updates['hostData.playerScore'] = gameMode.rules.startingScore;
+          } else {
+            updates['opponentData.playerScore'] = gameMode.rules.startingScore;
+          }
+          updates['gameData.turnScore'] = 0;
+          turnOver = true;
+        }
+      }      // Handle double multiplier logic (Classic mode)
       if (gameMode.id === 'classic') {
         if (dice1 === dice2 && dice1 !== 1 && dice1 !== 6) {
           updates['gameData.hasDoubleMultiplier'] = true;
@@ -553,9 +686,44 @@ export class MatchService {
           updates['gameData.turnScore'] = 0;
         }
         
-        // Switch turns
-        updates['hostData.turnActive'] = !isHost;
-        updates['opponentData.turnActive'] = isHost;
+        // Switch turns (only if game is not over)
+        if (!gameOver) {
+          updates['hostData.turnActive'] = !isHost;
+          updates['opponentData.turnActive'] = isHost;
+        }
+        
+        // Check if True Grit mode is complete (both players have completed their single turns)
+        if (gameMode.id === 'true-grit' && turnOver && !gameOver) {
+          // In True Grit, we track the highest single turn score
+          const hostTurnComplete = matchData.hostData.playerScore > 0 || (isHost && turnOver);
+          const opponentTurnComplete = matchData.opponentData.playerScore > 0 || (!isHost && turnOver);
+          
+          // If both players have completed their turns, determine winner
+          if (hostTurnComplete && opponentTurnComplete) {
+            const hostFinalScore = isHost ? newTurnScore : matchData.hostData.playerScore;
+            const opponentFinalScore = !isHost ? newTurnScore : matchData.opponentData.playerScore;
+            
+            if (hostFinalScore > opponentFinalScore) {
+              winner = matchData.hostData.playerDisplayName;
+            } else if (opponentFinalScore > hostFinalScore) {
+              winner = matchData.opponentData.playerDisplayName;
+            } else {
+              // Tie game
+              winner = 'Tie';
+            }
+            
+            gameOver = true;
+            gameOverReason = `Highest single turn wins! ${winner}`;
+            
+            // Set game over state
+            updates['gameData.gamePhase'] = 'gameOver';
+            updates['gameData.winner'] = winner;
+            updates['gameData.gameOverReason'] = gameOverReason;
+            updates['gameData.status'] = 'completed';
+            
+            console.log(`🏆 True Grit Complete! Winner: ${winner} (Host: ${hostFinalScore}, Opponent: ${opponentFinalScore})`);
+          }
+        }
       }
       
       await updateDoc(matchRef, updates);

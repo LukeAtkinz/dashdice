@@ -59,13 +59,42 @@ export class GameModeService {
   static getDefaultGameModes(platform: 'desktop' | 'mobile' = 'desktop'): GameMode[] {
     const baseModes: GameMode[] = [
       {
-        id: 'classic',
-        name: 'Classic Mode',
-        description: 'First to 50 points, best of 3 rounds',
+        id: 'quickfire',
+        name: 'Quickfire',
+        description: 'First to 50 points wins, players take turns and bank',
         rules: {
           startingScore: 0,
           targetScore: 50,
-          bestOf: 3,
+          allowBanking: true,
+          allowDoubleRolls: true,
+          scoreDirection: 'up',
+          eliminationRules: {
+            singleOne: false,
+            doubleOne: true,
+            doubleSix: 'reset'
+          }
+        },
+        settings: {
+          timePerTurn: 30,
+          maxConsecutiveRolls: 10,
+          showRunningTotal: true,
+          showOpponentScore: true,
+          enableChat: true,
+          enableAbilities: true
+        },
+        isActive: true,
+        platforms: ['desktop', 'mobile'],
+        minPlayers: 2,
+        maxPlayers: 4,
+        estimatedDuration: 10
+      },
+      {
+        id: 'classic',
+        name: 'Classic Mode',
+        description: 'First to 100 points wins, players take turns and bank',
+        rules: {
+          startingScore: 0,
+          targetScore: 100,
           allowBanking: true,
           allowDoubleRolls: true,
           scoreDirection: 'up',
@@ -92,7 +121,7 @@ export class GameModeService {
       {
         id: 'zero-hour',
         name: 'Zero Hour',
-        description: 'Start at 100, first to reach exactly 0 wins',
+        description: 'Start at 100, bank to subtract from score, first to reach 0 wins',
         rules: {
           startingScore: 100,
           targetScore: 0,
@@ -125,7 +154,7 @@ export class GameModeService {
       {
         id: 'last-line',
         name: 'Last Line',
-        description: 'Single roll elimination, doubles grant extra roll',
+        description: '1 roll per player, highest roll wins',
         rules: {
           startingScore: 0,
           targetScore: 100,
@@ -133,19 +162,19 @@ export class GameModeService {
           allowDoubleRolls: false,
           scoreDirection: 'up',
           eliminationRules: {
-            singleOne: true,    // Single 1 eliminates player
-            doubleOne: false,
-            doubleSix: 'score'  // Double 6 gets x2 multiplier
+            singleOne: false,     // No elimination on single 1
+            doubleOne: false,     // No elimination on double 1
+            doubleSix: 'score'    // Double 6 scores normally
           },
           specialRules: {
-            rollLimit: 1,       // Single turn only
-            doubleGrantsExtraRoll: true
+            rollLimit: 1,         // Only 1 roll per player
+            doubleGrantsExtraRoll: false // No extra rolls
           }
         },
         settings: {
           timePerTurn: 15,
-          showRunningTotal: false,
-          showOpponentScore: false,
+          showRunningTotal: true,
+          showOpponentScore: true,
           enableChat: true,
           enableAbilities: false
         },
@@ -153,12 +182,12 @@ export class GameModeService {
         platforms: ['desktop', 'mobile'],
         minPlayers: 2,
         maxPlayers: 6,
-        estimatedDuration: 5
+        estimatedDuration: 2
       },
       {
         id: 'true-grit',
         name: 'True Grit',
-        description: 'No banking, single 1 eliminates, double 6s score',
+        description: '1 turn per player, no banking, highest single turn wins',
         rules: {
           startingScore: 0,
           targetScore: 100,
@@ -166,9 +195,13 @@ export class GameModeService {
           allowDoubleRolls: true,
           scoreDirection: 'up',
           eliminationRules: {
-            singleOne: true,
-            doubleOne: false,
-            doubleSix: 'score'
+            singleOne: false,     // No elimination on single 1 - just end turn and bank
+            doubleOne: false,     // Double 1 gets +20 (Snake Eyes rule)
+            doubleSix: 'score'    // Double 6 scores normally (not reset)
+          },
+          specialRules: {
+            rollLimit: undefined, // No roll limit, but turn ends on double 1
+            exactScoreRequired: false
           }
         },
         settings: {
@@ -182,7 +215,7 @@ export class GameModeService {
         platforms: ['desktop', 'mobile'],
         minPlayers: 2,
         maxPlayers: 4,
-        estimatedDuration: 10
+        estimatedDuration: 8
       }
     ];
 

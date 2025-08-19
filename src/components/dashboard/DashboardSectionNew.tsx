@@ -457,7 +457,7 @@ export const DashboardSection: React.FC = () => {
       </div>
       
       {/* Achievements Preview Section */}
-      <div className="w-full max-w-[90vw] md:max-w-[30rem] mt-4">
+      <div className="w-full flex justify-center mt-4">
         <AchievementsMini maxDisplay={3} />
       </div>
     </motion.div>

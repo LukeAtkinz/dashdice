@@ -65,12 +65,9 @@ export default function AddFriend({ onClose, onSuccess }: AddFriendProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-auto">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-          Add Friend
-        </h2>
-        {onClose && (
+    <div className="w-full max-w-md mx-auto">
+      {onClose && (
+        <div className="flex justify-end mb-4">
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
@@ -79,8 +76,8 @@ export default function AddFriend({ onClose, onSuccess }: AddFriendProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* User's Friend Code Display */}
       {user?.friendCode && (
@@ -176,8 +173,9 @@ export default function AddFriend({ onClose, onSuccess }: AddFriendProps) {
           <button
             type="submit"
             disabled={isLoading || !friendCode.trim()}
-            className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 
-                     text-white rounded-md transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 
+                     disabled:from-gray-400 disabled:to-gray-500 text-white rounded-md transition-all 
+                     disabled:cursor-not-allowed flex items-center justify-center gap-2 font-audiowide"
           >
             {isLoading && (
               <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">

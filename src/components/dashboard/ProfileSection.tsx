@@ -328,12 +328,12 @@ const ProfileSection: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold font-audiowide text-white">{user?.displayName || 'Unknown User'}</h3>
-                    <p className="text-gray-300 font-montserrat">Member since {user?.createdAt?.toLocaleDateString()}</p>
+                    <p className="text-black font-montserrat">Member since {user?.createdAt?.toLocaleDateString()}</p>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2 font-montserrat">
+                  <label className="block text-sm font-medium text-black mb-2 font-montserrat">
                     Display Name
                   </label>
                   <Input
@@ -348,7 +348,7 @@ const ProfileSection: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2 font-montserrat">
+                  <label className="block text-sm font-medium text-black mb-2 font-montserrat">
                     Email Address
                   </label>
                   <Input
@@ -358,7 +358,7 @@ const ProfileSection: React.FC = () => {
                     placeholder="Enter your email"
                     disabled
                   />
-                  <p className="text-xs text-gray-400 mt-1 font-montserrat">
+                  <p className="text-xs text-black mt-1 font-montserrat">
                     Email cannot be changed at this time
                   </p>
                 </div>
