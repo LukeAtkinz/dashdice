@@ -357,6 +357,13 @@ html, body {
   animation: carousel 60s linear infinite;
 }
 
+/* Faster carousel on mobile */
+@media (max-width: 768px) {
+  .animate-carousel {
+    animation: carousel 30s linear infinite;
+  }
+}
+
 .achievements-carousel:hover .animate-carousel {
   animation-play-state: paused;
 }

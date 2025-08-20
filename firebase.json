@@ -3,6 +3,7 @@
     "default": "dashdice-d1b86"
   },
   "firestore": {
-    "rules": "firestore.rules"
+    "rules": "firestore.rules",
+    "indexes": "firebase-indexes.json"
   }
 }
