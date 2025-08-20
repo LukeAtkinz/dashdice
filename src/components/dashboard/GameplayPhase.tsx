@@ -38,7 +38,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   const { DisplayBackgroundEquip } = useBackground();
   const isMyTurn = currentPlayer.turnActive;
   const canRoll = isMyTurn && !matchData.gameData.isRolling;
-  const canBank = isMyTurn && !matchData.gameData.isRolling && matchData.gameData.turnScore > 0;
+  const canBank = isMyTurn && !matchData.gameData.isRolling && 
+    (matchData.gameData.turnScore > 0 || 
+     (matchData.gameMode === 'zero-hour' && matchData.gameData.turnScore !== 0));
 
   // Create button gradient style based on user's display background
   const getButtonGradientStyle = (baseColor: string) => {
@@ -110,7 +112,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   const getGameRuleResult = () => {
     const dice1 = matchData.gameData.diceOne;
     const dice2 = matchData.gameData.diceTwo;
-    const hasMultiplier = matchData.gameData.hasDoubleMultiplier || false;
+    const hasDoubleMultiplier = matchData.gameData.hasDoubleMultiplier || false;
+    const hasTripleMultiplier = matchData.gameData.hasTripleMultiplier || false;
+    const isZeroHour = matchData.gameMode === 'zero-hour';
     
     if (!dice1 || !dice2) return null;
     
@@ -118,33 +122,67 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
     if ((dice1 === 1 && dice2 !== 1) || (dice2 === 1 && dice1 !== 1)) {
       return { rule: 'SINGLE ONE', result: 'Turn over, no score added', color: 'text-red-400' };
     }
-    // Double 6
-    else if (dice1 === 6 && dice2 === 6) {
-      return { rule: 'DOUBLE SIX', result: 'Player score reset to 0', color: 'text-red-500' };
-    }
-    // Snake Eyes
+    // Snake Eyes (Double 1s)
     else if (dice1 === 1 && dice2 === 1) {
-      return { rule: 'SNAKE EYES', result: '+20 to turn score, continue playing', color: 'text-yellow-400' };
+      if (isZeroHour) {
+        return { rule: 'SNAKE EYES', result: '-20 to turn score, 2x MULTIPLIER ACTIVE!', color: 'text-yellow-400' };
+      } else {
+        return { rule: 'SNAKE EYES', result: '+20 to turn score, 2x MULTIPLIER ACTIVE!', color: 'text-yellow-400' };
+      }
+    }
+    // Double 6s
+    else if (dice1 === 6 && dice2 === 6) {
+      if (isZeroHour) {
+        return { rule: 'DOUBLE 6s', result: '+12 to opponent, -12 to turn score, 2x MULTIPLIER ACTIVE!', color: 'text-red-500' };
+      } else {
+        return { rule: 'DOUBLE 6s', result: 'Player score reset to 0', color: 'text-red-500' };
+      }
     }
     // Other Doubles (22, 33, 44, 55)
     else if (dice1 === dice2) {
+      const doubleValue = dice1;
       const sum = dice1 + dice2;
-      const actualScore = hasMultiplier ? sum * 2 : sum;
-      return { 
-        rule: `DOUBLE ${dice1}s`, 
-        result: `+${actualScore} to turn score, 2x MULTIPLIER ACTIVE!`, 
-        color: 'text-purple-400' 
-      };
+      
+      if (isZeroHour) {
+        if (doubleValue === 2) {
+          return { rule: 'DOUBLE 2s', result: '+4 to opponent, -4 to turn score, 2x MULTIPLIER ACTIVE!', color: 'text-purple-400' };
+        } else if (doubleValue === 3) {
+          return { rule: 'DOUBLE 3s', result: '-6 to turn score, 3x MULTIPLIER ACTIVE!', color: 'text-purple-500' };
+        } else if (doubleValue === 4) {
+          return { rule: 'DOUBLE 4s', result: '+8 to opponent, -8 to turn score, 2x MULTIPLIER ACTIVE!', color: 'text-purple-400' };
+        } else if (doubleValue === 5) {
+          return { rule: 'DOUBLE 5s', result: '+10 to opponent, -10 to turn score, 2x MULTIPLIER ACTIVE!', color: 'text-purple-400' };
+        }
+      } else {
+        const actualScore = hasDoubleMultiplier ? sum * 2 : sum;
+        return { 
+          rule: `DOUBLE ${dice1}s`, 
+          result: `+${actualScore} to turn score, 2x MULTIPLIER ACTIVE!`, 
+          color: 'text-purple-400' 
+        };
+      }
     }
     // Normal scoring (with multiplier if active)
     else {
       const sum = dice1 + dice2;
-      const actualScore = hasMultiplier ? sum * 2 : sum;
-      const multiplierText = hasMultiplier ? ' (2x MULTIPLIER)' : '';
+      let actualScore = sum;
+      let multiplierText = '';
+      let signText = '+';
+      
+      if (hasTripleMultiplier) {
+        actualScore = sum * 3;
+        multiplierText = ' (3x MULTIPLIER)';
+        if (isZeroHour) signText = '-';
+      } else if (hasDoubleMultiplier) {
+        actualScore = sum * 2;
+        multiplierText = ' (2x MULTIPLIER)';
+        if (isZeroHour) signText = '-';
+      }
+      
       return { 
         rule: 'NORMAL' + multiplierText, 
-        result: `+${actualScore} to turn score`, 
-        color: hasMultiplier ? 'text-blue-400' : 'text-green-400' 
+        result: `${signText}${actualScore} to turn score`, 
+        color: hasTripleMultiplier ? 'text-purple-500' : hasDoubleMultiplier ? 'text-blue-400' : 'text-green-400' 
       };
     }
   };
@@ -286,12 +324,47 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   className="text-2xl md:text-4xl font-bold text-yellow-400" 
                   style={{ fontFamily: "Audiowide" }}
                 >
-                  {matchData.gameData.turnScore}
+                  {/* Show absolute value for Zero Hour mode to never display negative */}
+                  {matchData.gameMode === 'zero-hour' ? Math.abs(matchData.gameData.turnScore) : matchData.gameData.turnScore}
                 </p>
               </div>
               
-              {/* 2X Multiplier Indicator - Absolutely positioned - 2x bigger on mobile */}
-              {matchData.gameData.hasDoubleMultiplier && (
+              {/* Multiplier Indicators - Absolutely positioned */}
+              
+              {/* True Grit Stacking Multiplier - Priority display */}
+              {matchData.gameMode === 'true-grit' && matchData.gameData.currentMultiplier && matchData.gameData.currentMultiplier > 1 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="absolute -right-20 md:-right-24 top-1/2 transform -translate-y-1/2 px-6 md:px-4 py-3 md:py-2 bg-gradient-to-r from-red-600/40 to-orange-600/40 border-2 border-orange-400 rounded-xl backdrop-blur-sm shadow-xl"
+                >
+                  <p 
+                    className="text-xl md:text-2xl font-bold text-orange-300" 
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    {matchData.gameData.currentMultiplier}X
+                  </p>
+                </motion.div>
+              )}
+              
+              {/* Zero Hour 3X Multiplier */}
+              {matchData.gameData.hasTripleMultiplier && matchData.gameMode === 'zero-hour' && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="absolute -right-20 md:-right-24 top-1/2 transform -translate-y-1/2 px-6 md:px-4 py-3 md:py-2 bg-purple-600/40 border-2 border-purple-400 rounded-xl backdrop-blur-sm shadow-xl"
+                >
+                  <p 
+                    className="text-xl md:text-2xl font-bold text-purple-300" 
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    3X
+                  </p>
+                </motion.div>
+              )}
+              
+              {/* 2X Multiplier Indicator */}
+              {matchData.gameData.hasDoubleMultiplier && !matchData.gameData.hasTripleMultiplier && matchData.gameMode !== 'true-grit' && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}

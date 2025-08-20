@@ -187,25 +187,26 @@ export class GameModeService {
       {
         id: 'true-grit',
         name: 'True Grit',
-        description: '1 turn per player, no banking, highest single turn wins',
+        description: 'No banking allowed, single 1 ends turn, no score limit - go as high as you can!',
         rules: {
           startingScore: 0,
-          targetScore: 100,
+          targetScore: 999999, // Very high target - effectively no limit
           allowBanking: false,
           allowDoubleRolls: true,
           scoreDirection: 'up',
           eliminationRules: {
-            singleOne: false,     // No elimination on single 1 - just end turn and bank
-            doubleOne: false,     // Double 1 gets +20 (Snake Eyes rule)
-            doubleSix: 'score'    // Double 6 scores normally (not reset)
+            singleOne: false,     // Single 1 ends turn and auto-banks score (doesn't eliminate)
+            doubleOne: false,     // Double 1 gets +20 and 2x stacking multiplier
+            doubleSix: 'score'    // Double 6 gets +12 and 6x stacking multiplier
           },
           specialRules: {
-            rollLimit: undefined, // No roll limit, but turn ends on double 1
-            exactScoreRequired: false
+            rollLimit: undefined, // No roll limit - continue until single 1
+            exactScoreRequired: false,
+            autoBank: true        // Automatically bank score when turn ends
           }
         },
         settings: {
-          timePerTurn: 60,
+          timePerTurn: 120,       // Longer time since turns can have many rolls
           showRunningTotal: true,
           showOpponentScore: true,
           enableChat: true,
@@ -215,7 +216,7 @@ export class GameModeService {
         platforms: ['desktop', 'mobile'],
         minPlayers: 2,
         maxPlayers: 4,
-        estimatedDuration: 8
+        estimatedDuration: 15
       }
     ];
 
