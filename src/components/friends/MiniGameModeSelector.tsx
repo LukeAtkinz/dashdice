@@ -33,7 +33,6 @@ const MiniGameModeSelector: React.FC<MiniGameModeSelectorProps> = ({
   isDisabled = false,
   className = ''
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [selectedMode, setSelectedMode] = useState<string>('classic');
 
   // Game mode configurations (subset from dashboard)
@@ -79,84 +78,99 @@ const MiniGameModeSelector: React.FC<MiniGameModeSelectorProps> = ({
 
   const handleModeSelect = (modeId: string) => {
     setSelectedMode(modeId);
-    setIsExpanded(false);
     onGameModeSelect(modeId);
   };
 
-  const toggleExpanded = () => {
-    if (!isDisabled) {
-      setIsExpanded(!isExpanded);
-    }
-  };
-
   return (
-    <div className={`relative ${className}`}>
-      {/* Selected Mode Display */}
-      <button
-        onClick={toggleExpanded}
-        disabled={isDisabled}
-        className={`
-          w-full flex items-center justify-between p-2 rounded-lg
-          bg-black/20 backdrop-blur-sm border border-white/10
-          transition-all duration-200 hover:bg-black/30
-          ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-          ${isExpanded ? 'border-blue-400/50' : ''}
-        `}
-      >
-        <div className="flex items-center space-x-2">
-          {selectedModeData && (
-            <>
-              <img 
-                src={selectedModeData.icon} 
-                alt={selectedModeData.name}
-                className="w-5 h-5 object-contain"
-              />
-              <div className="text-left">
-                <div className="text-sm font-medium text-white">
-                  {selectedModeData.name}
-                </div>
-                <div className="text-xs text-gray-300">
-                  {selectedModeData.description}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-        {!isDisabled && (
-          <div className="text-gray-400">
-            {isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
-          </div>
-        )}
-      </button>
+    <div className={`w-full ${className}`}>
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold text-white mb-2" style={{ fontFamily: "Audiowide" }}>
+          Select Game Mode
+        </h3>
+        <p className="text-sm text-gray-300">
+          Choose your preferred game mode for the match
+        </p>
+      </div>
 
-      {/* Dropdown Options */}
-      {isExpanded && (
-        <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-black/90 backdrop-blur-sm border border-white/20 rounded-lg shadow-xl">
-          {gameModes
-            .filter(mode => mode.available && mode.id !== selectedMode)
-            .map((mode) => (
-              <button
-                key={mode.id}
-                onClick={() => handleModeSelect(mode.id)}
-                className="w-full flex items-center space-x-2 p-2 hover:bg-white/10 transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg"
-              >
-                <img 
-                  src={mode.icon} 
-                  alt={mode.name}
-                  className="w-4 h-4 object-contain"
-                />
-                <div className="text-left">
-                  <div className="text-sm font-medium text-white">
-                    {mode.name}
-                  </div>
-                  <div className="text-xs text-gray-300">
-                    {mode.description}
-                  </div>
-                </div>
-              </button>
-            ))}
-        </div>
-      )}
+      {/* Desktop: Side by side cards */}
+      <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3">
+        {gameModes.filter(mode => mode.available).map((mode) => (
+          <button
+            key={mode.id}
+            onClick={() => handleModeSelect(mode.id)}
+            disabled={isDisabled}
+            className={`
+              p-3 rounded-lg border transition-all duration-200 text-left
+              ${selectedMode === mode.id 
+                ? 'border-blue-400 bg-blue-500/20 backdrop-blur-sm shadow-lg' 
+                : 'border-white/20 bg-black/20 backdrop-blur-sm hover:border-blue-400/50 hover:bg-blue-500/10'
+              }
+              ${isDisabled 
+                ? 'opacity-50 cursor-not-allowed' 
+                : 'cursor-pointer hover:scale-105'
+              }
+            `}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <img 
+                src={mode.icon} 
+                alt={mode.name}
+                className="w-6 h-6 object-contain"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+              <div className="font-semibold text-white text-sm">
+                {mode.name}
+              </div>
+            </div>
+            <div className="text-xs text-gray-300">
+              {mode.description}
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* Mobile: Stacked cards */}
+      <div className="md:hidden space-y-3">
+        {gameModes.filter(mode => mode.available).map((mode) => (
+          <button
+            key={mode.id}
+            onClick={() => handleModeSelect(mode.id)}
+            disabled={isDisabled}
+            className={`
+              w-full p-3 rounded-lg border transition-all duration-200 text-left
+              ${selectedMode === mode.id 
+                ? 'border-blue-400 bg-blue-500/20 backdrop-blur-sm shadow-lg' 
+                : 'border-white/20 bg-black/20 backdrop-blur-sm hover:border-blue-400/50 hover:bg-blue-500/10'
+              }
+              ${isDisabled 
+                ? 'opacity-50 cursor-not-allowed' 
+                : 'cursor-pointer'
+              }
+            `}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <img 
+                src={mode.icon} 
+                alt={mode.name}
+                className="w-6 h-6 object-contain"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+              <div className="font-semibold text-white text-sm">
+                {mode.name}
+              </div>
+            </div>
+            <div className="text-xs text-gray-300">
+              {mode.description}
+            </div>
+          </button>
+        ))}
+      </div>
     </div>
   );
 };

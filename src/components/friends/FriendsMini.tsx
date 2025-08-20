@@ -101,9 +101,11 @@ export default function FriendsMini({ maxFriends = 5, onViewAll }: FriendsMiniPr
           <span>friend{friends.length !== 1 ? 's' : ''}</span>
         </div>
         {onlineFriendsCount > 0 && (
-          <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span>{onlineFriendsCount} online</span>
+          <div className="flex items-center gap-2 text-green-400 font-bold">
+            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
+            <span className="text-lg" style={{ textShadow: "0 0 10px rgba(74, 222, 128, 0.8)" }}>
+              {onlineFriendsCount} online
+            </span>
           </div>
         )}
       </div>

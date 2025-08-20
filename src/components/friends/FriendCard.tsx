@@ -17,12 +17,88 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
   // Type assertion to handle the actual nested inventory structure
   const friendData = friend.friendData as any;
   
+  console.log('Friend background data:', {
+    friendId: friend.friendId,
+    friendData: friendData,
+    inventory: friendData?.inventory,
+    displayBackgroundEquipped: friendData?.inventory?.displayBackgroundEquipped
+  });
+  
   // Check if friend has display background equipped in the new nested structure
   if (friendData?.inventory?.displayBackgroundEquipped) {
     const background = friendData.inventory.displayBackgroundEquipped;
-    // Handle both string URLs and background objects
-    const backgroundUrl = typeof background === 'string' ? background : background.file;
-    if (backgroundUrl) {
+    
+    // Handle the new structure with name and file properties
+    if (background && typeof background === 'object') {
+      // Handle object with file property
+      if (background.file) {
+        const backgroundUrl = background.file.startsWith('/') 
+          ? background.file 
+          : `/backgrounds/${background.file}`;
+        
+        console.log('Using background from file property:', backgroundUrl);
+        return {
+          backgroundImage: `url(${backgroundUrl})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        };
+      }
+      
+      // Handle object with url property
+      if (background.url) {
+        console.log('Using background from url property:', background.url);
+        return {
+          backgroundImage: `url(${background.url})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        };
+      }
+      
+      // Handle object with name property - construct path
+      if (background.name) {
+        let backgroundUrl = '';
+        
+        // Map background names to their file paths
+        switch (background.name) {
+          case 'Long Road Ahead':
+            backgroundUrl = '/backgrounds/Long Road Ahead.jpg';
+            break;
+          case 'On A Mission':
+            backgroundUrl = '/backgrounds/On A Mission.mp4';
+            break;
+          case 'New Day':
+            backgroundUrl = '/backgrounds/New Day.mp4';
+            break;
+          case 'Relax':
+            backgroundUrl = '/backgrounds/Relax.png';
+            break;
+          case 'Underwater':
+            backgroundUrl = '/backgrounds/Underwater.mp4';
+            break;
+          case 'All For Glory':
+            backgroundUrl = '/backgrounds/All For Glory.jpg';
+            break;
+          default:
+            // Try to construct path from name
+            backgroundUrl = `/backgrounds/${background.name}`;
+        }
+        
+        if (backgroundUrl) {
+          console.log('Using background from name property:', backgroundUrl);
+          return {
+            backgroundImage: `url(${backgroundUrl})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          };
+        }
+      }
+    } else if (typeof background === 'string') {
+      // Handle string URLs
+      const backgroundUrl = background.startsWith('/') ? background : `/backgrounds/${background}`;
+      console.log('Using background from string:', backgroundUrl);
       return {
         backgroundImage: `url(${backgroundUrl})`,
         backgroundSize: 'cover',
@@ -34,6 +110,7 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
   
   // Fallback: Check legacy equippedBackground field
   if (friendData?.equippedBackground) {
+    console.log('Using legacy equippedBackground:', friendData.equippedBackground);
     return {
       backgroundImage: `url(${friendData.equippedBackground})`,
       backgroundSize: 'cover',
@@ -46,6 +123,7 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
   if (friendData?.inventory && Array.isArray(friendData.inventory)) {
     const backgroundItem = friendData.inventory.find((item: any) => item.type === 'background');
     if (backgroundItem) {
+      console.log('Using background from inventory array:', backgroundItem.imageUrl);
       return {
         backgroundImage: `url(${backgroundItem.imageUrl})`,
         backgroundSize: 'cover',
@@ -55,6 +133,7 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
     }
   }
   
+  console.log('No background found for friend:', friend.friendId);
   return {};
 };
 
@@ -175,8 +254,53 @@ export default function FriendCard({ friend, compact = false, showActions = true
       ></div>
       
       <div className="relative z-10 p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
+        {/* Desktop Layout */}
+        <div className="hidden md:block">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-lg font-bold font-audiowide">
+                    {friend.friendData.displayName?.charAt(0).toUpperCase() || '?'}
+                  </span>
+                </div>
+                <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(presenceStatus)} rounded-full border-2 border-gray-800`}></div>
+              </div>
+              <div>
+                <h3 className="text-white font-semibold font-audiowide">{friend.friendData.displayName}</h3>
+                <p className="text-white text-sm font-montserrat">{getStatusText(presenceStatus)}</p>
+              </div>
+            </div>
+            
+            {showActions && (
+              <div className="flex gap-2">
+                <button
+                  onClick={toggleGameModeSelector}
+                  disabled={presenceStatus === 'offline'}
+                  className="px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded font-montserrat transition-colors"
+                >
+                  {showGameModeSelector ? 'Cancel' : 'Invite'}
+                </button>
+                <button
+                  className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded font-montserrat transition-colors"
+                >
+                  Chat
+                </button>
+                <button
+                  onClick={handleRemoveFriend}
+                  disabled={isRemoving}
+                  className="px-3 py-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded font-montserrat transition-colors"
+                >
+                  {isRemoving ? 'Managing...' : 'Manage'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Layout */}
+        <div className="md:hidden">
+          <div className="flex items-center gap-3 mb-3">
             <div className="relative">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
                 <span className="text-white text-lg font-bold font-audiowide">
@@ -192,7 +316,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
           </div>
           
           {showActions && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button
                 onClick={toggleGameModeSelector}
                 disabled={presenceStatus === 'offline'}
