@@ -17,6 +17,7 @@ import { MatchData, GamePhase, RollPhase, TurnDeciderChoice } from '@/types/matc
 import { UserService } from './userService';
 import { CompletedMatchService } from './completedMatchService';
 import { GameModeService } from './gameModeService';
+import AchievementTrackingService from './achievementTrackingService';
 
 export class MatchService {
   /**
@@ -736,6 +737,35 @@ export class MatchService {
           // Update the match in Firebase first
           await updateDoc(matchRef, updates);
           
+          // Track achievements for game completion
+          if (winnerId) {
+            const hostId = matchData.hostData.playerId;
+            const opponentId = matchData.opponentData.playerId;
+            const gameMode = matchData.gameMode;
+            const achievementService = AchievementTrackingService.getInstance();
+            
+            try {
+              // Track achievement for winner
+              await achievementService.recordGameEnd(winnerId, true, [], {
+                finalScore: winnerId === hostId ? hostFinalScore : opponentFinalScore,
+                opponentScore: winnerId === hostId ? opponentFinalScore : hostFinalScore,
+                gameMode: gameMode
+              });
+              
+              // Track achievement for loser
+              const loserId = winnerId === hostId ? opponentId : hostId;
+              await achievementService.recordGameEnd(loserId, false, [], {
+                finalScore: loserId === hostId ? hostFinalScore : opponentFinalScore,
+                opponentScore: loserId === hostId ? opponentFinalScore : hostFinalScore,
+                gameMode: gameMode
+              });
+              
+              console.log('✅ Achievement tracking completed for Last Line match');
+            } catch (error) {
+              console.error('❌ Error tracking achievements for Last Line match:', error);
+            }
+          }
+          
           // Then update user stats if there's a winner
           if (winnerId) {
             await this.updateUserStats(matchData, winnerId);
@@ -903,6 +933,36 @@ export class MatchService {
       
       await updateDoc(matchRef, updates);
       
+      // Track achievements for game completion
+      if (gameOver && winner) {
+        const hostId = matchData.hostData.playerId;
+        const opponentId = matchData.opponentData.playerId;
+        const winnerId = isHost ? hostId : opponentId;
+        const loserId = winnerId === hostId ? opponentId : hostId;
+        const gameMode = matchData.gameMode;
+        const achievementService = AchievementTrackingService.getInstance();
+        
+        try {
+          // Track achievement for winner
+          await achievementService.recordGameEnd(winnerId, true, [], {
+            finalScore: winnerId === hostId ? (matchData.hostData.playerScore || 0) : (matchData.opponentData.playerScore || 0),
+            opponentScore: winnerId === hostId ? (matchData.opponentData.playerScore || 0) : (matchData.hostData.playerScore || 0),
+            gameMode: gameMode
+          });
+          
+          // Track achievement for loser
+          await achievementService.recordGameEnd(loserId, false, [], {
+            finalScore: loserId === hostId ? (matchData.hostData.playerScore || 0) : (matchData.opponentData.playerScore || 0),
+            opponentScore: loserId === hostId ? (matchData.hostData.playerScore || 0) : (matchData.opponentData.playerScore || 0),
+            gameMode: gameMode
+          });
+          
+          console.log('✅ Achievement tracking completed for game completion');
+        } catch (error) {
+          console.error('❌ Error tracking achievements for game completion:', error);
+        }
+      }
+      
       // Update user stats if game over
       if (gameOver && winner) {
         const winnerId = isHost ? matchData.hostData.playerId : matchData.opponentData.playerId;
@@ -1030,6 +1090,34 @@ export class MatchService {
       if (gameOver) {
         console.log(`🏆 Game Over! ${winner} wins!`);
         
+        // Track achievements for game completion
+        const hostId = matchData.hostData.playerId;
+        const opponentId = matchData.opponentData.playerId;
+        const winnerPlayerId = currentPlayer.playerId;
+        const loserId = winnerPlayerId === hostId ? opponentId : hostId;
+        const gameMode = matchData.gameMode;
+        const achievementService = AchievementTrackingService.getInstance();
+        
+        try {
+          // Track achievement for winner
+          await achievementService.recordGameEnd(winnerPlayerId, true, [], {
+            finalScore: newPlayerScore,
+            opponentScore: winnerPlayerId === hostId ? (matchData.opponentData.playerScore || 0) : (matchData.hostData.playerScore || 0),
+            gameMode: gameMode
+          });
+          
+          // Track achievement for loser
+          await achievementService.recordGameEnd(loserId, false, [], {
+            finalScore: loserId === hostId ? (matchData.hostData.playerScore || 0) : (matchData.opponentData.playerScore || 0),
+            opponentScore: newPlayerScore,
+            gameMode: gameMode
+          });
+          
+          console.log('✅ Achievement tracking completed for banking win');
+        } catch (error) {
+          console.error('❌ Error tracking achievements for banking win:', error);
+        }
+        
         // 📊 UPDATE USER STATS: Update user profiles when match ends
         const winnerId = currentPlayer.playerId;
         await this.updateUserStats(matchData, winnerId);
@@ -1118,6 +1206,33 @@ export class MatchService {
       };
       
       await updateDoc(matchRef, updates);
+      
+      // Track achievements for disconnection win
+      const hostId = matchData.hostData.playerId;
+      const opponentId = matchData.opponentData.playerId;
+      const loserId = winnerId === hostId ? opponentId : hostId;
+      const gameMode = matchData.gameMode;
+      const achievementService = AchievementTrackingService.getInstance();
+      
+      try {
+        // Track achievement for winner (disconnection victory)
+        await achievementService.recordGameEnd(winnerId, true, [], {
+          finalScore: winnerId === hostId ? (matchData.hostData.playerScore || 0) : (matchData.opponentData.playerScore || 0),
+          opponentScore: winnerId === hostId ? (matchData.opponentData.playerScore || 0) : (matchData.hostData.playerScore || 0),
+          gameMode: gameMode
+        });
+        
+        // Track achievement for loser (disconnection loss)
+        await achievementService.recordGameEnd(loserId, false, [], {
+          finalScore: loserId === hostId ? (matchData.hostData.playerScore || 0) : (matchData.opponentData.playerScore || 0),
+          opponentScore: loserId === hostId ? (matchData.opponentData.playerScore || 0) : (matchData.hostData.playerScore || 0),
+          gameMode: gameMode
+        });
+        
+        console.log('✅ Achievement tracking completed for disconnection match');
+      } catch (error) {
+        console.error('❌ Error tracking achievements for disconnection match:', error);
+      }
       
       // Update user stats
       await this.updateUserStats(matchData, winnerId);

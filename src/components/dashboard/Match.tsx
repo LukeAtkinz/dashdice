@@ -40,6 +40,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showGameOverScreen, setShowGameOverScreen] = useState(false);
+  const [showGameOverTransition, setShowGameOverTransition] = useState(false);
   
   // Turn announcement state
   const [showTurnAnnouncement, setShowTurnAnnouncement] = useState(false);
@@ -76,16 +77,22 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     }
   }, [matchData?.gameData?.gamePhase, matchData?.gameData?.winner, setIsGameOver, recordGameCompletion, user?.uid, matchData?.hostData, matchData?.opponentData]);
 
-  // Handle game over delay
+  // Handle game over delay and transition
   useEffect(() => {
     if (matchData?.gameData?.gamePhase === 'gameOver') {
+      // Show transition immediately
+      setShowGameOverTransition(true);
+      
+      // Then show the actual game over screen after delay
       const timer = setTimeout(() => {
         setShowGameOverScreen(true);
+        setShowGameOverTransition(false);
       }, 1000); // 1 second delay
 
       return () => clearTimeout(timer);
     } else {
       setShowGameOverScreen(false);
+      setShowGameOverTransition(false);
     }
   }, [matchData?.gameData?.gamePhase]);
   
@@ -557,12 +564,57 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
   return (
     <>
+      {/* Game Over Transition Animation */}
+      {showGameOverTransition && (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 1.2 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+        >
+          <motion.div
+            initial={{ scale: 0.5, rotateZ: -10 }}
+            animate={{ scale: 1, rotateZ: 0 }}
+            transition={{ duration: 0.6, type: "spring", stiffness: 200 }}
+            className="text-center"
+          >
+            <motion.h1 
+              className="text-6xl md:text-8xl font-bold text-white font-audiowide mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+            >
+              {(() => {
+                const currentPlayerName = isHost ? matchData.hostData.playerDisplayName : matchData.opponentData.playerDisplayName;
+                const isCurrentPlayerWinner = matchData.gameData.winner === currentPlayerName;
+                return isCurrentPlayerWinner ? 'VICTORY!' : 'DEFEAT!';
+              })()}
+            </motion.h1>
+            <motion.div 
+              className="text-2xl md:text-3xl text-gray-300 font-audiowide"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+            >
+              {matchData.gameData.gameOverReason}
+            </motion.div>
+            <motion.div
+              className="mt-6 w-16 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: 64 }}
+              transition={{ delay: 0.6, duration: 0.4 }}
+            />
+          </motion.div>
+        </motion.div>
+      )}
+
       {/* Game Over Screen - Full Screen Overlay */}
       {matchData.gameData.gamePhase === 'gameOver' && showGameOverScreen && (
         <motion.div 
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="fixed inset-0 z-40 flex items-center justify-center"
           style={{ 
             flexDirection: 'column',

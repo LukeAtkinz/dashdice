@@ -10,6 +10,7 @@ import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { useUserStats } from '@/hooks/useUserStats';
 import { validateDisplayName } from '@/utils/contentModeration';
+import ProfilePictureUpload from '@/components/ui/ProfilePictureUpload';
 
 // CSS for custom button styling
 const buttonStyles = `
@@ -40,13 +41,28 @@ const buttonStyles = `
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .nav-button:hover {
-    animation: navPulse 0.6s ease-in-out;
-    box-shadow: 0 8px 25px rgba(255, 0, 128, 0.3);
-    transform: scale(1.05);
+    animation: navHover 0.3s ease-in-out forwards;
+    box-shadow: 0 12px 35px rgba(255, 0, 128, 0.4);
   }
   .nav-button:active {
     animation: navClick 0.2s ease-in-out;
-    transform: scale(0.95);
+    transform: translateY(-4px) scale(0.95);
+  }
+  .nav-button.active {
+    box-shadow: 0 6px 20px rgba(255, 0, 128, 0.4);
+  }
+  @keyframes navHover {
+    0% { 
+      transform: translateY(0) scale(1); 
+    }
+    100% { 
+      transform: translateY(-6px) scale(1.08); 
+    }
+  }
+  @keyframes navClick {
+    0% { transform: translateY(-6px) scale(1.08); }
+    50% { transform: translateY(-4px) scale(0.95); }
+    100% { transform: translateY(-6px) scale(1.08); }
   }
   .nav-button.active {
     box-shadow: 0 6px 20px rgba(255, 0, 128, 0.4);
@@ -108,6 +124,8 @@ const ProfileSection: React.FC = () => {
   const { stats, loading: statsLoading, error: statsError } = useUserStats();
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'profile' | 'settings'>('profile');
+  const [uploadMessage, setUploadMessage] = useState<string>('');
+  const [uploadError, setUploadError] = useState<string>('');
   
   // Navigation tabs for profile/settings
   const tabs = [
@@ -208,6 +226,20 @@ const ProfileSection: React.FC = () => {
     } catch (error) {
       console.error('Sign out error:', error);
     }
+  };
+
+  const handleProfilePictureSuccess = (photoURL: string) => {
+    setUploadMessage('Profile picture updated successfully!');
+    setUploadError('');
+    // Clear success message after 3 seconds
+    setTimeout(() => setUploadMessage(''), 3000);
+  };
+
+  const handleProfilePictureError = (error: string) => {
+    setUploadError(error);
+    setUploadMessage('');
+    // Clear error message after 5 seconds
+    setTimeout(() => setUploadError(''), 5000);
   };
 
   const handleToggle = (key: 'notifications' | 'soundEffects' | 'autoSave') => {
@@ -322,13 +354,47 @@ const ProfileSection: React.FC = () => {
               </CardHeader>
               <CardContent>
               <form onSubmit={handleUpdateProfile} className="space-y-4">
-                <div className="flex items-center space-x-4 mb-6">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-2xl text-white font-bold">
-                    {user?.displayName?.charAt(0)?.toUpperCase() || '?'}
+                {/* Profile Picture Upload Section */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-black mb-4 font-montserrat">
+                    Profile Picture
+                  </label>
+                  <ProfilePictureUpload 
+                    onSuccess={handleProfilePictureSuccess}
+                    onError={handleProfilePictureError}
+                  />
+                  
+                  {/* Upload Status Messages */}
+                  {uploadMessage && (
+                    <div className="mt-3 p-3 bg-green-100 border border-green-400 text-green-700 rounded-md">
+                      {uploadMessage}
+                    </div>
+                  )}
+                  {uploadError && (
+                    <div className="mt-3 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+                      {uploadError}
+                    </div>
+                  )}
+                </div>
+
+                {/* User Info Display */}
+                <div className="flex items-center space-x-4 mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-400">
+                    {user?.photoURL ? (
+                      <img 
+                        src={user.photoURL} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xl text-white font-bold">
+                        {user?.displayName?.charAt(0)?.toUpperCase() || '?'}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold font-audiowide text-white">{user?.displayName || 'Unknown User'}</h3>
-                    <p className="text-black font-montserrat">Member since {user?.createdAt?.toLocaleDateString()}</p>
+                    <p className="text-gray-300 font-montserrat">Member since {user?.createdAt?.toLocaleDateString()}</p>
                   </div>
                 </div>
 

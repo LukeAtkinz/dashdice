@@ -173,8 +173,8 @@ export default function FriendCard({ friend, compact = false, showActions = true
     }
   };
 
-  const handleGameModeSelect = (gameMode: string) => {
-    setSelectedGameMode(gameMode);
+  const handleGameModeSelect = (gameMode: { id: string; name: string; description: string; emoji: string; color: string }) => {
+    setSelectedGameMode(gameMode.id);
   };
 
   const toggleGameModeSelector = () => {
@@ -347,7 +347,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
               Choose Game Mode:
             </div>
             <MiniGameModeSelector
-              onGameModeSelect={handleGameModeSelect}
+              onSelect={handleGameModeSelect}
               isDisabled={presenceStatus === 'offline'}
               className="mb-2"
             />
