@@ -573,6 +573,20 @@ export class MatchService {
           }
         }
       }
+      // Handle single 1 (non-elimination modes)
+      else if (isSingleOne && !gameMode.rules.eliminationRules.singleOne) {
+        if (gameMode.id === 'true-grit') {
+          // True Grit: Single 1 ends turn, turn score is banked automatically
+          console.log('🎲 True Grit: Single 1 rolled - Turn over, turn score banked');
+          turnOver = true;
+          // Keep the current turn score to be banked
+        } else {
+          // Other modes: Single 1 ends turn, no score added
+          console.log('🎲 Single 1 rolled - Turn over, no score added');
+          turnOver = true;
+          newTurnScore = 0;
+        }
+      }
       // Normal scoring
       else {
         const currentDoubleMultiplier = matchData.gameData.hasDoubleMultiplier || false;
@@ -638,12 +652,11 @@ export class MatchService {
         }
       }
       
-      // Handle True Grit stacking multipliers
+      // Handle True Grit multipliers (replace, don't stack)
       if (gameMode.id === 'true-grit' && stackingMultiplier > 0) {
-        const currentMultiplier = matchData.gameData.currentMultiplier || 1;
-        const newMultiplier = currentMultiplier * stackingMultiplier;
-        updates['gameData.currentMultiplier'] = newMultiplier;
-        console.log(`🎲 True Grit: Multiplier stacked from ${currentMultiplier}x to ${newMultiplier}x`);
+        // Set multiplier to the new double's value (replace, don't stack)
+        updates['gameData.currentMultiplier'] = stackingMultiplier;
+        console.log(`🎲 True Grit: Multiplier set to ${stackingMultiplier}x`);
       }
       
       // Activate multipliers for doubles in Zero Hour
