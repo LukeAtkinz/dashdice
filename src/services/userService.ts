@@ -1,5 +1,5 @@
-import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
-import { db } from './firebase';
+import { doc, getDoc, updateDoc, setDoc, increment } from 'firebase/firestore';
+import { db, auth } from './firebase';
 import { validateDisplayName, formatDisplayName } from '@/utils/contentModeration';
 
 export interface UserProfile {
@@ -102,16 +102,31 @@ export class UserService {
   static async updateGamePlayed(uid: string): Promise<void> {
     try {
       console.log('🎮 UserService: Updating gamesPlayed for user:', uid);
+      
       const userRef = doc(db, 'users', uid);
       
-      await updateDoc(userRef, {
-        'stats.gamesPlayed': increment(1),
+      // Use setDoc with merge to ensure document exists
+      await setDoc(userRef, {
+        stats: {
+          gamesPlayed: increment(1)
+        },
         updatedAt: new Date()
-      });
+      }, { merge: true });
       
       console.log('✅ UserService: Successfully updated gamesPlayed');
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ UserService: Error updating gamesPlayed:', error);
+      
+      // Log specific Firebase error details
+      if (error?.code) {
+        console.error(`🔍 Firebase Error Code: ${error.code}`);
+        console.error(`🔍 Firebase Error Message: ${error.message}`);
+        
+        if (error.code === 'permission-denied') {
+          console.error('🚫 Permission denied - check Firebase security rules for users collection');
+        }
+      }
+      
       throw error;
     }
   }
@@ -147,17 +162,25 @@ export class UserService {
         newBest: newBestStreak
       });
       
-      // Update all win-related stats
-      await updateDoc(userRef, {
-        'stats.matchWins': increment(1),
-        'stats.currentStreak': newCurrentStreak,
-        'stats.bestStreak': newBestStreak,
+      // Update all win-related stats using setDoc with merge
+      await setDoc(userRef, {
+        stats: {
+          matchWins: increment(1),
+          currentStreak: newCurrentStreak,
+          bestStreak: newBestStreak
+        },
         updatedAt: new Date()
-      });
+      }, { merge: true });
       
       console.log('✅ UserService: Successfully updated match win stats');
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ UserService: Error updating match win:', error);
+      
+      if (error?.code) {
+        console.error(`🔍 Firebase Error Code: ${error.code}`);
+        console.error(`🔍 Firebase Error Message: ${error.message}`);
+      }
+      
       throw error;
     }
   }
@@ -171,15 +194,23 @@ export class UserService {
       console.log('💔 UserService: Processing match loss for user:', uid);
       const userRef = doc(db, 'users', uid);
       
-      // Reset current streak to 0 (best streak remains unchanged)
-      await updateDoc(userRef, {
-        'stats.currentStreak': 0,
+      // Use setDoc with merge to ensure document exists and reset current streak to 0
+      await setDoc(userRef, {
+        stats: {
+          currentStreak: 0
+        },
         updatedAt: new Date()
-      });
+      }, { merge: true });
       
       console.log('✅ UserService: Successfully reset current streak');
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ UserService: Error updating match loss:', error);
+      
+      if (error?.code) {
+        console.error(`🔍 Firebase Error Code: ${error.code}`);
+        console.error(`🔍 Firebase Error Message: ${error.message}`);
+      }
+      
       throw error;
     }
   }

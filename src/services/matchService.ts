@@ -664,8 +664,8 @@ export class MatchService {
           updates['gameData.turnScore'] = 0;
           turnOver = true;
         }
-      }      // Handle double multiplier logic (Classic mode)
-      if (gameMode.id === 'classic') {
+      }      // Handle double multiplier logic (Classic and Quickfire modes)
+      if (gameMode.id === 'classic' || gameMode.id === 'quickfire') {
         if (dice1 === dice2 && dice1 !== 1 && dice1 !== 6) {
           updates['gameData.hasDoubleMultiplier'] = true;
         } else if (turnOver) {

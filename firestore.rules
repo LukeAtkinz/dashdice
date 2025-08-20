@@ -3,9 +3,10 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // Users can read and write their own user document
+    // Match operations: authenticated users can update any user's stats
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      allow read: if request.auth != null; // Allow reading other users for friend features
+      allow read: if request.auth != null;
+      allow write: if request.auth != null; // Allow cross-user stats updates during matches
       
       // Allow user stats subcollections
       match /stats/{statId} {
@@ -24,15 +25,17 @@ service cloud.firestore {
       allow write: if false; // Only admin can write
     }
 
-    // User Achievements - users can read/write their own achievements
+    // User Achievements - allow cross-user access during match operations
     match /userAchievements/{achievementId} {
-      allow read, write: if request.auth != null && 
-        (resource == null || resource.data.userId == request.auth.uid);
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
     }
     
     // Achievement Progress - users can read/write their own progress
+    // Allow cross-user updates during match completion
     match /achievementProgress/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
     }
     
     // User Achievement Progress (subcollection)
@@ -40,10 +43,10 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Achievement Notifications - users can read/write their own notifications
+    // Achievement Notifications - allow cross-user access during match operations
     match /achievementNotifications/{notificationId} {
-      allow read, write: if request.auth != null && 
-        (resource == null || resource.data.userId == request.auth.uid);
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
     }
     
     // User Notifications (subcollection)
@@ -51,29 +54,32 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Daily/Hourly Metrics for achievement tracking
+    // Daily/Hourly Metrics for achievement tracking - allow cross-user access
     match /dailyMetrics/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
     }
     
     match /hourlyMetrics/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
     }
     
     // Daily and hourly metrics with date patterns (userId_date format)
     match /dailyMetrics/{metricId} {
-      allow read, write: if request.auth != null && 
-        (resource == null || resource.data.userId == request.auth.uid);
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
     }
     
     match /hourlyMetrics/{metricId} {
-      allow read, write: if request.auth != null && 
-        (resource == null || resource.data.userId == request.auth.uid);
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
     }
     
-    // Friend Stats for achievements
+    // Friend Stats for achievements - allow cross-user access
     match /friendStats/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
     }
 
     // User Achievements (legacy path)
@@ -124,7 +130,7 @@ service cloud.firestore {
     }
     
     // Completed matches - users can read completed matches they were part of
-    match /completedMatches/{matchId} {
+    match /completedmatches/{matchId} {
       allow read, write: if request.auth != null;
     }
     
@@ -153,9 +159,10 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // User friends and friend statistics
+    // User friends and friend statistics - allow cross-user access during match operations
     match /friendStats/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
     }
     
     // Users can read and write their own inventory items

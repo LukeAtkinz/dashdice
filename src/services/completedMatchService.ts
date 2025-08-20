@@ -76,8 +76,20 @@ export class CompletedMatchService {
       console.log('✅ Match moved to completed collection:', completedMatchRef.id);
       return completedMatchRef.id;
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error moving match to completed:', error);
+      
+      // Log specific Firebase error details
+      if (error?.code) {
+        console.error(`🔍 Firebase Error Code: ${error.code}`);
+        console.error(`🔍 Firebase Error Message: ${error.message}`);
+        
+        // Check if it's a permission error
+        if (error.code === 'permission-denied') {
+          console.error('🚫 Permission denied - check Firebase security rules for completedmatches collection');
+        }
+      }
+      
       throw error;
     }
   }

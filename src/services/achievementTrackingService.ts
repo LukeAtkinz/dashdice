@@ -904,11 +904,14 @@ class AchievementTrackingService {
         });
       }
       
-      // Update user's daily games metric
+      // Update user's daily games metric using setDoc with merge
       const progressRef = doc(db, 'achievementProgress', userId);
-      await updateDoc(progressRef, {
-        'metrics.daily_games_played': increment(1)
-      });
+      await setDoc(progressRef, {
+        userId,
+        metrics: {
+          daily_games_played: increment(1)
+        }
+      }, { merge: true });
       
     } catch (error) {
       console.error('Error updating daily games count:', error);
@@ -923,17 +926,29 @@ class AchievementTrackingService {
       const progressRef = doc(db, 'achievementProgress', userId);
       const progressDoc = await getDoc(progressRef);
       
-      if (!progressDoc.exists()) return;
+      let currentStreak = 0;
+      let bestStreak = 0;
       
-      const progress = progressDoc.data() as AchievementProgress;
-      const streaks = progress.streaks || {};
-      const currentStreak = streaks.consecutive_games_streak?.current || 0;
+      if (progressDoc.exists()) {
+        const progress = progressDoc.data() as AchievementProgress;
+        const streaks = progress.streaks || {};
+        currentStreak = streaks.consecutive_games_streak?.current || 0;
+        bestStreak = streaks.consecutive_games_streak?.best || 0;
+      }
       
-      await updateDoc(progressRef, {
-        'streaks.consecutive_games_streak.current': currentStreak + 1,
-        'streaks.consecutive_games_streak.best': Math.max(streaks.consecutive_games_streak?.best || 0, currentStreak + 1),
-        'streaks.consecutive_games_streak.lastUpdate': Timestamp.now()
-      });
+      const newCurrentStreak = currentStreak + 1;
+      const newBestStreak = Math.max(bestStreak, newCurrentStreak);
+      
+      await setDoc(progressRef, {
+        userId,
+        streaks: {
+          consecutive_games_streak: {
+            current: newCurrentStreak,
+            best: newBestStreak,
+            lastUpdate: Timestamp.now()
+          }
+        }
+      }, { merge: true });
       
     } catch (error) {
       console.error('Error updating consecutive games streak:', error);
@@ -946,10 +961,15 @@ class AchievementTrackingService {
   async resetConsecutiveGamesStreak(userId: string): Promise<void> {
     try {
       const progressRef = doc(db, 'achievementProgress', userId);
-      await updateDoc(progressRef, {
-        'streaks.consecutive_games_streak.current': 0,
-        'streaks.consecutive_games_streak.lastUpdate': Timestamp.now()
-      });
+      await setDoc(progressRef, {
+        userId,
+        streaks: {
+          consecutive_games_streak: {
+            current: 0,
+            lastUpdate: Timestamp.now()
+          }
+        }
+      }, { merge: true });
       
     } catch (error) {
       console.error('Error resetting consecutive games streak:', error);
@@ -996,11 +1016,14 @@ class AchievementTrackingService {
       
       await setDoc(hourlyRef, hourlyData);
       
-      // Update user's hourly streak metric
+      // Update user's hourly streak metric using setDoc with merge
       const progressRef = doc(db, 'achievementProgress', userId);
-      await updateDoc(progressRef, {
-        'metrics.hourly_game_streak': Math.max(consecutiveHours, 0)
-      });
+      await setDoc(progressRef, {
+        userId,
+        metrics: {
+          hourly_game_streak: Math.max(consecutiveHours, 0)
+        }
+      }, { merge: true });
       
     } catch (error) {
       console.error('Error updating hourly game streak:', error);
