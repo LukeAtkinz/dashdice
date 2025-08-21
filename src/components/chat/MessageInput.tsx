@@ -67,7 +67,7 @@ const MessageInput = forwardRef<HTMLInputElement, MessageInputProps>(({
   };
 
   return (
-    <div className="border-t border-gray-700 bg-gray-800">
+    <div className="bg-gray-800">
       <form onSubmit={handleSubmit} className="p-3">
         <div className="flex gap-2">
           <input

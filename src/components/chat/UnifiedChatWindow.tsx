@@ -285,11 +285,10 @@ export default function UnifiedChatWindow({
             initial={{ height: 0 }}
             animate={{ height: 'auto' }}
             exit={{ height: 0 }}
-            className="flex flex-col"
-            style={{ height: '450px' }}
+            className="flex flex-col h-[450px]"
           >
-            {/* Messages */}
-            <div className="flex-1 overflow-hidden">
+            {/* Messages area - takes remaining space and scrolls */}
+            <div className="flex-1 overflow-hidden min-h-0">
               {activeTab && (
                 <MessageList
                   roomId={activeTab.roomId}
@@ -303,8 +302,8 @@ export default function UnifiedChatWindow({
               )}
             </div>
 
-            {/* Message input */}
-            <div className="border-t border-gray-700">
+            {/* Message input - fixed at bottom */}
+            <div className="flex-shrink-0 border-t border-gray-700">
               {/* Typing indicators */}
               {roomTyping.length > 0 && (
                 <div className="px-3 py-1 text-xs text-gray-400 italic">
