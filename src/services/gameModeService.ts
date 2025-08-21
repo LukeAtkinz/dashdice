@@ -130,11 +130,50 @@ export class GameModeService {
           scoreDirection: 'down',
           eliminationRules: {
             singleOne: false,
-            doubleOne: false, // Zero Hour: double 1s should be -20 and continue turn
+            doubleOne: false,
             doubleSix: 'reset'
           },
           specialRules: {
-            exactScoreRequired: true
+            exactScoreRequired: true,
+            multiplierSystem: true,
+            doublesEffects: {
+              'double1': {
+                scoreBonus: 20,
+                multiplier: 2,
+                opponentPenalty: 0,
+                affectsOpponentOnBank: false
+              },
+              'double2': {
+                scoreBonus: 12,
+                multiplier: 2,
+                opponentPenalty: 4,
+                affectsOpponentOnBank: true
+              },
+              'double3': {
+                scoreBonus: 6,
+                multiplier: 1,
+                opponentPenalty: 'turn_score',
+                affectsOpponentOnBank: true
+              },
+              'double4': {
+                scoreBonus: 8,
+                multiplier: 2,
+                opponentPenalty: 8,
+                affectsOpponentOnBank: true
+              },
+              'double5': {
+                scoreBonus: 10,
+                multiplier: 2,
+                opponentPenalty: 10,
+                affectsOpponentOnBank: true
+              },
+              'double6': {
+                scoreBonus: 12,
+                multiplier: 1,
+                opponentPenalty: 'turn_score',
+                affectsOpponentOnBank: true
+              }
+            }
           }
         },
         settings: {
@@ -154,10 +193,10 @@ export class GameModeService {
       {
         id: 'last-line',
         name: 'Last Line',
-        description: 'Single roll elimination - doubles grant extra roll',
+        description: 'Single roll elimination - highest roll wins, doubles grant extra roll',
         rules: {
           startingScore: 0,
-          targetScore: 100,
+          targetScore: 100,  // Not really used, highest single roll wins
           allowBanking: false,
           allowDoubleRolls: true,
           scoreDirection: 'up',
@@ -195,13 +234,23 @@ export class GameModeService {
           allowDoubleRolls: true,
           scoreDirection: 'up',
           eliminationRules: {
-            singleOne: false,     // No elimination on single 1 - just end turn and bank
+            singleOne: true,      // Single 1 eliminates player (ends turn)
             doubleOne: false,     // Double 1 gets +20 (Snake Eyes rule)
             doubleSix: 'score'    // Double 6 scores normally (not reset)
           },
           specialRules: {
-            rollLimit: undefined, // No roll limit, but turn ends on double 1
-            exactScoreRequired: false
+            multiplierSystem: true,
+            probabilityAdjustments: {
+              singleOne: 0.8  // Reduce single 1 probability by 20%
+            },
+            doublesEffects: {
+              'double1': { scoreBonus: 2, multiplier: 1 },
+              'double2': { scoreBonus: 4, multiplier: 2 },
+              'double3': { scoreBonus: 6, multiplier: 3 },
+              'double4': { scoreBonus: 8, multiplier: 4 },
+              'double5': { scoreBonus: 10, multiplier: 5 },
+              'double6': { scoreBonus: 12, multiplier: 6 }
+            }
           }
         },
         settings: {
@@ -209,13 +258,13 @@ export class GameModeService {
           showRunningTotal: true,
           showOpponentScore: true,
           enableChat: true,
-          enableAbilities: true
+          enableAbilities: false
         },
         isActive: true,
         platforms: ['desktop', 'mobile'],
         minPlayers: 2,
         maxPlayers: 4,
-        estimatedDuration: 8
+        estimatedDuration: 5
       }
     ];
 
@@ -259,44 +308,85 @@ export class GameModeService {
     return { valid: true };
   }
 
-  // Calculate score based on game mode
-  static calculateScore(
+  // Enhanced roll processing with multipliers and special effects
+  static processRoll(
     gameMode: GameMode,
+    dice1: number,
+    dice2: number,
     currentScore: number,
-    rollValue: number,
-    isDouble: boolean
-  ): { newScore: number; isEliminated: boolean; grantExtraRoll: boolean } {
+    turnScore: number,
+    gameState?: any
+  ): GameActionResult {
+    const total = dice1 + dice2;
+    const isDouble = dice1 === dice2;
     let newScore = currentScore;
     let isEliminated = false;
     let grantExtraRoll = false;
+    let appliedMultiplier = 1;
 
-    // Handle special elimination rules
-    if (rollValue === 1 && gameMode.rules.eliminationRules.singleOne) {
+    // Check for elimination conditions first
+    if (dice1 === 1 && dice2 !== 1 && gameMode.rules.eliminationRules.singleOne) {
       isEliminated = true;
-      return { newScore: 0, isEliminated, grantExtraRoll: false };
+      return { success: true, roll: { dice1, dice2, total, isDouble }, newScore, isEliminated };
     }
 
-    // Handle double 6s
-    if (rollValue === 12 && isDouble) {
-      switch (gameMode.rules.eliminationRules.doubleSix) {
-        case 'reset':
-          newScore = gameMode.rules.startingScore;
-          break;
-        case 'score':
-          newScore = gameMode.rules.scoreDirection === 'up' 
-            ? currentScore + rollValue 
-            : currentScore - rollValue;
-          break;
+    if (dice2 === 1 && dice1 !== 1 && gameMode.rules.eliminationRules.singleOne) {
+      isEliminated = true;
+      return { success: true, roll: { dice1, dice2, total, isDouble }, newScore, isEliminated };
+    }
+
+    // Handle doubles effects for advanced game modes
+    if (isDouble && gameMode.rules.specialRules?.doublesEffects) {
+      const doubleKey = `double${dice1}`;
+      const doubleEffect = gameMode.rules.specialRules.doublesEffects[doubleKey];
+      
+      if (doubleEffect) {
+        // Apply score bonus
+        let scoreToAdd = doubleEffect.scoreBonus;
+        
+        // Apply current multiplier if active
+        if (gameState?.modeSpecificData?.activeMultipliers?.[gameState.currentPlayer]) {
+          appliedMultiplier = gameState.modeSpecificData.activeMultipliers[gameState.currentPlayer];
+          scoreToAdd *= appliedMultiplier;
+        }
+        
+        // Update score
+        if (gameMode.rules.scoreDirection === 'down') {
+          newScore = Math.max(0, currentScore - scoreToAdd);
+        } else {
+          newScore = currentScore + scoreToAdd;
+        }
+        
+        // Set new multiplier for future rolls this turn
+        if (doubleEffect.multiplier && doubleEffect.multiplier > 1) {
+          if (!gameState?.modeSpecificData) gameState.modeSpecificData = {};
+          if (!gameState.modeSpecificData.activeMultipliers) gameState.modeSpecificData.activeMultipliers = {};
+          gameState.modeSpecificData.activeMultipliers[gameState.currentPlayer] = doubleEffect.multiplier;
+        }
       }
     } else {
-      // Normal scoring
-      newScore = gameMode.rules.scoreDirection === 'up' 
-        ? currentScore + rollValue 
-        : currentScore - rollValue;
+      // Regular roll - apply multiplier if active
+      let scoreToAdd = total;
+      if (gameState?.modeSpecificData?.activeMultipliers?.[gameState.currentPlayer]) {
+        appliedMultiplier = gameState.modeSpecificData.activeMultipliers[gameState.currentPlayer];
+        scoreToAdd *= appliedMultiplier;
+      }
+      
+      if (gameMode.rules.scoreDirection === 'down') {
+        newScore = Math.max(0, currentScore - scoreToAdd);
+      } else {
+        newScore = currentScore + scoreToAdd;
+      }
     }
 
-    // Handle exact score requirement (Zero Hour)
-    if (gameMode.rules.specialRules?.exactScoreRequired && 
+    // Handle double 6 reset for classic modes
+    if (isDouble && dice1 === 6 && gameMode.rules.eliminationRules.doubleSix === 'reset') {
+      // Reset turn score but don't eliminate
+      newScore = currentScore; // Reset to pre-turn score
+    }
+
+    // Handle overshoot in Zero Hour
+    if (gameMode.id === 'zero-hour' && 
         gameMode.rules.scoreDirection === 'down' &&
         newScore < gameMode.rules.targetScore) {
       // Overshoot in Zero Hour - reset to starting score
@@ -308,7 +398,38 @@ export class GameModeService {
       grantExtraRoll = true;
     }
 
-    return { newScore, isEliminated, grantExtraRoll };
+    return { 
+      success: true, 
+      roll: { dice1, dice2, total, isDouble }, 
+      newScore, 
+      isEliminated, 
+      grantExtraRoll 
+    };
+  }
+
+  // Calculate score based on game mode (backward compatibility)
+  static calculateScore(
+    gameMode: GameMode,
+    currentScore: number,
+    rollValue: number,
+    isDouble: boolean
+  ): { newScore: number; isEliminated: boolean; grantExtraRoll: boolean } {
+    // Convert rollValue back to dice for new system
+    let dice1, dice2;
+    if (isDouble) {
+      dice1 = dice2 = rollValue / 2;
+    } else {
+      // For non-doubles, we can't perfectly reconstruct, so use approximation
+      dice1 = Math.min(6, Math.max(1, Math.floor(rollValue / 2)));
+      dice2 = rollValue - dice1;
+    }
+
+    const result = this.processRoll(gameMode, dice1, dice2, currentScore, 0);
+    return {
+      newScore: result.newScore || currentScore,
+      isEliminated: result.isEliminated || false,
+      grantExtraRoll: result.grantExtraRoll || false
+    };
   }
 
   // Check win condition
@@ -431,9 +552,21 @@ export class GameModeService {
         
       case 'true-grit':
         data.eliminatedPlayers = [];
+        data.activeMultipliers = Object.fromEntries(players.map(id => [id, 1]));
+        break;
+        
+      case 'zero-hour':
+        data.activeMultipliers = Object.fromEntries(players.map(id => [id, 1]));
         break;
     }
 
     return data;
+  }
+
+  // Reset multipliers at turn end
+  static resetTurnMultipliers(gameState: any, playerId: string) {
+    if (gameState.modeSpecificData?.activeMultipliers) {
+      gameState.modeSpecificData.activeMultipliers[playerId] = 1;
+    }
   }
 }

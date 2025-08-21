@@ -30,6 +30,19 @@ export interface GameModeRules {
     doubleGrantsExtraRoll?: boolean;
     exactScoreRequired?: boolean;
     teamBased?: boolean;
+    // New rules for advanced game modes
+    doublesEffects?: {
+      [key: string]: {
+        scoreBonus: number;
+        multiplier?: number;
+        opponentPenalty?: number | 'turn_score';
+        affectsOpponentOnBank?: boolean;
+      };
+    };
+    multiplierSystem?: boolean;
+    probabilityAdjustments?: {
+      singleOne?: number; // Multiplier for single 1 probability (0.5 = 50% less likely)
+    };
   };
 }
 
@@ -54,6 +67,9 @@ export interface GameModeSpecificData {
   // True Grit
   eliminatedPlayers?: string[];
   
+  // Zero Hour & True Grit - Multiplier system
+  activeMultipliers?: { [playerId: string]: number };
+  
   // Tag Team (for future implementation)
   teams?: { team1: string[]; team2: string[] };
   teamScores?: { team1: number; team2: number };
@@ -72,6 +88,8 @@ export interface GameActionResult {
   newScore?: number;
   grantExtraRoll?: boolean;
   isEliminated?: boolean;
+  appliedMultiplier?: number;
+  opponentPenalty?: number;
 }
 
 export interface GameModeStats {
