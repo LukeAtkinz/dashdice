@@ -5,6 +5,7 @@ import { useFriends } from '@/context/FriendsContext';
 import FriendCard from './FriendCard';
 import AddFriend from './AddFriend';
 import { FriendWithStatus } from '@/types/friends';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 interface FriendsListProps {
   compact?: boolean;
@@ -222,11 +223,21 @@ export default function FriendsList({
       ) : (
         <div className={compact ? 'space-y-2' : 'space-y-3'}>
           {filteredAndSortedFriends.map((friend) => (
-            <FriendCard
+            <ErrorBoundary
               key={friend.id}
-              friend={friend}
-              compact={compact}
-            />
+              fallback={
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-800 text-sm">
+                    Error loading friend card for {friend.friendData?.displayName || 'Unknown'}
+                  </p>
+                </div>
+              }
+            >
+              <FriendCard
+                friend={friend}
+                compact={compact}
+              />
+            </ErrorBoundary>
           ))}
           
           {maxVisible && friends.length > maxVisible && (

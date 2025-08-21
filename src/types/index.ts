@@ -57,6 +57,7 @@ export interface GameState {
     rolls: { dice1: number; dice2: number; total: number }[];
     turnScore: number;
     startTime: number;
+    extraRollsGranted?: number; // Track extra rolls granted by doubles
   };
   scores?: { [playerId: string]: number }; // Player scores
   currentPlayerIndex?: number; // Current player index

@@ -367,11 +367,7 @@ const DashboardContent: React.FC = () => {
                   >
                     FRIENDS
                   </span>
-                  {onlinePlayerCount > 0 && (
-                    <div className="absolute -top-1 -right-1 bg-black text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">
-                      {onlinePlayerCount > 99 ? '99+' : onlinePlayerCount}
-                    </div>
-                  )}
+                  <NotificationBadge count={onlinePlayerCount} />
                 </button>
 
                 {/* SHOP Button - Disabled for future implementation */}
@@ -632,11 +628,7 @@ const DashboardContent: React.FC = () => {
               >
                 <img src="/Design Elements/friends.webp" alt="Friends" className="w-8 h-8" />
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
-                {onlinePlayerCount > 0 && (
-                  <div className="absolute -top-1 -right-1 bg-black text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">
-                    {onlinePlayerCount > 99 ? '99+' : onlinePlayerCount}
-                  </div>
-                )}
+                <NotificationBadge count={onlinePlayerCount} />
               </button>
               <button
                 onClick={() => handleSectionChange('inventory')}

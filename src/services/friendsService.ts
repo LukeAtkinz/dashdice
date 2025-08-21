@@ -336,7 +336,7 @@ export class FriendsService {
     }
   }
 
-  // Subscribe to user's friends
+  // Subscribe to user's friends with real-time user data updates
   static subscribeToUserFriends(userId: string, callback: (friends: FriendWithStatus[]) => void): () => void {
     const friendsQuery = query(
       collection(db, 'friends'),
@@ -344,30 +344,86 @@ export class FriendsService {
       where('status', '==', 'accepted')
     );
 
-    return onSnapshot(friendsQuery, async (snapshot) => {
+    const userSubscriptions = new Map<string, () => void>();
+    let friendsData = new Map<string, FriendRelationship>();
+    let userData = new Map<string, User>();
+
+    const updateFriendsList = () => {
       try {
         const friends: FriendWithStatus[] = [];
-
-        for (const friendDoc of snapshot.docs) {
-          const friendship = { id: friendDoc.id, ...friendDoc.data() } as FriendRelationship;
-          
-          // Get friend's user data
-          const userDoc = await getDoc(doc(db, 'users', friendship.friendId));
-          if (userDoc.exists()) {
-            const friendData = { uid: userDoc.id, ...userDoc.data() } as User;
+        
+        for (const [friendshipId, friendship] of friendsData) {
+          const user = userData.get(friendship.friendId);
+          if (user) {
             friends.push({
               ...friendship,
-              friendData
+              friendData: user
             });
           }
         }
 
         callback(friends);
       } catch (error) {
+        console.error('Error updating friends list:', error);
+        callback([]);
+      }
+    };
+
+    const friendsUnsubscribe = onSnapshot(friendsQuery, async (snapshot) => {
+      try {
+        // Clean up removed friendships
+        const currentFriendIds = new Set(snapshot.docs.map(doc => doc.data().friendId));
+        for (const [friendId, unsubscribe] of userSubscriptions) {
+          if (!currentFriendIds.has(friendId)) {
+            unsubscribe();
+            userSubscriptions.delete(friendId);
+            userData.delete(friendId);
+          }
+        }
+
+        // Update friendships data
+        friendsData.clear();
+        for (const friendDoc of snapshot.docs) {
+          const friendship = { id: friendDoc.id, ...friendDoc.data() } as FriendRelationship;
+          friendsData.set(friendDoc.id, friendship);
+
+          // Subscribe to friend's user data for real-time updates
+          if (!userSubscriptions.has(friendship.friendId)) {
+            const userRef = doc(db, 'users', friendship.friendId);
+            const userUnsubscribe = onSnapshot(userRef, (userDoc) => {
+              if (userDoc.exists()) {
+                const userDataItem = { uid: userDoc.id, ...userDoc.data() } as User;
+                userData.set(friendship.friendId, userDataItem);
+                updateFriendsList();
+              } else {
+                userData.delete(friendship.friendId);
+                updateFriendsList();
+              }
+            }, (error) => {
+              console.error(`Error subscribing to user ${friendship.friendId}:`, error);
+            });
+            
+            userSubscriptions.set(friendship.friendId, userUnsubscribe);
+          }
+        }
+
+        updateFriendsList();
+      } catch (error) {
         console.error('Error in friends subscription:', error);
         callback([]);
       }
     });
+
+    // Return cleanup function
+    return () => {
+      friendsUnsubscribe();
+      for (const unsubscribe of userSubscriptions.values()) {
+        unsubscribe();
+      }
+      userSubscriptions.clear();
+      friendsData.clear();
+      userData.clear();
+    };
   }
 
   // Subscribe to pending friend requests

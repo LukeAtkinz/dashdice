@@ -40,7 +40,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showGameOverScreen, setShowGameOverScreen] = useState(false);
-  const [showGameOverTransition, setShowGameOverTransition] = useState(false);
   
   // Turn announcement state
   const [showTurnAnnouncement, setShowTurnAnnouncement] = useState(false);
@@ -77,22 +76,16 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     }
   }, [matchData?.gameData?.gamePhase, matchData?.gameData?.winner, setIsGameOver, recordGameCompletion, user?.uid, matchData?.hostData, matchData?.opponentData]);
 
-  // Handle game over delay and transition
+  // Handle game over delay
   useEffect(() => {
     if (matchData?.gameData?.gamePhase === 'gameOver') {
-      // Show transition immediately
-      setShowGameOverTransition(true);
-      
-      // Then show the actual game over screen after delay
       const timer = setTimeout(() => {
         setShowGameOverScreen(true);
-        setShowGameOverTransition(false);
       }, 1000); // 1 second delay
 
       return () => clearTimeout(timer);
     } else {
       setShowGameOverScreen(false);
-      setShowGameOverTransition(false);
     }
   }, [matchData?.gameData?.gamePhase]);
   
@@ -554,67 +547,56 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
   const opponent = isHost ? matchData.opponentData : matchData.hostData;
 
+  // Helper function to ensure background object is valid
+  const getValidBackgroundObject = (background: any) => {
+    // If background is null/undefined, return default
+    if (!background) {
+      return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+    }
+    
+    // If background is already a valid object, return it
+    if (typeof background === 'object' && background.name && background.file && background.type) {
+      return background;
+    }
+    
+    // If background is a string, convert to object (legacy support)
+    if (typeof background === 'string') {
+      console.warn('🔧 Match: Converting string background to object:', background);
+      // You could add a mapping here, but for now return default
+      return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+    }
+    
+    // Invalid format, return default
+    console.warn('🔧 Match: Invalid background format, using default:', background);
+    return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+  };
+
+  // Get valid background objects
+  const currentPlayerBackground = getValidBackgroundObject(currentPlayer.matchBackgroundEquipped);
+  const opponentBackground = getValidBackgroundObject(opponent.matchBackgroundEquipped);
+
   // Debug logging for background data
   console.log('🎨 Match backgrounds:', {
-    currentPlayerBackground: currentPlayer.matchBackgroundEquipped,
-    opponentBackground: opponent.matchBackgroundEquipped,
-    currentPlayerRarity: currentPlayer.matchBackgroundEquipped?.rarity,
-    opponentRarity: opponent.matchBackgroundEquipped?.rarity
+    originalCurrentPlayerBackground: currentPlayer.matchBackgroundEquipped,
+    originalOpponentBackground: opponent.matchBackgroundEquipped,
+    validatedCurrentPlayerBackground: currentPlayerBackground,
+    validatedOpponentBackground: opponentBackground,
+    currentPlayerBackgroundType: typeof currentPlayer.matchBackgroundEquipped,
+    opponentBackgroundType: typeof opponent.matchBackgroundEquipped,
+    currentPlayerRarity: currentPlayerBackground?.rarity,
+    opponentRarity: opponentBackground?.rarity,
+    currentPlayerFile: currentPlayerBackground?.file,
+    opponentFile: opponentBackground?.file
   });
 
   return (
     <>
-      {/* Game Over Transition Animation */}
-      {showGameOverTransition && (
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 1.2 }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-        >
-          <motion.div
-            initial={{ scale: 0.5, rotateZ: -10 }}
-            animate={{ scale: 1, rotateZ: 0 }}
-            transition={{ duration: 0.6, type: "spring", stiffness: 200 }}
-            className="text-center"
-          >
-            <motion.h1 
-              className="text-6xl md:text-8xl font-bold text-white font-audiowide mb-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
-            >
-              {(() => {
-                const currentPlayerName = isHost ? matchData.hostData.playerDisplayName : matchData.opponentData.playerDisplayName;
-                const isCurrentPlayerWinner = matchData.gameData.winner === currentPlayerName;
-                return isCurrentPlayerWinner ? 'VICTORY!' : 'DEFEAT!';
-              })()}
-            </motion.h1>
-            <motion.div 
-              className="text-2xl md:text-3xl text-gray-300 font-audiowide"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.4 }}
-            >
-              {matchData.gameData.gameOverReason}
-            </motion.div>
-            <motion.div
-              className="mt-6 w-16 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: 64 }}
-              transition={{ delay: 0.6, duration: 0.4 }}
-            />
-          </motion.div>
-        </motion.div>
-      )}
-
       {/* Game Over Screen - Full Screen Overlay */}
       {matchData.gameData.gamePhase === 'gameOver' && showGameOverScreen && (
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="fixed inset-0 z-40 flex items-center justify-center"
           style={{ 
             flexDirection: 'column',
@@ -626,18 +608,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             <GameOverWrapper
               matchId={matchData.id || ''}
               onLeaveMatch={() => setCurrentSection('dashboard')}
-              onRematch={(newMatchId) => {
-                console.log('🎮 Match: Navigating to rematch:', newMatchId);
+              onRematch={(rematchRoomId) => {
+                console.log('🎮 Match: Navigating to rematch waiting room:', rematchRoomId);
                 
-                // Clear any existing match data to force fresh load
-                setMatchData(null);
-                setLoading(true);
-                setError(null);
-                
-                // Navigate to new match with fresh state
-                setCurrentSection('match', { 
+                // Navigate to waiting room instead of directly to match
+                setCurrentSection('waiting-room', { 
                   gameMode: matchData.gameMode || 'classic',
-                  matchId: newMatchId 
+                  roomId: rematchRoomId,
+                  actionType: 'live'
                 });
               }}
             />
@@ -683,8 +661,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 }}
               >
                 {/* Player Background */}
-                {currentPlayer.matchBackgroundEquipped ? (
-                  currentPlayer.matchBackgroundEquipped.type === 'video' ? (
+                {currentPlayerBackground ? (
+                  currentPlayerBackground.type === 'video' ? (
                     <video
                       autoPlay
                       loop
@@ -701,12 +679,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         pointerEvents: 'none'
                       }}
                     >
-                      <source src={currentPlayer.matchBackgroundEquipped.file} type="video/mp4" />
+                      <source src={currentPlayerBackground.file} type="video/mp4" />
                     </video>
                   ) : (
                     <img
-                      src={currentPlayer.matchBackgroundEquipped.file}
-                      alt={currentPlayer.matchBackgroundEquipped.name}
+                      src={currentPlayerBackground.file}
+                      alt={currentPlayerBackground.name}
                       className="absolute inset-0 w-full h-full object-cover"
                     />
                   )
@@ -786,7 +764,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   lineHeight: '42px',
                   textTransform: 'uppercase'
                 }}>
-                  {currentPlayer.matchBackgroundEquipped?.rarity || 'COMMON'}
+                  {currentPlayerBackground?.rarity || 'COMMON'}
                 </span>
               </div>
             </div>
@@ -893,8 +871,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 }}
               >
                 {/* Player Background */}
-                {opponent.matchBackgroundEquipped ? (
-                  opponent.matchBackgroundEquipped.type === 'video' ? (
+                {opponentBackground ? (
+                  opponentBackground.type === 'video' ? (
                     <video
                       autoPlay
                       loop
@@ -911,12 +889,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         pointerEvents: 'none'
                       }}
                     >
-                      <source src={opponent.matchBackgroundEquipped.file} type="video/mp4" />
+                      <source src={opponentBackground.file} type="video/mp4" />
                     </video>
                   ) : (
                     <img
-                      src={opponent.matchBackgroundEquipped.file}
-                      alt={opponent.matchBackgroundEquipped.name}
+                      src={opponentBackground.file}
+                      alt={opponentBackground.name}
                       className="absolute inset-0 w-full h-full object-cover"
                     />
                   )
@@ -977,7 +955,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   lineHeight: '42px',
                   textTransform: 'uppercase'
                 }}>
-                  {opponent.matchBackgroundEquipped?.rarity || 'COMMON'}
+                  {opponentBackground?.rarity || 'COMMON'}
                 </span>
               </div>
             </div>
@@ -1019,8 +997,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   }}
                 >
                   {/* Player Background */}
-                  {currentPlayer.matchBackgroundEquipped ? (
-                    currentPlayer.matchBackgroundEquipped.type === 'video' ? (
+                  {currentPlayerBackground ? (
+                    currentPlayerBackground.type === 'video' ? (
                       <video
                         autoPlay
                         loop
@@ -1038,12 +1016,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                           objectPosition: 'center center'
                         }}
                       >
-                        <source src={currentPlayer.matchBackgroundEquipped.file} type="video/mp4" />
+                        <source src={currentPlayerBackground.file} type="video/mp4" />
                       </video>
                     ) : (
                       <img
-                        src={currentPlayer.matchBackgroundEquipped.file}
-                        alt={currentPlayer.matchBackgroundEquipped.name}
+                        src={currentPlayerBackground.file}
+                        alt={currentPlayerBackground.name}
                         className="absolute inset-0 w-full h-full object-cover"
                         style={{
                           objectPosition: 'center center'
@@ -1111,8 +1089,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   }}
                 >
                   {/* Player Background */}
-                  {opponent.matchBackgroundEquipped ? (
-                    opponent.matchBackgroundEquipped.type === 'video' ? (
+                  {opponentBackground ? (
+                    opponentBackground.type === 'video' ? (
                       <video
                         autoPlay
                         loop
@@ -1130,12 +1108,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                           objectPosition: 'center center'
                         }}
                       >
-                        <source src={opponent.matchBackgroundEquipped.file} type="video/mp4" />
+                        <source src={opponentBackground.file} type="video/mp4" />
                       </video>
                     ) : (
                       <img
-                        src={opponent.matchBackgroundEquipped.file}
-                        alt={opponent.matchBackgroundEquipped.name}
+                        src={opponentBackground.file}
+                        alt={opponentBackground.name}
                         className="absolute inset-0 w-full h-full object-cover"
                         style={{
                           objectPosition: 'center center'

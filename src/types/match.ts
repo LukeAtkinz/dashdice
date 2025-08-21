@@ -95,8 +95,6 @@ export interface MatchData {
     winner?: string;
     gameOverReason?: string;
     hasDoubleMultiplier?: boolean; // 2x multiplier active when player rolls doubles
-    hasTripleMultiplier?: boolean; // 3x multiplier active for Double 3 in Zero Hour
-    currentMultiplier?: number; // Stacking multiplier for True Grit mode (starts at 1x)
   };
   
   // Match metadata

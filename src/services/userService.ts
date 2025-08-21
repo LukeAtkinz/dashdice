@@ -51,9 +51,9 @@ export class UserService {
           lastLoginAt: userData.lastLoginAt,
           userTag: userData.userTag || userData.email?.split('@')[0] || 'Anonymous',
           inventory: {
-            // Read from inventory object only
-            displayBackgroundEquipped: userData.inventory?.displayBackgroundEquipped || 'Relax',
-            matchBackgroundEquipped: userData.inventory?.matchBackgroundEquipped || 'Relax',
+            // Read from inventory object only - ensure background objects are passed through
+            displayBackgroundEquipped: userData.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+            matchBackgroundEquipped: userData.inventory?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
             ownedBackgrounds: userData.inventory?.ownedBackgrounds || userData.ownedBackgrounds || ['Relax']
           },
           stats: {

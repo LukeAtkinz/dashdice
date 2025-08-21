@@ -51,8 +51,8 @@ const InvitationPopup: React.FC<InvitationPopupProps> = ({
 
   const getGameModeDisplayName = (gameType: string) => {
     const modeNames: Record<string, string> = {
-      'classic': 'Classic Mode',
-      'quickfire': 'Quick Fire',
+      'classic': 'Only One Will Rise',
+      'quickfire': 'Quickfire',
       'zero-hour': 'Zero Hour',
       'last-line': 'Last Line',
       'true-grit': 'True Grit',

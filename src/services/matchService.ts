@@ -17,7 +17,6 @@ import { MatchData, GamePhase, RollPhase, TurnDeciderChoice } from '@/types/matc
 import { UserService } from './userService';
 import { CompletedMatchService } from './completedMatchService';
 import { GameModeService } from './gameModeService';
-import AchievementTrackingService from './achievementTrackingService';
 
 export class MatchService {
   /**
@@ -332,30 +331,9 @@ export class MatchService {
         throw new Error('Not your turn or invalid game phase');
       }
       
-      // 🎰 Generate dice values with special logic for True Grit mode
-      let dice1, dice2;
-      
-      if (matchData.gameMode === 'true-grit') {
-        // Special dice generation for True Grit - reduce single 1 probability
-        dice1 = this.generateTrueGritDice();
-        dice2 = this.generateTrueGritDice();
-        
-        // If we get a single 1, make sure the other die isn't also 1 (unless both start as 1)
-        if ((dice1 === 1 && dice2 !== 1) || (dice2 === 1 && dice1 !== 1)) {
-          // 70% chance to reroll the single 1 to a different number
-          if (Math.random() < 0.7) {
-            if (dice1 === 1) {
-              dice1 = Math.floor(Math.random() * 5) + 2; // 2-6
-            } else {
-              dice2 = Math.floor(Math.random() * 5) + 2; // 2-6
-            }
-          }
-        }
-      } else {
-        // Normal dice generation for other modes
-        dice1 = Math.floor(Math.random() * 6) + 1;
-        dice2 = Math.floor(Math.random() * 6) + 1;
-      }
+      // 🎰 Generate dice values upfront for proper animation coordination
+      const dice1 = Math.floor(Math.random() * 6) + 1;
+      const dice2 = Math.floor(Math.random() * 6) + 1;
       
       // Start rolling animation with dice values provided immediately
       await updateDoc(matchRef, {
@@ -383,23 +361,6 @@ export class MatchService {
       console.error('❌ Error rolling dice:', error);
       throw error;
     }
-  }
-
-  /**
-   * Generate weighted dice for True Grit mode - slightly increase probability of rolling 1
-   */
-  private static generateTrueGritDice(): number {
-    const random = Math.random();
-    
-    // Weighted probability distribution for True Grit
-    // 1: 12% chance (slightly higher than 8% but less than normal 16.67%)
-    // 2-6: ~17.6% each (slightly less than normal)
-    if (random < 0.12) return 1;
-    if (random < 0.296) return 2;  // 0.12 + 0.176
-    if (random < 0.472) return 3;  // 0.296 + 0.176
-    if (random < 0.648) return 4;  // 0.472 + 0.176
-    if (random < 0.824) return 5;  // 0.648 + 0.176
-    return 6;                      // 0.824 + 0.176 = 1.0
   }
 
   /**
@@ -431,9 +392,6 @@ export class MatchService {
       let winner = '';
       let gameOverReason = '';
       let eliminatePlayer = false;
-      let opponentScoreBonus = 0; // For Zero Hour doubles that affect opponent
-      let tripleMultiplier = false; // For Double 3 in Zero Hour (3x instead of 2x)
-      let stackingMultiplier = 0; // For True Grit stacking multipliers
       
       // Calculate dice values and check for patterns
       const diceSum = dice1 + dice2;
@@ -452,17 +410,10 @@ export class MatchService {
       // Handle double 1 (Snake Eyes or Turn End)
       else if (isDoubleOne) {
         if (gameMode.rules.eliminationRules.doubleOne) {
-          // This case should not happen for True Grit since doubleOne is false
-          console.log('🎲 Double 1 rolled - Turn over (elimination rule)');
+          // True Grit: Double 1 ends turn (but doesn't eliminate player)
+          console.log('🎲 Double 1 rolled - Turn over (True Grit rule)');
           turnOver = true;
           newTurnScore = 0;
-        } else if (gameMode.id === 'true-grit') {
-          // True Grit: Double 1 is +20 and activates 2x stacking multiplier
-          console.log('🎲 True Grit Double 1 - +20 to turn score, 2x multiplier activated');
-          newTurnScore = currentTurnScore + 20;
-          turnOver = false;
-          // Will handle stacking multiplier later
-          stackingMultiplier = 2;
         } else if (gameMode.id === 'zero-hour') {
           // Zero Hour: Double 1 is -20 to turn score and activate 2x multiplier
           console.log('🎲 Snake Eyes rolled in Zero Hour - -20 to turn score, 2x activated');
@@ -478,107 +429,31 @@ export class MatchService {
       }
       // Handle double 6s based on game mode
       else if (isDoubleSix) {
-        if (gameMode.id === 'true-grit') {
-          // True Grit: Double 6 is +12 and activates 6x stacking multiplier
-          console.log('🎲 True Grit Double 6 - +12 to turn score, 6x multiplier activated');
-          newTurnScore = currentTurnScore + 12;
-          turnOver = false;
-          stackingMultiplier = 6;
-        } else if (gameMode.id === 'zero-hour') {
-          // Zero Hour: Double 6 gives +12 to opponent, -12 to turn score, activate 2x multiplier
-          console.log('🎲 Double 6 in Zero Hour - +12 to opponent, -12 to turn score, 2x activated');
-          newTurnScore = currentTurnScore - 12;
-          turnOver = false;
-          // Store opponent score update for later
-          opponentScoreBonus = 12;
-        } else {
-          switch (gameMode.rules.eliminationRules.doubleSix) {
-            case 'reset':
-              console.log('🎲 Double 6 rolled - Player score reset to starting score');
-              resetPlayerScore = true;
-              turnOver = true;
-              newTurnScore = 0;
-              break;
-            case 'score':
-              console.log('🎲 Double 6 rolled - Scores normally');
-              newTurnScore = currentTurnScore + diceSum;
-              turnOver = false;
-              break;
-            default:
-              // Classic mode behavior - reset score
-              console.log('🎲 Double 6 rolled - Player score reset to 0');
-              resetPlayerScore = true;
-              turnOver = true;
-              newTurnScore = 0;
-          }
-        }
-      }
-      // Handle other doubles (2, 3, 4, 5) - True Grit and Zero Hour special rules
-      else if (isDouble) {
-        const doubleValue = dice1;
-        
-        if (gameMode.id === 'true-grit') {
-          // True Grit: All doubles have specific scores and stacking multipliers
-          if (doubleValue === 2) {
-            console.log('🎲 True Grit Double 2 - +4 to turn score, 2x multiplier activated');
-            newTurnScore = currentTurnScore + 4;
-            stackingMultiplier = 2;
-          } else if (doubleValue === 3) {
-            console.log('🎲 True Grit Double 3 - +6 to turn score, 3x multiplier activated');
-            newTurnScore = currentTurnScore + 6;
-            stackingMultiplier = 3;
-          } else if (doubleValue === 4) {
-            console.log('🎲 True Grit Double 4 - +8 to turn score, 4x multiplier activated');
-            newTurnScore = currentTurnScore + 8;
-            stackingMultiplier = 4;
-          } else if (doubleValue === 5) {
-            console.log('🎲 True Grit Double 5 - +10 to turn score, 5x multiplier activated');
-            newTurnScore = currentTurnScore + 10;
-            stackingMultiplier = 5;
-          }
-          turnOver = false; // Continue turn with stacking multiplier
-        } else if (gameMode.id === 'zero-hour') {
-          // Zero Hour: Different effects for each double
-          if (doubleValue === 2) {
-            // Double 2: +4 to opponent, -4 to turn score, 2x multiplier
-            console.log('🎲 Double 2 in Zero Hour - +4 to opponent, -4 to turn score, 2x activated');
-            newTurnScore = currentTurnScore - 4;
-            opponentScoreBonus = 4;
-          } else if (doubleValue === 3) {
-            // Double 3: -6 to turn score, 3x multiplier
-            console.log('🎲 Double 3 in Zero Hour - -6 to turn score, 3x activated');
-            newTurnScore = currentTurnScore - 6;
-            tripleMultiplier = true; // Special flag for 3x multiplier
-          } else if (doubleValue === 4) {
-            // Double 4: +8 to opponent, -8 to turn score, 2x multiplier
-            console.log('🎲 Double 4 in Zero Hour - +8 to opponent, -8 to turn score, 2x activated');
-            newTurnScore = currentTurnScore - 8;
-            opponentScoreBonus = 8;
-          } else if (doubleValue === 5) {
-            // Double 5: +10 to opponent, -10 to turn score, 2x multiplier
-            console.log('🎲 Double 5 in Zero Hour - +10 to opponent, -10 to turn score, 2x activated');
-            newTurnScore = currentTurnScore - 10;
-            opponentScoreBonus = 10;
-          }
-          turnOver = false; // Continue turn with multiplier
-        } else {
-          // Handle other doubles (non-True Grit, non-Zero Hour modes)
-          newTurnScore = currentTurnScore + diceSum;
-          console.log(`🎲 Double ${dice1}s rolled - ${diceSum} points added`);
-          
-          // In most modes, doubles don't grant extra rolls (except classic with multiplier)
-          if (gameMode.id === 'classic' || gameMode.id === 'quickfire') {
-            turnOver = false; // Classic mode: activate multiplier for future rolls
-          } else {
-            turnOver = false; // Continue turn
-          }
+        switch (gameMode.rules.eliminationRules.doubleSix) {
+          case 'reset':
+            console.log('🎲 Double 6 rolled - Player score reset to starting score');
+            resetPlayerScore = true;
+            turnOver = true;
+            newTurnScore = 0;
+            break;
+          case 'score':
+            console.log('🎲 Double 6 rolled - Scores normally');
+            newTurnScore = currentTurnScore + diceSum;
+            turnOver = false;
+            break;
+          default:
+            // Classic mode behavior - reset score
+            console.log('🎲 Double 6 rolled - Player score reset to 0');
+            resetPlayerScore = true;
+            turnOver = true;
+            newTurnScore = 0;
         }
       }
       // Handle single 1 (non-elimination modes)
       else if (isSingleOne && !gameMode.rules.eliminationRules.singleOne) {
         if (gameMode.id === 'true-grit') {
-          // True Grit: Single 1 ends turn, turn score is banked automatically
-          console.log('🎲 True Grit: Single 1 rolled - Turn over, turn score banked');
+          // True Grit: Single 1 ends turn, but score is banked (not lost)
+          console.log('🎲 True Grit: Single 1 rolled - Turn over, score banked');
           turnOver = true;
           // Keep the current turn score to be banked
         } else {
@@ -588,52 +463,43 @@ export class MatchService {
           newTurnScore = 0;
         }
       }
+      // Handle other doubles
+      else if (isDouble) {
+        newTurnScore = currentTurnScore + diceSum;
+        console.log(`🎲 Double ${dice1}s rolled - ${diceSum} points added`);
+        
+        // In most modes, doubles don't grant extra rolls (except classic with multiplier)
+        if (gameMode.id === 'classic' || gameMode.id === 'quickfire') {
+          turnOver = false; // Classic mode: activate multiplier for future rolls
+        } else {
+          turnOver = false; // Continue turn
+        }
+      }
       // Normal scoring
       else {
-        const currentDoubleMultiplier = matchData.gameData.hasDoubleMultiplier || false;
-        const currentTripleMultiplier = matchData.gameData.hasTripleMultiplier || false;
-        const currentStackingMultiplier = matchData.gameData.currentMultiplier || 1;
-        
-        let scoreToAdd = diceSum;
-        let multiplierText = '';
-        
-        if (gameMode.id === 'true-grit' && currentStackingMultiplier > 1) {
-          // True Grit: Use stacking multiplier
-          scoreToAdd = diceSum * currentStackingMultiplier;
-          multiplierText = ` (x${currentStackingMultiplier} = ${scoreToAdd})`;
-        } else if (currentTripleMultiplier) {
-          scoreToAdd = diceSum * 3;
-          multiplierText = ' (x3 = ' + scoreToAdd + ')';
-        } else if (currentDoubleMultiplier) {
-          scoreToAdd = diceSum * 2;
-          multiplierText = ' (x2 = ' + scoreToAdd + ')';
-        }
-        
-        // In Zero Hour, multiplied normal rolls are negative to turn score
-        if (gameMode.id === 'zero-hour' && (currentDoubleMultiplier || currentTripleMultiplier)) {
-          newTurnScore = currentTurnScore - scoreToAdd;
-          console.log(`🎲 Zero Hour multiplied roll: ${dice1} + ${dice2} = ${diceSum}${multiplierText} (negative), Turn score: ${newTurnScore}`);
+        const currentMultiplier = matchData.gameData.hasDoubleMultiplier || false;
+        const scoreToAdd = currentMultiplier ? diceSum * 2 : diceSum;
+        newTurnScore = currentTurnScore + scoreToAdd;
+        console.log(`🎲 Normal roll: ${dice1} + ${dice2} = ${diceSum}${currentMultiplier ? ' (x2 = ' + scoreToAdd + ')' : ''}, Turn score: ${newTurnScore}`);
+        turnOver = false;
+      }
+      
+      // Special rule for Last Line: Only 1 roll allowed, but doubles grant extra roll
+      if (gameMode.id === 'last-line') {
+        if (isDouble && gameMode.rules.specialRules?.doubleGrantsExtraRoll) {
+          console.log('🎲 Last Line mode - Double rolled! Granting extra roll');
+          turnOver = false; // Allow another roll due to double
         } else {
-          newTurnScore = currentTurnScore + scoreToAdd;
-          console.log(`🎲 Normal roll: ${dice1} + ${dice2} = ${diceSum}${multiplierText}, Turn score: ${newTurnScore}`);
-        }
-        
-        if (gameMode.id === 'true-grit') {
-          // True Grit: Normal rolls continue the turn
-          turnOver = false;
-        } else {
-          turnOver = false;
+          console.log('🎲 Last Line mode - Turn ends after 1 roll');
+          turnOver = true;
         }
       }
       
-      // Special rule for Last Line: Only 1 roll allowed, then turn ends
-      if (gameMode.id === 'last-line') {
-        console.log('🎲 Last Line mode - Turn ends after 1 roll');
+      // Special rule for True Grit: Only 1 turn per player, turn ends after any roll
+      if (gameMode.id === 'true-grit') {
+        console.log('🎲 True Grit mode - Turn ends after 1 roll');
         turnOver = true;
       }
-      
-      // True Grit: Do NOT automatically end turn after one roll - only end on single 1
-      // Remove the automatic turn end for True Grit mode
       
       // Prepare updates
       const updates: any = {
@@ -642,36 +508,8 @@ export class MatchService {
         'gameData.turnScore': newTurnScore,
       };
       
-      // Apply opponent score bonus for Zero Hour doubles
-      if (opponentScoreBonus > 0) {
-        const opponentScore = isHost ? matchData.opponentData.playerScore : matchData.hostData.playerScore;
-        const newOpponentScore = opponentScore + opponentScoreBonus;
-        if (isHost) {
-          updates['opponentData.playerScore'] = newOpponentScore;
-        } else {
-          updates['hostData.playerScore'] = newOpponentScore;
-        }
-      }
-      
-      // Handle True Grit multipliers (replace, don't stack)
-      if (gameMode.id === 'true-grit' && stackingMultiplier > 0) {
-        // Set multiplier to the new double's value (replace, don't stack)
-        updates['gameData.currentMultiplier'] = stackingMultiplier;
-        console.log(`🎲 True Grit: Multiplier set to ${stackingMultiplier}x`);
-      }
-      
-      // Activate multipliers for doubles in Zero Hour
-      if (gameMode.id === 'zero-hour' && isDouble) {
-        if (tripleMultiplier) {
-          // Double 3 gets 3x multiplier
-          updates['gameData.hasTripleMultiplier'] = true;
-        } else {
-          // All other doubles get 2x multiplier
-          updates['gameData.hasDoubleMultiplier'] = true;
-        }
-      }
-      // Activate 2x multiplier for double 1s in non-Zero Hour, non-True Grit modes that continue turn
-      else if (isDoubleOne && !gameMode.rules.eliminationRules.doubleOne && gameMode.id !== 'zero-hour' && gameMode.id !== 'true-grit') {
+      // Activate 2x multiplier for double 1s in modes that continue turn (Classic, Quickfire, Zero Hour)
+      if (isDoubleOne && !gameMode.rules.eliminationRules.doubleOne) {
         updates['gameData.hasDoubleMultiplier'] = true;
       }
       
@@ -689,8 +527,8 @@ export class MatchService {
       
       updates[`${playerStatsPath}.lastDiceSum`] = diceSum;
       
-      // Special handling for Last Line mode - auto-bank the roll score
-      if (gameMode.id === 'last-line') {
+      // Special handling for Last Line mode - auto-bank the roll score only when turn ends
+      if (gameMode.id === 'last-line' && turnOver) {
         const playerScoreUpdate = newTurnScore;
         
         if (isHost) {
@@ -737,35 +575,6 @@ export class MatchService {
           // Update the match in Firebase first
           await updateDoc(matchRef, updates);
           
-          // Track achievements for game completion
-          if (winnerId) {
-            const hostId = matchData.hostData.playerId;
-            const opponentId = matchData.opponentData.playerId;
-            const gameMode = matchData.gameMode;
-            const achievementService = AchievementTrackingService.getInstance();
-            
-            try {
-              // Track achievement for winner
-              await achievementService.recordGameEnd(winnerId, true, [], {
-                finalScore: winnerId === hostId ? hostFinalScore : opponentFinalScore,
-                opponentScore: winnerId === hostId ? opponentFinalScore : hostFinalScore,
-                gameMode: gameMode
-              });
-              
-              // Track achievement for loser
-              const loserId = winnerId === hostId ? opponentId : hostId;
-              await achievementService.recordGameEnd(loserId, false, [], {
-                finalScore: loserId === hostId ? hostFinalScore : opponentFinalScore,
-                opponentScore: loserId === hostId ? opponentFinalScore : hostFinalScore,
-                gameMode: gameMode
-              });
-              
-              console.log('✅ Achievement tracking completed for Last Line match');
-            } catch (error) {
-              console.error('❌ Error tracking achievements for Last Line match:', error);
-            }
-          }
-          
           // Then update user stats if there's a winner
           if (winnerId) {
             await this.updateUserStats(matchData, winnerId);
@@ -776,14 +585,12 @@ export class MatchService {
         }
       }
       
-      // Special handling for True Grit mode - auto-bank when turn ends (single 1 rolled)
+      // Special handling for True Grit mode - auto-bank when turn ends
       if (gameMode.id === 'true-grit' && turnOver) {
-        // Add the turn score to the existing player score (cumulative)
-        const currentPlayerScore = isHost ? (matchData.hostData.playerScore || 0) : (matchData.opponentData.playerScore || 0);
         if (isHost) {
-          updates['hostData.playerScore'] = currentPlayerScore + newTurnScore;
+          updates['hostData.playerScore'] = newTurnScore;
         } else {
-          updates['opponentData.playerScore'] = currentPlayerScore + newTurnScore;
+          updates['opponentData.playerScore'] = newTurnScore;
         }
         newTurnScore = 0; // Reset turn score since it's banked automatically
         updates['gameData.turnScore'] = 0;
@@ -868,7 +675,6 @@ export class MatchService {
           updates['gameData.hasDoubleMultiplier'] = true;
         } else if (turnOver) {
           updates['gameData.hasDoubleMultiplier'] = false;
-          updates['gameData.hasTripleMultiplier'] = false;
         }
       }
       
@@ -902,66 +708,41 @@ export class MatchService {
           updates['opponentData.turnActive'] = isHost;
         }
         
-        // Check if True Grit mode is complete (all players eliminated except one, or target reached)
+        // Check if True Grit mode is complete (both players have completed their single turns)
         if (gameMode.id === 'true-grit' && turnOver && !gameOver) {
-          // In True Grit, players continue until they roll a single 1 (which ends their turn)
-          // Check if target score was reached during this turn
-          const currentPlayerFinalScore = isHost ? 
-            (matchData.hostData.playerScore || 0) + newTurnScore : 
-            (matchData.opponentData.playerScore || 0) + newTurnScore;
+          // In True Grit, we track the highest single turn score
+          const hostTurnComplete = matchData.hostData.playerScore > 0 || (isHost && turnOver);
+          const opponentTurnComplete = matchData.opponentData.playerScore > 0 || (!isHost && turnOver);
           
-          if (currentPlayerFinalScore >= targetScore) {
-            // Current player wins by reaching target score
-            winner = currentPlayer.playerDisplayName;
+          // If both players have completed their turns, determine winner
+          if (hostTurnComplete && opponentTurnComplete) {
+            const hostFinalScore = isHost ? newTurnScore : matchData.hostData.playerScore;
+            const opponentFinalScore = !isHost ? newTurnScore : matchData.opponentData.playerScore;
+            
+            if (hostFinalScore > opponentFinalScore) {
+              winner = matchData.hostData.playerDisplayName;
+            } else if (opponentFinalScore > hostFinalScore) {
+              winner = matchData.opponentData.playerDisplayName;
+            } else {
+              // Tie game
+              winner = 'Tie';
+            }
+            
             gameOver = true;
-            gameOverReason = `${winner} reached ${targetScore} points!`;
+            gameOverReason = `Highest single turn wins! ${winner}`;
             
             // Set game over state
             updates['gameData.gamePhase'] = 'gameOver';
             updates['gameData.winner'] = winner;
             updates['gameData.gameOverReason'] = gameOverReason;
             updates['gameData.status'] = 'completed';
-            updates['hostData.turnActive'] = false;
-            updates['opponentData.turnActive'] = false;
             
-            console.log(`🏆 True Grit Complete! Winner: ${winner} reached ${targetScore} points!`);
+            console.log(`🏆 True Grit Complete! Winner: ${winner} (Host: ${hostFinalScore}, Opponent: ${opponentFinalScore})`);
           }
-          // Otherwise, the turn ends (due to single 1) and switches to the other player
-          // The other player continues from where they left off or starts their turn
         }
       }
       
       await updateDoc(matchRef, updates);
-      
-      // Track achievements for game completion
-      if (gameOver && winner) {
-        const hostId = matchData.hostData.playerId;
-        const opponentId = matchData.opponentData.playerId;
-        const winnerId = isHost ? hostId : opponentId;
-        const loserId = winnerId === hostId ? opponentId : hostId;
-        const gameMode = matchData.gameMode;
-        const achievementService = AchievementTrackingService.getInstance();
-        
-        try {
-          // Track achievement for winner
-          await achievementService.recordGameEnd(winnerId, true, [], {
-            finalScore: winnerId === hostId ? (matchData.hostData.playerScore || 0) : (matchData.opponentData.playerScore || 0),
-            opponentScore: winnerId === hostId ? (matchData.opponentData.playerScore || 0) : (matchData.hostData.playerScore || 0),
-            gameMode: gameMode
-          });
-          
-          // Track achievement for loser
-          await achievementService.recordGameEnd(loserId, false, [], {
-            finalScore: loserId === hostId ? (matchData.hostData.playerScore || 0) : (matchData.opponentData.playerScore || 0),
-            opponentScore: loserId === hostId ? (matchData.hostData.playerScore || 0) : (matchData.opponentData.playerScore || 0),
-            gameMode: gameMode
-          });
-          
-          console.log('✅ Achievement tracking completed for game completion');
-        } catch (error) {
-          console.error('❌ Error tracking achievements for game completion:', error);
-        }
-      }
       
       // Update user stats if game over
       if (gameOver && winner) {
@@ -1052,8 +833,6 @@ export class MatchService {
       const updates: any = {
         'gameData.turnScore': 0,
         'gameData.hasDoubleMultiplier': false, // Clear multiplier when banking
-        'gameData.hasTripleMultiplier': false, // Clear 3x multiplier when banking
-        'gameData.currentMultiplier': 1, // Reset stacking multiplier to 1x when banking
       };
       
       // 📊 TRACK BANKING STATISTICS
@@ -1089,34 +868,6 @@ export class MatchService {
       console.log(`💰 Score banked: ${matchData.gameData.turnScore} points. New score: ${newPlayerScore}`);
       if (gameOver) {
         console.log(`🏆 Game Over! ${winner} wins!`);
-        
-        // Track achievements for game completion
-        const hostId = matchData.hostData.playerId;
-        const opponentId = matchData.opponentData.playerId;
-        const winnerPlayerId = currentPlayer.playerId;
-        const loserId = winnerPlayerId === hostId ? opponentId : hostId;
-        const gameMode = matchData.gameMode;
-        const achievementService = AchievementTrackingService.getInstance();
-        
-        try {
-          // Track achievement for winner
-          await achievementService.recordGameEnd(winnerPlayerId, true, [], {
-            finalScore: newPlayerScore,
-            opponentScore: winnerPlayerId === hostId ? (matchData.opponentData.playerScore || 0) : (matchData.hostData.playerScore || 0),
-            gameMode: gameMode
-          });
-          
-          // Track achievement for loser
-          await achievementService.recordGameEnd(loserId, false, [], {
-            finalScore: loserId === hostId ? (matchData.hostData.playerScore || 0) : (matchData.opponentData.playerScore || 0),
-            opponentScore: newPlayerScore,
-            gameMode: gameMode
-          });
-          
-          console.log('✅ Achievement tracking completed for banking win');
-        } catch (error) {
-          console.error('❌ Error tracking achievements for banking win:', error);
-        }
         
         // 📊 UPDATE USER STATS: Update user profiles when match ends
         const winnerId = currentPlayer.playerId;
@@ -1206,33 +957,6 @@ export class MatchService {
       };
       
       await updateDoc(matchRef, updates);
-      
-      // Track achievements for disconnection win
-      const hostId = matchData.hostData.playerId;
-      const opponentId = matchData.opponentData.playerId;
-      const loserId = winnerId === hostId ? opponentId : hostId;
-      const gameMode = matchData.gameMode;
-      const achievementService = AchievementTrackingService.getInstance();
-      
-      try {
-        // Track achievement for winner (disconnection victory)
-        await achievementService.recordGameEnd(winnerId, true, [], {
-          finalScore: winnerId === hostId ? (matchData.hostData.playerScore || 0) : (matchData.opponentData.playerScore || 0),
-          opponentScore: winnerId === hostId ? (matchData.opponentData.playerScore || 0) : (matchData.hostData.playerScore || 0),
-          gameMode: gameMode
-        });
-        
-        // Track achievement for loser (disconnection loss)
-        await achievementService.recordGameEnd(loserId, false, [], {
-          finalScore: loserId === hostId ? (matchData.hostData.playerScore || 0) : (matchData.opponentData.playerScore || 0),
-          opponentScore: loserId === hostId ? (matchData.opponentData.playerScore || 0) : (matchData.hostData.playerScore || 0),
-          gameMode: gameMode
-        });
-        
-        console.log('✅ Achievement tracking completed for disconnection match');
-      } catch (error) {
-        console.error('❌ Error tracking achievements for disconnection match:', error);
-      }
       
       // Update user stats
       await this.updateUserStats(matchData, winnerId);

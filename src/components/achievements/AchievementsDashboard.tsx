@@ -34,28 +34,25 @@ const buttonStyles = `
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .nav-button:hover {
-    animation: navHover 0.3s ease-in-out forwards;
-    box-shadow: 0 12px 35px rgba(255, 0, 128, 0.4);
+    animation: navPulse 0.6s ease-in-out;
+    box-shadow: 0 8px 25px rgba(255, 0, 128, 0.3);
+    transform: scale(1.05);
   }
   .nav-button:active {
     animation: navClick 0.2s ease-in-out;
-    transform: translateY(-4px) scale(0.95);
+    transform: scale(0.95);
   }
   .nav-button.active {
     box-shadow: 0 6px 20px rgba(255, 0, 128, 0.4);
   }
-  @keyframes navHover {
-    0% { 
-      transform: translateY(0) scale(1); 
-    }
-    100% { 
-      transform: translateY(-6px) scale(1.08); 
-    }
+  @keyframes navPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
   }
   @keyframes navClick {
-    0% { transform: translateY(-6px) scale(1.08); }
-    50% { transform: translateY(-4px) scale(0.95); }
-    100% { transform: translateY(-6px) scale(1.08); }
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
   }
 `;
 

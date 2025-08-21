@@ -644,11 +644,8 @@ class AchievementTrackingService {
       }
     }
 
-    // Perform core achievement updates in primary transaction
-    await this.updateCoreAchievementMetrics(userId, batchUpdates);
-    
-    // Handle daily/hourly metrics separately to reduce transaction conflicts
-    await this.updateTimeBasedMetrics(userId);
+    // Perform ALL achievement updates in a single transaction to prevent conflicts
+    await this.updateAllGameMetrics(userId, batchUpdates, won, gameData);
   }
 
   /**
@@ -753,20 +750,16 @@ class AchievementTrackingService {
   }
 
   /**
-   * Update all game metrics in a single transaction with retry logic for conflicts
+   * Update all game metrics in a single transaction to prevent document conflicts
    */
   private async updateAllGameMetrics(
     userId: string,
     batchUpdates: MetricUpdate[],
     won: boolean,
-    gameData: any,
-    retryCount: number = 0
+    gameData: any
   ): Promise<void> {
-    const maxRetries = 3;
-    const baseDelay = 100;
-
     try {
-      console.log(`🎯 Updating all game metrics for user ${userId} (attempt ${retryCount + 1})`);
+      console.log(`🎯 Updating all game metrics for user ${userId} in single transaction`);
       
       await runTransaction(db, async (transaction) => {
         // Get all document references
@@ -776,7 +769,7 @@ class AchievementTrackingService {
         const dailyMetricsRef = doc(db, 'dailyMetrics', `${userId}_${today}`);
         const hourlyMetricsRef = doc(db, 'hourlyMetrics', `${userId}_${today}_${currentHour}`);
 
-        // Get current documents with proper error handling
+        // Get current documents
         const [progressDoc, dailyDoc, hourlyDoc] = await Promise.all([
           transaction.get(progressRef),
           transaction.get(dailyMetricsRef),
@@ -828,134 +821,7 @@ class AchievementTrackingService {
           lastUpdate: Timestamp.now()
         };
 
-        // Prepare all transaction updates
-        const now = Timestamp.now();
-
-        // Update achievement progress
-        const updatedProgress: AchievementProgress = {
-          ...currentProgress,
-          metrics: updatedMetrics,
-          streaks: updatedStreaks,
-          lastUpdated: now
-        };
-        transaction.set(progressRef, updatedProgress);
-
-        // Update daily metrics (only if document exists or this is first game of day)
-        const dailyData = dailyDoc.exists() ? dailyDoc.data() : {};
-        const dailyUpdate = {
-          ...dailyData,
-          userId,
-          date: today,
-          games_played: (dailyData.games_played || 0) + 1,
-          lastUpdated: now
-        };
-        transaction.set(dailyMetricsRef, dailyUpdate);
-
-        // Update hourly metrics (only if document exists or this is first game of hour)
-        const hourlyData = hourlyDoc.exists() ? hourlyDoc.data() : {};
-        const hourlyUpdate = {
-          ...hourlyData,
-          userId,
-          date: today,
-          hour: currentHour,
-          games_played: (hourlyData.games_played || 0) + 1,
-          lastUpdated: now
-        };
-        transaction.set(hourlyMetricsRef, hourlyUpdate);
-
-        console.log(`✅ Transaction prepared successfully for user ${userId}`);
-      });
-      
-      console.log(`🎉 All metrics updated successfully for user ${userId}`);
-    } catch (error: any) {
-      console.error(`❌ Error updating all game metrics for user ${userId} (attempt ${retryCount + 1}):`, error);
-      
-      // Handle specific Firebase errors with retry logic
-      if (error?.code === 'failed-precondition' && retryCount < maxRetries) {
-        const delay = baseDelay * Math.pow(2, retryCount) + Math.random() * 100;
-        console.log(`⏳ Document version conflict detected, retrying in ${delay}ms... (${retryCount + 1}/${maxRetries})`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-        return this.updateAllGameMetrics(userId, batchUpdates, won, gameData, retryCount + 1);
-      }
-      
-      if (error?.code === 'permission-denied') {
-        console.log('⚠️ Permission denied for comprehensive metric update - continuing without metrics');
-        return;
-      }
-      
-      if (retryCount >= maxRetries) {
-        console.error(`💥 Max retries exceeded for user ${userId} metrics update`);
-        // Don't throw error - log it but continue game completion
-        return;
-      }
-      
-      throw error;
-    }
-  }
-
-  /**
-   * Update core achievement metrics in a focused transaction
-   */
-  private async updateCoreAchievementMetrics(
-    userId: string,
-    batchUpdates: MetricUpdate[],
-    retryCount: number = 0
-  ): Promise<void> {
-    const maxRetries = 3;
-    const baseDelay = 50;
-
-    try {
-      console.log(`🎯 Updating core achievement metrics for user ${userId}`);
-      
-      await runTransaction(db, async (transaction) => {
-        const progressRef = doc(db, 'achievementProgress', userId);
-        const progressDoc = await transaction.get(progressRef);
-
-        let currentProgress: AchievementProgress;
-        if (progressDoc.exists()) {
-          currentProgress = progressDoc.data() as AchievementProgress;
-        } else {
-          currentProgress = {
-            userId,
-            metrics: {},
-            streaks: {},
-            lastUpdated: Timestamp.now()
-          };
-        }
-
-        // Apply metric updates
-        const updatedMetrics = { ...currentProgress.metrics };
-        const updatedStreaks = { ...currentProgress.streaks };
-        
-        for (const update of batchUpdates) {
-          const currentValue = updatedMetrics[update.metric] || 0;
-          
-          switch (update.operation) {
-            case 'increment':
-              updatedMetrics[update.metric] = currentValue + update.value;
-              break;
-            case 'set':
-              updatedMetrics[update.metric] = update.value;
-              break;
-            case 'max':
-              updatedMetrics[update.metric] = Math.max(currentValue, update.value);
-              break;
-          }
-        }
-
-        // Update consecutive games streak
-        const currentStreak = updatedStreaks.consecutive_games_streak?.current || 0;
-        const bestStreak = updatedStreaks.consecutive_games_streak?.best || 0;
-        const newCurrentStreak = currentStreak + 1;
-        const newBestStreak = Math.max(bestStreak, newCurrentStreak);
-        
-        updatedStreaks.consecutive_games_streak = {
-          current: newCurrentStreak,
-          best: newBestStreak,
-          lastUpdate: Timestamp.now()
-        };
-
-        // Update only the achievement progress document
+        // Update all documents in the transaction
         const updatedProgress: AchievementProgress = {
           ...currentProgress,
           metrics: updatedMetrics,
@@ -964,23 +830,42 @@ class AchievementTrackingService {
         };
 
         transaction.set(progressRef, updatedProgress);
-        console.log(`✅ Core metrics updated for user ${userId}`);
+
+        // Update daily metrics
+        const dailyData = dailyDoc.exists() ? dailyDoc.data() : {};
+        transaction.set(dailyMetricsRef, {
+          ...dailyData,
+          userId,
+          date: today,
+          games_played: (dailyData.games_played || 0) + 1,
+          lastUpdated: Timestamp.now()
+        });
+
+        // Update hourly metrics
+        const hourlyData = hourlyDoc.exists() ? hourlyDoc.data() : {};
+        transaction.set(hourlyMetricsRef, {
+          ...hourlyData,
+          userId,
+          date: today,
+          hour: currentHour,
+          games_played: (hourlyData.games_played || 0) + 1,
+          lastUpdated: Timestamp.now()
+        });
+
+        console.log(`✅ All metrics updated successfully for user ${userId}`);
       });
     } catch (error: any) {
-      if (error?.code === 'failed-precondition' && retryCount < maxRetries) {
-        const delay = baseDelay * Math.pow(2, retryCount) + Math.random() * 50;
-        console.log(`⏳ Core metrics conflict, retrying in ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-        return this.updateCoreAchievementMetrics(userId, batchUpdates, retryCount + 1);
+      console.error(`❌ Error updating all game metrics for user ${userId}:`, error);
+      
+      // Handle specific Firebase errors with retry logic
+      if (error?.code === 'failed-precondition') {
+        console.log('⚠️ Document version conflict detected, retrying after delay...');
+        await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 300));
+        return this.updateAllGameMetrics(userId, batchUpdates, won, gameData);
       }
       
       if (error?.code === 'permission-denied') {
-        console.log('⚠️ Permission denied for core metrics - continuing');
-        return;
-      }
-      
-      if (retryCount >= maxRetries) {
-        console.error(`💥 Max retries exceeded for core metrics`);
+        console.log('⚠️ Permission denied for comprehensive metric update');
         return;
       }
       
@@ -989,39 +874,8 @@ class AchievementTrackingService {
   }
 
   /**
-   * Update time-based metrics separately to reduce conflicts
+   * Check for streak patterns during the game
    */
-  private async updateTimeBasedMetrics(userId: string): Promise<void> {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const currentHour = new Date().getHours();
-      const now = Timestamp.now();
-
-      // Update daily metrics with simple setDoc merge
-      const dailyMetricsRef = doc(db, 'dailyMetrics', `${userId}_${today}`);
-      await setDoc(dailyMetricsRef, {
-        userId,
-        date: today,
-        games_played: increment(1),
-        lastUpdated: now
-      }, { merge: true });
-
-      // Update hourly metrics with simple setDoc merge
-      const hourlyMetricsRef = doc(db, 'hourlyMetrics', `${userId}_${today}_${currentHour}`);
-      await setDoc(hourlyMetricsRef, {
-        userId,
-        date: today,
-        hour: currentHour,
-        games_played: increment(1),
-        lastUpdated: now
-      }, { merge: true });
-
-      console.log(`✅ Time-based metrics updated for user ${userId}`);
-    } catch (error: any) {
-      console.error(`⚠️ Error updating time-based metrics:`, error);
-      // Don't throw - these are non-critical updates
-    }
-  }
   private async checkStreakPatterns(userId: string, diceRolled: number[], updates: MetricUpdate[]): Promise<void> {
     // Check for three 6s in a row
     if (this.hasConsecutiveNumbers(diceRolled, 6, 3)) {

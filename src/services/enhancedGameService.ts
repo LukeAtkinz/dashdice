@@ -125,7 +125,10 @@ export class EnhancedGameService {
           playerId: currentPlayerId,
           rolls: [...(game.currentTurn?.rolls || []), { dice1, dice2, total }],
           turnScore: game.currentTurn?.turnScore || 0,
-          startTime: game.currentTurn?.startTime || Date.now()
+          startTime: game.currentTurn?.startTime || Date.now(),
+          extraRollsGranted: grantExtraRoll 
+            ? (game.currentTurn?.extraRollsGranted || 0) + 1 
+            : (game.currentTurn?.extraRollsGranted || 0)
         },
         updatedAt: new Date()
       };

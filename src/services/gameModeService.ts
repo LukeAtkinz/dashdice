@@ -90,7 +90,7 @@ export class GameModeService {
       },
       {
         id: 'classic',
-        name: 'Classic Mode',
+        name: 'Only One Will Rise',
         description: 'First to 100 points wins, players take turns and bank',
         rules: {
           startingScore: 0,
@@ -154,12 +154,12 @@ export class GameModeService {
       {
         id: 'last-line',
         name: 'Last Line',
-        description: '1 roll per player, highest roll wins',
+        description: 'Single roll elimination - doubles grant extra roll',
         rules: {
           startingScore: 0,
           targetScore: 100,
           allowBanking: false,
-          allowDoubleRolls: false,
+          allowDoubleRolls: true,
           scoreDirection: 'up',
           eliminationRules: {
             singleOne: false,     // No elimination on single 1
@@ -167,8 +167,8 @@ export class GameModeService {
             doubleSix: 'score'    // Double 6 scores normally
           },
           specialRules: {
-            rollLimit: 1,         // Only 1 roll per player
-            doubleGrantsExtraRoll: false // No extra rolls
+            rollLimit: 1,         // Base limit: 1 roll per player
+            doubleGrantsExtraRoll: true // Doubles grant additional roll
           }
         },
         settings: {
@@ -187,26 +187,25 @@ export class GameModeService {
       {
         id: 'true-grit',
         name: 'True Grit',
-        description: 'No banking allowed, single 1 ends turn, no score limit - go as high as you can!',
+        description: '1 turn per player, no banking, highest single turn wins',
         rules: {
           startingScore: 0,
-          targetScore: 999999, // Very high target - effectively no limit
+          targetScore: 100,
           allowBanking: false,
           allowDoubleRolls: true,
           scoreDirection: 'up',
           eliminationRules: {
-            singleOne: false,     // Single 1 ends turn and auto-banks score (doesn't eliminate)
-            doubleOne: false,     // Double 1 gets +20 and 2x stacking multiplier
-            doubleSix: 'score'    // Double 6 gets +12 and 6x stacking multiplier
+            singleOne: false,     // No elimination on single 1 - just end turn and bank
+            doubleOne: false,     // Double 1 gets +20 (Snake Eyes rule)
+            doubleSix: 'score'    // Double 6 scores normally (not reset)
           },
           specialRules: {
-            rollLimit: undefined, // No roll limit - continue until single 1
-            exactScoreRequired: false,
-            autoBank: true        // Automatically bank score when turn ends
+            rollLimit: undefined, // No roll limit, but turn ends on double 1
+            exactScoreRequired: false
           }
         },
         settings: {
-          timePerTurn: 120,       // Longer time since turns can have many rolls
+          timePerTurn: 60,
           showRunningTotal: true,
           showOpponentScore: true,
           enableChat: true,
@@ -216,7 +215,7 @@ export class GameModeService {
         platforms: ['desktop', 'mobile'],
         minPlayers: 2,
         maxPlayers: 4,
-        estimatedDuration: 15
+        estimatedDuration: 8
       }
     ];
 
@@ -239,8 +238,19 @@ export class GameModeService {
       case 'roll':
         if (gameMode.rules.specialRules?.rollLimit) {
           const currentRolls = gameState.currentTurn?.rolls?.length || 0;
-          if (currentRolls >= gameMode.rules.specialRules.rollLimit) {
-            return { valid: false, reason: 'Roll limit reached' };
+          const extraRollsGranted = gameState.currentTurn?.extraRollsGranted || 0;
+          
+          // For Last Line mode, allow extra rolls if doubles were rolled
+          if (gameMode.id === 'last-line' && gameMode.rules.specialRules?.doubleGrantsExtraRoll) {
+            const totalAllowedRolls = gameMode.rules.specialRules.rollLimit + extraRollsGranted;
+            if (currentRolls >= totalAllowedRolls) {
+              return { valid: false, reason: 'Roll limit reached (including extra rolls)' };
+            }
+          } else {
+            // Standard roll limit check for other modes
+            if (currentRolls >= gameMode.rules.specialRules.rollLimit) {
+              return { valid: false, reason: 'Roll limit reached' };
+            }
           }
         }
         break;

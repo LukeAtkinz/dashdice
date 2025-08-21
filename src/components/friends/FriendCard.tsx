@@ -5,6 +5,7 @@ import { FriendWithStatus } from '@/types/friends';
 import { useFriends } from '@/context/FriendsContext';
 import MiniGameModeSelector from './MiniGameModeSelector';
 import { useBackground } from '@/context/BackgroundContext';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 interface FriendCardProps {
   friend: FriendWithStatus;
@@ -12,144 +13,93 @@ interface FriendCardProps {
   showActions?: boolean;
 }
 
-// Function to get background style for friend card
+// Function to get background style for friend card with improved mobile support
 const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
-  // Type assertion to handle the actual nested inventory structure
-  const friendData = friend.friendData as any;
-  
-  console.log('Friend background data:', {
-    friendId: friend.friendId,
-    friendData: friendData,
-    inventory: friendData?.inventory,
-    displayBackgroundEquipped: friendData?.inventory?.displayBackgroundEquipped
-  });
-  
-  // Check if friend has display background equipped in the new nested structure
-  if (friendData?.inventory?.displayBackgroundEquipped) {
-    const background = friendData.inventory.displayBackgroundEquipped;
+  try {
+    // Safe type checking to prevent React error #130
+    if (!friend || typeof friend !== 'object' || !friend.friendData) {
+      return {};
+    }
+
+    const friendData = friend.friendData as any;
     
-    // Handle the new structure with name and file properties
-    if (background && typeof background === 'object') {
-      // Handle object with file property
-      if (background.file) {
-        const backgroundUrl = background.file.startsWith('/') 
-          ? background.file 
-          : `/backgrounds/${background.file}`;
-        
-        console.log('Using background from file property:', backgroundUrl);
+    // Check if friend has display background equipped in the new nested structure
+    if (friendData?.inventory?.displayBackgroundEquipped) {
+      const background = friendData.inventory.displayBackgroundEquipped;
+      // Handle both string URLs and background objects
+      const backgroundUrl = typeof background === 'string' ? background : background?.file;
+      if (backgroundUrl && typeof backgroundUrl === 'string') {
         return {
           backgroundImage: `url(${backgroundUrl})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          backgroundRepeat: 'no-repeat',
+          // Add mobile-specific optimizations
+          WebkitBackgroundSize: 'cover',
+          MozBackgroundSize: 'cover',
+          backgroundAttachment: 'scroll' // Better for mobile performance
         };
       }
-      
-      // Handle object with url property
-      if (background.url) {
-        console.log('Using background from url property:', background.url);
+    }
+    
+    // Fallback: Check legacy equippedBackground field
+    if (friendData?.equippedBackground && typeof friendData.equippedBackground === 'string') {
+      return {
+        backgroundImage: `url(${friendData.equippedBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        WebkitBackgroundSize: 'cover',
+        MozBackgroundSize: 'cover',
+        backgroundAttachment: 'scroll'
+      };
+    }
+    
+    // Final fallback: Check if they have any background in their inventory array
+    if (friendData?.inventory && Array.isArray(friendData.inventory)) {
+      const backgroundItem = friendData.inventory.find((item: any) => 
+        item && typeof item === 'object' && item.type === 'background'
+      );
+      if (backgroundItem?.imageUrl && typeof backgroundItem.imageUrl === 'string') {
         return {
-          backgroundImage: `url(${background.url})`,
+          backgroundImage: `url(${backgroundItem.imageUrl})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          backgroundRepeat: 'no-repeat',
+          WebkitBackgroundSize: 'cover',
+          MozBackgroundSize: 'cover',
+          backgroundAttachment: 'scroll'
         };
       }
-      
-      // Handle object with name property - construct path
-      if (background.name) {
-        let backgroundUrl = '';
-        
-        // Map background names to their file paths
-        switch (background.name) {
-          case 'Long Road Ahead':
-            backgroundUrl = '/backgrounds/Long Road Ahead.jpg';
-            break;
-          case 'On A Mission':
-            backgroundUrl = '/backgrounds/On A Mission.mp4';
-            break;
-          case 'New Day':
-            backgroundUrl = '/backgrounds/New Day.mp4';
-            break;
-          case 'Relax':
-            backgroundUrl = '/backgrounds/Relax.png';
-            break;
-          case 'Underwater':
-            backgroundUrl = '/backgrounds/Underwater.mp4';
-            break;
-          case 'All For Glory':
-            backgroundUrl = '/backgrounds/All For Glory.jpg';
-            break;
-          default:
-            // Try to construct path from name
-            backgroundUrl = `/backgrounds/${background.name}`;
-        }
-        
-        if (backgroundUrl) {
-          console.log('Using background from name property:', backgroundUrl);
-          return {
-            backgroundImage: `url(${backgroundUrl})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          };
-        }
-      }
-    } else if (typeof background === 'string') {
-      // Handle string URLs
-      const backgroundUrl = background.startsWith('/') ? background : `/backgrounds/${background}`;
-      console.log('Using background from string:', backgroundUrl);
-      return {
-        backgroundImage: `url(${backgroundUrl})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      };
     }
+    
+    return {};
+  } catch (error) {
+    console.warn('Error getting friend background style:', error);
+    return {};
   }
-  
-  // Fallback: Check legacy equippedBackground field
-  if (friendData?.equippedBackground) {
-    console.log('Using legacy equippedBackground:', friendData.equippedBackground);
-    return {
-      backgroundImage: `url(${friendData.equippedBackground})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat'
-    };
-  }
-  
-  // Final fallback: Check if they have any background in their inventory array
-  if (friendData?.inventory && Array.isArray(friendData.inventory)) {
-    const backgroundItem = friendData.inventory.find((item: any) => item.type === 'background');
-    if (backgroundItem) {
-      console.log('Using background from inventory array:', backgroundItem.imageUrl);
-      return {
-        backgroundImage: `url(${backgroundItem.imageUrl})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      };
-    }
-  }
-  
-  console.log('No background found for friend:', friend.friendId);
-  return {};
 };
 
 export default function FriendCard({ friend, compact = false, showActions = true }: FriendCardProps) {
+  // Add safety check to prevent React error #130
+  if (!friend || typeof friend !== 'object' || !friend.friendData) {
+    console.warn('FriendCard: Invalid friend data provided');
+    return null;
+  }
+
   const { removeFriend, sendGameInvitation, friendPresences } = useFriends();
   const [isRemoving, setIsRemoving] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
   const [showGameModeSelector, setShowGameModeSelector] = useState(false);
   const [selectedGameMode, setSelectedGameMode] = useState('classic');
 
-  // Get presence from context
+  // Get presence from context with safety checks
   const presence = friendPresences?.[friend.friendId];
   const presenceStatus = presence?.status || 'offline';
 
   const handleRemoveFriend = async () => {
-    if (window.confirm(`Are you sure you want to remove ${friend.friendData.displayName} from your friends list?`)) {
+    const displayName = friend.friendData?.displayName || 'this user';
+    if (window.confirm(`Are you sure you want to remove ${displayName} from your friends list?`)) {
       setIsRemoving(true);
       try {
         await removeFriend(friend.friendId);
@@ -164,8 +114,21 @@ export default function FriendCard({ friend, compact = false, showActions = true
   const handleGameInvite = async () => {
     setIsInviting(true);
     try {
-      await sendGameInvitation(friend.friendId, selectedGameMode);
-      setShowGameModeSelector(false); // Collapse selector after invitation sent
+      if (!friend?.friendId || typeof friend.friendId !== 'string') {
+        console.error('Invalid friend ID:', friend?.friendId);
+        return;
+      }
+      
+      const gameMode = selectedGameMode || 'classic';
+      if (typeof gameMode !== 'string') {
+        console.error('Invalid game mode:', gameMode);
+        return;
+      }
+      
+      const result = await sendGameInvitation(friend.friendId, gameMode);
+      if (result?.success) {
+        setShowGameModeSelector(false); // Collapse selector after invitation sent
+      }
     } catch (error) {
       console.error('Error sending game invitation:', error);
     } finally {
@@ -173,8 +136,18 @@ export default function FriendCard({ friend, compact = false, showActions = true
     }
   };
 
-  const handleGameModeSelect = (gameMode: { id: string; name: string; description: string; emoji: string; color: string }) => {
-    setSelectedGameMode(gameMode.id);
+  const handleGameModeSelect = (gameMode: string) => {
+    try {
+      if (gameMode && typeof gameMode === 'string') {
+        setSelectedGameMode(gameMode);
+      } else {
+        console.warn('Invalid game mode received:', gameMode);
+        setSelectedGameMode('classic');
+      }
+    } catch (error) {
+      console.error('Error in handleGameModeSelect:', error);
+      setSelectedGameMode('classic');
+    }
   };
 
   const toggleGameModeSelector = () => {
@@ -222,13 +195,15 @@ export default function FriendCard({ friend, compact = false, showActions = true
           <div className="relative">
             <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
               <span className="text-white font-bold font-audiowide">
-                {friend.friendData.displayName?.charAt(0).toUpperCase() || '?'}
+                {friend.friendData?.displayName?.charAt(0)?.toUpperCase() || '?'}
               </span>
             </div>
             <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(presenceStatus)} rounded-full border-2 border-gray-800`}></div>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-white font-medium font-audiowide truncate">{friend.friendData.displayName}</p>
+            <p className="text-white font-medium font-audiowide truncate">
+              {friend.friendData?.displayName || 'Unknown Player'}
+            </p>
             <p className="text-white text-sm font-montserrat">{getStatusText(presenceStatus)}</p>
           </div>
         </div>
@@ -238,10 +213,14 @@ export default function FriendCard({ friend, compact = false, showActions = true
 
   return (
     <div 
-      className="relative overflow-hidden transition-all duration-200"
+      className="relative overflow-hidden transition-all duration-200 touch-manipulation"
       style={{
         ...getFriendBackgroundStyle(friend),
-        borderRadius: '20px'
+        borderRadius: '20px',
+        // Enhanced mobile support
+        WebkitTransform: 'translateZ(0)', // Hardware acceleration
+        transform: 'translateZ(0)',
+        willChange: 'transform'
       }}
     >
       {/* Dark overlay gradient for text readability - left (black) to right (transparent) */}
@@ -254,69 +233,29 @@ export default function FriendCard({ friend, compact = false, showActions = true
       ></div>
       
       <div className="relative z-10 p-4">
-        {/* Desktop Layout */}
-        <div className="hidden md:block">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-lg font-bold font-audiowide">
-                    {friend.friendData.displayName?.charAt(0).toUpperCase() || '?'}
-                  </span>
-                </div>
-                <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(presenceStatus)} rounded-full border-2 border-gray-800`}></div>
-              </div>
-              <div>
-                <h3 className="text-white font-semibold font-audiowide">{friend.friendData.displayName}</h3>
-                <p className="text-white text-sm font-montserrat">{getStatusText(presenceStatus)}</p>
-              </div>
+        {/* Profile section - Always at top */}
+        <div className="flex items-center gap-3 mb-3">
+          <div className="relative">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+              <span className="text-white text-lg font-bold font-audiowide">
+                {friend.friendData?.displayName?.charAt(0)?.toUpperCase() || '?'}
+              </span>
             </div>
-            
-            {showActions && (
-              <div className="flex gap-2">
-                <button
-                  onClick={toggleGameModeSelector}
-                  disabled={presenceStatus === 'offline'}
-                  className="px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded font-montserrat transition-colors"
-                >
-                  {showGameModeSelector ? 'Cancel' : 'Invite'}
-                </button>
-                <button
-                  className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded font-montserrat transition-colors"
-                >
-                  Chat
-                </button>
-                <button
-                  onClick={handleRemoveFriend}
-                  disabled={isRemoving}
-                  className="px-3 py-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded font-montserrat transition-colors"
-                >
-                  {isRemoving ? 'Managing...' : 'Manage'}
-                </button>
-              </div>
-            )}
+            <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(presenceStatus)} rounded-full border-2 border-gray-800`}></div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-white font-semibold font-audiowide truncate">
+              {friend.friendData?.displayName || 'Unknown Player'}
+            </h3>
+            <p className="text-white text-sm font-montserrat">{getStatusText(presenceStatus)}</p>
           </div>
         </div>
 
-        {/* Mobile Layout */}
-        <div className="md:hidden">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="relative">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-lg font-bold font-audiowide">
-                  {friend.friendData.displayName?.charAt(0).toUpperCase() || '?'}
-                </span>
-              </div>
-              <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(presenceStatus)} rounded-full border-2 border-gray-800`}></div>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold font-audiowide">{friend.friendData.displayName}</h3>
-              <p className="text-white text-sm font-montserrat">{getStatusText(presenceStatus)}</p>
-            </div>
-          </div>
-          
-          {showActions && (
-            <div className="flex gap-2 flex-wrap">
+        {/* Action buttons - Desktop: inline, Mobile: stacked below */}
+        {showActions && (
+          <div className="space-y-2">
+            {/* Desktop: Horizontal layout */}
+            <div className="hidden sm:flex gap-2">
               <button
                 onClick={toggleGameModeSelector}
                 disabled={presenceStatus === 'offline'}
@@ -337,8 +276,33 @@ export default function FriendCard({ friend, compact = false, showActions = true
                 {isRemoving ? 'Managing...' : 'Manage'}
               </button>
             </div>
-          )}
-        </div>
+
+            {/* Mobile: Vertical layout - stacked below profile */}
+            <div className="sm:hidden flex flex-col gap-2 mt-2">
+              <button
+                onClick={toggleGameModeSelector}
+                disabled={presenceStatus === 'offline'}
+                className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded-lg font-montserrat transition-colors touch-manipulation"
+              >
+                {showGameModeSelector ? 'Cancel' : 'Invite'}
+              </button>
+              <div className="flex gap-2">
+                <button
+                  className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white text-sm rounded-lg font-montserrat transition-colors touch-manipulation"
+                >
+                  Chat
+                </button>
+                <button
+                  onClick={handleRemoveFriend}
+                  disabled={isRemoving}
+                  className="flex-1 px-4 py-3 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded-lg font-montserrat transition-colors touch-manipulation"
+                >
+                  {isRemoving ? 'Managing...' : 'Manage'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* Game Mode Selector - appears when invite is clicked */}
         {showGameModeSelector && (
@@ -346,18 +310,43 @@ export default function FriendCard({ friend, compact = false, showActions = true
             <div className="text-white text-sm font-medium font-audiowide">
               Choose Game Mode:
             </div>
-            <MiniGameModeSelector
-              onSelect={handleGameModeSelect}
-              isDisabled={presenceStatus === 'offline'}
-              className="mb-2"
-            />
+            <ErrorBoundary
+              fallback={
+                <div className="p-2 bg-yellow-100 border border-yellow-300 rounded">
+                  <p className="text-yellow-800 text-xs">Game mode selector unavailable</p>
+                  <button 
+                    onClick={() => setSelectedGameMode('classic')}
+                    className="mt-1 px-2 py-1 bg-yellow-600 text-white text-xs rounded"
+                  >
+                    Use Only One Will Rise
+                  </button>
+                </div>
+              }
+            >
+              <MiniGameModeSelector
+                onGameModeSelect={handleGameModeSelect}
+                isDisabled={presenceStatus === 'offline'}
+                className="mb-2"
+              />
+            </ErrorBoundary>
             <div className="flex gap-2">
               <button
                 onClick={handleGameInvite}
                 disabled={isInviting}
                 className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded font-montserrat transition-colors"
               >
-                {isInviting ? 'Sending Invite...' : `Invite to ${selectedGameMode.charAt(0).toUpperCase() + selectedGameMode.slice(1)}`}
+                {isInviting ? 'Sending Invite...' : (() => {
+                  try {
+                    const gameMode = selectedGameMode || 'classic';
+                    if (typeof gameMode === 'string' && gameMode.length > 0) {
+                      return `Invite to ${gameMode.charAt(0).toUpperCase() + gameMode.slice(1)}`;
+                    }
+                    return 'Send Invite';
+                  } catch (error) {
+                    console.warn('Error generating invite button text:', error);
+                    return 'Send Invite';
+                  }
+                })()}
               </button>
             </div>
           </div>
@@ -365,7 +354,21 @@ export default function FriendCard({ friend, compact = false, showActions = true
         
         {presence?.lastSeen && presenceStatus === 'offline' && (
           <div className="text-white text-xs font-montserrat opacity-75">
-            Last seen: {new Date(presence.lastSeen.toDate()).toLocaleDateString()}
+            Last seen: {(() => {
+              try {
+                if (presence.lastSeen && typeof presence.lastSeen.toDate === 'function') {
+                  return new Date(presence.lastSeen.toDate()).toLocaleDateString();
+                } else if (presence.lastSeen instanceof Date) {
+                  return presence.lastSeen.toLocaleDateString();
+                } else if (typeof presence.lastSeen === 'string' || typeof presence.lastSeen === 'number') {
+                  return new Date(presence.lastSeen).toLocaleDateString();
+                }
+                return 'Recently';
+              } catch (error) {
+                console.warn('Error formatting last seen date:', error);
+                return 'Recently';
+              }
+            })()}
           </div>
         )}
       </div>

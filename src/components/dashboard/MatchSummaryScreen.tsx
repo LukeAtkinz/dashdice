@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { MatchData } from '@/types/match';
 import { RematchService, RematchRoom } from '@/services/rematchService';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
+import { GameModeSelector } from '@/components/ui/GameModeSelector';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 
@@ -22,6 +23,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   const [rematchState, setRematchState] = useState<'idle' | 'requesting' | 'waiting' | 'accepted' | 'expired' | 'opponent_left'>('idle');
   const [rematchRoomId, setRematchRoomId] = useState<string | null>(null);
   const [incomingRematch, setIncomingRematch] = useState<RematchRoom | null>(null);
+  const [showGameModeSelector, setShowGameModeSelector] = useState(false);
   
   const winner = matchData.gameData.winner;
   const reason = matchData.gameData.gameOverReason;
@@ -68,10 +70,16 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   };
 
   // Rematch handlers
-  const handleRequestRematch = async () => {
+  const handleRequestRematch = () => {
+    if (!user || !opponentId || rematchState !== 'idle') return;
+    setShowGameModeSelector(true);
+  };
+
+  const handleGameModeSelect = async (gameMode: string) => {
     if (!user || !opponentId) return;
     
     try {
+      setShowGameModeSelector(false);
       setRematchState('requesting');
       
       const roomId = await RematchService.createRematchRoom(
@@ -80,8 +88,8 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         opponentId,
         opponentDisplayName,
         matchData.id || '',
-        'standard', // Default game mode
-        'public' // Default game type
+        gameMode, // Use selected game mode
+        'Open Server' // Default game type
       );
       setRematchRoomId(roomId);
       setRematchState('waiting'); // Change to waiting after successful creation
@@ -89,6 +97,10 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
       console.error('Error creating rematch room:', error);
       setRematchState('idle');
     }
+  };
+
+  const handleGameModeCancel = () => {
+    setShowGameModeSelector(false);
   };
 
   const handleAcceptRematch = async () => {
@@ -99,25 +111,14 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
       setRematchState('waiting');
       setIncomingRematch(null); // Clear the incoming request
       
-      const newMatchId = await RematchService.acceptRematch(incomingRematch.id, user.uid);
-      console.log('✅ Rematch accepted, new match ID:', newMatchId);
+      const rematchRoomId = await RematchService.acceptRematch(incomingRematch.id, user.uid);
+      console.log('✅ Rematch accepted, waiting room ID:', rematchRoomId);
       
-      // Verify match exists before navigating
-      const verifyAndNavigate = async () => {
-        try {
-          // Simple check - try to navigate immediately and let the Match component handle loading
-          if (onRematch) {
-            console.log('🎮 Calling onRematch with newMatchId:', newMatchId);
-            onRematch(newMatchId);
-          }
-        } catch (error) {
-          console.error('❌ Error navigating to rematch:', error);
-          setRematchState('idle');
-        }
-      };
-      
-      // Add a delay to ensure the match is fully created and ready
-      setTimeout(verifyAndNavigate, 2000); // 2 seconds delay
+      // Navigate to waiting room instead of directly to match
+      if (onRematch && rematchRoomId) {
+        console.log('🎮 Navigating to rematch waiting room:', rematchRoomId);
+        onRematch(rematchRoomId);
+      }
     } catch (error) {
       console.error('❌ Error accepting rematch:', error);
       setRematchState('idle');
@@ -188,14 +189,10 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         if (rematchData.status === 'accepted') {
           setRematchState('accepted');
           
-          // Navigate to the new match if newMatchId is available
+          // Navigate to the waiting room if newMatchId is available
           if (rematchData.newMatchId && onRematch) {
-            console.log('🎮 Navigating to new rematch:', rematchData.newMatchId);
-            
-            // Add a longer delay to ensure proper state cleanup and match readiness
-            setTimeout(() => {
-              onRematch(rematchData.newMatchId!);
-            }, 2000); // Increased to 2 seconds
+            console.log('🎮 Navigating to rematch waiting room:', rematchData.newMatchId);
+            onRematch(rematchData.newMatchId);
           }
         } else if (rematchData.status === 'expired' || rematchData.status === 'cancelled') {
           setRematchState('expired');
@@ -623,6 +620,13 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
           </button>
         )}
       </div>
+
+      {/* Game Mode Selector Modal */}
+      <GameModeSelector
+        isOpen={showGameModeSelector}
+        onSelect={handleGameModeSelect}
+        onCancel={handleGameModeCancel}
+      />
     </div>
   );
 };

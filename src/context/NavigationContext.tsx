@@ -44,7 +44,15 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
       timestamp: new Date().toISOString()
     });
     
-    if (section !== currentSection && !isTransitioning) {
+    // Allow navigation if:
+    // 1. Different sections
+    // 2. Same section but different params (for rematch with different matchId)
+    // 3. Not currently transitioning
+    const isDifferentSection = section !== currentSection;
+    const isDifferentParams = JSON.stringify(params) !== JSON.stringify(sectionParams);
+    const shouldAllowNavigation = (isDifferentSection || isDifferentParams) && !isTransitioning;
+    
+    if (shouldAllowNavigation) {
       console.log('🧭 NavigationContext: Navigation approved - changing section');
       setPreviousSection(currentSection);
       setCurrentSectionState(section);
@@ -56,9 +64,11 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
       });
     } else {
       console.log('🧭 NavigationContext: Navigation blocked:', {
-        reason: section === currentSection ? 'Same section' : 'Already transitioning',
+        reason: isTransitioning ? 'Already transitioning' : 'Same section and params',
         currentSection,
         targetSection: section,
+        currentParams: sectionParams,
+        targetParams: params,
         isTransitioning
       });
     }

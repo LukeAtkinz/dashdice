@@ -25,7 +25,7 @@ export default function GameModeDisplay({
         return (
           <div className="bg-blue-600/20 rounded-lg p-3 mb-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-blue-400">Classic Mode</h3>
+              <h3 className="text-lg font-semibold text-blue-400">Only One Will Rise</h3>
               <span className="text-sm text-gray-300">Round {currentRound}</span>
             </div>
             <div className="text-sm text-gray-300 mt-1">

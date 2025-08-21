@@ -96,126 +96,25 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
     const dice2Value = matchData?.gameData.diceTwo;
     const isRolling = matchData?.gameData.isRolling;
     const rollPhase = matchData?.gameData.rollPhase;
-    const gameMode = matchData?.gameMode;
     
-    // Last Line mode: No dice glows at all
-    if (gameMode === 'last-line') {
+    // Don't glow 2, 3, 4, 5 ever
+    if (displayValue === 2 || displayValue === 3 || displayValue === 4 || displayValue === 5) {
       return { shouldGlow: false, color: '', intensity: '' };
     }
     
-    // True Grit mode: Special glow rules
-    if (gameMode === 'true-grit') {
-      // Don't glow 2, 3, 4, 5 unless they are doubles
-      if ((displayValue === 2 || displayValue === 3 || displayValue === 4 || displayValue === 5) && 
-          !(dice1Value === dice2Value && dice1Value === displayValue && !isRolling)) {
-        return { shouldGlow: false, color: '', intensity: '' };
-      }
-      
-      // Single 6: No glow (normal)
-      if (displayValue === 6 && dice1Value !== dice2Value && !isRolling) {
-        return { shouldGlow: false, color: '', intensity: '' };
-      }
-      
-      // Any double: Golden glow
-      if (dice1Value === dice2Value && dice1Value === displayValue && !isRolling) {
-        return { 
-          shouldGlow: true, 
-          color: '#FFD700', 
-          intensity: '0 0 10px rgba(255, 215, 0, 0.7), 0 0 20px rgba(255, 215, 0, 0.5)' 
-        };
-      }
-      
-      // Single 1: Red glow
-      if (displayValue === 1 && 
-          ((dice1Value === 1 && dice2Value !== 1) || (dice2Value === 1 && dice1Value !== 1)) && 
-          !isRolling) {
-        return { 
-          shouldGlow: true, 
-          color: '#FF0000', 
-          intensity: '0 0 8px rgba(255, 0, 0, 0.6), 0 0 16px rgba(255, 0, 0, 0.4)' 
-        };
-      }
-      
-      // During rolling phase for True Grit
-      if (isRolling && rollPhase === 'dice2') {
-        if (diceNumber === 1 && dice1Value === 1) {
+    // First dice logic
+    if (diceNumber === 1) {
+      if (dice1Value === 1) {
+        // First dice is 1
+        if (isRolling && rollPhase === 'dice2') {
+          // Second dice still rolling, keep 1 red
           return { 
             shouldGlow: true, 
             color: '#FF0000', 
             intensity: '0 0 8px rgba(255, 0, 0, 0.6), 0 0 16px rgba(255, 0, 0, 0.4)' 
           };
-        }
-      }
-      
-      return { shouldGlow: false, color: '', intensity: '' };
-    }
-    
-    // Classic and Quickfire modes: Keep existing perfect glow system
-    if (gameMode === 'classic' || gameMode === 'quickfire') {
-      // Don't glow 2, 3, 4, 5 ever
-      if (displayValue === 2 || displayValue === 3 || displayValue === 4 || displayValue === 5) {
-        return { shouldGlow: false, color: '', intensity: '' };
-      }
-      
-      // First dice logic
-      if (diceNumber === 1) {
-        if (dice1Value === 1) {
-          // First dice is 1
-          if (isRolling && rollPhase === 'dice2') {
-            // Second dice still rolling, keep 1 red
-            return { 
-              shouldGlow: true, 
-              color: '#FF0000', 
-              intensity: '0 0 8px rgba(255, 0, 0, 0.6), 0 0 16px rgba(255, 0, 0, 0.4)' 
-            };
-          } else if (!isRolling && dice2Value) {
-            // Both dice settled
-            if (dice2Value === 1) {
-              // Snake eyes - gold glow
-              return { 
-                shouldGlow: true, 
-                color: '#FFD700', 
-                intensity: '0 0 10px rgba(255, 215, 0, 0.7), 0 0 20px rgba(255, 215, 0, 0.5)' 
-              };
-            } else {
-              // Second dice is not 1 - both glow red
-              return { 
-                shouldGlow: true, 
-                color: '#FF0000', 
-                intensity: '0 0 8px rgba(255, 0, 0, 0.6), 0 0 16px rgba(255, 0, 0, 0.4)' 
-              };
-            }
-          }
-        } else if (dice1Value === 6) {
-          // First dice is 6
-          if (isRolling && rollPhase === 'dice2') {
-            // Second dice still rolling, keep 6 red
-            return { 
-              shouldGlow: true, 
-              color: '#FF0000', 
-              intensity: '0 0 8px rgba(255, 0, 0, 0.6), 0 0 16px rgba(255, 0, 0, 0.4)' 
-            };
-          } else if (!isRolling && dice2Value) {
-            // Both dice settled
-            if (dice2Value === 6) {
-              // Double sixes - big red glow
-              return { 
-                shouldGlow: true, 
-                color: '#FF0000', 
-                intensity: '0 0 12px rgba(255, 0, 0, 0.8), 0 0 24px rgba(255, 0, 0, 0.6), 0 0 36px rgba(255, 0, 0, 0.4)' 
-              };
-            } else {
-              // Second dice is not 6 - remove glow
-              return { shouldGlow: false, color: '', intensity: '' };
-            }
-          }
-        }
-      }
-      
-      // Second dice logic
-      if (diceNumber === 2) {
-        if (dice1Value === 1 && dice2Value && !isRolling) {
-          // First dice was 1, second dice settled
+        } else if (!isRolling && dice2Value) {
+          // Both dice settled
           if (dice2Value === 1) {
             // Snake eyes - gold glow
             return { 
@@ -231,8 +130,18 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               intensity: '0 0 8px rgba(255, 0, 0, 0.6), 0 0 16px rgba(255, 0, 0, 0.4)' 
             };
           }
-        } else if (dice1Value === 6 && dice2Value && !isRolling) {
-          // First dice was 6, second dice settled
+        }
+      } else if (dice1Value === 6) {
+        // First dice is 6
+        if (isRolling && rollPhase === 'dice2') {
+          // Second dice still rolling, keep 6 red
+          return { 
+            shouldGlow: true, 
+            color: '#FF0000', 
+            intensity: '0 0 8px rgba(255, 0, 0, 0.6), 0 0 16px rgba(255, 0, 0, 0.4)' 
+          };
+        } else if (!isRolling && dice2Value) {
+          // Both dice settled
           if (dice2Value === 6) {
             // Double sixes - big red glow
             return { 
@@ -240,89 +149,44 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               color: '#FF0000', 
               intensity: '0 0 12px rgba(255, 0, 0, 0.8), 0 0 24px rgba(255, 0, 0, 0.6), 0 0 36px rgba(255, 0, 0, 0.4)' 
             };
+          } else {
+            // Second dice is not 6 - remove glow
+            return { shouldGlow: false, color: '', intensity: '' };
           }
-          // If second dice is not 6, no glow (first dice glow also removed)
         }
       }
     }
     
-    // Zero Hour mode: Use the same glow logic as Classic/Quickfire for now
-    if (gameMode === 'zero-hour') {
-      // Don't glow 2, 3, 4, 5 ever  
-      if (displayValue === 2 || displayValue === 3 || displayValue === 4 || displayValue === 5) {
-        return { shouldGlow: false, color: '', intensity: '' };
-      }
-      
-      // Apply same logic as Classic mode for Zero Hour
-      // (You can customize this later if needed)
-      if (diceNumber === 1) {
-        if (dice1Value === 1) {
-          if (isRolling && rollPhase === 'dice2') {
-            return { 
-              shouldGlow: true, 
-              color: '#FF0000', 
-              intensity: '0 0 8px rgba(255, 0, 0, 0.6), 0 0 16px rgba(255, 0, 0, 0.4)' 
-            };
-          } else if (!isRolling && dice2Value) {
-            if (dice2Value === 1) {
-              return { 
-                shouldGlow: true, 
-                color: '#FFD700', 
-                intensity: '0 0 10px rgba(255, 215, 0, 0.7), 0 0 20px rgba(255, 215, 0, 0.5)' 
-              };
-            } else {
-              return { 
-                shouldGlow: true, 
-                color: '#FF0000', 
-                intensity: '0 0 8px rgba(255, 0, 0, 0.6), 0 0 16px rgba(255, 0, 0, 0.4)' 
-              };
-            }
-          }
-        } else if (dice1Value === 6) {
-          if (isRolling && rollPhase === 'dice2') {
-            return { 
-              shouldGlow: true, 
-              color: '#FF0000', 
-              intensity: '0 0 8px rgba(255, 0, 0, 0.6), 0 0 16px rgba(255, 0, 0, 0.4)' 
-            };
-          } else if (!isRolling && dice2Value) {
-            if (dice2Value === 6) {
-              return { 
-                shouldGlow: true, 
-                color: '#FF0000', 
-                intensity: '0 0 12px rgba(255, 0, 0, 0.8), 0 0 24px rgba(255, 0, 0, 0.6), 0 0 36px rgba(255, 0, 0, 0.4)' 
-              };
-            } else {
-              return { shouldGlow: false, color: '', intensity: '' };
-            }
-          }
+    // Second dice logic
+    if (diceNumber === 2) {
+      if (dice1Value === 1 && dice2Value && !isRolling) {
+        // First dice was 1, second dice settled
+        if (dice2Value === 1) {
+          // Snake eyes - gold glow
+          return { 
+            shouldGlow: true, 
+            color: '#FFD700', 
+            intensity: '0 0 10px rgba(255, 215, 0, 0.7), 0 0 20px rgba(255, 215, 0, 0.5)' 
+          };
+        } else {
+          // Second dice is not 1 - both glow red
+          return { 
+            shouldGlow: true, 
+            color: '#FF0000', 
+            intensity: '0 0 8px rgba(255, 0, 0, 0.6), 0 0 16px rgba(255, 0, 0, 0.4)' 
+          };
         }
-      }
-      
-      if (diceNumber === 2) {
-        if (dice1Value === 1 && dice2Value && !isRolling) {
-          if (dice2Value === 1) {
-            return { 
-              shouldGlow: true, 
-              color: '#FFD700', 
-              intensity: '0 0 10px rgba(255, 215, 0, 0.7), 0 0 20px rgba(255, 215, 0, 0.5)' 
-            };
-          } else {
-            return { 
-              shouldGlow: true, 
-              color: '#FF0000', 
-              intensity: '0 0 8px rgba(255, 0, 0, 0.6), 0 0 16px rgba(255, 0, 0, 0.4)' 
-            };
-          }
-        } else if (dice1Value === 6 && dice2Value && !isRolling) {
-          if (dice2Value === 6) {
-            return { 
-              shouldGlow: true, 
-              color: '#FF0000', 
-              intensity: '0 0 12px rgba(255, 0, 0, 0.8), 0 0 24px rgba(255, 0, 0, 0.6), 0 0 36px rgba(255, 0, 0, 0.4)' 
-            };
-          }
+      } else if (dice1Value === 6 && dice2Value && !isRolling) {
+        // First dice was 6, second dice settled
+        if (dice2Value === 6) {
+          // Double sixes - big red glow
+          return { 
+            shouldGlow: true, 
+            color: '#FF0000', 
+            intensity: '0 0 12px rgba(255, 0, 0, 0.8), 0 0 24px rgba(255, 0, 0, 0.6), 0 0 36px rgba(255, 0, 0, 0.4)' 
+          };
         }
+        // If second dice is not 6, no glow (first dice glow also removed)
       }
     }
     

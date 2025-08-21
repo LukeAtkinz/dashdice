@@ -65,7 +65,34 @@ export class MatchmakingService {
     try {
       console.log('🔄 MatchmakingService: Creating rematch waiting room');
       
-      // Create waiting room data - immediately move to match
+      // Fetch user background data for both players
+      const hostUserRef = doc(db, 'users', hostUserId);
+      const opponentUserRef = doc(db, 'users', opponentUserId);
+      
+      const [hostUserDoc, opponentUserDoc] = await Promise.all([
+        getDoc(hostUserRef),
+        getDoc(opponentUserRef)
+      ]);
+      
+      // Get host background data
+      let hostDisplayBg = { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+      let hostMatchBg = { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+      if (hostUserDoc.exists()) {
+        const hostData = hostUserDoc.data();
+        hostDisplayBg = hostData.inventory?.displayBackgroundEquipped || hostDisplayBg;
+        hostMatchBg = hostData.inventory?.matchBackgroundEquipped || hostMatchBg;
+      }
+      
+      // Get opponent background data
+      let opponentDisplayBg = { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+      let opponentMatchBg = { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+      if (opponentUserDoc.exists()) {
+        const opponentData = opponentUserDoc.data();
+        opponentDisplayBg = opponentData.inventory?.displayBackgroundEquipped || opponentDisplayBg;
+        opponentMatchBg = opponentData.inventory?.matchBackgroundEquipped || opponentMatchBg;
+      }
+      
+      // Create waiting room data - keep as waiting room initially
       const waitingRoomData = {
         gameMode,
         gameType: 'Private Rematch',
@@ -75,9 +102,8 @@ export class MatchmakingService {
         hostData: {
           playerDisplayName: hostDisplayName,
           playerId: hostUserId,
-          // Add default background data
-          displayBackgroundEquipped: 'Relax',
-          matchBackgroundEquipped: 'Relax',
+          displayBackgroundEquipped: hostDisplayBg,
+          matchBackgroundEquipped: hostMatchBg,
           playerStats: {
             bestStreak: 0,
             currentStreak: 0,
@@ -88,9 +114,8 @@ export class MatchmakingService {
         opponentData: {
           playerDisplayName: opponentDisplayName,
           playerId: opponentUserId,
-          // Add default background data
-          displayBackgroundEquipped: 'Relax',
-          matchBackgroundEquipped: 'Relax',
+          displayBackgroundEquipped: opponentDisplayBg,
+          matchBackgroundEquipped: opponentMatchBg,
           playerStats: {
             bestStreak: 0,
             currentStreak: 0,
@@ -104,18 +129,21 @@ export class MatchmakingService {
         }
       };
       
-      // Create waiting room temporarily
+      // Create waiting room
       const waitingRoomRef = await addDoc(collection(db, 'waitingroom'), waitingRoomData);
       console.log('✅ MatchmakingService: Rematch waiting room created:', waitingRoomRef.id);
       
-      // Add a small delay to ensure proper database state
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Start countdown to move to matches after 3 seconds (gives users time to see the room)
+      setTimeout(async () => {
+        try {
+          await this.moveToMatches(waitingRoomRef.id);
+          console.log('✅ MatchmakingService: Rematch moved to matches automatically');
+        } catch (error) {
+          console.error('❌ MatchmakingService: Error moving rematch to matches:', error);
+        }
+      }, 3000);
       
-      // Move to matches (skip waiting room phase)
-      const newMatchId = await this.moveToMatches(waitingRoomRef.id);
-      
-      console.log('✅ MatchmakingService: Rematch moved to matches:', newMatchId);
-      return newMatchId; // Return the actual match ID
+      return waitingRoomRef.id; // Return the waiting room ID
     } catch (error) {
       console.error('❌ MatchmakingService: Error creating rematch waiting room:', error);
       throw error;

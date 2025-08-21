@@ -30,7 +30,6 @@ export interface GameModeRules {
     doubleGrantsExtraRoll?: boolean;
     exactScoreRequired?: boolean;
     teamBased?: boolean;
-    autoBank?: boolean;
   };
 }
 

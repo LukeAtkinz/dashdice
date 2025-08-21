@@ -139,7 +139,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       description: 'Fast-paced dice action'
     },
     classic: { 
-      name: 'Classic Mode', 
+      name: 'Only One Will Rise', 
       description: 'Traditional dice gameplay'
     },
     'zero-hour': { 

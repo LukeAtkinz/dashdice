@@ -360,7 +360,7 @@ html, body {
 /* Faster carousel on mobile */
 @media (max-width: 768px) {
   .animate-carousel {
-    animation: carousel 15s linear infinite;
+    animation: carousel 30s linear infinite;
   }
 }
 

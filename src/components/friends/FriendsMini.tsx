@@ -5,6 +5,7 @@ import { useFriends, useGameInvitationNotifications } from '@/context/FriendsCon
 import FriendCard from './FriendCard';
 import FriendRequests from './FriendRequests';
 import GameInvitations from './GameInvitations';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 interface FriendsMiniProps {
   maxFriends?: number;
@@ -101,11 +102,9 @@ export default function FriendsMini({ maxFriends = 5, onViewAll }: FriendsMiniPr
           <span>friend{friends.length !== 1 ? 's' : ''}</span>
         </div>
         {onlineFriendsCount > 0 && (
-          <div className="flex items-center gap-2 text-green-400 font-bold">
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
-            <span className="text-lg" style={{ textShadow: "0 0 10px rgba(74, 222, 128, 0.8)" }}>
-              {onlineFriendsCount} online
-            </span>
+          <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span>{onlineFriendsCount} online</span>
           </div>
         )}
       </div>
@@ -139,11 +138,21 @@ export default function FriendsMini({ maxFriends = 5, onViewAll }: FriendsMiniPr
       ) : (
         <div className="space-y-3">
           {sortedFriends.map((friend) => (
-            <FriendCard
+            <ErrorBoundary
               key={friend.id}
-              friend={friend}
-              compact
-            />
+              fallback={
+                <div className="p-2 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-800 text-xs">
+                    Error loading friend: {friend.friendData?.displayName || 'Unknown'}
+                  </p>
+                </div>
+              }
+            >
+              <FriendCard
+                friend={friend}
+                compact
+              />
+            </ErrorBoundary>
           ))}
           
           {friends.length > maxFriends && (
