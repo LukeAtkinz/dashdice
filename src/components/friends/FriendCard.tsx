@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FriendWithStatus } from '@/types/friends';
 import { useFriends } from '@/context/FriendsContext';
 import { useChat } from '@/context/ChatContext';
+import { openFriendChatInUnified } from '@/components/chat/UnifiedChatWindow';
 import MiniGameModeSelector from './MiniGameModeSelector';
 import { useBackground } from '@/context/BackgroundContext';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
-import ChatWindow from '@/components/chat/ChatWindow';
 
 interface FriendCardProps {
   friend: FriendWithStatus;
@@ -37,10 +37,24 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
           return {}; // Videos will be handled in JSX with <video> element
         }
         
-        // For image backgrounds
+        // For image backgrounds - fix path handling
         if (background.type === 'image' && background.file) {
+          let backgroundPath = background.file;
+          
+          // Fix common background paths
+          if (backgroundPath === 'All For Glory.jpg' || backgroundPath === '/backgrounds/All For Glory.jpg') {
+            backgroundPath = '/backgrounds/All For Glory.jpg';
+          } else if (backgroundPath === 'Long Road Ahead.jpg' || backgroundPath === '/backgrounds/Long Road Ahead.jpg') {
+            backgroundPath = '/backgrounds/Long Road Ahead.jpg';
+          } else if (backgroundPath === 'Relax.png' || backgroundPath === '/backgrounds/Relax.png') {
+            backgroundPath = '/backgrounds/Relax.png';
+          } else if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
+            // If it's a filename without path, prepend /backgrounds/
+            backgroundPath = `/backgrounds/${backgroundPath}`;
+          }
+          
           return {
-            backgroundImage: `url(${background.file})`,
+            backgroundImage: `url(${backgroundPath})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
@@ -54,8 +68,21 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
       // Legacy support: Handle string URLs or background objects with different structure
       const backgroundUrl = typeof background === 'string' ? background : background?.file;
       if (backgroundUrl && typeof backgroundUrl === 'string') {
+        let backgroundPath = backgroundUrl;
+        
+        // Fix common background paths for legacy format
+        if (backgroundPath === 'All For Glory.jpg' || backgroundPath === '/backgrounds/All For Glory.jpg') {
+          backgroundPath = '/backgrounds/All For Glory.jpg';
+        } else if (backgroundPath === 'Long Road Ahead.jpg' || backgroundPath === '/backgrounds/Long Road Ahead.jpg') {
+          backgroundPath = '/backgrounds/Long Road Ahead.jpg';
+        } else if (backgroundPath === 'Relax.png' || backgroundPath === '/backgrounds/Relax.png') {
+          backgroundPath = '/backgrounds/Relax.png';
+        } else if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
+          backgroundPath = `/backgrounds/${backgroundPath}`;
+        }
+        
         return {
-          backgroundImage: `url(${backgroundUrl})`,
+          backgroundImage: `url(${backgroundPath})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -68,8 +95,21 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
     
     // Fallback: Check legacy equippedBackground field
     if (friendData?.equippedBackground && typeof friendData.equippedBackground === 'string') {
+      let backgroundPath = friendData.equippedBackground;
+      
+      // Fix paths for legacy equippedBackground
+      if (backgroundPath === 'All For Glory.jpg' || backgroundPath === '/backgrounds/All For Glory.jpg') {
+        backgroundPath = '/backgrounds/All For Glory.jpg';
+      } else if (backgroundPath === 'Long Road Ahead.jpg' || backgroundPath === '/backgrounds/Long Road Ahead.jpg') {
+        backgroundPath = '/backgrounds/Long Road Ahead.jpg';
+      } else if (backgroundPath === 'Relax.png' || backgroundPath === '/backgrounds/Relax.png') {
+        backgroundPath = '/backgrounds/Relax.png';
+      } else if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
+        backgroundPath = `/backgrounds/${backgroundPath}`;
+      }
+      
       return {
-        backgroundImage: `url(${friendData.equippedBackground})`,
+        backgroundImage: `url(${backgroundPath})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -85,8 +125,21 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
         item && typeof item === 'object' && item.type === 'background'
       );
       if (backgroundItem?.imageUrl && typeof backgroundItem.imageUrl === 'string') {
+        let backgroundPath = backgroundItem.imageUrl;
+        
+        // Fix paths for inventory backgrounds
+        if (backgroundPath === 'All For Glory.jpg' || backgroundPath === '/backgrounds/All For Glory.jpg') {
+          backgroundPath = '/backgrounds/All For Glory.jpg';
+        } else if (backgroundPath === 'Long Road Ahead.jpg' || backgroundPath === '/backgrounds/Long Road Ahead.jpg') {
+          backgroundPath = '/backgrounds/Long Road Ahead.jpg';
+        } else if (backgroundPath === 'Relax.png' || backgroundPath === '/backgrounds/Relax.png') {
+          backgroundPath = '/backgrounds/Relax.png';
+        } else if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
+          backgroundPath = `/backgrounds/${backgroundPath}`;
+        }
+        
         return {
-          backgroundImage: `url(${backgroundItem.imageUrl})`,
+          backgroundImage: `url(${backgroundPath})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -119,8 +172,22 @@ const getFriendVideoBackground = (friend: FriendWithStatus) => {
       
       // Handle complete background objects with video type
       if (typeof background === 'object' && background.type === 'video' && background.file) {
+        let videoPath = background.file;
+        
+        // Fix common video background paths
+        if (videoPath === 'New Day.mp4' || videoPath === '/backgrounds/New Day.mp4') {
+          videoPath = '/backgrounds/New Day.mp4';
+        } else if (videoPath === 'On A Mission.mp4' || videoPath === '/backgrounds/On A Mission.mp4') {
+          videoPath = '/backgrounds/On A Mission.mp4';
+        } else if (videoPath === 'Underwater.mp4' || videoPath === '/backgrounds/Underwater.mp4') {
+          videoPath = '/backgrounds/Underwater.mp4';
+        } else if (!videoPath.startsWith('/') && !videoPath.startsWith('http')) {
+          // If it's a filename without path, prepend /backgrounds/
+          videoPath = `/backgrounds/${videoPath}`;
+        }
+        
         return {
-          file: background.file,
+          file: videoPath,
           name: background.name || 'Background Video'
         };
       }
@@ -141,12 +208,9 @@ export default function FriendCard({ friend, compact = false, showActions = true
   }
 
   const { removeFriend, sendGameInvitation, friendPresences } = useFriends();
-  const { getFriendChatRoom, joinRoom } = useChat();
   const [isRemoving, setIsRemoving] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
   const [isGameSelectorExpanded, setIsGameSelectorExpanded] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [chatRoomId, setChatRoomId] = useState<string | null>(null);
 
   // Get presence from context with safety checks
   const presence = friendPresences?.[friend.friendId];
@@ -198,11 +262,9 @@ export default function FriendCard({ friend, compact = false, showActions = true
         return;
       }
 
-      // Get or create friend chat room
-      const roomId = await getFriendChatRoom(friend.friendId);
-      await joinRoom(roomId);
-      setChatRoomId(roomId);
-      setIsChatOpen(true);
+      // Use the unified chat system
+      const friendName = friend.friendData?.displayName || 'Unknown Player';
+      openFriendChatInUnified(friend.friendId, friendName);
     } catch (error) {
       console.error('Error opening chat:', error);
     }
@@ -353,24 +415,6 @@ export default function FriendCard({ friend, compact = false, showActions = true
       ></div>
       
       <div className="relative z-10 p-4">
-        {/* Profile section - Always at top */}
-        <div className="flex items-center gap-3 mb-3">
-          <div className="relative">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-lg font-bold font-audiowide">
-                {friend.friendData?.displayName?.charAt(0)?.toUpperCase() || '?'}
-              </span>
-            </div>
-            <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(presenceStatus)} rounded-full border-2 border-gray-800`}></div>
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-white font-semibold font-audiowide truncate">
-              {friend.friendData?.displayName || 'Unknown Player'}
-            </h3>
-            <p className="text-white text-sm font-montserrat">{getStatusText(presenceStatus)}</p>
-          </div>
-        </div>
-
         {/* Action buttons - Desktop: inline, Mobile: stacked below */}
         {showActions && (
           <motion.div 
@@ -378,9 +422,80 @@ export default function FriendCard({ friend, compact = false, showActions = true
             layout
           >
             {/* Desktop: Horizontal layout aligned with content */}
-            <div className="hidden sm:flex gap-2 ml-15"> {/* Add left margin to align with content after profile picture */}
-              <div className="flex-1">
-                {/* Inline Game Mode Selector - Desktop */}
+            <div className="hidden sm:flex items-center gap-3">
+              {/* Profile section content for alignment */}
+              <div className="flex items-center gap-3 flex-1">
+                <div className="relative">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-lg font-bold font-audiowide">
+                      {friend.friendData?.displayName?.charAt(0)?.toUpperCase() || '?'}
+                    </span>
+                  </div>
+                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(presenceStatus)} rounded-full border-2 border-gray-800`}></div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-white font-semibold font-audiowide truncate">
+                    {friend.friendData?.displayName || 'Unknown Player'}
+                  </h3>
+                  <p className="text-white text-sm font-montserrat">{getStatusText(presenceStatus)}</p>
+                </div>
+              </div>
+              
+              {/* Action buttons aligned with content */}
+              <div className="flex gap-2">
+                <motion.button
+                  onClick={() => setIsGameSelectorExpanded(!isGameSelectorExpanded)}
+                  disabled={presenceStatus === 'offline' || isInviting}
+                  whileHover={presenceStatus !== 'offline' && !isInviting ? { scale: 1.02 } : {}}
+                  whileTap={presenceStatus !== 'offline' && !isInviting ? { scale: 0.98 } : {}}
+                  className={`
+                    w-24 flex items-center justify-center p-2 rounded-xl
+                    bg-blue-600/60 hover:bg-blue-700/60 text-white font-semibold text-xs
+                    transition-colors duration-200
+                    ${(presenceStatus === 'offline' || isInviting) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                  `}
+                  style={{ fontFamily: 'Audiowide' }}
+                >
+                  {isGameSelectorExpanded ? 'SELECT' : 'INVITE'}
+                </motion.button>
+                <button
+                  onClick={handleOpenChat}
+                  className="w-24 px-2 py-2 bg-green-600/60 hover:bg-green-700/60 text-white text-xs rounded-xl font-montserrat transition-colors"
+                >
+                  Chat
+                </button>
+                <button
+                  onClick={handleRemoveFriend}
+                  disabled={isRemoving}
+                  className="w-24 px-2 py-2 bg-purple-600/60 hover:bg-purple-700/60 disabled:bg-gray-600/60 disabled:cursor-not-allowed text-white text-xs rounded-xl font-montserrat transition-colors"
+                >
+                  {isRemoving ? 'Managing...' : 'Manage'}
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile: Show profile section separately */}
+            <div className="sm:hidden">
+              {/* Profile section - Mobile */}
+              <div className="flex items-center gap-3 mb-3">
+                <div className="relative">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-lg font-bold font-audiowide">
+                      {friend.friendData?.displayName?.charAt(0)?.toUpperCase() || '?'}
+                    </span>
+                  </div>
+                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(presenceStatus)} rounded-full border-2 border-gray-800`}></div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-white font-semibold font-audiowide truncate">
+                    {friend.friendData?.displayName || 'Unknown Player'}
+                  </h3>
+                  <p className="text-white text-sm font-montserrat">{getStatusText(presenceStatus)}</p>
+                </div>
+              </div>
+              
+              {/* Mobile buttons */}
+              <div className="flex flex-col gap-2 mt-2">
                 <motion.button
                   onClick={() => setIsGameSelectorExpanded(!isGameSelectorExpanded)}
                   disabled={presenceStatus === 'offline' || isInviting}
@@ -388,7 +503,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
                   whileTap={presenceStatus !== 'offline' && !isInviting ? { scale: 0.98 } : {}}
                   className={`
                     w-full flex items-center justify-center p-3 rounded-xl
-                    bg-blue-600 hover:bg-blue-700 text-white font-semibold
+                    bg-blue-600/60 hover:bg-blue-700/60 text-white font-semibold
                     transition-colors duration-200
                     ${(presenceStatus === 'offline' || isInviting) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                   `}
@@ -396,54 +511,21 @@ export default function FriendCard({ friend, compact = false, showActions = true
                 >
                   {isGameSelectorExpanded ? 'SELECT GAME MODE' : 'INVITE TO GAME'}
                 </motion.button>
-              </div>
-              <button
-                onClick={handleOpenChat}
-                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded font-montserrat transition-colors"
-              >
-                Chat
-              </button>
-              <button
-                onClick={handleRemoveFriend}
-                disabled={isRemoving}
-                className="px-3 py-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded font-montserrat transition-colors"
-              >
-                {isRemoving ? 'Managing...' : 'Manage'}
-              </button>
-            </div>
-
-            {/* Mobile: Vertical layout - stacked below profile */}
-            <div className="sm:hidden flex flex-col gap-2 mt-2">
-              {/* Inline Game Mode Selector - Mobile */}
-              <motion.button
-                onClick={() => setIsGameSelectorExpanded(!isGameSelectorExpanded)}
-                disabled={presenceStatus === 'offline' || isInviting}
-                whileHover={presenceStatus !== 'offline' && !isInviting ? { scale: 1.02 } : {}}
-                whileTap={presenceStatus !== 'offline' && !isInviting ? { scale: 0.98 } : {}}
-                className={`
-                  w-full flex items-center justify-center p-3 rounded-xl
-                  bg-blue-600 hover:bg-blue-700 text-white font-semibold
-                  transition-colors duration-200
-                  ${(presenceStatus === 'offline' || isInviting) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                `}
-                style={{ fontFamily: 'Audiowide' }}
-              >
-                {isGameSelectorExpanded ? 'SELECT GAME MODE' : 'INVITE TO GAME'}
-              </motion.button>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleOpenChat}
-                  className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white text-sm rounded-lg font-montserrat transition-colors touch-manipulation"
-                >
-                  Chat
-                </button>
-                <button
-                  onClick={handleRemoveFriend}
-                  disabled={isRemoving}
-                  className="flex-1 px-4 py-3 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded-lg font-montserrat transition-colors touch-manipulation"
-                >
-                  {isRemoving ? 'Managing...' : 'Manage'}
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleOpenChat}
+                    className="flex-1 px-4 py-3 bg-green-600/60 hover:bg-green-700/60 active:bg-green-800/60 text-white text-sm rounded-lg font-montserrat transition-colors touch-manipulation"
+                  >
+                    Chat
+                  </button>
+                  <button
+                    onClick={handleRemoveFriend}
+                    disabled={isRemoving}
+                    className="flex-1 px-4 py-3 bg-purple-600/60 hover:bg-purple-700/60 active:bg-purple-800/60 disabled:bg-gray-600/60 disabled:cursor-not-allowed text-white text-sm rounded-lg font-montserrat transition-colors touch-manipulation"
+                  >
+                    {isRemoving ? 'Managing...' : 'Manage'}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -531,16 +613,6 @@ export default function FriendCard({ friend, compact = false, showActions = true
           </div>
         )}
       </div>
-      
-      {/* Chat Window */}
-      {isChatOpen && chatRoomId && (
-        <ChatWindow
-          roomId={chatRoomId}
-          isVisible={isChatOpen}
-          onClose={() => setIsChatOpen(false)}
-          position="bottom-right"
-        />
-      )}
     </motion.div>
   );
 }

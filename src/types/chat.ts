@@ -202,3 +202,18 @@ export type ChatModerationAction = {
   reason: string;
   duration?: number; // For mutes/bans
 };
+
+// Unified Chat Window Types
+export interface UnifiedChatContextType {
+  openFriendChat: (friendId: string, friendName: string) => Promise<void>;
+  openGameChat: (gameId: string) => Promise<void>;
+  closeChatTab: (tabId: string) => void;
+  activeChats: Array<{
+    id: string;
+    roomId: string;
+    type: 'global' | 'friend' | 'game';
+    title: string;
+    friendId?: string;
+    gameId?: string;
+  }>;
+}

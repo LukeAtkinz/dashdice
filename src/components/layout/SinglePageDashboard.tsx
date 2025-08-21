@@ -368,7 +368,12 @@ const DashboardContent: React.FC = () => {
                   >
                     FRIENDS
                   </span>
-                  <NotificationBadge count={onlinePlayerCount} />
+                  <div className="relative">
+                    <NotificationBadge 
+                      count={onlinePlayerCount} 
+                      className="absolute -top-2 -right-1"
+                    />
+                  </div>
                 </button>
 
                 {/* SHOP Button - Disabled for future implementation */}

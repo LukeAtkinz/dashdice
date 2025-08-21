@@ -2,7 +2,8 @@ import {
   collection, 
   doc, 
   addDoc, 
-  updateDoc, 
+  updateDoc,
+  setDoc,
   deleteDoc,
   query, 
   where, 
@@ -470,7 +471,7 @@ export class ChatService {
   // Update user chat settings
   static async updateUserChatSettings(userId: string, settings: Partial<UserChatSettings>): Promise<boolean> {
     try {
-      await updateDoc(doc(db, 'userChatSettings', userId), settings);
+      await setDoc(doc(db, 'userChatSettings', userId), settings, { merge: true });
       return true;
     } catch (error) {
       console.error('Error updating user chat settings:', error);

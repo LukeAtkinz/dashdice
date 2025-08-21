@@ -121,15 +121,11 @@ export default function FriendsList({
             Friends
           </h2>
           <div className="flex items-center gap-1 text-sm text-gray-300 dark:text-gray-300 font-montserrat">
-            <span>({friends.length})</span>
             {onlineFriendsCount > 0 && (
-              <>
-                <span>•</span>
-                <span className="flex items-center gap-1 text-green-400 font-medium">
-                  <div className="w-3 h-3 bg-green-500 rounded-full shadow-sm"></div>
-                  <span className="text-green-300">{onlineFriendsCount} online</span>
-                </span>
-              </>
+              <span className="flex items-center gap-1 text-green-400 font-medium">
+                <div className="w-3 h-3 bg-green-500 rounded-full shadow-sm"></div>
+                <span className="text-green-300">{onlineFriendsCount} online</span>
+              </span>
             )}
           </div>
         </div>
