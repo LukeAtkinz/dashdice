@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FriendWithStatus } from '@/types/friends';
 import { useFriends } from '@/context/FriendsContext';
 import MiniGameModeSelector from './MiniGameModeSelector';
@@ -140,6 +141,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
   const { removeFriend, sendGameInvitation, friendPresences } = useFriends();
   const [isRemoving, setIsRemoving] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
+  const [isGameSelectorExpanded, setIsGameSelectorExpanded] = useState(false);
 
   // Get presence from context with safety checks
   const presence = friendPresences?.[friend.friendId];
@@ -161,6 +163,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
 
   const handleGameInvite = async (gameMode: string) => {
     setIsInviting(true);
+    setIsGameSelectorExpanded(false); // Close the selector after selection
     try {
       if (!friend?.friendId || typeof friend.friendId !== 'string') {
         console.error('Invalid friend ID:', friend?.friendId);
@@ -182,6 +185,15 @@ export default function FriendCard({ friend, compact = false, showActions = true
       setIsInviting(false);
     }
   };
+
+  // Game mode options for inline selector
+  const gameModes = [
+    { id: 'classic', name: 'Only One Will Rise', icon: '/Design Elements/Crown Mode.webp' },
+    { id: 'quickfire', name: 'Quickfire', icon: '/Design Elements/Gem Bucket.webp' },
+    { id: 'zero-hour', name: 'Zero Hour', icon: '/Design Elements/Satelite.webp' },
+    { id: 'last-line', name: 'Last Line', icon: '/Design Elements/skull.webp' },
+    { id: 'true-grit', name: 'True Grit', icon: '/Design Elements/Castle.webp' }
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -265,8 +277,8 @@ export default function FriendCard({ friend, compact = false, showActions = true
   }
 
   return (
-    <div 
-      className="relative overflow-hidden transition-all duration-200 touch-manipulation"
+    <motion.div 
+      className="relative overflow-hidden touch-manipulation"
       style={{
         ...getFriendBackgroundStyle(friend),
         borderRadius: '20px',
@@ -275,6 +287,14 @@ export default function FriendCard({ friend, compact = false, showActions = true
         transform: 'translateZ(0)',
         willChange: 'transform'
       }}
+      animate={{
+        height: isGameSelectorExpanded ? 'auto' : 'auto'
+      }}
+      transition={{
+        duration: 0.3,
+        ease: "easeInOut"
+      }}
+      layout
     >
       {/* Video background for friends with video display backgrounds */}
       {(() => {
@@ -331,15 +351,29 @@ export default function FriendCard({ friend, compact = false, showActions = true
 
         {/* Action buttons - Desktop: inline, Mobile: stacked below */}
         {showActions && (
-          <div className="space-y-2">
+          <motion.div 
+            className="space-y-2"
+            layout
+          >
             {/* Desktop: Horizontal layout aligned with content */}
             <div className="hidden sm:flex gap-2 ml-15"> {/* Add left margin to align with content after profile picture */}
               <div className="flex-1">
-                <MiniGameModeSelector
-                  onGameModeSelect={handleGameInvite}
-                  isDisabled={presenceStatus === 'offline' || isInviting}
-                  className="w-full"
-                />
+                {/* Inline Game Mode Selector - Desktop */}
+                <motion.button
+                  onClick={() => setIsGameSelectorExpanded(!isGameSelectorExpanded)}
+                  disabled={presenceStatus === 'offline' || isInviting}
+                  whileHover={presenceStatus !== 'offline' && !isInviting ? { scale: 1.02 } : {}}
+                  whileTap={presenceStatus !== 'offline' && !isInviting ? { scale: 0.98 } : {}}
+                  className={`
+                    w-full flex items-center justify-center p-3 rounded-xl
+                    bg-blue-600 hover:bg-blue-700 text-white font-semibold
+                    transition-colors duration-200
+                    ${(presenceStatus === 'offline' || isInviting) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                  `}
+                  style={{ fontFamily: 'Audiowide' }}
+                >
+                  {isGameSelectorExpanded ? 'SELECT GAME MODE' : 'INVITE TO GAME'}
+                </motion.button>
               </div>
               <button
                 className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded font-montserrat transition-colors"
@@ -357,11 +391,22 @@ export default function FriendCard({ friend, compact = false, showActions = true
 
             {/* Mobile: Vertical layout - stacked below profile */}
             <div className="sm:hidden flex flex-col gap-2 mt-2">
-              <MiniGameModeSelector
-                onGameModeSelect={handleGameInvite}
-                isDisabled={presenceStatus === 'offline' || isInviting}
-                className="w-full"
-              />
+              {/* Inline Game Mode Selector - Mobile */}
+              <motion.button
+                onClick={() => setIsGameSelectorExpanded(!isGameSelectorExpanded)}
+                disabled={presenceStatus === 'offline' || isInviting}
+                whileHover={presenceStatus !== 'offline' && !isInviting ? { scale: 1.02 } : {}}
+                whileTap={presenceStatus !== 'offline' && !isInviting ? { scale: 0.98 } : {}}
+                className={`
+                  w-full flex items-center justify-center p-3 rounded-xl
+                  bg-blue-600 hover:bg-blue-700 text-white font-semibold
+                  transition-colors duration-200
+                  ${(presenceStatus === 'offline' || isInviting) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                `}
+                style={{ fontFamily: 'Audiowide' }}
+              >
+                {isGameSelectorExpanded ? 'SELECT GAME MODE' : 'INVITE TO GAME'}
+              </motion.button>
               <div className="flex gap-2">
                 <button
                   className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white text-sm rounded-lg font-montserrat transition-colors touch-manipulation"
@@ -377,7 +422,65 @@ export default function FriendCard({ friend, compact = false, showActions = true
                 </button>
               </div>
             </div>
-          </div>
+
+            {/* Expandable Game Mode Grid - Appears below actions when expanded */}
+            <AnimatePresence>
+              {isGameSelectorExpanded && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                  exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <div className="bg-gray-900/95 backdrop-blur-md border border-gray-700 rounded-xl p-4">
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      {gameModes.map((mode, index) => (
+                        <motion.button
+                          key={mode.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05, duration: 0.2 }}
+                          onClick={() => handleGameInvite(mode.id)}
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="flex flex-col items-center p-3 rounded-lg
+                                   bg-gray-800/50 hover:bg-gray-700/50 border border-gray-600
+                                   hover:border-blue-400 transition-all duration-200"
+                        >
+                          <img 
+                            src={mode.icon} 
+                            alt={mode.name}
+                            className="w-8 h-8 object-contain mb-2"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/Design Elements/Crown Mode.webp'; // Fallback icon
+                            }}
+                          />
+                          <span className="text-xs text-white font-medium text-center leading-tight">
+                            {mode.name}
+                          </span>
+                        </motion.button>
+                      ))}
+                    </div>
+                    
+                    {/* Cancel Button */}
+                    <motion.button
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.3 }}
+                      onClick={() => setIsGameSelectorExpanded(false)}
+                      className="w-full py-2 px-4 bg-gray-700 hover:bg-gray-600 
+                                 text-white rounded-lg font-medium transition-colors"
+                      style={{ fontFamily: 'Audiowide' }}
+                    >
+                      CANCEL
+                    </motion.button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         )}
         
         {presence?.lastSeen && presenceStatus === 'offline' && (
@@ -400,6 +503,6 @@ export default function FriendCard({ friend, compact = false, showActions = true
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
