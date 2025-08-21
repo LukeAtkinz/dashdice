@@ -332,8 +332,8 @@ export default function FriendCard({ friend, compact = false, showActions = true
         {/* Action buttons - Desktop: inline, Mobile: stacked below */}
         {showActions && (
           <div className="space-y-2">
-            {/* Desktop: Horizontal layout */}
-            <div className="hidden sm:flex gap-2">
+            {/* Desktop: Horizontal layout aligned with content */}
+            <div className="hidden sm:flex gap-2 ml-15"> {/* Add left margin to align with content after profile picture */}
               <div className="flex-1">
                 <MiniGameModeSelector
                   onGameModeSelect={handleGameInvite}

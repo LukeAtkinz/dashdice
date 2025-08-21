@@ -109,7 +109,7 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
 
   // Listen for rematch room updates when we're the requester
   useEffect(() => {
-    if (!rematchRoomId || rematchState !== 'waiting') return;
+    if (!rematchRoomId || (rematchState !== 'requesting' && rematchState !== 'waiting')) return;
     
     const unsubscribe = RematchService.subscribeToRematchRoom(
       rematchRoomId,
@@ -153,7 +153,7 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
       );
       
       setRematchRoomId(roomId);
-      setRematchState('waiting');
+      // Stay in 'requesting' state until opponent accepts
     } catch (error) {
       console.error('❌ Error creating rematch request:', error);
       setRematchState('idle');
@@ -518,7 +518,7 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
           </div>
         )}
         
-        {rematchState === 'waiting' && (
+        {rematchState === 'accepted' && (
           <div className="px-8 py-4 bg-blue-600/20 border-2 border-blue-400 rounded-xl">
             <span className="text-blue-400 font-bold text-xl" style={{ fontFamily: "Audiowide" }}>
               REMATCH ACCEPTED - STARTING GAME...

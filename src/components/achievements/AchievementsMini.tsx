@@ -60,7 +60,7 @@ export default function AchievementsMini({ maxDisplay = 12 }: AchievementsMiniPr
       <div className="flex items-center justify-between pb-[0.5rem] md:pb-[1rem]">
         <h3 className="text-xl font-audiowide text-white uppercase">Achievements</h3>
         <div className="text-right">
-          <div className="text-2xl font-bold text-blue-400 glow-text">{completionPercentage}%</div>
+          <div className="text-3xl font-bold text-blue-400" style={{ textShadow: '0 0 10px rgba(59, 130, 246, 0.5)' }}>{completionPercentage}%</div>
           <div className="text-sm text-gray-400 font-montserrat">Complete</div>
         </div>
       </div>
@@ -69,48 +69,29 @@ export default function AchievementsMini({ maxDisplay = 12 }: AchievementsMiniPr
       <div className="relative overflow-hidden">
         <div className="achievements-carousel overflow-hidden">
           <div className="flex gap-4 animate-carousel">
-            {recentAchievements.length > 0 ? (
-              // Show recent unlocked achievements (duplicate for seamless loop)
-              [...recentAchievements.slice(0, Math.min(15, recentAchievements.length)), 
-               ...recentAchievements.slice(0, Math.min(15, recentAchievements.length))].map((userAchievement, index) => {
-                const achievement = allAchievements.find(a => a.id === userAchievement.achievementId);
-                return achievement ? (
-                  <div key={`${userAchievement.id}-${index}`} className="flex-shrink-0">
-                    <AchievementCard
-                      achievement={achievement}
-                      size="small"
-                      showProgress={false}
-                      showName={false}
-                      isMiniCard={true}
-                    />
-                  </div>
-                ) : null;
-              })
-            ) : (
-              // Show more achievements even if not unlocked (duplicate for seamless loop)
-              [...allAchievements.slice(0, Math.min(15, allAchievements.length)),
-               ...allAchievements.slice(0, Math.min(15, allAchievements.length))].map((achievement, index) => (
-                <div key={`${achievement.id}-${index}`} className="flex-shrink-0">
-                  <AchievementCard
-                    achievement={achievement}
-                    size="small"
-                    showProgress={false}
-                    showName={false}
-                    isMiniCard={true}
-                  />
-                </div>
-              ))
-            )}
+            {/* Show all achievements (duplicate for seamless loop) */}
+            {[...allAchievements.slice(0, Math.min(15, allAchievements.length)),
+              ...allAchievements.slice(0, Math.min(15, allAchievements.length))].map((achievement, index) => (
+              <div key={`${achievement.id}-${index}`} className="flex-shrink-0">
+                <AchievementCard
+                  achievement={achievement}
+                  size="small"
+                  showProgress={false}
+                  showName={false}
+                  isMiniCard={true}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       {/* Stats */}
       <div className="mt-4 pt-4 border-t border-gray-700">
-        <div className="flex justify-between items-center text-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-gray-400 font-montserrat">Unlocked:</span>
-            <span className="text-white font-audiowide">{completedAchievements.length} / {allAchievements.length}</span>
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <span className="text-gray-300 font-montserrat text-base">Unlocked:</span>
+            <span className="text-white font-audiowide text-xl font-bold">{completedAchievements.length} / {allAchievements.length}</span>
           </div>
           <button
             onClick={() => {

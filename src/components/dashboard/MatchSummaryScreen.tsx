@@ -92,7 +92,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         'Open Server' // Default game type
       );
       setRematchRoomId(roomId);
-      setRematchState('waiting'); // Change to waiting after successful creation
+      // Stay in 'requesting' state until opponent accepts
     } catch (error) {
       console.error('Error creating rematch room:', error);
       setRematchState('idle');
@@ -176,7 +176,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
 
   // Listen for rematch room updates when we're the requester
   useEffect(() => {
-    if (!rematchRoomId || rematchState !== 'waiting') return;
+    if (!rematchRoomId || (rematchState !== 'requesting' && rematchState !== 'waiting')) return;
     
     const unsubscribe = RematchService.subscribeToRematchRoom(
       rematchRoomId,
@@ -448,7 +448,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
           </div>
         )}
         
-        {rematchState === 'waiting' && (
+        {rematchState === 'accepted' && (
           <div className="px-8 py-4 bg-blue-600/20 border-2 border-blue-400 rounded-xl">
             <span className="text-blue-400 font-bold text-xl" style={{ fontFamily: "Audiowide" }}>
               REMATCH ACCEPTED - STARTING GAME...
@@ -549,14 +549,14 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
       )}
 
       {/* Mobile Rematch Status Display - Above nav buttons */}
-      {(rematchState === 'waiting' || rematchState === 'requesting') && (
+      {(rematchState === 'accepted' || rematchState === 'requesting') && (
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           className="md:hidden fixed bottom-20 left-4 right-4 z-40 p-4 bg-blue-600/90 border-2 border-blue-400 rounded-2xl backdrop-blur-sm"
         >
           <div className="text-center">
-            {rematchState === 'waiting' && (
+            {rematchState === 'accepted' && (
               <span className="text-white font-bold text-lg" style={{ fontFamily: "Audiowide" }}>
                 REMATCH ACCEPTED - STARTING GAME...
               </span>
