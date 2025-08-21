@@ -82,6 +82,12 @@ export class ChatService {
     replyTo?: string
   ): Promise<boolean> {
     try {
+      // Validate inputs
+      if (!roomId || !userId || !username || !content) {
+        console.error('Invalid message parameters:', { roomId, userId, username, content });
+        return false;
+      }
+
       // Get user's moderation settings
       const userSettings = await this.getUserChatSettings(userId);
       const filterLevel = userSettings?.profanityFilter || 'moderate';
@@ -96,28 +102,50 @@ export class ChatService {
         return false;
       }
 
-      // Check if user can send messages
-      const participant = await this.getParticipant(roomId, userId);
-      if (!participant || !participant.permissions.canSendMessages || participant.isMuted) {
-        console.warn('User cannot send messages');
-        return false;
+      // Check if user can send messages (skip for global chat or if participant check fails)
+      try {
+        // For global chat, skip participant check as it's open to all users
+        const roomDoc = await getDoc(doc(db, 'chatRooms', roomId));
+        const roomData = roomDoc.data();
+        
+        if (roomData?.type === 'global') {
+          // Global chat is open to all authenticated users
+          console.log('Global chat access - no participant check needed');
+        } else {
+          // For other room types, check participant permissions
+          const participant = await this.getParticipant(roomId, userId);
+          if (participant && (participant.isMuted || !participant.permissions?.canSendMessages)) {
+            console.warn('User cannot send messages - muted or no permission');
+            return false;
+          }
+        }
+      } catch (error) {
+        console.warn('Could not check room/participant status, allowing message:', error);
+        // Continue sending message even if participant check fails
       }
 
-      // Create message
-      const messageData = {
-        roomId,
-        userId,
-        username,
-        content: moderation.moderatedContent,
-        originalContent: moderation.isModerated ? content : undefined,
-        messageType: 'text' as const,
+      // Create message with validated data
+      const messageData: any = {
+        roomId: roomId,
+        userId: userId,
+        username: username,
+        content: moderation.moderatedContent || content,
+        messageType: 'text',
         timestamp: serverTimestamp(),
-        isModerated: moderation.isModerated,
-        moderationFlags: moderation.flags,
+        isModerated: moderation.isModerated || false,
+        moderationFlags: moderation.flags || [],
         replyTo: replyTo || null,
         reactions: {},
-        mentions: this.extractMentions(content)
+        mentions: this.extractMentions(content) || []
       };
+
+      // Only add originalContent if message was moderated and different from original
+      if (moderation.isModerated && content !== moderation.moderatedContent) {
+        messageData.originalContent = content;
+      } else {
+        // Ensure originalContent is never undefined
+        messageData.originalContent = null;
+      }
 
       const messageRef = await addDoc(collection(db, 'chatMessages'), messageData);
 
