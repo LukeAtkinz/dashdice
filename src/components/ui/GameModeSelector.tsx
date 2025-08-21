@@ -18,31 +18,31 @@ const GAME_MODES: GameMode[] = [
   {
     id: 'quickfire',
     name: 'Quickfire',
-    description: 'Fast-paced rounds with quick decisions',
-    icon: '/Design Elements/Gem Bucket.webp'
+    description: '',
+    icon: '/Design Elements/finance startup.webp'
   },
   {
     id: 'classic',
-    name: 'Only One Will Rise',
-    description: 'Traditional DashDice gameplay',
+    name: 'Classic Mode',
+    description: '',
     icon: '/Design Elements/Crown Mode.webp'
   },
   {
     id: 'zero-hour',
     name: 'Zero Hour',
-    description: 'Start at 100, race to exactly 0',
+    description: '',
     icon: '/Design Elements/Satelite.webp'
   },
   {
     id: 'last-line',
     name: 'Last Line',
-    description: 'Single roll elimination, doubles grant extra roll',
+    description: '',
     icon: '/Design Elements/skull.webp'
   },
   {
     id: 'true-grit',
     name: 'True Grit',
-    description: 'No banking allowed, pure risk vs reward',
+    description: '',
     icon: '/Design Elements/Castle.webp'
   }
 ];
@@ -113,19 +113,19 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({
                   onClick={() => handleSelect(mode.id)}
                   className={`
                     group p-5 rounded-[20px] border-2 transition-all duration-300
-                    bg-gradient-to-r from-gray-800/50 to-gray-700/50 backdrop-blur-sm
+                    bg-gray-800/30 backdrop-blur-md
                     ${selectedMode === mode.id 
-                      ? 'border-blue-400 bg-gradient-to-r from-blue-600/30 to-blue-500/20 scale-95 shadow-lg shadow-blue-500/20' 
-                      : 'border-gray-600/50 hover:border-gray-400/70 hover:bg-gradient-to-r hover:from-gray-700/60 hover:to-gray-600/60'
+                      ? 'border-blue-400 bg-blue-600/20 scale-95 shadow-lg shadow-blue-500/20' 
+                      : 'border-gray-600/50 hover:border-gray-400/70 hover:bg-gray-700/40'
                     }
                   `}
                 >
                   <div className="flex items-center gap-5">
-                    <div className="w-12 h-12 rounded-xl bg-gray-800/50 backdrop-blur-sm border border-gray-600/30 flex items-center justify-center overflow-hidden group-hover:border-gray-400/50 transition-all">
+                    <div className="w-16 h-16 rounded-xl bg-gray-800/30 backdrop-blur-md border border-gray-600/50 flex items-center justify-center overflow-hidden group-hover:border-gray-400/50 transition-all">
                       <img 
                         src={mode.icon} 
                         alt={mode.name}
-                        className="w-8 h-8 object-contain"
+                        className="w-12 h-12 object-contain opacity-60"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = '/Design Elements/Crown Mode.webp';
@@ -134,17 +134,14 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({
                     </div>
                     <div className="text-left flex-1">
                       <h3 
-                        className="text-white font-bold text-lg mb-1 group-hover:text-blue-200 transition-colors" 
-                        style={{ fontFamily: 'Audiowide' }}
+                        className="text-white font-bold text-lg group-hover:text-blue-200 transition-colors drop-shadow-lg" 
+                        style={{ 
+                          fontFamily: 'Audiowide',
+                          textShadow: '0 0 8px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.1)'
+                        }}
                       >
                         {mode.name.toUpperCase()}
                       </h3>
-                      <p 
-                        className="text-gray-300 text-sm leading-relaxed"
-                        style={{ fontFamily: 'Montserrat' }}
-                      >
-                        {mode.description}
-                      </p>
                     </div>
                   </div>
                 </motion.button>

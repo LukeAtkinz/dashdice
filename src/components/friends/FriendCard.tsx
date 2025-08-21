@@ -188,8 +188,8 @@ export default function FriendCard({ friend, compact = false, showActions = true
 
   // Game mode options for inline selector
   const gameModes = [
-    { id: 'classic', name: 'Only One Will Rise', icon: '/Design Elements/Crown Mode.webp' },
-    { id: 'quickfire', name: 'Quickfire', icon: '/Design Elements/Gem Bucket.webp' },
+    { id: 'quickfire', name: 'Quickfire', icon: '/Design Elements/finance startup.webp' },
+    { id: 'classic', name: 'Classic Mode', icon: '/Design Elements/Crown Mode.webp' },
     { id: 'zero-hour', name: 'Zero Hour', icon: '/Design Elements/Satelite.webp' },
     { id: 'last-line', name: 'Last Line', icon: '/Design Elements/skull.webp' },
     { id: 'true-grit', name: 'True Grit', icon: '/Design Elements/Castle.webp' }
@@ -433,7 +433,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                   className="overflow-hidden"
                 >
-                  <div className="bg-gray-900/95 backdrop-blur-md border border-gray-700 rounded-xl p-4">
+                  <div className="bg-transparent backdrop-blur-md border border-gray-700/50 rounded-xl p-4">
                     <div className="grid grid-cols-2 gap-3 mb-3">
                       {gameModes.map((mode, index) => (
                         <motion.button
@@ -444,20 +444,24 @@ export default function FriendCard({ friend, compact = false, showActions = true
                           onClick={() => handleGameInvite(mode.id)}
                           whileHover={{ scale: 1.05, y: -2 }}
                           whileTap={{ scale: 0.95 }}
-                          className="flex flex-col items-center p-3 rounded-lg
-                                   bg-gray-800/50 hover:bg-gray-700/50 border border-gray-600
-                                   hover:border-blue-400 transition-all duration-200"
+                          className="flex flex-col items-center justify-center p-4 rounded-lg
+                                   bg-gray-800/30 hover:bg-gray-700/40 border border-gray-600/50
+                                   hover:border-blue-400/70 transition-all duration-200 min-h-[100px]"
                         >
                           <img 
                             src={mode.icon} 
                             alt={mode.name}
-                            className="w-8 h-8 object-contain mb-2"
+                            className="w-12 h-12 object-contain mb-3 opacity-60"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
                               target.src = '/Design Elements/Crown Mode.webp'; // Fallback icon
                             }}
                           />
-                          <span className="text-xs text-white font-medium text-center leading-tight">
+                          <span className="text-sm text-white font-medium text-center leading-tight
+                                         drop-shadow-lg" 
+                                style={{ 
+                                  textShadow: '0 0 8px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.1)' 
+                                }}>
                             {mode.name}
                           </span>
                         </motion.button>
