@@ -268,7 +268,7 @@ const DashboardContent: React.FC = () => {
                   className={`flex cursor-pointer transition-all duration-300 ${
                     currentSection === 'match' && !isGameOver 
                       ? 'opacity-50 cursor-not-allowed' 
-                      : 'hover:scale-105 hover:shadow-lg active:scale-95'
+                      : 'hover:-translate-y-1 hover:scale-105 active:scale-95'
                   }`}
                   style={{
                     display: "flex",
@@ -321,7 +321,7 @@ const DashboardContent: React.FC = () => {
                   className={`relative flex cursor-pointer transition-all duration-300 ${
                     currentSection === 'match' && !isGameOver 
                       ? 'opacity-50 cursor-not-allowed' 
-                      : 'hover:scale-105 hover:shadow-lg active:scale-95'
+                      : 'hover:-translate-y-1 hover:scale-105 active:scale-95'
                   }`}
                   style={{
                     display: "flex",
@@ -468,7 +468,7 @@ const DashboardContent: React.FC = () => {
                 className={`flex transition-all duration-300 ${
                   currentSection === 'match' && !isGameOver 
                     ? 'opacity-50 cursor-not-allowed' 
-                    : 'cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95'
+                    : 'cursor-pointer hover:-translate-y-1 hover:scale-105 active:scale-95'
                 }`}
                 style={{
                   display: "flex",

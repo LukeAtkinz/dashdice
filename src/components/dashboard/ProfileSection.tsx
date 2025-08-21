@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { ProfilePictureUpload } from '@/components/ui/ProfilePictureUpload';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
@@ -323,9 +324,13 @@ const ProfileSection: React.FC = () => {
               <CardContent>
               <form onSubmit={handleUpdateProfile} className="space-y-4">
                 <div className="flex items-center space-x-4 mb-6">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-2xl text-white font-bold">
-                    {user?.displayName?.charAt(0)?.toUpperCase() || '?'}
-                  </div>
+                  <ProfilePictureUpload 
+                    currentPhotoURL={user?.photoURL}
+                    onUploadComplete={(newPhotoURL) => {
+                      console.log('Profile picture updated:', newPhotoURL);
+                      // The user context will automatically update when the document changes
+                    }}
+                  />
                   <div>
                     <h3 className="text-lg font-semibold font-audiowide text-white">{user?.displayName || 'Unknown User'}</h3>
                     <p className="text-black font-montserrat">Member since {user?.createdAt?.toLocaleDateString()}</p>

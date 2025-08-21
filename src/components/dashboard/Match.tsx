@@ -711,13 +711,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   </div>
                 </div>
 
-                {/* Turn Indicator */}
-                {matchData.gameData.gamePhase === 'gameplay' && currentPlayer.turnActive && (
-                  <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
-                    YOUR TURN
-                  </div>
-                )}
-
                 {/* Turn Decider Indicator */}
                 {matchData.gameData.gamePhase === 'turnDecider' && (
                   <div className="absolute top-4 left-4">
@@ -920,13 +913,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     {opponent.playerScore}
                   </div>
                 </div>
-
-                {/* Turn Indicator */}
-                {matchData.gameData.gamePhase === 'gameplay' && opponent.turnActive && (
-                  <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
-                    THEIR TURN
-                  </div>
-                )}
               </div>
               
               {/* Background Rarity Display - Below Container, Right Aligned */}
@@ -1050,12 +1036,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     </div>
                   </div>
 
-                  {/* Turn Indicators */}
-                  {matchData.gameData.gamePhase === 'gameplay' && currentPlayer.turnActive && (
+                  {/* Turn Indicators - Removed per user request */}
+                  {/* {matchData.gameData.gamePhase === 'gameplay' && currentPlayer.turnActive && (
                     <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold animate-pulse">
                       YOU
                     </div>
-                  )}
+                  )} */}
                 </div>
               </div>
 
@@ -1142,12 +1128,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     </div>
                   </div>
 
-                  {/* Turn Indicators */}
-                  {matchData.gameData.gamePhase === 'gameplay' && opponent.turnActive && (
+                  {/* Turn Indicators - Removed per user request */}
+                  {/* {matchData.gameData.gamePhase === 'gameplay' && opponent.turnActive && (
                     <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold animate-pulse">
                       THEM
                     </div>
-                  )}
+                  )} */}
                 </div>
               </div>
             </div>

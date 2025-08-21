@@ -26,7 +26,29 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
     // Check if friend has display background equipped in the new nested structure
     if (friendData?.inventory?.displayBackgroundEquipped) {
       const background = friendData.inventory.displayBackgroundEquipped;
-      // Handle both string URLs and background objects
+      
+      // Handle complete background objects with name, file, and type
+      if (typeof background === 'object' && background.file && background.type) {
+        // For video backgrounds, we need to return empty style object since videos are handled separately
+        if (background.type === 'video') {
+          return {}; // Videos will be handled in JSX with <video> element
+        }
+        
+        // For image backgrounds
+        if (background.type === 'image' && background.file) {
+          return {
+            backgroundImage: `url(${background.file})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            WebkitBackgroundSize: 'cover',
+            MozBackgroundSize: 'cover',
+            backgroundAttachment: 'scroll'
+          };
+        }
+      }
+      
+      // Legacy support: Handle string URLs or background objects with different structure
       const backgroundUrl = typeof background === 'string' ? background : background?.file;
       if (backgroundUrl && typeof backgroundUrl === 'string') {
         return {
@@ -34,10 +56,9 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          // Add mobile-specific optimizations
           WebkitBackgroundSize: 'cover',
           MozBackgroundSize: 'cover',
-          backgroundAttachment: 'scroll' // Better for mobile performance
+          backgroundAttachment: 'scroll'
         };
       }
     }
@@ -80,6 +101,35 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
   }
 };
 
+// Function to get friend's video background for rendering
+const getFriendVideoBackground = (friend: FriendWithStatus) => {
+  try {
+    if (!friend || typeof friend !== 'object' || !friend.friendData) {
+      return null;
+    }
+
+    const friendData = friend.friendData as any;
+    
+    // Check for display background in new nested structure
+    if (friendData?.inventory?.displayBackgroundEquipped) {
+      const background = friendData.inventory.displayBackgroundEquipped;
+      
+      // Handle complete background objects with video type
+      if (typeof background === 'object' && background.type === 'video' && background.file) {
+        return {
+          file: background.file,
+          name: background.name || 'Background Video'
+        };
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.warn('Error getting friend video background:', error);
+    return null;
+  }
+};
+
 export default function FriendCard({ friend, compact = false, showActions = true }: FriendCardProps) {
   // Add safety check to prevent React error #130
   if (!friend || typeof friend !== 'object' || !friend.friendData) {
@@ -90,8 +140,6 @@ export default function FriendCard({ friend, compact = false, showActions = true
   const { removeFriend, sendGameInvitation, friendPresences } = useFriends();
   const [isRemoving, setIsRemoving] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
-  const [showGameModeSelector, setShowGameModeSelector] = useState(false);
-  const [selectedGameMode, setSelectedGameMode] = useState('classic');
 
   // Get presence from context with safety checks
   const presence = friendPresences?.[friend.friendId];
@@ -111,7 +159,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
     }
   };
 
-  const handleGameInvite = async () => {
+  const handleGameInvite = async (gameMode: string) => {
     setIsInviting(true);
     try {
       if (!friend?.friendId || typeof friend.friendId !== 'string') {
@@ -119,40 +167,20 @@ export default function FriendCard({ friend, compact = false, showActions = true
         return;
       }
       
-      const gameMode = selectedGameMode || 'classic';
-      if (typeof gameMode !== 'string') {
+      if (!gameMode || typeof gameMode !== 'string') {
         console.error('Invalid game mode:', gameMode);
         return;
       }
       
       const result = await sendGameInvitation(friend.friendId, gameMode);
       if (result?.success) {
-        setShowGameModeSelector(false); // Collapse selector after invitation sent
+        console.log('Game invitation sent successfully');
       }
     } catch (error) {
       console.error('Error sending game invitation:', error);
     } finally {
       setIsInviting(false);
     }
-  };
-
-  const handleGameModeSelect = (gameMode: string) => {
-    try {
-      if (gameMode && typeof gameMode === 'string') {
-        setSelectedGameMode(gameMode);
-      } else {
-        console.warn('Invalid game mode received:', gameMode);
-        setSelectedGameMode('classic');
-      }
-    } catch (error) {
-      console.error('Error in handleGameModeSelect:', error);
-      setSelectedGameMode('classic');
-    }
-  };
-
-  const toggleGameModeSelector = () => {
-    if (presenceStatus === 'offline') return; // Don't expand if friend is offline
-    setShowGameModeSelector(!showGameModeSelector);
   };
 
   const getStatusColor = (status: string) => {
@@ -182,12 +210,37 @@ export default function FriendCard({ friend, compact = false, showActions = true
           borderRadius: '20px'
         }}
       >
+        {/* Video background for friends with video display backgrounds */}
+        {(() => {
+          const videoBackground = getFriendVideoBackground(friend);
+          if (videoBackground) {
+            return (
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                controls={false}
+                webkit-playsinline="true"
+                x5-playsinline="true"
+                preload="metadata"
+                className="absolute inset-0 w-full h-full object-cover z-0"
+                style={{ borderRadius: '20px' }}
+              >
+                <source src={videoBackground.file} type="video/mp4" />
+              </video>
+            );
+          }
+          return null;
+        })()}
+        
         {/* Dark overlay gradient for text readability - left (black) to right (transparent) */}
         <div 
           className="absolute inset-0"
           style={{
             background: 'linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)',
-            borderRadius: '20px'
+            borderRadius: '20px',
+            zIndex: 1
           }}
         ></div>
         
@@ -223,12 +276,37 @@ export default function FriendCard({ friend, compact = false, showActions = true
         willChange: 'transform'
       }}
     >
+      {/* Video background for friends with video display backgrounds */}
+      {(() => {
+        const videoBackground = getFriendVideoBackground(friend);
+        if (videoBackground) {
+          return (
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              controls={false}
+              webkit-playsinline="true"
+              x5-playsinline="true"
+              preload="metadata"
+              className="absolute inset-0 w-full h-full object-cover z-0"
+              style={{ borderRadius: '20px' }}
+            >
+              <source src={videoBackground.file} type="video/mp4" />
+            </video>
+          );
+        }
+        return null;
+      })()}
+      
       {/* Dark overlay gradient for text readability - left (black) to right (transparent) */}
       <div 
         className="absolute inset-0"
         style={{
           background: 'linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)',
-          borderRadius: '20px'
+          borderRadius: '20px',
+          zIndex: 1
         }}
       ></div>
       
@@ -256,13 +334,13 @@ export default function FriendCard({ friend, compact = false, showActions = true
           <div className="space-y-2">
             {/* Desktop: Horizontal layout */}
             <div className="hidden sm:flex gap-2">
-              <button
-                onClick={toggleGameModeSelector}
-                disabled={presenceStatus === 'offline'}
-                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded font-montserrat transition-colors"
-              >
-                {showGameModeSelector ? 'Cancel' : 'Invite'}
-              </button>
+              <div className="flex-1">
+                <MiniGameModeSelector
+                  onGameModeSelect={handleGameInvite}
+                  isDisabled={presenceStatus === 'offline' || isInviting}
+                  className="w-full"
+                />
+              </div>
               <button
                 className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded font-montserrat transition-colors"
               >
@@ -279,13 +357,11 @@ export default function FriendCard({ friend, compact = false, showActions = true
 
             {/* Mobile: Vertical layout - stacked below profile */}
             <div className="sm:hidden flex flex-col gap-2 mt-2">
-              <button
-                onClick={toggleGameModeSelector}
-                disabled={presenceStatus === 'offline'}
-                className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded-lg font-montserrat transition-colors touch-manipulation"
-              >
-                {showGameModeSelector ? 'Cancel' : 'Invite'}
-              </button>
+              <MiniGameModeSelector
+                onGameModeSelect={handleGameInvite}
+                isDisabled={presenceStatus === 'offline' || isInviting}
+                className="w-full"
+              />
               <div className="flex gap-2">
                 <button
                   className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white text-sm rounded-lg font-montserrat transition-colors touch-manipulation"
@@ -300,54 +376,6 @@ export default function FriendCard({ friend, compact = false, showActions = true
                   {isRemoving ? 'Managing...' : 'Manage'}
                 </button>
               </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Game Mode Selector - appears when invite is clicked */}
-        {showGameModeSelector && (
-          <div className="mt-3 space-y-2">
-            <div className="text-white text-sm font-medium font-audiowide">
-              Choose Game Mode:
-            </div>
-            <ErrorBoundary
-              fallback={
-                <div className="p-2 bg-yellow-100 border border-yellow-300 rounded">
-                  <p className="text-yellow-800 text-xs">Game mode selector unavailable</p>
-                  <button 
-                    onClick={() => setSelectedGameMode('classic')}
-                    className="mt-1 px-2 py-1 bg-yellow-600 text-white text-xs rounded"
-                  >
-                    Use Only One Will Rise
-                  </button>
-                </div>
-              }
-            >
-              <MiniGameModeSelector
-                onGameModeSelect={handleGameModeSelect}
-                isDisabled={presenceStatus === 'offline'}
-                className="mb-2"
-              />
-            </ErrorBoundary>
-            <div className="flex gap-2">
-              <button
-                onClick={handleGameInvite}
-                disabled={isInviting}
-                className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded font-montserrat transition-colors"
-              >
-                {isInviting ? 'Sending Invite...' : (() => {
-                  try {
-                    const gameMode = selectedGameMode || 'classic';
-                    if (typeof gameMode === 'string' && gameMode.length > 0) {
-                      return `Invite to ${gameMode.charAt(0).toUpperCase() + gameMode.slice(1)}`;
-                    }
-                    return 'Send Invite';
-                  } catch (error) {
-                    console.warn('Error generating invite button text:', error);
-                    return 'Send Invite';
-                  }
-                })()}
-              </button>
             </div>
           </div>
         )}

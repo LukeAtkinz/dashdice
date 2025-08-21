@@ -17,6 +17,7 @@ import { MatchData, GamePhase, RollPhase, TurnDeciderChoice } from '@/types/matc
 import { UserService } from './userService';
 import { CompletedMatchService } from './completedMatchService';
 import { GameModeService } from './gameModeService';
+import AchievementTrackingService from './achievementTrackingService';
 
 export class MatchService {
   /**
@@ -578,7 +579,37 @@ export class MatchService {
           // Then update user stats if there's a winner
           if (winnerId) {
             await this.updateUserStats(matchData, winnerId);
-            console.log('✅ Last Line stats updated - match completed');
+            
+            // 🏆 TRACK ACHIEVEMENTS: Record game completion for both players (Last Line mode)
+            const achievementService = AchievementTrackingService.getInstance();
+            const currentDiceRoll = [matchData.gameData.diceOne, matchData.gameData.diceTwo];
+            
+            // Record achievement data for winner
+            await achievementService.recordGameEnd(
+              winnerId,
+              true, // won
+              currentDiceRoll,
+              {
+                opponentId: winnerId === matchData.hostData.playerId ? matchData.opponentData.playerId : matchData.hostData.playerId,
+                gameMode: matchData.gameMode,
+                finalScore: winnerId === matchData.hostData.playerId ? hostFinalScore : opponentFinalScore
+              }
+            );
+            
+            // Record achievement data for loser
+            const loserId = winnerId === matchData.hostData.playerId ? matchData.opponentData.playerId : matchData.hostData.playerId;
+            await achievementService.recordGameEnd(
+              loserId,
+              false, // lost
+              currentDiceRoll,
+              {
+                opponentId: winnerId,
+                gameMode: matchData.gameMode,
+                finalScore: winnerId === matchData.hostData.playerId ? opponentFinalScore : hostFinalScore
+              }
+            );
+            
+            console.log('✅ Last Line stats and achievements updated - match completed');
           }
           
           return; // Exit early to prevent further processing
@@ -745,10 +776,40 @@ export class MatchService {
       await updateDoc(matchRef, updates);
       
       // Update user stats if game over
-      if (gameOver && winner) {
+      if (gameOver && winner && winner !== 'Tie') {
         const winnerId = isHost ? matchData.hostData.playerId : matchData.opponentData.playerId;
         await this.updateUserStats(matchData, winnerId);
-        console.log('✅ Game over stats updated');
+        
+        // 🏆 TRACK ACHIEVEMENTS: Record game completion for both players (auto-win/True Grit)
+        const achievementService = AchievementTrackingService.getInstance();
+        const currentDiceRoll = [dice1, dice2];
+        
+        // Record achievement data for winner
+        await achievementService.recordGameEnd(
+          winnerId,
+          true, // won
+          currentDiceRoll,
+          {
+            opponentId: isHost ? matchData.opponentData.playerId : matchData.hostData.playerId,
+            gameMode: matchData.gameMode,
+            finalScore: isHost ? matchData.hostData.playerScore : matchData.opponentData.playerScore
+          }
+        );
+        
+        // Record achievement data for loser
+        const loserId = isHost ? matchData.opponentData.playerId : matchData.hostData.playerId;
+        await achievementService.recordGameEnd(
+          loserId,
+          false, // lost
+          currentDiceRoll,
+          {
+            opponentId: winnerId,
+            gameMode: matchData.gameMode,
+            finalScore: isHost ? matchData.opponentData.playerScore : matchData.hostData.playerScore
+          }
+        );
+        
+        console.log('✅ Game over stats and achievements updated');
       }
       
     } catch (error) {
@@ -873,9 +934,38 @@ export class MatchService {
         const winnerId = currentPlayer.playerId;
         await this.updateUserStats(matchData, winnerId);
         
+        // 🏆 TRACK ACHIEVEMENTS: Record game completion for both players
+        const achievementService = AchievementTrackingService.getInstance();
+        const currentDiceRoll = [matchData.gameData.diceOne, matchData.gameData.diceTwo];
+        
+        // Record achievement data for winner
+        await achievementService.recordGameEnd(
+          winnerId,
+          true, // won
+          currentDiceRoll,
+          {
+            opponentId: isHost ? matchData.opponentData.playerId : matchData.hostData.playerId,
+            gameMode: matchData.gameMode,
+            finalScore: newPlayerScore
+          }
+        );
+        
+        // Record achievement data for loser
+        const loserId = isHost ? matchData.opponentData.playerId : matchData.hostData.playerId;
+        await achievementService.recordGameEnd(
+          loserId,
+          false, // lost
+          currentDiceRoll,
+          {
+            opponentId: winnerId,
+            gameMode: matchData.gameMode,
+            finalScore: isHost ? matchData.opponentData.playerScore : matchData.hostData.playerScore
+          }
+        );
+        
         // ⚠️ NOTE: Match stays active until players leave or start rematch
         // This allows GameOverPhase to continue reading match data
-        console.log('✅ Banking win stats updated - match remains active for game over screen');
+        console.log('✅ Banking win stats and achievements updated - match remains active for game over screen');
       }
       
     } catch (error) {
@@ -960,6 +1050,35 @@ export class MatchService {
       
       // Update user stats
       await this.updateUserStats(matchData, winnerId);
+      
+      // 🏆 TRACK ACHIEVEMENTS: Record game completion for both players (disconnection scenario)
+      const achievementService = AchievementTrackingService.getInstance();
+      const currentDiceRoll = [matchData.gameData.diceOne, matchData.gameData.diceTwo];
+      
+      // Record achievement data for winner (by disconnection)
+      await achievementService.recordGameEnd(
+        winnerId,
+        true, // won by disconnection
+        currentDiceRoll,
+        {
+          opponentId: isHostWinner ? matchData.opponentData.playerId : matchData.hostData.playerId,
+          gameMode: matchData.gameMode,
+          finalScore: isHostWinner ? matchData.hostData.playerScore : matchData.opponentData.playerScore
+        }
+      );
+      
+      // Record achievement data for loser (disconnected)
+      const loserId = isHostWinner ? matchData.opponentData.playerId : matchData.hostData.playerId;
+      await achievementService.recordGameEnd(
+        loserId,
+        false, // lost by disconnection
+        currentDiceRoll,
+        {
+          opponentId: winnerId,
+          gameMode: matchData.gameMode,
+          finalScore: isHostWinner ? matchData.opponentData.playerScore : matchData.hostData.playerScore
+        }
+      );
       
       console.log('✅ Match ended successfully due to disconnection');
     } catch (error) {

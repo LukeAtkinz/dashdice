@@ -207,7 +207,7 @@ export const Match: React.FC<MatchProps> = ({ matchId, onBack }) => {
             {/* Current Player - Hidden on Mobile */}
             <div className={`hidden md:block text-center p-6 rounded-lg ${currentPlayer.gameState.turnActive ? 'bg-green-500/20 border-2 border-green-400' : 'bg-gray-500/20'}`}>
               <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: "Audiowide" }}>
-                {currentPlayer.playerDisplayName} (You)
+                {currentPlayer.playerDisplayName}
               </h2>
               <div className="text-white space-y-2">
                 <p>Score: {currentPlayer.gameState.playerScore}</p>

@@ -74,9 +74,10 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({
           onClick={onCancel}
         >
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
+            initial={{ scale: 0.8, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.8, opacity: 0, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="bg-gray-900/95 backdrop-blur-md rounded-2xl p-6 max-w-md w-full border border-gray-700"
             onClick={(e) => e.stopPropagation()}
           >
@@ -90,10 +91,13 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({
             </div>
 
             <div className="grid grid-cols-1 gap-3 mb-6">
-              {GAME_MODES.map((mode) => (
+              {GAME_MODES.map((mode, index) => (
                 <motion.button
                   key={mode.id}
-                  whileHover={{ scale: 1.02 }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1, duration: 0.3, ease: "easeOut" }}
+                  whileHover={{ scale: 1.02, x: 4 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleSelect(mode.id)}
                   className={`
