@@ -15,6 +15,7 @@ import AchievementNotificationDisplay from '@/components/achievements/Achievemen
 import AchievementsDashboard from '@/components/achievements/AchievementsDashboard';
 import FriendsDashboard from '@/components/friends/FriendsDashboard';
 import InvitationPopupManager from '@/components/friends/InvitationPopupManager';
+import GlobalChatButton from '@/components/chat/GlobalChatButton';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { useBrowserRefresh } from '@/hooks/useBrowserRefresh';
@@ -658,6 +659,9 @@ const DashboardContent: React.FC = () => {
         
         {/* Game Invitation Popups */}
         <InvitationPopupManager />
+        
+        {/* Global Chat Button */}
+        <GlobalChatButton />
       </div>
     </div>
   );

@@ -4,9 +4,11 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FriendWithStatus } from '@/types/friends';
 import { useFriends } from '@/context/FriendsContext';
+import { useChat } from '@/context/ChatContext';
 import MiniGameModeSelector from './MiniGameModeSelector';
 import { useBackground } from '@/context/BackgroundContext';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import ChatWindow from '@/components/chat/ChatWindow';
 
 interface FriendCardProps {
   friend: FriendWithStatus;
@@ -139,9 +141,12 @@ export default function FriendCard({ friend, compact = false, showActions = true
   }
 
   const { removeFriend, sendGameInvitation, friendPresences } = useFriends();
+  const { getFriendChatRoom, joinRoom } = useChat();
   const [isRemoving, setIsRemoving] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
   const [isGameSelectorExpanded, setIsGameSelectorExpanded] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatRoomId, setChatRoomId] = useState<string | null>(null);
 
   // Get presence from context with safety checks
   const presence = friendPresences?.[friend.friendId];
@@ -183,6 +188,23 @@ export default function FriendCard({ friend, compact = false, showActions = true
       console.error('Error sending game invitation:', error);
     } finally {
       setIsInviting(false);
+    }
+  };
+
+  const handleOpenChat = async () => {
+    try {
+      if (!friend?.friendId) {
+        console.error('Invalid friend ID for chat');
+        return;
+      }
+
+      // Get or create friend chat room
+      const roomId = await getFriendChatRoom(friend.friendId);
+      await joinRoom(roomId);
+      setChatRoomId(roomId);
+      setIsChatOpen(true);
+    } catch (error) {
+      console.error('Error opening chat:', error);
     }
   };
 
@@ -376,6 +398,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
                 </motion.button>
               </div>
               <button
+                onClick={handleOpenChat}
                 className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded font-montserrat transition-colors"
               >
                 Chat
@@ -409,6 +432,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
               </motion.button>
               <div className="flex gap-2">
                 <button
+                  onClick={handleOpenChat}
                   className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white text-sm rounded-lg font-montserrat transition-colors touch-manipulation"
                 >
                   Chat
@@ -507,6 +531,16 @@ export default function FriendCard({ friend, compact = false, showActions = true
           </div>
         )}
       </div>
+      
+      {/* Chat Window */}
+      {isChatOpen && chatRoomId && (
+        <ChatWindow
+          roomId={chatRoomId}
+          isVisible={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+          position="bottom-right"
+        />
+      )}
     </motion.div>
   );
 }
