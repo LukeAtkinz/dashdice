@@ -16,6 +16,8 @@ import AchievementsDashboard from '@/components/achievements/AchievementsDashboa
 import FriendsDashboard from '@/components/friends/FriendsDashboard';
 import InvitationPopupManager from '@/components/friends/InvitationPopupManager';
 import GlobalChatButton from '@/components/chat/GlobalChatButton';
+import { GlobalRematchNotification } from '@/components/rematch/GlobalRematchNotification';
+import { RematchProvider } from '@/context/RematchContext';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { useBrowserRefresh } from '@/hooks/useBrowserRefresh';
@@ -665,6 +667,9 @@ const DashboardContent: React.FC = () => {
         {/* Game Invitation Popups */}
         <InvitationPopupManager />
         
+        {/* Global Rematch Notifications */}
+        <GlobalRematchNotification />
+        
         {/* Global Chat Button */}
         <GlobalChatButton />
       </div>
@@ -676,7 +681,9 @@ export default function SinglePageDashboard() {
   return (
     <ProtectedRoute>
       <NavigationProvider>
-        <DashboardContent />
+        <RematchProvider>
+          <DashboardContent />
+        </RematchProvider>
       </NavigationProvider>
     </ProtectedRoute>
   );

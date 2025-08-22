@@ -18,9 +18,10 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
   onRematch
 }) => {
   const { user } = useAuth();
-  const [rematchState, setRematchState] = useState<'idle' | 'requesting' | 'waiting' | 'accepted' | 'expired' | 'opponent_left'>('idle');
+  const [rematchState, setRematchState] = useState<'idle' | 'selecting' | 'requesting' | 'waiting' | 'accepted' | 'expired' | 'opponent_left'>('idle');
   const [rematchRoomId, setRematchRoomId] = useState<string | null>(null);
   const [incomingRematch, setIncomingRematch] = useState<RematchRoom | null>(null);
+  const [selectedGameMode, setSelectedGameMode] = useState<string>('standard');
   
   const winner = matchData.gameData.winner;
   const reason = matchData.gameData.gameOverReason;
@@ -33,7 +34,16 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
   const opponentId = opponent.playerId;
 
   // Rematch handlers
-  const handleRequestRematch = async () => {
+  const handleShowGameModeSelector = () => {
+    setRematchState('selecting');
+  };
+
+  const handleSelectGameMode = (gameMode: string) => {
+    setSelectedGameMode(gameMode);
+    handleRequestRematchWithMode(gameMode);
+  };
+
+  const handleRequestRematchWithMode = async (gameMode: string) => {
     if (!user || !opponentId) return;
     
     try {
@@ -63,7 +73,7 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
         opponentId,
         opponentDisplayName,
         matchData.id || '',
-        'standard', // Default game mode
+        gameMode, // Use selected game mode
         'public' // Default game type
       );
       setRematchRoomId(roomId);
@@ -71,6 +81,11 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
       console.error('Error creating rematch room:', error);
       setRematchState('idle');
     }
+  };
+
+  const handleRequestRematch = async () => {
+    // This function now just opens the game mode selector
+    handleShowGameModeSelector();
   };
 
   const handleCancelRematch = async () => {
@@ -496,25 +511,98 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
             REMATCH
           </button>
         )}
-        
-        {rematchState === 'requesting' && (
-          <div className="flex items-center gap-4 px-8 py-4 bg-yellow-600/20 border-2 border-yellow-400 rounded-xl">
-            <CountdownTimer
-              initialSeconds={10}
-              onComplete={handleRematchTimeout}
-              isActive={true}
-              size="small"
-            />
-            <span className="text-yellow-400 font-bold text-xl" style={{ fontFamily: "Audiowide" }}>
-              WAITING FOR {opponentDisplayName}
-            </span>
-            <button
-              onClick={handleCancelRematch}
-              className="ml-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition-all"
+
+        {/* Game Mode Selector */}
+        {rematchState === 'selecting' && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border-2 border-blue-400/50"
+          >
+            <h3 
+              className="text-2xl font-bold text-white mb-4 text-center"
+              style={{ fontFamily: "Audiowide" }}
+            >
+              CHOOSE GAME MODE
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleSelectGameMode('standard')}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl transition-all border-2 border-blue-400/50"
+                style={{ fontFamily: "Audiowide" }}
+              >
+                🎲 STANDARD
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleSelectGameMode('trueGrit')}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-xl transition-all border-2 border-red-400/50"
+                style={{ fontFamily: "Audiowide" }}
+              >
+                ⚡ TRUE GRIT
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleSelectGameMode('rapidFire')}
+                className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 px-6 rounded-xl transition-all border-2 border-orange-400/50"
+                style={{ fontFamily: "Audiowide" }}
+              >
+                🔥 RAPID FIRE
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleSelectGameMode('marathon')}
+                className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-xl transition-all border-2 border-purple-400/50"
+                style={{ fontFamily: "Audiowide" }}
+              >
+                🏃 MARATHON
+              </motion.button>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setRematchState('idle')}
+              className="mt-4 w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-xl transition-all"
               style={{ fontFamily: "Audiowide" }}
             >
               CANCEL
-            </button>
+            </motion.button>
+          </motion.div>
+        )}
+        
+        {rematchState === 'requesting' && (
+          <div className="flex flex-col items-center gap-4 px-8 py-4 bg-yellow-600/20 border-2 border-yellow-400 rounded-xl">
+            <div className="text-center">
+              <p className="text-yellow-400 font-bold text-sm mb-1" style={{ fontFamily: "Audiowide" }}>
+                GAME MODE: {selectedGameMode.toUpperCase()}
+              </p>
+              <span className="text-yellow-400 font-bold text-xl" style={{ fontFamily: "Audiowide" }}>
+                WAITING FOR {opponentDisplayName}
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <CountdownTimer
+                initialSeconds={10}
+                onComplete={handleRematchTimeout}
+                isActive={true}
+                size="small"
+              />
+              <button
+                onClick={handleCancelRematch}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition-all"
+                style={{ fontFamily: "Audiowide" }}
+              >
+                CANCEL
+              </button>
+            </div>
           </div>
         )}
         

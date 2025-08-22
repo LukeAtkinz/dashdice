@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
 import UnifiedChatWindow from './UnifiedChatWindow';
+
+// Global state for managing chat visibility
+let globalChatToggle: (() => void) | null = null;
 
 export default function GlobalChatButton() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -11,6 +14,17 @@ export default function GlobalChatButton() {
   const handleToggleChat = () => {
     setIsChatOpen(!isChatOpen);
   };
+
+  // Register global toggle function
+  useEffect(() => {
+    globalChatToggle = () => {
+      setIsChatOpen(true);
+    };
+
+    return () => {
+      globalChatToggle = null;
+    };
+  }, []);
 
   return (
     <>
@@ -34,3 +48,10 @@ export default function GlobalChatButton() {
     </>
   );
 }
+
+// Export function to open chat from anywhere
+export const openChatWindow = () => {
+  if (globalChatToggle) {
+    globalChatToggle();
+  }
+};

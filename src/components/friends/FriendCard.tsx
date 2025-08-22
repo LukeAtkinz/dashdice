@@ -262,7 +262,11 @@ export default function FriendCard({ friend, compact = false, showActions = true
         return;
       }
 
-      // Use the unified chat system
+      // First open the chat window if it's not already open
+      const { openChatWindow } = await import('../chat/GlobalChatButton');
+      openChatWindow();
+
+      // Then open the friend's chat tab
       const friendName = friend.friendData?.displayName || 'Unknown Player';
       openFriendChatInUnified(friend.friendId, friendName);
     } catch (error) {

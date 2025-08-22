@@ -61,6 +61,102 @@ export default function UnifiedChatWindow({
   const [tabs, setTabs] = useState<ChatTab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string>('');
 
+  // Load persisted tabs from localStorage
+  useEffect(() => {
+    const loadPersistedTabs = async () => {
+      try {
+        const persistedTabsStr = localStorage.getItem('chatTabs');
+        const persistedTabs = persistedTabsStr ? JSON.parse(persistedTabsStr) : [];
+        
+        // Always ensure global chat is present
+        const globalRoomId = await getGlobalChatRoom();
+        await joinRoom(globalRoomId);
+        
+        const globalTab: ChatTab = {
+          id: 'global',
+          roomId: globalRoomId,
+          type: 'global',
+          title: 'Everyone',
+          unreadCount: 0
+        };
+
+        const validTabs = [globalTab];
+        let hasActiveTab = false;
+
+        // Re-create friend chats from persisted data
+        for (const persistedTab of persistedTabs) {
+          if (persistedTab.type === 'friend' && persistedTab.friendId) {
+            try {
+              const roomId = await getFriendChatRoom(persistedTab.friendId);
+              await joinRoom(roomId);
+              
+              const friendTab: ChatTab = {
+                id: `friend-${persistedTab.friendId}`,
+                roomId,
+                type: 'friend',
+                title: persistedTab.title,
+                friendId: persistedTab.friendId,
+                unreadCount: 0
+              };
+              
+              validTabs.push(friendTab);
+              
+              if (persistedTab.id === persistedTab.activeTabId) {
+                hasActiveTab = true;
+                setActiveTabId(friendTab.id);
+              }
+            } catch (error) {
+              console.error('Error restoring friend chat tab:', error);
+            }
+          }
+        }
+
+        setTabs(validTabs);
+        
+        // If no active tab was restored, default to global
+        if (!hasActiveTab) {
+          setActiveTabId('global');
+        }
+      } catch (error) {
+        console.error('Error loading persisted tabs:', error);
+        // Fallback to just global chat
+        const globalRoomId = await getGlobalChatRoom();
+        await joinRoom(globalRoomId);
+        
+        const globalTab: ChatTab = {
+          id: 'global',
+          roomId: globalRoomId,
+          type: 'global',
+          title: 'Everyone',
+          unreadCount: 0
+        };
+
+        setTabs([globalTab]);
+        setActiveTabId('global');
+      }
+    };
+
+    if (isVisible && tabs.length === 0) {
+      loadPersistedTabs();
+    }
+  }, [isVisible, getGlobalChatRoom, getFriendChatRoom, joinRoom, tabs.length]);
+
+  // Save tabs to localStorage whenever they change
+  useEffect(() => {
+    if (tabs.length > 0) {
+      const persistData = {
+        tabs: tabs.filter(tab => tab.type === 'friend').map(tab => ({
+          id: tab.id,
+          type: tab.type,
+          title: tab.title,
+          friendId: tab.friendId
+        })),
+        activeTabId
+      };
+      localStorage.setItem('chatTabs', JSON.stringify(persistData));
+    }
+  }, [tabs, activeTabId]);
+
   // Register this instance globally
   useEffect(() => {
     const chatRef: UnifiedChatWindowRef = {
@@ -123,33 +219,6 @@ export default function UnifiedChatWindow({
       globalChatWindow = null;
     };
   }, [tabs, getFriendChatRoom, getGameChatRoom, joinRoom]);
-
-  // Initialize with global chat tab
-  useEffect(() => {
-    const initializeGlobalChat = async () => {
-      try {
-        const globalRoomId = await getGlobalChatRoom();
-        await joinRoom(globalRoomId);
-        
-        const globalTab: ChatTab = {
-          id: 'global',
-          roomId: globalRoomId,
-          type: 'global',
-          title: 'Global Chat',
-          unreadCount: 0
-        };
-
-        setTabs([globalTab]);
-        setActiveTabId('global');
-      } catch (error) {
-        console.error('Error initializing global chat:', error);
-      }
-    };
-
-    if (isVisible && tabs.length === 0) {
-      initializeGlobalChat();
-    }
-  }, [isVisible, getGlobalChatRoom, joinRoom, tabs.length]);
 
   // Add initial tab if provided
   useEffect(() => {
@@ -220,15 +289,16 @@ export default function UnifiedChatWindow({
       initial={{ opacity: 0, y: 100 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 100 }}
-      className={`fixed ${position === 'bottom-left' ? 'bottom-4 left-4' : 'bottom-4 right-4'} z-50 bg-gray-900/95 backdrop-blur-lg rounded-lg shadow-xl border border-gray-700`}
+      className={`fixed ${position === 'bottom-left' ? 'bottom-4 left-4' : 'bottom-4 right-4'} z-50 bg-gray-900/95 backdrop-blur-lg shadow-xl border border-gray-700`}
       style={{
         width: isMinimized ? '300px' : '400px',
         height: isMinimized ? 'auto' : '500px',
-        maxHeight: '80vh'
+        maxHeight: '80vh',
+        borderRadius: '20px' // Added 20px border radius
       }}
     >
-      {/* Header with tabs */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-700">
+      {/* Header with tabs - FIXED AT TOP */}
+      <div className="flex items-center justify-between p-3 border-b border-gray-700 flex-shrink-0 rounded-t-[20px]">
         <div className="flex items-center gap-2 flex-1 overflow-x-auto">
           {tabs.map((tab) => (
             <button
@@ -238,10 +308,12 @@ export default function UnifiedChatWindow({
                 activeTabId === tab.id
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              }`}
+              } ${tab.type === 'global' ? 'min-w-[80px]' : ''}`}
             >
-              {getTabIcon(tab.type)}
-              <span className="truncate max-w-16">{tab.title}</span>
+              {tab.type !== 'global' && getTabIcon(tab.type)}
+              <span className={`truncate ${tab.type === 'global' ? 'max-w-none' : 'max-w-16'}`}>
+                {tab.type === 'global' ? 'Everyone' : tab.title}
+              </span>
               {tab.unreadCount > 0 && (
                 <span className="bg-red-500 text-white text-xs rounded-full px-1 min-w-4 h-4 flex items-center justify-center">
                   {tab.unreadCount}
@@ -278,16 +350,16 @@ export default function UnifiedChatWindow({
         </div>
       </div>
 
-      {/* Chat content */}
+      {/* Chat content - ABSOLUTE POSITIONED FOR PROPER LAYOUT */}
       <AnimatePresence>
         {!isMinimized && (
           <motion.div
             initial={{ height: 0 }}
             animate={{ height: 'auto' }}
             exit={{ height: 0 }}
-            className="flex flex-col h-[450px]"
+            className="absolute inset-x-0 bottom-0 top-[60px] flex flex-col"
           >
-            {/* Messages area - takes remaining space and scrolls */}
+            {/* Messages area - SCROLLABLE MIDDLE SECTION */}
             <div className="flex-1 overflow-hidden min-h-0">
               {activeTab && (
                 <MessageList
@@ -302,11 +374,11 @@ export default function UnifiedChatWindow({
               )}
             </div>
 
-            {/* Message input - fixed at bottom */}
-            <div className="flex-shrink-0 border-t border-gray-700">
+            {/* Message input - ABSOLUTELY FIXED AT BOTTOM */}
+            <div className="flex-shrink-0 border-t border-gray-700 bg-gray-800 rounded-b-[20px]">
               {/* Typing indicators */}
               {roomTyping.length > 0 && (
-                <div className="px-3 py-1 text-xs text-gray-400 italic">
+                <div className="px-3 py-1 text-xs text-gray-400 italic border-b border-gray-700">
                   {roomTyping.map(indicator => indicator.username).join(', ')} 
                   {roomTyping.length === 1 ? ' is' : ' are'} typing...
                 </div>
@@ -316,7 +388,7 @@ export default function UnifiedChatWindow({
                 roomId={activeTab?.roomId || ''}
                 onSend={handleSendMessage}
                 disabled={!activeTab}
-                placeholder={`Message ${activeTab?.title || 'chat'}...`}
+                placeholder={`Message ${activeTab?.type === 'global' ? 'Everyone' : activeTab?.title || 'chat'}...`}
               />
             </div>
           </motion.div>
