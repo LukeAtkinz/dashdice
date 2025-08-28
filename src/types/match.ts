@@ -95,6 +95,7 @@ export interface MatchData {
     winner?: string;
     gameOverReason?: string;
     hasDoubleMultiplier?: boolean; // 2x multiplier active when player rolls doubles
+    trueGritMultiplier?: number; // Stacking multiplier for True Grit mode
   };
   
   // Match metadata

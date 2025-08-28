@@ -121,7 +121,7 @@ export class GameModeService {
       {
         id: 'zero-hour',
         name: 'Zero Hour',
-        description: 'Start at 100, bank to subtract from score, first to reach 0 wins',
+        description: 'Start at 100, bank to subtract from score, first to reach exactly 0 wins',
         rules: {
           startingScore: 100,
           targetScore: 0,
@@ -131,49 +131,19 @@ export class GameModeService {
           eliminationRules: {
             singleOne: false,
             doubleOne: false,
-            doubleSix: 'reset'
+            doubleSix: 'ignore' // Doubles don't reset in Zero Hour
           },
           specialRules: {
             exactScoreRequired: true,
-            multiplierSystem: true,
-            doublesEffects: {
-              'double1': {
-                scoreBonus: 20,
-                multiplier: 2,
-                opponentPenalty: 0,
-                affectsOpponentOnBank: false
-              },
-              'double2': {
-                scoreBonus: 12,
-                multiplier: 2,
-                opponentPenalty: 4,
-                affectsOpponentOnBank: true
-              },
-              'double3': {
-                scoreBonus: 6,
-                multiplier: 1,
-                opponentPenalty: 'turn_score',
-                affectsOpponentOnBank: true
-              },
-              'double4': {
-                scoreBonus: 8,
-                multiplier: 2,
-                opponentPenalty: 8,
-                affectsOpponentOnBank: true
-              },
-              'double5': {
-                scoreBonus: 10,
-                multiplier: 2,
-                opponentPenalty: 10,
-                affectsOpponentOnBank: true
-              },
-              'double6': {
-                scoreBonus: 12,
-                multiplier: 1,
-                opponentPenalty: 'turn_score',
-                affectsOpponentOnBank: true
-              }
-            }
+            multiplierSystem: true
+            // Zero Hour processing is handled in matchService.ts processGameRules method
+            // Rules implemented:
+            // - Both players start at 100 points
+            // - First to reach exactly 0 wins
+            // - Snake Eyes: +20 to turnScore, +20 to opponent, activate multiplier
+            // - Any other double: +rollTotal to turnScore, +rollTotal to opponent, activate multiplier  
+            // - Multiplier active: all future rolls in turn are doubled
+            // - Banking below 0: no subtraction applied, turnScore resets
           }
         },
         settings: {
@@ -188,7 +158,7 @@ export class GameModeService {
         platforms: ['desktop', 'mobile'],
         minPlayers: 2,
         maxPlayers: 4,
-        estimatedDuration: 12
+        estimatedDuration: 15
       },
       {
         id: 'last-line',
@@ -226,30 +196,28 @@ export class GameModeService {
       {
         id: 'true-grit',
         name: 'True Grit',
-        description: '1 turn per player, no banking, highest single turn wins',
+        description: 'Each player gets one turn only, roll until single 1 ends turn, highest score wins',
         rules: {
           startingScore: 0,
-          targetScore: 100,
+          targetScore: 999999, // No target score, highest wins
           allowBanking: false,
           allowDoubleRolls: true,
           scoreDirection: 'up',
           eliminationRules: {
-            singleOne: true,      // Single 1 eliminates player (ends turn)
-            doubleOne: false,     // Double 1 gets +20 (Snake Eyes rule)
-            doubleSix: 'score'    // Double 6 scores normally (not reset)
+            singleOne: true,      // Single 1 ends turn (not eliminates player)
+            doubleOne: false,     // Double 1 gets special x7 multiplier
+            doubleSix: 'score'    // Double 6 scores normally
           },
           specialRules: {
             multiplierSystem: true,
-            probabilityAdjustments: {
-              singleOne: 0.8  // Reduce single 1 probability by 20%
-            },
+            exactScoreRequired: false,
             doublesEffects: {
-              'double1': { scoreBonus: 2, multiplier: 1 },
-              'double2': { scoreBonus: 4, multiplier: 2 },
-              'double3': { scoreBonus: 6, multiplier: 3 },
-              'double4': { scoreBonus: 8, multiplier: 4 },
-              'double5': { scoreBonus: 10, multiplier: 5 },
-              'double6': { scoreBonus: 12, multiplier: 6 }
+              'double1': { scoreBonus: 0, multiplier: 7, opponentPenalty: 0, affectsOpponentOnBank: false },
+              'double2': { scoreBonus: 0, multiplier: 2, opponentPenalty: 0, affectsOpponentOnBank: false },
+              'double3': { scoreBonus: 0, multiplier: 3, opponentPenalty: 0, affectsOpponentOnBank: false },
+              'double4': { scoreBonus: 0, multiplier: 4, opponentPenalty: 0, affectsOpponentOnBank: false },
+              'double5': { scoreBonus: 0, multiplier: 5, opponentPenalty: 0, affectsOpponentOnBank: false },
+              'double6': { scoreBonus: 0, multiplier: 6, opponentPenalty: 0, affectsOpponentOnBank: false }
             }
           }
         },

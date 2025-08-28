@@ -401,6 +401,13 @@ export class MatchService {
       const isDoubleOne = dice1 === 1 && dice2 === 1;
       const isDoubleSix = dice1 === 6 && dice2 === 6;
       
+      // Prepare updates object early so it can be used in game mode logic
+      const updates: any = {
+        'gameData.isRolling': false,
+        'gameData.rollPhase': deleteField(),
+        'gameData.turnScore': 0, // Will be updated based on game mode logic
+      };
+      
       // Process roll using game mode service for special elimination rules
       if (isSingleOne && gameMode.rules.eliminationRules.singleOne) {
         console.log('🎲 Single 1 rolled - Player eliminated');
@@ -408,19 +415,142 @@ export class MatchService {
         turnOver = true;
         newTurnScore = 0;
       }
-      // Handle double 1 (Snake Eyes or Turn End)
-      else if (isDoubleOne) {
-        if (gameMode.rules.eliminationRules.doubleOne) {
-          // True Grit: Double 1 ends turn (but doesn't eliminate player)
-          console.log('🎲 Double 1 rolled - Turn over (True Grit rule)');
+      // Zero Hour specific processing
+      else if (gameMode.id === 'zero-hour') {
+        console.log('🎲 Zero Hour Mode Processing');
+        
+        // In Zero Hour, single 1s end the turn and reset turn score (but don't eliminate player)
+        if (isSingleOne) {
+          console.log('🎲 Zero Hour - Single 1 rolled, turn ends and turn score resets to 0');
           turnOver = true;
           newTurnScore = 0;
-        } else if (gameMode.id === 'zero-hour') {
-          // Zero Hour: Double 1 is -20 to turn score and activate 2x multiplier
-          console.log('🎲 Snake Eyes rolled in Zero Hour - -20 to turn score, 2x activated');
-          newTurnScore = currentTurnScore - 20;
+        }
+        else {
+          // Get current multiplier status
+          const hasMultiplier = matchData.gameData.hasDoubleMultiplier || false;
+          
+          if (isDoubleOne) {
+            // Snake Eyes: +20 to turn score and opponent, activate multiplier
+            console.log('🎲 Zero Hour - Snake Eyes: +20 to turn score, +20 to opponent, activate multiplier');
+            newTurnScore = currentTurnScore + 20;
+            
+            // Add 20 to opponent's score
+            const opponentPlayer = isHost ? matchData.opponentData : matchData.hostData;
+            const opponentNewScore = (opponentPlayer.playerScore || 0) + 20;
+            if (isHost) {
+              updates['opponentData.playerScore'] = opponentNewScore;
+            } else {
+              updates['hostData.playerScore'] = opponentNewScore;
+            }
+            
+            // Activate multiplier for future rolls
+            updates['gameData.hasDoubleMultiplier'] = true;
+            turnOver = false;
+          }
+          else if (isDouble) {
+            // Any other double: add roll total to turn score, add roll total to opponent, activate multiplier
+            console.log(`🎲 Zero Hour - Double ${dice1}s: +${diceSum} to turn score, +${diceSum} to opponent, activate multiplier`);
+            
+            // Add dice sum to turn score (not doubled yet)
+            newTurnScore = currentTurnScore + diceSum;
+            
+            // Add dice sum to opponent's score
+            const opponentPlayer = isHost ? matchData.opponentData : matchData.hostData;
+            const opponentNewScore = (opponentPlayer.playerScore || 0) + diceSum;
+            if (isHost) {
+              updates['opponentData.playerScore'] = opponentNewScore;
+            } else {
+              updates['hostData.playerScore'] = opponentNewScore;
+            }
+            
+            // Activate multiplier for future rolls
+            updates['gameData.hasDoubleMultiplier'] = true;
+            turnOver = false;
+          }
+          else {
+            // Normal roll: add to turn score (apply multiplier if active)
+            const scoreToAdd = hasMultiplier ? diceSum * 2 : diceSum;
+            newTurnScore = currentTurnScore + scoreToAdd;
+            console.log(`🎲 Zero Hour - Normal roll: ${dice1} + ${dice2} = ${diceSum}${hasMultiplier ? ' (x2 = ' + scoreToAdd + ')' : ''}, Turn score: ${newTurnScore}`);
+            turnOver = false;
+          }
+        }
+      }
+      // True Grit specific processing
+      else if (gameMode.id === 'true-grit') {
+        console.log('🎲 True Grit Mode Processing');
+        
+        // Get current multiplier from game state (defaults to 1)
+        const currentMultiplier = matchData.gameData.trueGritMultiplier || 1;
+        
+        if (isSingleOne) {
+          // Single 1 ends turn immediately and auto-banks the current turn score
+          console.log('🎲 True Grit - Single 1: Turn ends, auto-banking score');
+          
+          // Auto-bank the current turn score to player's total
+          const currentPlayerScore = currentPlayer.playerScore || 0;
+          const newPlayerScore = currentPlayerScore + currentTurnScore;
+          
+          if (isHost) {
+            updates['hostData.playerScore'] = newPlayerScore;
+          } else {
+            updates['opponentData.playerScore'] = newPlayerScore;
+          }
+          
+          console.log(`💰 True Grit - Auto-banked ${currentTurnScore} points, new total: ${newPlayerScore}`);
+          
+          turnOver = true;
+          newTurnScore = 0; // Reset turn score since it's been banked
+          
+          // Reset multiplier for next player's turn
+          updates['gameData.trueGritMultiplier'] = 1;
+        }
+        else if (isDoubleOne) {
+          // Double 1 = x7 multiplier
+          const newMultiplier = currentMultiplier * 7;
+          console.log(`🎲 True Grit - Double 1s: Multiplier ${currentMultiplier} -> ${newMultiplier}`);
+          
+          // Add current roll with current multiplier
+          const scoreToAdd = diceSum * currentMultiplier;
+          newTurnScore = currentTurnScore + scoreToAdd;
+          
+          // Update multiplier for future rolls
+          updates['gameData.trueGritMultiplier'] = newMultiplier;
+          
+          console.log(`🎲 True Grit - Added ${diceSum} × ${currentMultiplier} = ${scoreToAdd}, Turn score: ${newTurnScore}`);
           turnOver = false;
-          // Will activate 2x multiplier later after updates object is created
+        }
+        else if (isDouble) {
+          // Other doubles increase multiplier multiplicatively
+          const multiplierIncrease = dice1;
+          const newMultiplier = currentMultiplier * multiplierIncrease;
+          console.log(`🎲 True Grit - Double ${dice1}s: Multiplier ${currentMultiplier} -> ${newMultiplier}`);
+          
+          // Add current roll with current multiplier
+          const scoreToAdd = diceSum * currentMultiplier;
+          newTurnScore = currentTurnScore + scoreToAdd;
+          
+          // Update multiplier for future rolls
+          updates['gameData.trueGritMultiplier'] = newMultiplier;
+          
+          console.log(`🎲 True Grit - Added ${diceSum} × ${currentMultiplier} = ${scoreToAdd}, Turn score: ${newTurnScore}`);
+          turnOver = false;
+        }
+        else {
+          // Normal roll: add dice sum multiplied by current multiplier
+          const scoreToAdd = diceSum * currentMultiplier;
+          newTurnScore = currentTurnScore + scoreToAdd;
+          console.log(`🎲 True Grit - Normal roll: ${dice1} + ${dice2} = ${diceSum} × ${currentMultiplier} = ${scoreToAdd}, Turn score: ${newTurnScore}`);
+          turnOver = false;
+        }
+      }
+      // Handle double 1 (Snake Eyes) for other modes
+      else if (isDoubleOne) {
+        if (gameMode.rules.eliminationRules.doubleOne) {
+          // Modes with doubleOne elimination (this shouldn't happen as it's handled by True Grit above)
+          console.log('🎲 Double 1 rolled - Turn over (elimination rule)');
+          turnOver = true;
+          newTurnScore = 0;
         } else {
           // All other modes (Classic, Quickfire, Last Line): Snake Eyes +20 rule
           console.log('🎲 Snake Eyes rolled - +20 to turn score');
@@ -450,31 +580,18 @@ export class MatchService {
             newTurnScore = 0;
         }
       }
-      // Handle single 1 (non-elimination modes)
-      else if (isSingleOne && !gameMode.rules.eliminationRules.singleOne) {
-        if (gameMode.id === 'true-grit') {
-          // True Grit: Single 1 ends turn, but score is banked (not lost)
-          console.log('🎲 True Grit: Single 1 rolled - Turn over, score banked');
-          turnOver = true;
-          // Keep the current turn score to be banked
-        } else {
-          // Other modes: Single 1 ends turn, no score added
-          console.log('🎲 Single 1 rolled - Turn over, no score added');
-          turnOver = true;
-          newTurnScore = 0;
-        }
+      // Handle single 1 (non-elimination modes) - already handled by Zero Hour and True Grit above
+      else if (isSingleOne) {
+        // Other modes: Single 1 ends turn, no score added
+        console.log('🎲 Single 1 rolled - Turn over, no score added');
+        turnOver = true;
+        newTurnScore = 0;
       }
       // Handle other doubles
       else if (isDouble) {
         newTurnScore = currentTurnScore + diceSum;
         console.log(`🎲 Double ${dice1}s rolled - ${diceSum} points added`);
-        
-        // In most modes, doubles don't grant extra rolls (except classic with multiplier)
-        if (gameMode.id === 'classic' || gameMode.id === 'quickfire') {
-          turnOver = false; // Classic mode: activate multiplier for future rolls
-        } else {
-          turnOver = false; // Continue turn
-        }
+        turnOver = false; // Continue turn
       }
       // Normal scoring
       else {
@@ -496,18 +613,8 @@ export class MatchService {
         }
       }
       
-      // Special rule for True Grit: Only 1 turn per player, turn ends after any roll
-      if (gameMode.id === 'true-grit') {
-        console.log('🎲 True Grit mode - Turn ends after 1 roll');
-        turnOver = true;
-      }
-      
-      // Prepare updates
-      const updates: any = {
-        'gameData.isRolling': false,
-        'gameData.rollPhase': deleteField(),
-        'gameData.turnScore': newTurnScore,
-      };
+      // Update turn score in the updates object
+      updates['gameData.turnScore'] = newTurnScore;
       
       // Activate 2x multiplier for double 1s in modes that continue turn (Classic, Quickfire, Zero Hour)
       if (isDoubleOne && !gameMode.rules.eliminationRules.doubleOne) {
@@ -618,13 +725,28 @@ export class MatchService {
       
       // Special handling for True Grit mode - auto-bank when turn ends
       if (gameMode.id === 'true-grit' && turnOver) {
-        if (isHost) {
-          updates['hostData.playerScore'] = newTurnScore;
-        } else {
-          updates['opponentData.playerScore'] = newTurnScore;
+        // Only auto-bank if the score hasn't already been banked (e.g., by single 1 logic)
+        const currentPlayerScore = currentPlayer.playerScore || 0;
+        const expectedScoreAfterBanking = currentPlayerScore + newTurnScore;
+        
+        // Check if the player score was already updated (single 1 auto-banking)
+        const currentUpdatedScore = isHost ? updates['hostData.playerScore'] : updates['opponentData.playerScore'];
+        
+        if (currentUpdatedScore === undefined) {
+          // Score hasn't been banked yet, so bank it now
+          if (isHost) {
+            updates['hostData.playerScore'] = expectedScoreAfterBanking;
+          } else {
+            updates['opponentData.playerScore'] = expectedScoreAfterBanking;
+          }
+          console.log(`💰 True Grit - Auto-banked ${newTurnScore} points, new total: ${expectedScoreAfterBanking}`);
         }
+        
         newTurnScore = 0; // Reset turn score since it's banked automatically
         updates['gameData.turnScore'] = 0;
+        
+        // Reset multiplier for next player's turn
+        updates['gameData.trueGritMultiplier'] = 1;
       }
       
       // Auto-win logic for reaching target score
@@ -700,7 +822,9 @@ export class MatchService {
           updates['gameData.turnScore'] = 0;
           turnOver = true;
         }
-      }      // Handle double multiplier logic (Classic and Quickfire modes)
+      }
+      
+      // Handle double multiplier logic (Classic and Quickfire modes)
       if (gameMode.id === 'classic' || gameMode.id === 'quickfire') {
         if (dice1 === dice2 && dice1 !== 1 && dice1 !== 6) {
           updates['gameData.hasDoubleMultiplier'] = true;
@@ -739,17 +863,46 @@ export class MatchService {
           updates['opponentData.turnActive'] = isHost;
         }
         
+        // Handle True Grit auto-banking when turn ends
+        if (gameMode.id === 'true-grit' && turnOver) {
+          // Check if the score hasn't already been banked (e.g., by single 1 logic)
+          const currentUpdatedScore = isHost ? updates['hostData.playerScore'] : updates['opponentData.playerScore'];
+          
+          if (currentUpdatedScore === undefined) {
+            // Score hasn't been banked yet, add turn score to existing player score
+            const currentPlayerScore = currentPlayer.playerScore || 0;
+            const newPlayerScore = currentPlayerScore + newTurnScore;
+            
+            if (isHost) {
+              updates['hostData.playerScore'] = newPlayerScore;
+            } else {
+              updates['opponentData.playerScore'] = newPlayerScore;
+            }
+            
+            console.log(`🎯 True Grit - Auto-banked score: ${newTurnScore}, new total: ${newPlayerScore}`);
+          }
+          
+          // Reset True Grit multiplier for next player
+          updates['gameData.trueGritMultiplier'] = 1;
+        }
+        
         // Check if True Grit mode is complete (both players have completed their single turns)
         if (gameMode.id === 'true-grit' && turnOver && !gameOver) {
-          // In True Grit, we track the highest single turn score
-          const hostTurnComplete = matchData.hostData.playerScore > 0 || (isHost && turnOver);
-          const opponentTurnComplete = matchData.opponentData.playerScore > 0 || (!isHost && turnOver);
+          // In True Grit, each player gets exactly one turn
+          // Get the final scores after auto-banking
+          const hostFinalScore = isHost 
+            ? (updates['hostData.playerScore'] || matchData.hostData.playerScore || 0)
+            : (matchData.hostData.playerScore || 0);
+          const opponentFinalScore = !isHost 
+            ? (updates['opponentData.playerScore'] || matchData.opponentData.playerScore || 0)
+            : (matchData.opponentData.playerScore || 0);
+          
+          // Check if both players have completed their turns
+          const hostTurnComplete = (isHost && turnOver) || (matchData.hostData.playerScore || 0) > 0;
+          const opponentTurnComplete = (!isHost && turnOver) || (matchData.opponentData.playerScore || 0) > 0;
           
           // If both players have completed their turns, determine winner
           if (hostTurnComplete && opponentTurnComplete) {
-            const hostFinalScore = isHost ? newTurnScore : matchData.hostData.playerScore;
-            const opponentFinalScore = !isHost ? newTurnScore : matchData.opponentData.playerScore;
-            
             if (hostFinalScore > opponentFinalScore) {
               winner = matchData.hostData.playerDisplayName;
             } else if (opponentFinalScore > hostFinalScore) {
@@ -760,13 +913,15 @@ export class MatchService {
             }
             
             gameOver = true;
-            gameOverReason = `Highest single turn wins! ${winner}`;
+            gameOverReason = `True Grit Complete! Winner: ${winner} (Host: ${hostFinalScore}, Opponent: ${opponentFinalScore})`;
             
             // Set game over state
             updates['gameData.gamePhase'] = 'gameOver';
             updates['gameData.winner'] = winner;
             updates['gameData.gameOverReason'] = gameOverReason;
             updates['gameData.status'] = 'completed';
+            updates['hostData.turnActive'] = false;
+            updates['opponentData.turnActive'] = false;
             
             console.log(`🏆 True Grit Complete! Winner: ${winner} (Host: ${hostFinalScore}, Opponent: ${opponentFinalScore})`);
           }
@@ -857,9 +1012,21 @@ export class MatchService {
       
       // Calculate new player score based on game mode direction
       let newPlayerScore;
+      let bankingSuccess = true;
+      
       if (gameMode.rules.scoreDirection === 'down') {
         // Zero Hour: subtract banked score from current score
-        newPlayerScore = (currentPlayer.playerScore || 0) - matchData.gameData.turnScore;
+        const proposedScore = (currentPlayer.playerScore || 0) - matchData.gameData.turnScore;
+        
+        if (proposedScore < 0) {
+          // Bust rule: banking would take player below 0, so banking fails
+          console.log('🚫 Zero Hour - Banking would go below 0, bust rule applied');
+          newPlayerScore = currentPlayer.playerScore || 0; // Keep current score
+          bankingSuccess = false;
+        } else {
+          newPlayerScore = proposedScore;
+          console.log(`💰 Zero Hour - Banked ${matchData.gameData.turnScore}, new score: ${newPlayerScore}`);
+        }
       } else {
         // Classic and other modes: add banked score to current score
         newPlayerScore = (currentPlayer.playerScore || 0) + matchData.gameData.turnScore;
@@ -871,16 +1038,11 @@ export class MatchService {
       let winner = '';
       
       if (gameMode.rules.scoreDirection === 'down') {
-        // Zero Hour: win by reaching exactly 0
-        if (newPlayerScore <= 0) {
-          if (gameMode.rules.specialRules?.exactScoreRequired && newPlayerScore < 0) {
-            // Overshoot in Zero Hour - reset to starting score
-            newPlayerScore = gameMode.rules.startingScore;
-            console.log('🎯 Overshoot in Zero Hour - score reset to starting value');
-          } else if (newPlayerScore === 0) {
-            gameOver = true;
-            winner = currentPlayer.playerDisplayName;
-          }
+        // Zero Hour: win by reaching exactly 0 (only if banking was successful)
+        if (bankingSuccess && newPlayerScore === 0) {
+          gameOver = true;
+          winner = currentPlayer.playerDisplayName;
+          console.log(`� Zero Hour Victory! ${winner} reached exactly 0`);
         }
       } else {
         // Classic and other modes: win by reaching target score
@@ -892,20 +1054,25 @@ export class MatchService {
       
       // Prepare updates
       const updates: any = {
-        'gameData.turnScore': 0,
-        'gameData.hasDoubleMultiplier': false, // Clear multiplier when banking
+        'gameData.turnScore': 0, // Always reset turn score (successful bank or bust)
+        'gameData.hasDoubleMultiplier': false, // Always clear multiplier when banking
       };
       
-      // 📊 TRACK BANKING STATISTICS
+      // 📊 TRACK BANKING STATISTICS (only for successful banks)
       const playerStatsPath = isHost ? 'hostData.matchStats' : 'opponentData.matchStats';
       const currentStats = currentPlayer.matchStats || { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0 };
-      updates[`${playerStatsPath}.banks`] = currentStats.banks + 1;
       
-      // Update player score
-      if (isHost) {
-        updates['hostData.playerScore'] = newPlayerScore;
-      } else {
-        updates['opponentData.playerScore'] = newPlayerScore;
+      if (bankingSuccess) {
+        updates[`${playerStatsPath}.banks`] = currentStats.banks + 1;
+      }
+      
+      // Update player score (only if banking was successful)
+      if (bankingSuccess) {
+        if (isHost) {
+          updates['hostData.playerScore'] = newPlayerScore;
+        } else {
+          updates['opponentData.playerScore'] = newPlayerScore;
+        }
       }
       
       // Handle game over
