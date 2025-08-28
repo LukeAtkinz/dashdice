@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Crown, Star, TrendingUp, Medal, Target } from 'lucide-react';
+import { ParticleEffect } from './RankedVisualEffects';
 
 interface ProgressionDisplayProps {
   currentLevel: number;
@@ -59,9 +60,12 @@ export function ProgressionDisplay({
   const LevelIcon = getLevelIcon(currentLevel);
 
   return (
-    <div className="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 rounded-lg p-6 text-white">
+    <div className="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 rounded-lg p-6 text-white relative overflow-hidden">
+      {/* Particle effects for max level */}
+      {currentLevel >= MAX_LEVEL && <ParticleEffect color="#fbbf24" count={15} />}
+      
       {/* Header with level and dash */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 relative z-10">
         <div className="flex items-center space-x-3">
           <div className={`p-3 rounded-full bg-gradient-to-r ${getLevelColor(currentLevel)}`}>
             <LevelIcon className="w-6 h-6 text-white" />

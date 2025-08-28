@@ -6,6 +6,7 @@ import { Trophy, Crown, Medal, Star, TrendingUp, Users, Clock, Filter } from 'lu
 import { LeaderboardEntry } from '../../types/ranked';
 import { leaderboardService } from '../../services/leaderboardService';
 import { SeasonService } from '../../services/seasonService';
+import { RankBadge, LevelTierBadge, WinStreakIndicator, SeasonProgressIndicator } from './RankedVisualEffects';
 
 interface LeaderboardProps {
   userId?: string;
@@ -106,10 +107,7 @@ export function Leaderboard({
   };
 
   const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Crown className="w-5 h-5 text-yellow-500" />;
-    if (rank === 2) return <Medal className="w-5 h-5 text-gray-400" />;
-    if (rank === 3) return <Medal className="w-5 h-5 text-amber-600" />;
-    return <span className="text-sm font-bold text-gray-400">#{rank}</span>;
+    return <RankBadge rank={rank} size="md" />;
   };
 
   const getRankBg = (rank: number) => {
@@ -166,8 +164,7 @@ export function Leaderboard({
           
           {seasonInfo && (
             <div className="text-right">
-              <p className="text-sm text-gray-400">Season ends in</p>
-              <p className="text-lg font-semibold text-yellow-400">{timeRemaining}</p>
+              <SeasonProgressIndicator timeRemaining={timeRemaining} />
             </div>
           )}
         </div>
@@ -239,13 +236,17 @@ export function Leaderboard({
                     <div>
                       <p className="font-semibold">{entry.displayName}</p>
                       <div className="flex items-center space-x-2 text-sm text-gray-400">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${getLevelBadgeColor(entry.level)}`}>
-                          Level {entry.level}
-                        </span>
+                        <LevelTierBadge level={entry.level} animated={false} />
                         {!compactMode && (
                           <>
                             <span>•</span>
                             <span>{entry.gamesPlayed} games</span>
+                            {entry.winStreak >= 3 && (
+                              <>
+                                <span>•</span>
+                                <WinStreakIndicator streak={entry.winStreak} animated={false} />
+                              </>
+                            )}
                           </>
                         )}
                       </div>

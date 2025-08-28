@@ -1,14 +1,18 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Trophy, TrendingUp, Calendar, Users, Target, Medal, Clock, Star } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Trophy, TrendingUp, Calendar, Users, Target, Medal, Clock, Star, Award } from 'lucide-react';
 import { ProgressionDisplay, CompactProgressionDisplay } from './ProgressionDisplay';
 import { Leaderboard, CompactLeaderboard } from './Leaderboard';
+import { AchievementsDisplay, CompactAchievements } from './AchievementsDisplay';
+import { LevelUpAnimation, WinStreakAnimation, SeasonEndAnimation } from './RankedAnimations';
+import { RankBadge, LevelTierBadge, WinStreakIndicator, SeasonProgressIndicator, ParticleEffect } from './RankedVisualEffects';
 import { RankedStats, Season } from '../../types/ranked';
 import { RankedMatchmakingService } from '../../services/rankedMatchmakingService';
 import { SeasonService } from '../../services/seasonService';
 import { leaderboardService } from '../../services/leaderboardService';
+import { rankedAchievementService } from '../../services/rankedAchievementService';
 
 interface RankedDashboardProps {
   userId: string;
@@ -23,7 +27,14 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'leaderboard' | 'history'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'leaderboard' | 'achievements' | 'history'>('overview');
+  
+  // Animation states
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [showWinStreak, setShowWinStreak] = useState(false);
+  const [showSeasonEnd, setShowSeasonEnd] = useState(false);
+  const [newLevel, setNewLevel] = useState(1);
+  const [celebrateRank, setCelebrateRank] = useState(false);
 
   useEffect(() => {
     loadRankedData();
@@ -49,10 +60,21 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
 
       setRankedStats(stats);
       setCurrentSeason(season);
+      
+      // Check for rank improvements and trigger celebrations
+      if (rank && userRank && rank < userRank && rank <= 10) {
+        setCelebrateRank(true);
+        setTimeout(() => setCelebrateRank(false), 3000);
+      }
       setUserRank(rank);
       
       if (season) {
         updateTimeRemaining();
+      }
+
+      // Check for new achievements
+      if (stats) {
+        rankedAchievementService.checkAndAwardAchievements(userId, stats, rank || undefined);
       }
     } catch (err) {
       setError('Failed to load ranked data');
@@ -136,12 +158,22 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
           winsInLevel={rankedStats.currentSeason.winsInLevel}
           dashNumber={rankedStats.currentSeason.dashNumber}
         />
+        
         <div className="bg-gray-800 rounded-lg p-4 text-white">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Current Rank</span>
-            <span className="text-lg font-bold text-yellow-400">#{userRank || '---'}</span>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium">Current Rank</span>
+              {userRank && userRank <= 3 && <RankBadge rank={userRank} size="sm" />}
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-lg font-bold text-yellow-400">#{userRank || '---'}</span>
+              {rankedStats.currentSeason.winStreak >= 3 && (
+                <WinStreakIndicator streak={rankedStats.currentSeason.winStreak} animated={false} />
+              )}
+            </div>
           </div>
-          <div className="grid grid-cols-3 gap-4 text-center text-xs">
+          
+          <div className="grid grid-cols-3 gap-4 text-center text-xs mb-3">
             <div>
               <p className="text-gray-400">Win Rate</p>
               <p className="font-bold text-green-400">
@@ -159,7 +191,17 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
               <p className="font-bold text-blue-400">{rankedStats.currentSeason.gamesPlayed}</p>
             </div>
           </div>
+          
+          {timeRemaining && (
+            <SeasonProgressIndicator timeRemaining={timeRemaining} animated={false} />
+          )}
         </div>
+
+        <CompactAchievements
+          userId={userId}
+          rankedStats={rankedStats}
+          currentRank={userRank || undefined}
+        />
       </div>
     );
   }
@@ -167,19 +209,44 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
   return (
     <div className="space-y-6">
       {/* Header with season info */}
-      <div className="bg-gradient-to-r from-purple-900 via-blue-900 to-indigo-900 rounded-lg p-6 text-white">
-        <div className="flex items-center justify-between">
+      <div className="bg-gradient-to-r from-purple-900 via-blue-900 to-indigo-900 rounded-lg p-6 text-white relative overflow-hidden">
+        {/* Particle effects for celebration */}
+        {celebrateRank && <ParticleEffect color="#fbbf24" count={20} />}
+        
+        <div className="flex items-center justify-between relative z-10">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Ranked Dashboard</h1>
-            <p className="text-gray-300">
-              {currentSeason ? `Dash ${currentSeason.dashNumber}` : 'No active season'}
-            </p>
+            <h1 className="text-3xl font-bold mb-2 flex items-center">
+              Ranked Dashboard
+              {userRank && userRank <= 3 && (
+                <motion.div
+                  className="ml-3"
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <RankBadge rank={userRank} size="lg" />
+                </motion.div>
+              )}
+            </h1>
+            <div className="flex items-center space-x-4">
+              <p className="text-gray-300">
+                {currentSeason ? `Dash ${currentSeason.dashNumber}` : 'No active season'}
+              </p>
+              {rankedStats && (
+                <LevelTierBadge 
+                  level={rankedStats.currentSeason.level} 
+                  showProgress={true}
+                  winsInLevel={rankedStats.currentSeason.winsInLevel}
+                />
+              )}
+              {rankedStats && rankedStats.currentSeason.winStreak >= 3 && (
+                <WinStreakIndicator streak={rankedStats.currentSeason.winStreak} />
+              )}
+            </div>
           </div>
           
           {currentSeason && (
             <div className="text-right">
-              <p className="text-sm text-gray-300">Season ends in</p>
-              <p className="text-2xl font-bold text-yellow-400">{timeRemaining}</p>
+              <SeasonProgressIndicator timeRemaining={timeRemaining} />
             </div>
           )}
         </div>
@@ -208,6 +275,17 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
         >
           <Trophy className="w-4 h-4 inline mr-2" />
           Leaderboard
+        </button>
+        <button
+          onClick={() => setActiveTab('achievements')}
+          className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
+            activeTab === 'achievements'
+              ? 'bg-blue-600 text-white'
+              : 'text-gray-400 hover:text-white hover:bg-gray-700'
+          }`}
+        >
+          <Award className="w-4 h-4 inline mr-2" />
+          Achievements
         </button>
         <button
           onClick={() => setActiveTab('history')}
@@ -295,6 +373,14 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
           <Leaderboard userId={userId} />
         )}
 
+        {activeTab === 'achievements' && rankedStats && (
+          <AchievementsDisplay 
+            userId={userId} 
+            rankedStats={rankedStats}
+            currentRank={userRank || undefined}
+          />
+        )}
+
         {activeTab === 'history' && (
           <div className="bg-gray-900 rounded-lg p-6 text-white">
             <h3 className="text-xl font-bold mb-4 flex items-center">
@@ -309,6 +395,29 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
           </div>
         )}
       </motion.div>
+
+      {/* Animations */}
+      <AnimatePresence>
+        <LevelUpAnimation
+          newLevel={newLevel}
+          show={showLevelUp}
+          onComplete={() => setShowLevelUp(false)}
+        />
+        
+        <WinStreakAnimation
+          streakCount={rankedStats?.currentSeason.winStreak || 0}
+          show={showWinStreak}
+          onComplete={() => setShowWinStreak(false)}
+        />
+        
+        <SeasonEndAnimation
+          finalLevel={rankedStats?.currentSeason.level || 1}
+          finalRank={userRank || 999}
+          newSeasonNumber={currentSeason?.dashNumber || 1}
+          show={showSeasonEnd}
+          onComplete={() => setShowSeasonEnd(false)}
+        />
+      </AnimatePresence>
     </div>
   );
 }
