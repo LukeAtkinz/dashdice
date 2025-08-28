@@ -8,10 +8,13 @@ import { useNavigation } from '@/context/NavigationContext';
 import { useWaitingRoomCleanup } from '@/hooks/useWaitingRoomCleanup';
 import { db } from '@/services/firebase';
 import { collection, addDoc, doc, onSnapshot, updateDoc, deleteDoc, query, where, getDocs, getDoc, serverTimestamp } from 'firebase/firestore';
+import { GameType } from '@/types/ranked';
+import { RankedMatchmakingService } from '@/services/rankedMatchmakingService';
 
 interface GameWaitingRoomProps {
   gameMode: string;
   actionType: 'live' | 'custom';
+  gameType?: GameType; // Add gameType support
   onBack: () => void;
   roomId?: string; // Optional roomId for existing rooms
 }
@@ -21,6 +24,8 @@ interface WaitingRoomEntry {
   createdAt: any;
   gameMode: string;
   gameType: string;
+  rankedGame?: boolean; // Add ranked game flag
+  competitiveType?: GameType; // Add competitive type
   playersRequired: number;
   hostData: {
     playerDisplayName: string;
@@ -61,6 +66,7 @@ interface WaitingRoomEntry {
 export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   gameMode,
   actionType,
+  gameType = 'quick', // Default to quick game
   onBack,
   roomId
 }) => {
@@ -257,6 +263,16 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
         const userData = await getUserData();
 
+        // Add ranked validation if this is a ranked game
+        if (gameType === 'ranked') {
+          const validation = await RankedMatchmakingService.validateRankedEligibility(user.uid);
+          if (!validation.valid) {
+            setError(validation.reason || 'Cannot play ranked matches at this time');
+            setIsLoading(false);
+            return;
+          }
+        }
+
         // If roomId is provided, listen to that specific room
         if (roomId) {
           console.log('🎯 GameWaitingRoom: Using existing room ID:', roomId);
@@ -376,6 +392,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             createdAt: serverTimestamp(),
             gameMode: gameMode,
             gameType: "Open Server",
+            rankedGame: gameType === 'ranked', // Add ranked game flag
+            competitiveType: gameType, // Track competitive type
             playersRequired: 0, // Set to 0 as requested
             hostData: {
               playerDisplayName: userData.displayName,
@@ -1285,6 +1303,31 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           >
             {currentGameMode.name}
           </h1>
+          
+          {/* Game Type Badge */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginTop: '10px'
+          }}>
+            <div style={{
+              backgroundColor: gameType === 'ranked' ? 'rgba(255, 215, 0, 0.2)' : 'rgba(0, 150, 255, 0.2)',
+              border: `2px solid ${gameType === 'ranked' ? '#FFD700' : '#0096FF'}`,
+              borderRadius: '20px',
+              padding: '8px 16px',
+              color: gameType === 'ranked' ? '#FFD700' : '#0096FF',
+              fontFamily: 'Audiowide',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              textTransform: 'uppercase',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              {gameType === 'ranked' ? '🏆' : '⚡'} 
+              {gameType === 'ranked' ? 'Ranked Match' : 'Quick Game'}
+            </div>
+          </div>
         </div>
 
         {/* Profile VS Information */}

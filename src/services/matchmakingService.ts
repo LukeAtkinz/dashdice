@@ -419,26 +419,35 @@ export class MatchmakingService {
   /**
    * Main matchmaking function with transaction to prevent duplicate room creation
    * Includes 20-minute timeout check and player ID validation
+   * Now supports gameType parameter for Quick vs Ranked games
    */
-  static async findOrCreateRoom(gameMode: string, hostData: any) {
+  static async findOrCreateRoom(gameMode: string, hostData: any, gameType: 'quick' | 'ranked' = 'quick') {
     try {
       console.log('🔍 Starting findOrCreateRoom for user:', hostData.playerId);
       console.log('📊 Host data received:', JSON.stringify(hostData, null, 2));
+      console.log('🎮 Game type:', gameType);
       
       // Use transaction to atomically check and create room to prevent race conditions
       const result = await runTransaction(db, async (transaction) => {
         console.log('🔄 Starting transaction...');
         
         // Search for existing room within transaction, excluding rooms where current user is host
-        const q = query(
-          collection(db, 'waitingroom'),
+        // For ranked games, also match by gameType
+        const queryConditions = [
           where('gameMode', '==', gameMode),
           where('gameType', '==', 'Open Server'),
           where('playersRequired', '==', 1)
-        );
+        ];
+        
+        // Add gameType filter for ranked games (quick games can match any Open Server room)
+        if (gameType === 'ranked') {
+          queryConditions.push(where('rankedGame', '==', true));
+        }
+        
+        const q = query(collection(db, 'waitingroom'), ...queryConditions);
 
         const querySnapshot = await getDocs(q);
-        console.log(`📋 Found ${querySnapshot.docs.length} existing rooms`);
+        console.log(`📋 Found ${querySnapshot.docs.length} existing rooms for ${gameType} game`);
         
         // Filter out rooms where the current user is already the host AND check for expired rooms
         const now = new Date();
@@ -519,6 +528,8 @@ export class MatchmakingService {
             createdAt: serverTimestamp(),
             gameMode: gameMode,
             gameType: "Open Server",
+            rankedGame: gameType === 'ranked', // Add ranked game flag
+            competitiveType: gameType, // Track if this is 'quick' or 'ranked'
             hostData: {
               displayBackgroundEquipped: displayBg,
               matchBackgroundEquipped: matchBg,
