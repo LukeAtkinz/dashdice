@@ -90,7 +90,7 @@ export class GameModeService {
       },
       {
         id: 'classic',
-        name: 'Only One Will Rise',
+        name: 'Classic Mode',
         description: 'First to 100 points wins, players take turns and bank',
         rules: {
           startingScore: 0,

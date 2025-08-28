@@ -8,10 +8,11 @@ interface Toast {
   message: string;
   type: 'success' | 'error' | 'info' | 'warning';
   duration?: number;
+  icon?: string;
 }
 
 interface ToastContextValue {
-  showToast: (message: string, type?: Toast['type'], duration?: number) => void;
+  showToast: (message: string, type?: Toast['type'], duration?: number, icon?: string) => void;
 }
 
 const ToastContext = createContext<ToastContextValue | undefined>(undefined);
@@ -31,9 +32,9 @@ interface ToastProviderProps {
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = (message: string, type: Toast['type'] = 'info', duration: number = 3000) => {
+  const showToast = (message: string, type: Toast['type'] = 'info', duration: number = 3000, icon?: string) => {
     const id = Math.random().toString(36).substring(2, 9);
-    const newToast: Toast = { id, message, type, duration };
+    const newToast: Toast = { id, message, type, duration, icon };
     
     setToasts(prev => [...prev, newToast]);
     
@@ -90,13 +91,25 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
                             animate-pulse opacity-60"></div>
               
               <div className="relative z-10 flex items-center gap-3">
-                {/* Status indicator */}
-                <div className={`w-2 h-2 rounded-full shadow-lg ${
-                  toast.type === 'success' ? 'bg-green-400 shadow-green-400/50' :
-                  toast.type === 'error' ? 'bg-red-400 shadow-red-400/50' :
-                  toast.type === 'warning' ? 'bg-yellow-400 shadow-yellow-400/50' :
-                  'bg-blue-400 shadow-blue-400/50'
-                } animate-pulse`}></div>
+                {/* Game mode icon or status indicator */}
+                {toast.icon ? (
+                  <img 
+                    src={toast.icon} 
+                    alt="Game Mode" 
+                    className="w-6 h-6 md:w-8 md:h-8 object-contain opacity-90 drop-shadow-lg"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className={`w-2 h-2 rounded-full shadow-lg ${
+                    toast.type === 'success' ? 'bg-green-400 shadow-green-400/50' :
+                    toast.type === 'error' ? 'bg-red-400 shadow-red-400/50' :
+                    toast.type === 'warning' ? 'bg-yellow-400 shadow-yellow-400/50' :
+                    'bg-blue-400 shadow-blue-400/50'
+                  } animate-pulse`}></div>
+                )}
                 
                 <p className="text-white text-sm md:text-base font-medium font-audiowide tracking-wide flex-1">
                   {toast.message}

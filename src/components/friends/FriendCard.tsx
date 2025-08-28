@@ -266,11 +266,14 @@ export default function FriendCard({ friend, compact = false, showActions = true
       if (result?.success) {
         console.log('✅ Game invitation sent successfully');
         
-        // Enhanced toast with game mode info
+        // Enhanced toast with game mode info and icon
         const gameModeName = gameMode.charAt(0).toUpperCase() + gameMode.slice(1);
+        const gameModeIcon = getGameModeIcon(gameMode);
         showToast(
-          `🎯 ${gameModeName} invitation sent to ${friend.friendData?.displayName || 'friend'}!`, 
-          'success'
+          `${gameModeName} invite sent to ${friend.friendData?.displayName || 'friend'}!`, 
+          'success',
+          3000,
+          gameModeIcon
         );
       } else {
         console.error('❌ Failed to send game invitation:', result?.error);

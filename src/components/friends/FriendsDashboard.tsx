@@ -205,12 +205,6 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
             {/* Game Invitations Section - Only show when there are invitations */}
             {gameInvitations.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-xl font-audiowide text-white mb-4 uppercase flex items-center gap-2">
-                  Game Invitations
-                  <span className="bg-green-500 text-white px-2 py-1 rounded-full text-sm animate-pulse">
-                    {gameInvitations.length}
-                  </span>
-                </h3>
                 <GameInvitations />
               </div>
             )}

@@ -127,9 +127,9 @@ export default function FriendRequests({ compact = false }: FriendRequestsProps)
           >
             <div className="flex items-start gap-3">
               {/* Avatar */}
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center overflow-hidden">
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center overflow-hidden">
                 <img 
-                  src="/backgrounds/location not found.png" 
+                  src="/Design Elements/lost connection.webp" 
                   alt="Friend Request" 
                   className="w-full h-full object-contain opacity-80"
                 />

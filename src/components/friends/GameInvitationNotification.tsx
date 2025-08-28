@@ -30,11 +30,17 @@ export const GameInvitationNotification: React.FC = () => {
   // Don't show notifications if user is already in a match
   const shouldShowNotifications = currentSection !== 'match';
 
+  // Filter out expired invitations on the client side for immediate UI update
+  const validInvitations = gameInvitations.filter(invitation => {
+    if (!invitation.expiresAt) return true;
+    return invitation.expiresAt.toDate() > new Date();
+  });
+
   // Handle countdown timers for each invitation
   useEffect(() => {
     const intervals: { [key: string]: NodeJS.Timeout } = {};
 
-    gameInvitations.forEach(invitation => {
+    validInvitations.forEach(invitation => {
       if (invitation.expiresAt) {
         const updateTimer = () => {
           const now = Date.now();
@@ -52,7 +58,7 @@ export const GameInvitationNotification: React.FC = () => {
     return () => {
       Object.values(intervals).forEach(interval => clearInterval(interval));
     };
-  }, [gameInvitations]);
+  }, [validInvitations]);
 
   // Listen for user's currentGame changes to auto-navigate to waiting room
   useEffect(() => {
@@ -176,14 +182,14 @@ export const GameInvitationNotification: React.FC = () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  if (!shouldShowNotifications || gameInvitations.length === 0) {
+  if (!shouldShowNotifications || validInvitations.length === 0) {
     return null;
   }
 
   return (
     <div className="fixed top-4 right-4 z-50 space-y-3 max-w-sm w-full max-w-xs md:max-w-sm">
       <AnimatePresence>
-        {gameInvitations.map((invitation) => (
+        {validInvitations.map((invitation) => (
           <motion.div
             key={invitation.id}
             initial={{ opacity: 0, x: 300, scale: 0.8 }}
@@ -195,8 +201,8 @@ export const GameInvitationNotification: React.FC = () => {
               damping: 30,
               duration: 0.3 
             }}
-            className="bg-gradient-to-br from-slate-900/95 via-blue-900/95 to-purple-900/95 
-                     border border-blue-400/60 rounded-xl p-4 shadow-2xl
+            className="bg-gradient-to-br from-slate-900/95 via-blue-900/95 to-transparent 
+                     border border-blue-400/60 rounded-2xl p-4 shadow-2xl
                      backdrop-blur-lg relative overflow-hidden"
             style={{
               background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 58, 138, 0.95) 50%, rgba(88, 28, 135, 0.95) 100%)'
@@ -216,8 +222,8 @@ export const GameInvitationNotification: React.FC = () => {
                   </h3>
                 </div>
                 {timeLeft[invitation.id] && (
-                  <div className="bg-gradient-to-r from-red-600 to-red-700 px-3 py-1 rounded-full 
-                                text-xs text-white font-mono font-bold shadow-lg">
+                  <div className="px-3 py-1 rounded-full 
+                                text-xs text-white font-mono font-bold shadow-lg bg-slate-700/80 border border-slate-500">
                     {formatTime(timeLeft[invitation.id])}
                   </div>
                 )}

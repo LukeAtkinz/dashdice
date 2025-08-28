@@ -135,11 +135,11 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   // Game mode display configurations
   const gameModeConfig = {
     quickfire: { 
-      name: 'Quick Fire', 
+      name: 'Quickfire', 
       description: 'Fast-paced dice action'
     },
     classic: { 
-      name: 'Only One Will Rise', 
+      name: 'Classic Mode', 
       description: 'Traditional dice gameplay'
     },
     'zero-hour': { 
