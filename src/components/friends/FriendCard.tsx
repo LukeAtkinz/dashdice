@@ -285,9 +285,9 @@ export default function FriendCard({ friend, compact = false, showActions = true
 
   // Game mode options for inline selector
   const gameModes = [
-    { id: 'quickfire', name: 'Quickfire', icon: '/Design Elements/finance startup.webp' },
+    { id: 'quickfire', name: 'Quickfire', icon: '/Design Elements/shield.webp' },
     { id: 'classic', name: 'Classic Mode', icon: '/Design Elements/Crown Mode.webp' },
-    { id: 'zero-hour', name: 'Zero Hour', icon: '/Design Elements/Satelite.webp' },
+    { id: 'zero-hour', name: 'Zero Hour', icon: '/Design Elements/clockbreaker.webp' },
     { id: 'last-line', name: 'Last Line', icon: '/Design Elements/skull.webp' },
     { id: 'true-grit', name: 'True Grit', icon: '/Design Elements/Castle.webp' }
   ];
@@ -536,7 +536,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
                     disabled={isRemoving}
                     className="flex-1 px-4 py-3 bg-purple-600/60 hover:bg-purple-700/60 active:bg-purple-800/60 disabled:bg-gray-600/60 disabled:cursor-not-allowed text-white text-sm rounded-lg font-montserrat transition-colors touch-manipulation"
                   >
-                    {isRemoving ? 'Managing...' : 'Manage'}
+                    {isRemoving ? 'Removing...' : 'Remove'}
                   </button>
                 </div>
               </div>
@@ -552,7 +552,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                   className="overflow-hidden"
                 >
-                  <div className="bg-transparent backdrop-blur-md border border-gray-700/50 rounded-xl p-4">
+                  <div className="bg-transparent backdrop-blur-[0.5px] border border-gray-700/50 rounded-xl p-4">
                     <div className="grid grid-cols-2 gap-3 mb-3">
                       {gameModes.map((mode, index) => (
                         <motion.button
@@ -563,21 +563,21 @@ export default function FriendCard({ friend, compact = false, showActions = true
                           onClick={() => handleGameInvite(mode.id)}
                           whileHover={{ scale: 1.05, y: -2 }}
                           whileTap={{ scale: 0.95 }}
-                          className="flex flex-col items-center justify-center p-4 rounded-lg
+                          className="flex flex-col md:flex-row items-center justify-center md:justify-start p-4 rounded-lg
                                    bg-gray-800/30 hover:bg-gray-700/40 border border-gray-600/50
-                                   hover:border-blue-400/70 transition-all duration-200 min-h-[100px]"
+                                   hover:border-blue-400/70 transition-all duration-200 min-h-[100px] md:gap-3"
                         >
                           <img 
                             src={mode.icon} 
                             alt={mode.name}
-                            className="w-12 h-12 object-contain mb-3 opacity-60"
+                            className="w-12 h-12 md:w-16 md:h-16 object-contain mb-3 md:mb-0 opacity-60 md:flex-shrink-0"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
                               target.src = '/Design Elements/Crown Mode.webp'; // Fallback icon
                             }}
                           />
-                          <span className="text-sm text-white font-medium text-center leading-tight
-                                         drop-shadow-lg" 
+                          <span className="text-sm md:text-lg text-white font-medium text-center md:text-left leading-tight
+                                         drop-shadow-lg md:flex-1" 
                                 style={{ 
                                   textShadow: '0 0 8px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.1)' 
                                 }}>

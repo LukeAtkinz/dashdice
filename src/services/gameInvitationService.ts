@@ -25,6 +25,8 @@ export class GameInvitationService {
     gameSettings?: Record<string, any>
   ): Promise<{ success: boolean; error?: string }> {
     try {
+      console.log('📤 GameInvitationService: Sending invitation', { fromUserId, toUserId, gameType });
+      
       // Check if users are friends
       const areFriends = await this.areUsersFriends(fromUserId, toUserId);
       if (!areFriends) {
@@ -37,6 +39,12 @@ export class GameInvitationService {
         return { success: false, error: 'User not found' };
       }
 
+      console.log('👤 GameInvitationService: Target user data', { 
+        userId: toUserId, 
+        isOnline: targetUser.isOnline, 
+        currentGame: targetUser.currentGame 
+      });
+
       // Skip privacy check for friends - always allow game invitations between friends
       // Friends can always invite each other regardless of privacy settings
 
@@ -45,10 +53,12 @@ export class GameInvitationService {
         return { success: false, error: 'User is currently offline' };
       }
 
-      // Check if target user is already in a game
-      if (targetUser.currentGame) {
-        return { success: false, error: 'User is currently in another game' };
-      }
+      // Skip currentGame check for friends - allow them to override current game status
+      // Friends can always invite each other, and we'll handle game transitions properly
+      
+      // Clear any stale currentGame references for both users before creating new invitation
+      await this.clearStaleCurrentGame(fromUserId);
+      await this.clearStaleCurrentGame(toUserId);
 
       // Check for existing pending invitation
       const existingInvitation = await this.getPendingInvitationBetweenUsers(fromUserId, toUserId);
@@ -115,6 +125,10 @@ export class GameInvitationService {
       // Create game session
       const gameId = await this.createGameSession(invitation);
       
+      // Update currentGame field for both users to indicate they're joining a game
+      await this.updateUserCurrentGame(invitation.fromUserId, gameId);
+      await this.updateUserCurrentGame(invitation.toUserId, gameId);
+      
       return { success: true, gameId };
     } catch (error) {
       console.error('Error accepting game invitation:', error);
@@ -133,6 +147,58 @@ export class GameInvitationService {
     } catch (error) {
       console.error('Error declining game invitation:', error);
       return false;
+    }
+  }
+
+  // Clear currentGame field for users (when game ends or is cancelled)
+  static async clearUserCurrentGame(userId: string): Promise<void> {
+    try {
+      await this.updateUserCurrentGame(userId, null);
+    } catch (error) {
+      console.error('Error clearing user currentGame:', error);
+    }
+  }
+
+  // Clear stale currentGame references (checks if the waiting room/match still exists)
+  private static async clearStaleCurrentGame(userId: string): Promise<void> {
+    try {
+      const user = await this.getUser(userId);
+      if (!user?.currentGame) return;
+
+      // Check if the waiting room still exists
+      const waitingRoomDoc = await getDoc(doc(db, 'waitingroom', user.currentGame));
+      if (!waitingRoomDoc.exists()) {
+        // Also check if it's a match
+        const matchDoc = await getDoc(doc(db, 'matches', user.currentGame));
+        if (!matchDoc.exists()) {
+          // Clear the stale reference
+          console.log('🧹 GameInvitationService: Clearing stale currentGame reference for user:', userId);
+          await this.clearUserCurrentGame(userId);
+        }
+      }
+    } catch (error) {
+      console.error('Error clearing stale currentGame:', error);
+    }
+  }
+
+  // Force clear user's currentGame (for manual cleanup)
+  static async forceClearUserCurrentGame(userId: string): Promise<void> {
+    try {
+      console.log('🧹 GameInvitationService: Force clearing currentGame for user:', userId);
+      await this.clearUserCurrentGame(userId);
+    } catch (error) {
+      console.error('Error force clearing user currentGame:', error);
+    }
+  }
+
+  // Emergency cleanup for specific user (for debugging)
+  static async emergencyCleanupUser(userId: string): Promise<void> {
+    try {
+      console.log('🚨 GameInvitationService: Emergency cleanup for user:', userId);
+      await this.updateUserCurrentGame(userId, null);
+      console.log('✅ GameInvitationService: Emergency cleanup completed');
+    } catch (error) {
+      console.error('❌ GameInvitationService: Emergency cleanup failed:', error);
     }
   }
 
@@ -309,6 +375,19 @@ export class GameInvitationService {
     } catch (error) {
       console.error('Error getting user:', error);
       return null;
+    }
+  }
+
+  // Helper: Update user's currentGame field
+  private static async updateUserCurrentGame(userId: string, gameId: string | null): Promise<void> {
+    try {
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, {
+        currentGame: gameId,
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error('Error updating user currentGame:', error);
     }
   }
 

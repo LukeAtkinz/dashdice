@@ -191,8 +191,8 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
                   <span className="hidden md:inline">{tab.label}</span>
                   <span className="md:hidden">{tab.mobileLabel || tab.label}</span>
                 </span>
-                {/* Count badge */}
-                {tab.count > 0 && (
+                {/* Count badge - don't show for friends tab */}
+                {tab.count > 0 && tab.id !== 'friends' && (
                   <span className={`
                     px-2 py-0.5 text-xs rounded-full min-w-[1.25rem] h-5 flex items-center justify-center font-audiowide
                     ${tab.isActive 

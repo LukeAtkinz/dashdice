@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '@/services/firebase';
 import { useFriends } from '@/context/FriendsContext';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
@@ -40,12 +42,108 @@ export const GameInvitationNotification: React.FC = () => {
     };
   }, [gameInvitations]);
 
+  // Listen for user's currentGame changes to auto-navigate to waiting room
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    let unsubscribe: (() => void) | undefined;
+
+    // Emergency cleanup for stuck users (temporary fix)
+    const emergencyCleanup = async () => {
+      try {
+        console.log('🚨 Emergency cleanup: Checking if user is stuck with currentGame');
+        
+        // Get current user data
+        const { getDoc, doc: firestoreDoc } = await import('firebase/firestore');
+        const { db } = await import('@/services/firebase');
+        const userDoc = await getDoc(firestoreDoc(db, 'users', user.uid));
+        
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          if (userData.currentGame) {
+            console.log('🚨 Emergency cleanup: User has currentGame, checking validity:', userData.currentGame);
+            
+            // Check if room exists
+            const roomDoc = await getDoc(firestoreDoc(db, 'waitingroom', userData.currentGame));
+            const matchDoc = await getDoc(firestoreDoc(db, 'matches', userData.currentGame));
+            
+            if (!roomDoc.exists() && !matchDoc.exists()) {
+              console.log('🚨 Emergency cleanup: Room/match not found, clearing currentGame');
+              const { updateDoc, serverTimestamp } = await import('firebase/firestore');
+              await updateDoc(firestoreDoc(db, 'users', user.uid), {
+                currentGame: null,
+                updatedAt: serverTimestamp()
+              });
+              console.log('✅ Emergency cleanup: Cleared stale currentGame');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('❌ Emergency cleanup failed:', error);
+      }
+    };
+
+    // Run emergency cleanup first, then set up listener
+    emergencyCleanup().then(() => {
+      // Set up the normal listener after cleanup
+      const userRef = doc(db, 'users', user.uid);
+      unsubscribe = onSnapshot(userRef, async (doc) => {
+        if (doc.exists()) {
+          const userData = doc.data();
+          const currentGame = userData.currentGame;
+          
+          // If user has a currentGame, check if it actually exists before navigating
+          if (currentGame) {
+            console.log('🎮 GameInvitation: User has currentGame, verifying room exists:', currentGame);
+            
+            try {
+              const { getDoc, doc: firestoreDoc } = await import('firebase/firestore');
+              const { db } = await import('@/services/firebase');
+              
+              const waitingRoomDoc = await getDoc(firestoreDoc(db, 'waitingroom', currentGame));
+              
+              if (waitingRoomDoc.exists()) {
+                console.log('✅ GameInvitation: Waiting room exists, navigating:', currentGame);
+                setCurrentSection('waiting-room', { roomId: currentGame });
+              } else {
+                // Also check if it's a match
+                const matchDoc = await getDoc(firestoreDoc(db, 'matches', currentGame));
+                if (matchDoc.exists()) {
+                  console.log('✅ GameInvitation: Match exists, navigating:', currentGame);
+                  setCurrentSection('match', { matchId: currentGame });
+                } else {
+                  // Clear the stale currentGame reference
+                  console.log('🧹 GameInvitation: Clearing stale currentGame reference:', currentGame);
+                  const { updateDoc, serverTimestamp } = await import('firebase/firestore');
+                  await updateDoc(userRef, {
+                    currentGame: null,
+                    updatedAt: serverTimestamp()
+                  });
+                }
+              }
+            } catch (error) {
+              console.error('❌ GameInvitation: Error verifying room/match existence:', error);
+            }
+          }
+        }
+      }, (error) => {
+        console.error('❌ GameInvitation: Error listening to user document:', error);
+      });
+    });
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [user?.uid, setCurrentSection]);
+
   const handleAccept = async (invitationId: string) => {
     try {
       const result = await acceptGameInvitation(invitationId);
       if (result.success && result.gameId) {
-        // Navigate to waiting room
-        setCurrentSection('waiting-room');
+        // Navigate to waiting room with the room ID (gameId from invitation service is the waiting room ID)
+        setCurrentSection('waiting-room', { roomId: result.gameId });
       }
     } catch (error) {
       console.error('Error accepting game invitation:', error);

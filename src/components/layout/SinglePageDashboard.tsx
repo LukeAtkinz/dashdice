@@ -562,7 +562,18 @@ const DashboardContent: React.FC = () => {
                     gameMode={sectionParams.gameMode || 'classic'}
                     actionType={sectionParams.actionType || 'live'}
                     roomId={sectionParams.roomId}
-                    onBack={() => setCurrentSection('dashboard')}
+                    onBack={async () => {
+                      // Clear the currentGame field when user manually exits waiting room
+                      if (user?.uid) {
+                        try {
+                          const { GameInvitationService } = await import('@/services/gameInvitationService');
+                          await GameInvitationService.forceClearUserCurrentGame(user.uid);
+                        } catch (error) {
+                          console.error('Error clearing currentGame on back:', error);
+                        }
+                      }
+                      setCurrentSection('dashboard');
+                    }}
                   />
                 )}
               </motion.div>
