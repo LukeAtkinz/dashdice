@@ -544,6 +544,38 @@ export class MatchService {
           turnOver = false;
         }
       }
+      // Last Line (Tug-of-War) specific processing
+      else if (gameMode.id === 'last-line') {
+        console.log('🎲 Last Line (Tug-of-War) Mode Processing');
+        
+        if (isSingleOne) {
+          // Single 1 ends turn immediately - no score added to turn score
+          console.log('🎲 Last Line - Single 1: Turn ends immediately, no score added');
+          turnOver = true;
+          newTurnScore = 0; // Turn score stays 0
+        }
+        else if (isDoubleOne) {
+          // Double 1: special rule - subtract 20 from turn score
+          console.log('🎲 Last Line - Double 1s: -20 to turn score');
+          newTurnScore = Math.max(0, currentTurnScore - 20); // Can't go below 0
+          turnOver = false; // Continue turn after double 1
+        }
+        else if (isDouble) {
+          // Any other double: apply multiplier (die value) to the roll
+          const multiplier = dice1; // dice1 = dice2 for doubles
+          const effectiveRoll = diceSum * multiplier;
+          
+          console.log(`🎲 Last Line - Double ${dice1}s: ${diceSum} × ${multiplier} = ${effectiveRoll} added to turn score`);
+          newTurnScore = currentTurnScore + effectiveRoll;
+          turnOver = false; // Continue turn after double
+        }
+        else {
+          // Normal roll: add dice sum to turn score
+          console.log(`🎲 Last Line - Normal roll: ${dice1} + ${dice2} = ${diceSum} added to turn score`);
+          newTurnScore = currentTurnScore + diceSum;
+          turnOver = false; // Continue turn
+        }
+      }
       // Handle double 1 (Snake Eyes) for other modes
       else if (isDoubleOne) {
         if (gameMode.rules.eliminationRules.doubleOne) {
@@ -602,17 +634,6 @@ export class MatchService {
         turnOver = false;
       }
       
-      // Special rule for Last Line: Only 1 roll allowed, but doubles grant extra roll
-      if (gameMode.id === 'last-line') {
-        if (isDouble && gameMode.rules.specialRules?.doubleGrantsExtraRoll) {
-          console.log('🎲 Last Line mode - Double rolled! Granting extra roll');
-          turnOver = false; // Allow another roll due to double
-        } else {
-          console.log('🎲 Last Line mode - Turn ends after 1 roll');
-          turnOver = true;
-        }
-      }
-      
       // Update turn score in the updates object
       updates['gameData.turnScore'] = newTurnScore;
       
@@ -634,94 +655,6 @@ export class MatchService {
       }
       
       updates[`${playerStatsPath}.lastDiceSum`] = diceSum;
-      
-      // Special handling for Last Line mode - auto-bank the roll score only when turn ends
-      if (gameMode.id === 'last-line' && turnOver) {
-        const playerScoreUpdate = newTurnScore;
-        
-        if (isHost) {
-          updates['hostData.playerScore'] = playerScoreUpdate;
-        } else {
-          updates['opponentData.playerScore'] = playerScoreUpdate;
-        }
-        newTurnScore = 0; // Reset turn score since it's banked automatically
-        updates['gameData.turnScore'] = 0;
-        
-        // Check if Last Line mode is complete immediately after banking
-        const hostFinalScore = isHost ? playerScoreUpdate : matchData.hostData.playerScore;
-        const opponentFinalScore = !isHost ? playerScoreUpdate : matchData.opponentData.playerScore;
-        
-        // Both players have completed their rolls if both have scores > 0
-        if (hostFinalScore > 0 && opponentFinalScore > 0) {
-          let winnerId = '';
-          
-          if (hostFinalScore > opponentFinalScore) {
-            winner = matchData.hostData.playerDisplayName;
-            winnerId = matchData.hostData.playerId;
-          } else if (opponentFinalScore > hostFinalScore) {
-            winner = matchData.opponentData.playerDisplayName;
-            winnerId = matchData.opponentData.playerId;
-          } else {
-            // Tie game
-            winner = 'Tie';
-            winnerId = ''; // No winner for tie
-          }
-          
-          gameOver = true;
-          gameOverReason = `Highest roll wins! ${winner}`;
-          
-          // Set game over state immediately
-          updates['gameData.gamePhase'] = 'gameOver';
-          updates['gameData.winner'] = winner;
-          updates['gameData.gameOverReason'] = gameOverReason;
-          updates['gameData.status'] = 'completed';
-          updates['hostData.turnActive'] = false;
-          updates['opponentData.turnActive'] = false;
-          
-          console.log(`🏆 Last Line Complete! Winner: ${winner} (Host: ${hostFinalScore}, Opponent: ${opponentFinalScore})`);
-          
-          // Update the match in Firebase first
-          await updateDoc(matchRef, updates);
-          
-          // Then update user stats if there's a winner
-          if (winnerId) {
-            await this.updateUserStats(matchData, winnerId);
-            
-            // 🏆 TRACK ACHIEVEMENTS: Record game completion for both players (Last Line mode)
-            const achievementService = AchievementTrackingService.getInstance();
-            const currentDiceRoll = [matchData.gameData.diceOne, matchData.gameData.diceTwo];
-            
-            // Record achievement data for winner
-            await achievementService.recordGameEnd(
-              winnerId,
-              true, // won
-              currentDiceRoll,
-              {
-                opponentId: winnerId === matchData.hostData.playerId ? matchData.opponentData.playerId : matchData.hostData.playerId,
-                gameMode: matchData.gameMode,
-                finalScore: winnerId === matchData.hostData.playerId ? hostFinalScore : opponentFinalScore
-              }
-            );
-            
-            // Record achievement data for loser
-            const loserId = winnerId === matchData.hostData.playerId ? matchData.opponentData.playerId : matchData.hostData.playerId;
-            await achievementService.recordGameEnd(
-              loserId,
-              false, // lost
-              currentDiceRoll,
-              {
-                opponentId: winnerId,
-                gameMode: matchData.gameMode,
-                finalScore: winnerId === matchData.hostData.playerId ? opponentFinalScore : hostFinalScore
-              }
-            );
-            
-            console.log('✅ Last Line stats and achievements updated - match completed');
-          }
-          
-          return; // Exit early to prevent further processing
-        }
-      }
       
       // Special handling for True Grit mode - auto-bank when turn ends
       if (gameMode.id === 'true-grit' && turnOver) {
@@ -824,6 +757,52 @@ export class MatchService {
         }
       }
       
+      // Win condition check for Last Line (Tug-of-War) - opponent reaches 0
+      if (gameMode.id === 'last-line' && !gameOver) {
+        const hostScore = isHost ? 
+          (updates['hostData.playerScore'] !== undefined ? updates['hostData.playerScore'] : matchData.hostData.playerScore) :
+          (updates['hostData.playerScore'] !== undefined ? updates['hostData.playerScore'] : matchData.hostData.playerScore);
+        const opponentScore = !isHost ? 
+          (updates['opponentData.playerScore'] !== undefined ? updates['opponentData.playerScore'] : matchData.opponentData.playerScore) :
+          (updates['opponentData.playerScore'] !== undefined ? updates['opponentData.playerScore'] : matchData.opponentData.playerScore);
+        
+        if (hostScore <= 0) {
+          console.log(`🏆 LAST LINE WIN! ${matchData.opponentData.playerDisplayName} wins! (Host reached 0)`);
+          gameOver = true;
+          winner = matchData.opponentData.playerDisplayName;
+          gameOverReason = 'Last Line completed - opponent eliminated!';
+          
+          // Ensure host score is exactly 0
+          updates['hostData.playerScore'] = 0;
+          
+          // Set game over state
+          updates['gameData.gamePhase'] = 'gameOver';
+          updates['gameData.winner'] = winner;
+          updates['gameData.gameOverReason'] = gameOverReason;
+          updates['gameData.status'] = 'completed';
+          updates['hostData.turnActive'] = false;
+          updates['opponentData.turnActive'] = false;
+          turnOver = true;
+        } else if (opponentScore <= 0) {
+          console.log(`🏆 LAST LINE WIN! ${matchData.hostData.playerDisplayName} wins! (Opponent reached 0)`);
+          gameOver = true;
+          winner = matchData.hostData.playerDisplayName;
+          gameOverReason = 'Last Line completed - opponent eliminated!';
+          
+          // Ensure opponent score is exactly 0
+          updates['opponentData.playerScore'] = 0;
+          
+          // Set game over state
+          updates['gameData.gamePhase'] = 'gameOver';
+          updates['gameData.winner'] = winner;
+          updates['gameData.gameOverReason'] = gameOverReason;
+          updates['gameData.status'] = 'completed';
+          updates['hostData.turnActive'] = false;
+          updates['opponentData.turnActive'] = false;
+          turnOver = true;
+        }
+      }
+      
       // Handle double multiplier logic (Classic and Quickfire modes)
       if (gameMode.id === 'classic' || gameMode.id === 'quickfire') {
         if (dice1 === dice2 && dice1 !== 1 && dice1 !== 6) {
@@ -845,16 +824,6 @@ export class MatchService {
           } else {
             updates['opponentData.playerScore'] = resetScore;
           }
-        }
-        
-        // Handle Last Line elimination - player's turn score becomes final score
-        if (eliminatePlayer && gameMode.id === 'last-line') {
-          if (isHost) {
-            updates['hostData.playerScore'] = newTurnScore;
-          } else {
-            updates['opponentData.playerScore'] = newTurnScore;
-          }
-          updates['gameData.turnScore'] = 0;
         }
         
         // Switch turns (only if game is not over)
@@ -1027,6 +996,24 @@ export class MatchService {
           newPlayerScore = proposedScore;
           console.log(`💰 Zero Hour - Banked ${matchData.gameData.turnScore}, new score: ${newPlayerScore}`);
         }
+      } else if (gameMode.id === 'last-line') {
+        // Last Line (Tug-of-War): transfer turn score from current player to opponent
+        console.log('🎲 Last Line - Banking triggers tug-of-war transfer');
+        
+        const currentPlayerScore = currentPlayer.playerScore || 0;
+        const opponentPlayer = isHost ? matchData.opponentData : matchData.hostData;
+        const opponentScore = opponentPlayer.playerScore || 0;
+        const turnScore = matchData.gameData.turnScore;
+        
+        // Calculate transfer amount (can't go below 0, combined can't exceed 100)
+        const transferAmount = Math.min(turnScore, currentPlayerScore);
+        newPlayerScore = currentPlayerScore - transferAmount;
+        const newOpponentScore = Math.min(100, opponentScore + transferAmount);
+        
+        console.log(`💰 Last Line - Transferred ${transferAmount} points on bank (${currentPlayerScore} -> ${newPlayerScore}, opponent: ${opponentScore} -> ${newOpponentScore})`);
+        
+        // We'll update the opponent score in the updates object below
+        bankingSuccess = transferAmount > 0; // Banking succeeds if any points were transferred
       } else {
         // Classic and other modes: add banked score to current score
         newPlayerScore = (currentPlayer.playerScore || 0) + matchData.gameData.turnScore;
@@ -1043,6 +1030,13 @@ export class MatchService {
           gameOver = true;
           winner = currentPlayer.playerDisplayName;
           console.log(`� Zero Hour Victory! ${winner} reached exactly 0`);
+        }
+      } else if (gameMode.id === 'last-line') {
+        // Last Line: tug-of-war mechanics with banking
+        if (bankingSuccess) {
+          console.log(`🎯 Last Line Score Transfer: ${currentPlayer.playerDisplayName} banked ${matchData.gameData.turnScore}, transferring from opponent`);
+          
+          // Win conditions will be checked after opponent score update below
         }
       } else {
         // Classic and other modes: win by reaching target score
@@ -1072,6 +1066,35 @@ export class MatchService {
           updates['hostData.playerScore'] = newPlayerScore;
         } else {
           updates['opponentData.playerScore'] = newPlayerScore;
+        }
+      }
+      
+      // Handle Last Line tug-of-war opponent score update and win condition check
+      if (gameMode.id === 'last-line' && bankingSuccess) {
+        // Calculate opponent's new score (subtract the banked amount)
+        const opponentCurrentScore = isHost ? matchData.opponentData.playerScore : matchData.hostData.playerScore;
+        const opponentNewScore = opponentCurrentScore - matchData.gameData.turnScore;
+        
+        // Update opponent's score
+        if (isHost) {
+          updates['opponentData.playerScore'] = Math.max(0, opponentNewScore);
+        } else {
+          updates['hostData.playerScore'] = Math.max(0, opponentNewScore);
+        }
+        
+        console.log(`📊 Opponent score: ${opponentCurrentScore} → ${Math.max(0, opponentNewScore)}`);
+        
+        // Check win conditions after opponent score update
+        if (newPlayerScore <= 0) {
+          // Current player reached 0 - opponent wins
+          gameOver = true;
+          winner = (isHost ? matchData.opponentData : matchData.hostData).playerDisplayName;
+          console.log(`🏆 Last Line Victory! ${winner} wins! (${currentPlayer.playerDisplayName} reached 0)`);
+        } else if (opponentNewScore <= 0) {
+          // Opponent reached 0 - current player wins
+          gameOver = true;
+          winner = currentPlayer.playerDisplayName;
+          console.log(`🏆 Last Line Victory! ${winner} wins! (Opponent reached 0)`);
         }
       }
       

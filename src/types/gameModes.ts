@@ -19,7 +19,7 @@ export interface GameModeRules {
   bestOf?: number;
   allowBanking: boolean;
   allowDoubleRolls: boolean;
-  scoreDirection: 'up' | 'down';
+  scoreDirection: 'up' | 'down' | 'tug-of-war';
   eliminationRules: {
     singleOne: boolean;
     doubleOne: boolean;
@@ -43,6 +43,10 @@ export interface GameModeRules {
     probabilityAdjustments?: {
       singleOne?: number; // Multiplier for single 1 probability (0.5 = 50% less likely)
     };
+    // Last Line tug-of-war mechanics
+    tugOfWar?: boolean;
+    combinedScoreCap?: number;
+    doubleMultiplier?: boolean;
   };
 }
 

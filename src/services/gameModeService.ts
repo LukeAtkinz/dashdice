@@ -163,25 +163,26 @@ export class GameModeService {
       {
         id: 'last-line',
         name: 'Last Line',
-        description: 'Single roll elimination - highest roll wins, doubles grant extra roll',
+        description: 'Tug-of-war mode: start at 50 each, roll totals transfer between players, first to reach 0 loses',
         rules: {
-          startingScore: 0,
-          targetScore: 100,  // Not really used, highest single roll wins
-          allowBanking: false,
+          startingScore: 50,
+          targetScore: 0,     // Win when opponent reaches 0
+          allowBanking: true,  // Re-enable banking for tug-of-war on bank
           allowDoubleRolls: true,
-          scoreDirection: 'up',
+          scoreDirection: 'tug-of-war', // Special direction for tug-of-war mechanics
           eliminationRules: {
-            singleOne: false,     // No elimination on single 1
-            doubleOne: false,     // No elimination on double 1
-            doubleSix: 'score'    // Double 6 scores normally
+            singleOne: false,     // Single 1 ends turn but doesn't eliminate
+            doubleOne: false,     // Double 1 has special x20 rule
+            doubleSix: 'score'    // Double 6 scores with multiplier
           },
           specialRules: {
-            rollLimit: 1,         // Base limit: 1 roll per player
-            doubleGrantsExtraRoll: true // Doubles grant additional roll
+            tugOfWar: true,       // Enable tug-of-war mechanics
+            combinedScoreCap: 100, // Combined score never exceeds 100
+            doubleMultiplier: true // Doubles apply multiplier = die value
           }
         },
         settings: {
-          timePerTurn: 15,
+          timePerTurn: 30,
           showRunningTotal: true,
           showOpponentScore: true,
           enableChat: true,
@@ -190,8 +191,8 @@ export class GameModeService {
         isActive: true,
         platforms: ['desktop', 'mobile'],
         minPlayers: 2,
-        maxPlayers: 6,
-        estimatedDuration: 2
+        maxPlayers: 2,
+        estimatedDuration: 5
       },
       {
         id: 'true-grit',
