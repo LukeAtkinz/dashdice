@@ -26,18 +26,18 @@ const MiniGameModeSelector: React.FC<MiniGameModeSelectorProps> = ({
   const gameModes: GameModeOption[] = [
     {
       id: 'classic',
-      name: 'Only One Will Rise',
+      name: 'Classic Mode',
       icon: '/Design Elements/Crown Mode.webp'
     },
     {
       id: 'quickfire',
       name: 'Quickfire',
-      icon: '/Design Elements/Shield Mode.webp'
+      icon: '/Design Elements/Shield.webp'
     },
     {
       id: 'zero-hour',
       name: 'Zero Hour',
-      icon: '/Design Elements/Clock Breaker Mode.webp'
+      icon: '/Design Elements/time out.webp'
     },
     {
       id: 'last-line',

@@ -11,10 +11,12 @@ import {
   onSnapshot,
   serverTimestamp,
   Timestamp,
-  orderBy
+  orderBy,
+  deleteDoc
 } from 'firebase/firestore';
 import { db } from '@/services/firebase';
 import { GameInvitation, User } from '@/types/friends';
+import { UserService } from '@/services/userService';
 
 export class GameInvitationService {
   // Send game invitation
@@ -129,6 +131,10 @@ export class GameInvitationService {
       await this.updateUserCurrentGame(invitation.fromUserId, gameId);
       await this.updateUserCurrentGame(invitation.toUserId, gameId);
       
+      // Delete the invitation from the database after successful acceptance
+      await deleteDoc(invitationRef);
+      console.log('✅ GameInvitationService: Deleted accepted invitation:', invitationId);
+      
       return { success: true, gameId };
     } catch (error) {
       console.error('Error accepting game invitation:', error);
@@ -143,6 +149,11 @@ export class GameInvitationService {
       await updateDoc(invitationRef, {
         status: 'declined'
       });
+      
+      // Delete the invitation from the database after decline
+      await deleteDoc(invitationRef);
+      console.log('✅ GameInvitationService: Deleted declined invitation:', invitationId);
+      
       return true;
     } catch (error) {
       console.error('Error declining game invitation:', error);
@@ -282,6 +293,12 @@ export class GameInvitationService {
         throw new Error('User data not found');
       }
 
+      // Get complete user profiles with stats and backgrounds
+      const [fromProfile, toProfile] = await Promise.all([
+        UserService.getUserProfile(invitation.fromUserId),
+        UserService.getUserProfile(invitation.toUserId)
+      ]);
+
       // Default background
       const defaultBackground = { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
 
@@ -295,9 +312,9 @@ export class GameInvitationService {
         hostData: {
           playerDisplayName: fromUser.displayName || 'Unknown Player',
           playerId: invitation.fromUserId,
-          displayBackgroundEquipped: defaultBackground,
-          matchBackgroundEquipped: defaultBackground,
-          playerStats: {
+          displayBackgroundEquipped: fromProfile?.inventory?.displayBackgroundEquipped || defaultBackground,
+          matchBackgroundEquipped: fromProfile?.inventory?.matchBackgroundEquipped || defaultBackground,
+          playerStats: fromProfile?.stats || {
             bestStreak: 0,
             currentStreak: 0,
             gamesPlayed: 0,
@@ -307,9 +324,9 @@ export class GameInvitationService {
         opponentData: {
           playerDisplayName: toUser.displayName || 'Unknown Player',
           playerId: invitation.toUserId,
-          displayBackgroundEquipped: defaultBackground,
-          matchBackgroundEquipped: defaultBackground,
-          playerStats: {
+          displayBackgroundEquipped: toProfile?.inventory?.displayBackgroundEquipped || defaultBackground,
+          matchBackgroundEquipped: toProfile?.inventory?.matchBackgroundEquipped || defaultBackground,
+          playerStats: toProfile?.stats || {
             bestStreak: 0,
             currentStreak: 0,
             gamesPlayed: 0,
@@ -437,21 +454,28 @@ export class GameInvitationService {
   // Clean up expired invitations (utility function)
   static async cleanupExpiredInvitations(): Promise<void> {
     try {
+      console.log('🧹 GameInvitationService: Starting cleanup of expired invitations...');
+      
+      const now = new Date();
       const expiredQuery = query(
         collection(db, 'gameInvitations'),
-        where('status', '==', 'pending'),
-        where('expiresAt', '<=', new Date())
+        where('expiresAt', '<', Timestamp.fromDate(now))
       );
 
       const snapshot = await getDocs(expiredQuery);
-      const updatePromises = snapshot.docs.map(doc => 
-        updateDoc(doc.ref, { status: 'expired' })
-      );
+      
+      if (snapshot.empty) {
+        console.log('✅ GameInvitationService: No expired invitations found');
+        return;
+      }
 
-      await Promise.all(updatePromises);
-      console.log(`Cleaned up ${snapshot.docs.length} expired game invitations`);
+      // Delete all expired invitations instead of just marking as expired
+      const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+      await Promise.all(deletePromises);
+      
+      console.log(`✅ GameInvitationService: Deleted ${snapshot.docs.length} expired invitations`);
     } catch (error) {
-      console.error('Error cleaning up expired invitations:', error);
+      console.error('❌ GameInvitationService: Error cleaning up expired invitations:', error);
     }
   }
 
@@ -502,5 +526,15 @@ export class GameInvitationService {
       console.error('Error getting sent invitations:', error);
       return [];
     }
+  }
+
+  // Start automatic cleanup timer (call this when the app starts)
+  static startInvitationCleanupTimer(): void {
+    // Clean up expired invitations every 2 minutes
+    setInterval(() => {
+      this.cleanupExpiredInvitations();
+    }, 2 * 60 * 1000);
+    
+    console.log('✅ GameInvitationService: Started automatic invitation cleanup timer');
   }
 }

@@ -8,6 +8,8 @@ import {
   where, 
   onSnapshot,
   serverTimestamp,
+  Timestamp,
+  getDocs,
   Unsubscribe
 } from 'firebase/firestore';
 import { db } from './firebase';
@@ -119,14 +121,9 @@ export class RematchService {
         newMatchId: newMatchId
       }, { merge: true });
       
-      // Clean up rematch room after a longer delay to give requester time to read newMatchId
-      setTimeout(async () => {
-        try {
-          await deleteDoc(rematchRef);
-        } catch (error) {
-          console.error('❌ RematchService: Error cleaning up rematch room:', error);
-        }
-      }, 10000); // Increased to 10 seconds
+      // Delete rematch room immediately after acceptance to keep database clean
+      await deleteDoc(rematchRef);
+      console.log('✅ RematchService: Deleted accepted rematch room:', rematchRoomId);
       
       console.log('🎮 RematchService: Rematch accepted, new match created:', newMatchId);
       return newMatchId;
@@ -157,14 +154,9 @@ export class RematchService {
       
       await setDoc(rematchRef, { ...rematchData, status: 'cancelled' }, { merge: true });
       
-      // Clean up after short delay
-      setTimeout(async () => {
-        try {
-          await deleteDoc(rematchRef);
-        } catch (error) {
-          console.error('❌ RematchService: Error cleaning up cancelled rematch:', error);
-        }
-      }, 1000);
+      // Delete immediately after cancellation to keep database clean
+      await deleteDoc(rematchRef);
+      console.log('✅ RematchService: Deleted cancelled rematch room:', rematchRoomId);
       
       console.log('✅ RematchService: Rematch cancelled');
     } catch (error) {
@@ -228,11 +220,38 @@ export class RematchService {
    */
   static async cleanupExpiredRematches(): Promise<void> {
     try {
-      console.log('🧹 RematchService: Cleaning up expired rematches');
-      // This would typically be handled by a cloud function
-      // For now, we'll rely on client-side cleanup
+      console.log('🧹 RematchService: Starting cleanup of expired rematches...');
+      
+      const now = new Date();
+      const expiredQuery = query(
+        collection(db, this.REMATCH_COLLECTION),
+        where('expiresAt', '<', Timestamp.fromDate(now))
+      );
+
+      const snapshot = await getDocs(expiredQuery);
+      
+      if (snapshot.empty) {
+        console.log('✅ RematchService: No expired rematches found');
+        return;
+      }
+
+      // Delete all expired rematches
+      const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+      await Promise.all(deletePromises);
+      
+      console.log(`✅ RematchService: Deleted ${snapshot.docs.length} expired rematches`);
     } catch (error) {
       console.error('❌ RematchService: Error cleaning up expired rematches:', error);
     }
+  }
+
+  // Start automatic cleanup timer (call this when the app starts)
+  static startRematchCleanupTimer(): void {
+    // Clean up expired rematches every minute (they only last 10 seconds)
+    setInterval(() => {
+      this.cleanupExpiredRematches();
+    }, 60 * 1000);
+    
+    console.log('✅ RematchService: Started automatic rematch cleanup timer');
   }
 }
