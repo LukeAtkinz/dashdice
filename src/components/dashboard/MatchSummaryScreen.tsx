@@ -107,16 +107,19 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
     if (!incomingRematch || !user?.uid) return;
     
     try {
-      console.log('🎮 Accepting rematch...', { rematchId: incomingRematch.id, userId: user.uid });
+      // Remove performance-impacting logs
+      // console.log('🎮 Accepting rematch...', { rematchId: incomingRematch.id, userId: user.uid });
       setRematchState('waiting');
       setIncomingRematch(null); // Clear the incoming request
       
       const rematchRoomId = await RematchService.acceptRematch(incomingRematch.id, user.uid);
-      console.log('✅ Rematch accepted, waiting room ID:', rematchRoomId);
+      // Remove performance-impacting logs
+      // console.log('✅ Rematch accepted, waiting room ID:', rematchRoomId);
       
       // Navigate to waiting room instead of directly to match
       if (onRematch && rematchRoomId) {
-        console.log('🎮 Navigating to rematch waiting room:', rematchRoomId);
+        // Remove performance-impacting logs
+        // console.log('🎮 Navigating to rematch waiting room:', rematchRoomId);
         onRematch(rematchRoomId);
       }
     } catch (error) {
@@ -191,7 +194,8 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
           
           // Navigate to the waiting room if newMatchId is available
           if (rematchData.newMatchId && onRematch) {
-            console.log('🎮 Navigating to rematch waiting room:', rematchData.newMatchId);
+            // Remove performance-impacting logs
+            // console.log('🎮 Navigating to rematch waiting room:', rematchData.newMatchId);
             onRematch(rematchData.newMatchId);
           }
         } else if (rematchData.status === 'expired' || rematchData.status === 'cancelled') {

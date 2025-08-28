@@ -67,17 +67,18 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const { user } = useAuth();
   const { DisplayBackgroundEquip, MatchBackgroundEquip } = useBackground();
   
-  // Debug: Log the received gameMode
-  console.log('🎮 GameWaitingRoom: Received gameMode:', gameMode);
+  // Remove performance-impacting logs
+  // console.log('🎮 GameWaitingRoom: Received gameMode:', gameMode);
   
   // Add logging to see what backgrounds we're getting from context
   useEffect(() => {
-    console.log('GameWaitingRoom: Background context updated', {
-      DisplayBackgroundEquip,
-      MatchBackgroundEquip,
-      DisplayBackgroundType: DisplayBackgroundEquip?.type,
-      MatchBackgroundType: MatchBackgroundEquip?.type
-    });
+    // Remove performance-impacting logs
+    // console.log('GameWaitingRoom: Background context updated', {
+    //   DisplayBackgroundEquip,
+    //   MatchBackgroundEquip,
+    //   DisplayBackgroundType: DisplayBackgroundEquip?.type,
+    //   MatchBackgroundType: MatchBackgroundEquip?.type
+    // });
   }, [DisplayBackgroundEquip, MatchBackgroundEquip]);
   const { setCurrentSection } = useNavigation();
   
@@ -178,14 +179,17 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const currentGameMode = gameModeConfig[gameMode as keyof typeof gameModeConfig] || gameModeConfig.classic;
   
   // Debug: Log the selected game mode configuration
-  console.log('🎯 GameWaitingRoom: Selected currentGameMode:', currentGameMode, 'for gameMode:', gameMode);
+  // Remove performance-impacting logs
+  // console.log('🎯 GameWaitingRoom: Selected currentGameMode:', currentGameMode, 'for gameMode:', gameMode);
 
   // Get user data from profile
   const getUserData = async () => {
     try {
-      console.log('🔍 GameWaitingRoom: Fetching user profile for UID:', user!.uid);
+      // Remove performance-impacting logs
+      // console.log('🔍 GameWaitingRoom: Fetching user profile for UID:', user!.uid);
       const userProfile = await UserService.getUserProfile(user!.uid);
-      console.log('📊 GameWaitingRoom: User profile fetched:', userProfile);
+      // Remove performance-impacting logs
+      // console.log('📊 GameWaitingRoom: User profile fetched:', userProfile);
       
       if (userProfile) {
         const userData = {
@@ -194,7 +198,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           displayBackgroundEquipped: userProfile.inventory.displayBackgroundEquipped,
           matchBackgroundEquipped: userProfile.inventory.matchBackgroundEquipped
         };
-        console.log('✅ GameWaitingRoom: Processed user data:', userData);
+        // Remove performance-impacting logs
+        // console.log('✅ GameWaitingRoom: Processed user data:', userData);
         return userData;
       }
     } catch (error) {
@@ -213,7 +218,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       displayBackgroundEquipped: DisplayBackgroundEquip,
       matchBackgroundEquipped: MatchBackgroundEquip
     };
-    console.log('⚠️ GameWaitingRoom: Using fallback data:', fallbackData);
+    // Remove performance-impacting logs
+    // console.log('⚠️ GameWaitingRoom: Using fallback data:', fallbackData);
     return fallbackData;
   };
 
@@ -358,12 +364,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           }
         } else {
           // No existing game found - create new one
-          console.log('GameWaitingRoom: Creating new waiting room entry', {
-            DisplayBackgroundEquip,
-            MatchBackgroundEquip,
-            DisplayBackgroundType: DisplayBackgroundEquip?.type,
-            MatchBackgroundType: MatchBackgroundEquip?.type
-          });
+          // Remove performance-impacting logs
+          // console.log('GameWaitingRoom: Creating new waiting room entry', {
+          //   DisplayBackgroundEquip,
+          //   MatchBackgroundEquip,
+          //   DisplayBackgroundType: DisplayBackgroundEquip?.type,
+          //   MatchBackgroundType: MatchBackgroundEquip?.type
+          // });
           
           const entry: WaitingRoomEntry = {
             createdAt: serverTimestamp(),
@@ -379,7 +386,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             }
           };
 
-          console.log('GameWaitingRoom: Final entry to be saved', entry);
+          // Remove performance-impacting logs
+          // console.log('GameWaitingRoom: Final entry to be saved', entry);
 
           const docRef = await addDoc(collection(db, 'waitingroom'), entry);
           const gameId = docRef.id;
@@ -388,11 +396,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           const unsubscribe = onSnapshot(doc(db, 'waitingroom', gameId), (doc) => {
             if (doc.exists()) {
               const data = doc.data() as WaitingRoomEntry;
-              console.log('GameWaitingRoom: Received waiting room data from Firebase', {
-                data,
-                hostData: data.hostData,
-                matchBackgroundEquipped: data.hostData?.matchBackgroundEquipped
-              });
+              // Remove performance-impacting logs
+              // console.log('GameWaitingRoom: Received waiting room data from Firebase', {
+              //   data,
+              //   hostData: data.hostData,
+              //   matchBackgroundEquipped: data.hostData?.matchBackgroundEquipped
+              // });
               
               setWaitingRoomEntry({ ...data, id: doc.id });
               
@@ -439,7 +448,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
   // Function to start 5-second countdown for VS section
   const startVsCountdown = () => {
-    console.log('🕐 GameWaitingRoom: Starting VS countdown...');
+    // Remove performance-impacting logs
+    // console.log('🕐 GameWaitingRoom: Starting VS countdown...');
     console.log('🔍 DEBUG: startVsCountdown called with:', {
       waitingRoomEntry: waitingRoomEntry?.id,
       opponentJoined,
@@ -451,7 +461,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     setVsCountdown(5);
     const timer = setInterval(() => {
       setVsCountdown((prev) => {
-        console.log('🕐 GameWaitingRoom: Countdown tick:', prev);
+        // Remove performance-impacting logs
+        // console.log('🕐 GameWaitingRoom: Countdown tick:', prev);
         console.log('🔍 DEBUG: Countdown state:', {
           prev,
           waitingRoomEntryId: waitingRoomEntry?.id,
@@ -462,7 +473,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         
         if (prev === null || prev <= 1) {
           clearInterval(timer);
-          console.log('🕐 GameWaitingRoom: Countdown finished! Showing GO!');
+          // Remove performance-impacting logs
+          // console.log('🕐 GameWaitingRoom: Countdown finished! Showing GO!');
           console.log('🔍 DEBUG: About to call moveToMatchesAndNavigate with data:', {
             waitingRoomEntry,
             roomId,
@@ -525,7 +537,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       const delay = Math.random() * 500;
       await new Promise(resolve => setTimeout(resolve, delay));
       
-      console.log('🎮 GameWaitingRoom: moveToMatchesAndNavigate called!');
+      // Remove performance-impacting logs
+      // console.log('🎮 GameWaitingRoom: moveToMatchesAndNavigate called!');
       console.log('🔍 DEBUG: ENTRY POINT - moveToMatchesAndNavigate:', {
         timestamp: new Date().toISOString(),
         delay: `${delay.toFixed(0)}ms`,

@@ -35,57 +35,62 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
   const isInTurnDeciderPhase = matchData.gameData.gamePhase === 'turnDecider';
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Debug logging
-  console.log('🔍 TurnDeciderPhase Debug:', {
-    isHost,
-    chooserPlayerIndex: matchData.gameData.chooserPlayerIndex,
-    isMyTurnToDecide,
-    hasChoice,
-    hasDice,
-    isProcessing,
-    gamePhase: matchData.gameData.gamePhase,
-    isInTurnDeciderPhase,
-    currentPlayerName: currentPlayer?.playerDisplayName,
-    turnDeciderChoice: matchData.gameData.turnDeciderChoice,
-    turnDeciderDice: matchData.gameData.turnDeciderDice,
-    isRolling: matchData.gameData.isRolling
-  });
+  // Remove performance-impacting debug logs
+  // console.log('🔍 TurnDeciderPhase Debug:', {
+  //   isHost,
+  //   chooserPlayerIndex: matchData.gameData.chooserPlayerIndex,
+  //   isMyTurnToDecide,
+  //   hasChoice,
+  //   hasDice,
+  //   isProcessing,
+  //   gamePhase: matchData.gameData.gamePhase,
+  //   isInTurnDeciderPhase,
+  //   currentPlayerName: currentPlayer?.playerDisplayName,
+  //   turnDeciderChoice: matchData.gameData.turnDeciderChoice,
+  //   turnDeciderDice: matchData.gameData.turnDeciderDice,
+  //   isRolling: matchData.gameData.isRolling
+  // });
 
   // Reset processing state when phase changes away from turn decider
   useEffect(() => {
     if (!isInTurnDeciderPhase && isProcessing) {
-      console.log('🔄 Phase changed away from turn decider, resetting processing state');
+      // Remove performance-impacting logs
+      // console.log('🔄 Phase changed away from turn decider, resetting processing state');
       setIsProcessing(false);
     }
   }, [isInTurnDeciderPhase, isProcessing]);
 
   // Handle choice with processing state
   const handleChoice = async (choice: 'odd' | 'even') => {
-    console.log('🎯 TurnDeciderPhase.handleChoice called with:', choice);
-    console.log('🔍 Button validation check:', {
-      isInTurnDeciderPhase,
-      isProcessing,
-      hasChoice,
-      gamePhase: matchData.gameData.gamePhase
-    });
+    // Remove performance-impacting logs
+    // console.log('🎯 TurnDeciderPhase.handleChoice called with:', choice);
+    // console.log('🔍 Button validation check:', {
+    //   isInTurnDeciderPhase,
+    //   isProcessing,
+    //   hasChoice,
+    //   gamePhase: matchData.gameData.gamePhase
+    // });
     
     // Block if not in turn decider phase, already processing, or choice already made
     if (!isInTurnDeciderPhase || isProcessing || hasChoice) {
-      console.log('🚫 Choice blocked:', {
-        isInTurnDeciderPhase,
-        isProcessing,
-        hasChoice,
-        gamePhase: matchData.gameData.gamePhase
-      });
+      // Remove performance-impacting logs
+      // console.log('🚫 Choice blocked:', {
+      //   isInTurnDeciderPhase,
+      //   isProcessing,
+      //   hasChoice,
+      //   gamePhase: matchData.gameData.gamePhase
+      // });
       return;
     }
 
-    console.log('✅ Validation passed, setting processing state and calling onChoiceSelect');
+    // Remove performance-impacting logs
+    // console.log('✅ Validation passed, setting processing state and calling onChoiceSelect');
     setIsProcessing(true);
     try {
-      console.log('🔄 Calling onChoiceSelect with choice:', choice);
+      // Remove performance-impacting logs
+      // console.log('🔄 Calling onChoiceSelect with choice:', choice);
       await onChoiceSelect(choice);
-      console.log('✅ onChoiceSelect completed successfully');
+      // console.log('✅ onChoiceSelect completed successfully');
     } catch (error) {
       console.error('❌ Error in handleChoice:', error);
       // Reset processing on error

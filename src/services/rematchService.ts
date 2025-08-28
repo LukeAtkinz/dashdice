@@ -247,11 +247,11 @@ export class RematchService {
 
   // Start automatic cleanup timer (call this when the app starts)
   static startRematchCleanupTimer(): void {
-    // Clean up expired rematches every minute (they only last 10 seconds)
+    // Clean up expired rematches every 5 minutes (they only last 10 seconds)
     setInterval(() => {
       this.cleanupExpiredRematches();
-    }, 60 * 1000);
+    }, 5 * 60 * 1000);
     
-    console.log('✅ RematchService: Started automatic rematch cleanup timer');
+    console.log('✅ RematchService: Started automatic rematch cleanup timer (5min intervals)');
   }
 }

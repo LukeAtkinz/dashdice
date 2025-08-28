@@ -8,7 +8,7 @@ import { MetricUpdate } from '@/types/achievements';
 export const useGameAchievements = () => {
   const { recordGameEnd, recordSocialAction, recordProgressMilestone } = useAchievementTracking();
 
-  // Record when a game ends
+  // Record when a game ends - optimized for performance
   const recordGameCompletion = useCallback(async (
     won: boolean,
     diceRolled: number[],
@@ -22,39 +22,45 @@ export const useGameAchievements = () => {
       wasLastSecondWin?: boolean;
     }
   ) => {
-    try {
-      await recordGameEnd(won, diceRolled, gameData);
-      
-      // Record additional achievements based on game conditions
-      if (gameData?.wasPerfectGame) {
-        await recordProgressMilestone('perfect_games', 1);
+    // Defer achievement recording to avoid blocking UI
+    setTimeout(async () => {
+      try {
+        await recordGameEnd(won, diceRolled, gameData);
+        
+        // Record additional achievements based on game conditions
+        if (gameData?.wasPerfectGame) {
+          await recordProgressMilestone('perfect_games', 1);
+        }
+        
+        if (gameData?.wasComeback) {
+          await recordProgressMilestone('comeback_wins', 1);
+        }
+        
+        if (gameData?.wasLastSecondWin) {
+          await recordProgressMilestone('last_second_wins', 1);
+        }
+      } catch (error) {
+        console.error('Error recording game achievements:', error);
       }
-      
-      if (gameData?.wasComeback) {
-        await recordProgressMilestone('comeback_wins', 1);
-      }
-      
-      if (gameData?.wasLastSecondWin) {
-        await recordProgressMilestone('last_second_wins', 1);
-      }
-    } catch (error) {
-      console.error('Error recording game achievements:', error);
-    }
+    }, 100); // Small delay to not block UI
   }, [recordGameEnd, recordProgressMilestone]);
 
-  // Record dice rolls during gameplay
+  // Record dice rolls during gameplay - optimized for performance
   const recordDiceRoll = useCallback(async (diceValue: number) => {
-    try {
-      const updates: MetricUpdate[] = [
-        { metric: 'total_dice_rolled', value: 1, operation: 'increment' },
-        { metric: `dice_${numberToWord(diceValue)}s_rolled`, value: 1, operation: 'increment' }
-      ];
-      
-      // Use the context method to update multiple metrics
-      // We'll need to access this through the achievement context
-    } catch (error) {
-      console.error('Error recording dice roll achievement:', error);
-    }
+    // Defer to avoid blocking dice roll animation
+    setTimeout(async () => {
+      try {
+        const updates: MetricUpdate[] = [
+          { metric: 'total_dice_rolled', value: 1, operation: 'increment' },
+          { metric: `dice_${numberToWord(diceValue)}s_rolled`, value: 1, operation: 'increment' }
+        ];
+        
+        // Use the context method to update multiple metrics
+        // We'll need to access this through the achievement context
+      } catch (error) {
+        console.error('Error recording dice roll achievement:', error);
+      }
+    }, 50); // Very small delay to not block dice animation
   }, []);
 
   // Record social interactions

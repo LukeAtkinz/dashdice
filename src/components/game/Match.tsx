@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -63,15 +63,15 @@ interface MatchData {
   };
 }
 
-export const Match: React.FC<MatchProps> = ({ matchId, onBack }) => {
+export const Match: React.FC<MatchProps> = React.memo(({ matchId, onBack }) => {
   const { user } = useAuth();
   const { MatchBackgroundEquip } = useBackground();
   const [matchData, setMatchData] = useState<MatchData | null>(null);
   const [isHost, setIsHost] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Game mode display name mapping
-  const getGameModeDisplayName = (gameType: string): string => {
+  // Memoize game mode display name function
+  const getGameModeDisplayName = useCallback((gameType: string): string => {
     const modeNames: Record<string, string> = {
       'classic': 'Classic Mode',
       'quickfire': 'Quick Fire',
@@ -81,56 +81,64 @@ export const Match: React.FC<MatchProps> = ({ matchId, onBack }) => {
       'tag-team': 'Tag Team'
     };
     return modeNames[gameType.toLowerCase()] || gameType.charAt(0).toUpperCase() + gameType.slice(1);
-  };
+  }, []);
 
-  console.log('🎮 Match: Component rendered with props:', { matchId, user: user?.uid });
-  console.log('🔍 DEBUG: Match component entry point:', { matchId, userId: user?.uid });
-  console.log('🔍 DEBUG: Match component context:', { matchData: !!matchData, isHost, loading });
+  // Remove excessive console logs - only keep critical ones for debugging if needed
+  // console.log('🎮 Match: Component rendered with props:', { matchId, user: user?.uid });
+  // console.log('🔍 DEBUG: Match component entry point:', { matchId, userId: user?.uid });
+  // console.log('🔍 DEBUG: Match component context:', { matchData: !!matchData, isHost, loading });
 
   useEffect(() => {
     if (!matchId) return;
 
-    console.log('🎮 Match: useEffect triggered with roomId:', matchId, 'user:', user?.uid);
-    console.log('🎮 Match: Subscribing to match:', matchId);
-    console.log('🔄 Match navigation detected - allowing match to load (refresh detection disabled)');
+    // Remove excessive logging for performance
+    // console.log('🎮 Match: useEffect triggered with roomId:', matchId, 'user:', user?.uid);
+    // console.log('🎮 Match: Subscribing to match:', matchId);
+    // console.log('🔄 Match navigation detected - allowing match to load (refresh detection disabled)');
 
-    // Listen to match updates
+    // Listen to match updates with optimized handler
     const unsubscribe = onSnapshot(doc(db, 'matches', matchId), (doc) => {
       if (doc.exists()) {
         const data = doc.data() as MatchData;
-        console.log('🎮 Match data updated (active):', data);
-        console.log('🎮 Match: Received match data:', {
-          isPregame: data.gameData?.isPregame,
-          chooserPlayerIndex: data.gameData?.chooserPlayerIndex,
-          oddEvenChoice: data.gameData?.oddEvenChoice,
-          turnDecider: data.gameData?.turnDecider
-        });
+        // Remove heavy logging that slows down updates
+        // console.log('🎮 Match data updated (active):', data);
+        // console.log('🎮 Match: Received match data:', {
+        //   isPregame: data.gameData?.isPregame,
+        //   chooserPlayerIndex: data.gameData?.chooserPlayerIndex,
+        //   oddEvenChoice: data.gameData?.oddEvenChoice,
+        //   turnDecider: data.gameData?.turnDecider
+        // });
+        
         setMatchData(data);
         
         // Determine if current user is host
-        setIsHost(data.hostData.playerId === user?.uid);
+        if (user?.uid) {
+          setIsHost(data.hostData.playerId === user.uid);
+        }
       }
     });
 
     return () => unsubscribe();
   }, [matchId, user?.uid]);
 
-  const handleOddEvenChoice = async (choice: 'odd' | 'even') => {
+  const handleOddEvenChoice = useCallback(async (choice: 'odd' | 'even') => {
     if (!user?.uid || !matchData || loading) return;
     
     setLoading(true);
     try {
-      console.log('🎯 Match: Making odd/even choice:', { choice, matchId, userId: user.uid });
+      // Remove performance-impacting logs
+      // console.log('🎯 Match: Making odd/even choice:', { choice, matchId, userId: user.uid });
       await GameService.makeOddEvenChoice(matchId, choice, user.uid);
     } catch (error) {
       console.error('❌ Match: Error making odd/even choice:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.uid, matchData, loading, matchId]);
 
-  const renderBackground = () => {
-    console.log('🎨 Match backgrounds:', { MatchBackgroundEquip });
+  const renderBackground = useMemo(() => {
+    // Remove performance-impacting logs
+    // console.log('🎨 Match backgrounds:', { MatchBackgroundEquip });
     
     if (MatchBackgroundEquip) {
       if (MatchBackgroundEquip.type === 'video') {
@@ -168,23 +176,41 @@ export const Match: React.FC<MatchProps> = ({ matchId, onBack }) => {
         }}
       />
     );
-  };
+  }, [MatchBackgroundEquip]);
 
   if (!matchData) {
     return (
       <div className="min-h-screen relative flex items-center justify-center">{/* Removed overflow-hidden */}
-        {renderBackground()}
+        {renderBackground}
         <div className="relative z-20 text-white text-2xl">Loading match...</div>
       </div>
     );
   }
 
-  const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
-  const opponent = isHost ? matchData.opponentData : matchData.hostData;
+  // Memoize computed values to prevent unnecessary recalculations
+  const currentPlayer = useMemo(() => 
+    matchData ? (isHost ? matchData.hostData : matchData.opponentData) : null,
+    [matchData, isHost]
+  );
+  
+  const opponent = useMemo(() => 
+    matchData ? (isHost ? matchData.opponentData : matchData.hostData) : null,
+    [matchData, isHost]
+  );
+
+  // Early return if no match data
+  if (!matchData || !currentPlayer || !opponent) {
+    return (
+      <div className="min-h-screen relative flex items-center justify-center">
+        {renderBackground}
+        <div className="relative z-20 text-white text-2xl">Loading match...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative">{/* Removed overflow-hidden */}
-      {renderBackground()}
+      {renderBackground}
       
       {/* Overlay for better content visibility */}
       <div className="absolute inset-0 bg-black/40 z-10" />
@@ -368,4 +394,7 @@ export const Match: React.FC<MatchProps> = ({ matchId, onBack }) => {
       </div>
     </div>
   );
-};
+});
+
+// Add display name for debugging
+Match.displayName = 'Match';

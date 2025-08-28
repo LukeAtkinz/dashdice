@@ -24,7 +24,8 @@ export class GameService {
    */
   static async makeOddEvenChoice(matchId: string, choice: 'odd' | 'even', playerId: string): Promise<void> {
     try {
-      console.log('🎯 GameService: Making odd/even choice:', { matchId, choice, playerId });
+      // Remove performance-impacting logs
+      // console.log('🎯 GameService: Making odd/even choice:', { matchId, choice, playerId });
       
       const matchRef = doc(db, this.MATCHES_COLLECTION, matchId);
       const matchSnap = await getDoc(matchRef);
@@ -55,13 +56,14 @@ export class GameService {
       // Determine who goes first
       const firstPlayerIndex = playerWins ? playerIndex : (playerIndex === 1 ? 2 : 1);
       
-      console.log('🎲 GameService: Odd/even result:', { 
-        dieValue, 
-        isOdd, 
-        playerChoseOdd, 
-        playerWins, 
-        firstPlayerIndex 
-      });
+      // Remove performance-impacting logs
+      // console.log('🎲 GameService: Odd/even result:', { 
+      //   dieValue, 
+      //   isOdd, 
+      //   playerChoseOdd, 
+      //   playerWins, 
+      //   firstPlayerIndex 
+      // });
       
       // Update match with choice and start the game
       await updateDoc(matchRef, {
@@ -75,7 +77,8 @@ export class GameService {
         'gameData.updatedAt': serverTimestamp()
       });
       
-      console.log('✅ GameService: Odd/even choice processed successfully');
+      // Remove performance-impacting logs
+      // console.log('✅ GameService: Odd/even choice processed successfully');
     } catch (error) {
       console.error('❌ GameService: Error making odd/even choice:', error);
       throw error;

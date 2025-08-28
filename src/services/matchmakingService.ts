@@ -63,7 +63,8 @@ export class MatchmakingService {
     gameType: string
   ): Promise<string> {
     try {
-      console.log('🔄 MatchmakingService: Creating rematch waiting room');
+      // Remove performance-impacting logs
+      // console.log('🔄 MatchmakingService: Creating rematch waiting room');
       
       // Fetch user background data for both players
       const hostUserRef = doc(db, 'users', hostUserId);

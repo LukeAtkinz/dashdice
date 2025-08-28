@@ -50,7 +50,8 @@ export const AchievementProvider: React.FC<AchievementProviderProps> = ({ childr
 
     try {
       setIsLoading(true);
-      console.log('🎯 Initializing achievement system...');
+      // Remove performance-impacting logs
+      // console.log('🎯 Initializing achievement system...');
 
       // Initialize user achievements if needed (don't throw on failure)
       try {
@@ -63,7 +64,8 @@ export const AchievementProvider: React.FC<AchievementProviderProps> = ({ childr
       try {
         const achievements = await definitionsService.getAllAchievements();
         setAllAchievements(achievements);
-        console.log(`✅ Loaded ${achievements.length} achievement definitions`);
+        // Remove performance-impacting logs
+        // console.log(`✅ Loaded ${achievements.length} achievement definitions`);
       } catch (defError) {
         console.error('❌ Failed to load achievement definitions:', defError);
         // Achievements should still show from fallback system
@@ -98,7 +100,8 @@ export const AchievementProvider: React.FC<AchievementProviderProps> = ({ childr
       }
 
       setIsLoading(false);
-      console.log('✅ Achievement system initialization complete');
+      // Remove performance-impacting logs
+      // console.log('✅ Achievement system initialization complete');
     } catch (error) {
       console.error('❌ Critical error initializing achievements:', error);
       // Even on critical error, don't leave in loading state

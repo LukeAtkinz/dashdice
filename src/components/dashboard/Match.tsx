@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { MatchService } from '@/services/matchService';
@@ -19,22 +19,24 @@ interface MatchProps {
 }
 
 export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
-  console.log('🎮 Match: Component rendered with props:', { gameMode, roomId });
-  console.log('🔍 DEBUG: Match component entry point:', {
-    timestamp: new Date().toISOString(),
-    gameMode,
-    roomId,
-    component: 'Match'
-  });
+  // Remove performance-impacting debug logs
+  // console.log('🎮 Match: Component rendered with props:', { gameMode, roomId });
+  // console.log('🔍 DEBUG: Match component entry point:', {
+  //   timestamp: new Date().toISOString(),
+  //   gameMode,
+  //   roomId,
+  //   component: 'Match'
+  // });
   
   const { user } = useAuth();
   const { setCurrentSection, isGameOver, setIsGameOver } = useNavigation();
   const { recordGameCompletion } = useGameAchievements();
   
-  console.log('🔍 DEBUG: Match component context:', {
-    userUid: user?.uid,
-    hasSetCurrentSection: typeof setCurrentSection === 'function'
-  });
+  // Remove performance-impacting debug logs
+  // console.log('🔍 DEBUG: Match component context:', {
+  //   userUid: user?.uid,
+  //   hasSetCurrentSection: typeof setCurrentSection === 'function'
+  // });
   
   const [matchData, setMatchData] = useState<MatchData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -168,15 +170,111 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     reelSpeed?: number;
   }>({ isSpinning: false, currentNumber: 1, finalNumber: null, reelSpeed: 0.1 });
 
+  // All useCallback hooks must be declared before any conditional logic
+  const handleRollDice = useCallback(async () => {
+    if (!matchData) return;
+    
+    try {
+      const playerId = user?.uid;
+      
+      if (!playerId) {
+        console.error('❌ No authenticated user found');
+        return;
+      }
+      
+      await MatchService.rollDice(matchData.id!, playerId);
+    } catch (error) {
+      console.error('❌ Error rolling dice:', error);
+    }
+  }, [matchData, user?.uid]);
+
+  const handleBankScore = useCallback(async () => {
+    if (!matchData) return;
+    
+    try {
+      const playerId = user?.uid;
+      
+      if (!playerId) {
+        console.error('❌ No authenticated user found');
+        return;
+      }
+      
+      await MatchService.bankScore(matchData.id!, playerId);
+    } catch (error) {
+      console.error('❌ Error banking score:', error);
+    }
+  }, [matchData, user?.uid]);
+
+  const getValidBackgroundObject = useCallback((background: any) => {
+    if (!background) {
+      return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+    }
+    
+    if (typeof background === 'object' && background.name && background.file && background.type) {
+      return background;
+    }
+    
+    if (typeof background === 'string') {
+      return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+    }
+    
+    return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+  }, []);
+
+  const VideoBackground = useCallback(({ background, className }: { background: any; className: string }) => (
+    <video
+      autoPlay
+      loop
+      muted
+      playsInline
+      controls={false}
+      webkit-playsinline="true"
+      x5-playsinline="true"
+      preload="metadata"
+      disablePictureInPicture
+      controlsList="nodownload noplaybackrate"
+      className={className}
+      style={{ pointerEvents: 'none' }}
+    >
+      <source src={background.file} type="video/mp4" />
+    </video>
+  ), []);
+
+  const ImageBackground = useCallback(({ background, className }: { background: any; className: string }) => (
+    <img
+      src={background.file}
+      alt={background.name}
+      className={className}
+    />
+  ), []);
+
+  // Memoized background objects - computed before early returns to comply with hooks rules
+  const currentPlayerBackground = useMemo(() => {
+    if (!matchData || !user) return null;
+    const isHost = matchData.hostData.playerId === user.uid;
+    const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
+    return getValidBackgroundObject(currentPlayer.matchBackgroundEquipped);
+  }, [matchData, user, getValidBackgroundObject]);
+  
+  const opponentBackground = useMemo(() => {
+    if (!matchData || !user) return null;
+    const isHost = matchData.hostData.playerId === user.uid;
+    const opponent = isHost ? matchData.opponentData : matchData.hostData;
+    return getValidBackgroundObject(opponent.matchBackgroundEquipped);
+  }, [matchData, user, getValidBackgroundObject]);
+
   // Subscribe to match updates
   useEffect(() => {
-    console.log('🎮 Match: useEffect triggered with roomId:', roomId, 'user:', user?.uid);
+    // Remove performance-impacting logs
+    // console.log('🎮 Match: useEffect triggered with roomId:', roomId, 'user:', user?.uid);
     if (!roomId || !user) {
-      console.log('🎮 Match: Early return - missing roomId or user');
+      // Remove performance-impacting logs
+      // console.log('🎮 Match: Early return - missing roomId or user');
       return;
     }
 
-    console.log('🎮 Match: Subscribing to match:', roomId);
+    // Remove performance-impacting logs
+    // console.log('🎮 Match: Subscribing to match:', roomId);
     setLoading(true);
     setError(null);
     setMatchData(null); // Clear previous match data
@@ -190,7 +288,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
     const unsubscribe = MatchService.subscribeToMatch(roomId, (data) => {
       if (data) {
-        console.log('🎮 Match: Received match data:', data);
+        // Remove performance-impacting logs
+        // console.log('🎮 Match: Received match data:', data);
         setMatchData(data);
         
         // Initialize game phase if needed
@@ -205,7 +304,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     });
 
     return () => {
-      console.log('🎮 Match: Unsubscribing from match:', roomId);
+      // Remove performance-impacting logs
+      // console.log('🎮 Match: Unsubscribing from match:', roomId);
       unsubscribe();
     };
   }, [roomId, user]);
@@ -345,10 +445,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
   // Handle turn decider choice
   const handleTurnDeciderChoice = async (choice: 'odd' | 'even') => {
-    console.log('🎯 handleTurnDeciderChoice called with choice:', choice);
+    // Remove performance-impacting logs
+    // console.log('🎯 handleTurnDeciderChoice called with choice:', choice);
     
     if (!matchData) {
-      console.log('❌ No match data available');
+      // Remove performance-impacting logs
+      // console.log('❌ No match data available');
       return;
     }
     
@@ -361,9 +463,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         return;
       }
       
-      console.log('🔄 Calling MatchService.makeTurnDeciderChoice with:', { matchId: matchData.id, playerId, choice });
+      // Remove performance-impacting logs
+      // console.log('🔄 Calling MatchService.makeTurnDeciderChoice with:', { matchId: matchData.id, playerId, choice });
       await MatchService.makeTurnDeciderChoice(matchData.id!, playerId, choice);
-      console.log('✅ MatchService.makeTurnDeciderChoice completed');
+      // console.log('✅ MatchService.makeTurnDeciderChoice completed');
     } catch (error) {
       console.error('❌ Error making turn decider choice:', error);
     }
@@ -388,57 +491,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         'opponentData.turnActive': !hostGoesFirst,
       });
       
-      console.log(`🚀 Debug: Forced gameplay - ${hostGoesFirst ? 'Host' : 'Opponent'} goes first`);
+      // Remove performance-impacting logs
+      // console.log(`🚀 Debug: Forced gameplay - ${hostGoesFirst ? 'Host' : 'Opponent'} goes first`);
     } catch (error) {
       console.error('❌ Error forcing gameplay:', error);
-    }
-  };
-
-  // Handle dice roll
-  const handleRollDice = async () => {
-    if (!matchData) return;
-    
-    try {
-      // Use the actual authenticated user ID
-      const playerId = user?.uid;
-      
-      if (!playerId) {
-        console.error('❌ No authenticated user found');
-        return;
-      }
-      
-      // Debug logging
-      console.log('🎲 Rolling dice...');
-      console.log('Match Data:', matchData);
-      console.log('Player ID (authenticated user):', playerId);
-      console.log('Is Host:', matchData.hostData.playerId === playerId);
-      console.log('Current Player:', matchData.hostData.playerId === playerId ? matchData.hostData : matchData.opponentData);
-      console.log('Game Phase:', matchData.gameData.gamePhase);
-      console.log('Host Turn Active:', matchData.hostData.turnActive);
-      console.log('Opponent Turn Active:', matchData.opponentData?.turnActive);
-      
-      await MatchService.rollDice(matchData.id!, playerId);
-    } catch (error) {
-      console.error('❌ Error rolling dice:', error);
-    }
-  };
-
-  // Handle bank score
-  const handleBankScore = async () => {
-    if (!matchData) return;
-    
-    try {
-      // Use the actual authenticated user ID
-      const playerId = user?.uid;
-      
-      if (!playerId) {
-        console.error('❌ No authenticated user found');
-        return;
-      }
-      
-      await MatchService.bankScore(matchData.id!, playerId);
-    } catch (error) {
-      console.error('❌ Error banking score:', error);
     }
   };
 
@@ -452,7 +508,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         matchData.gameData.isRolling &&
         matchData.gameData.turnDeciderDice && 
         !turnDeciderDiceAnimation.isSpinning) {
-      console.log('🎰 Starting turn decider dice animation for result:', matchData.gameData.turnDeciderDice);
+      // Remove performance-impacting logs
+      // console.log('🎰 Starting turn decider dice animation for result:', matchData.gameData.turnDeciderDice);
       // 🎰 Animation Durations per specification:
       // Turn Decider Dice: 1500ms (1.5 seconds)
       startSlotMachineAnimation('turnDecider', matchData.gameData.turnDeciderDice, 1500);
@@ -542,52 +599,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     );
   }
 
-  // Determine current player data using authenticated user ID
+  // Now we know matchData exists, compute player data  
   const isHost = matchData.hostData.playerId === user?.uid;
   const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
   const opponent = isHost ? matchData.opponentData : matchData.hostData;
-
-  // Helper function to ensure background object is valid
-  const getValidBackgroundObject = (background: any) => {
-    // If background is null/undefined, return default
-    if (!background) {
-      return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
-    }
-    
-    // If background is already a valid object, return it
-    if (typeof background === 'object' && background.name && background.file && background.type) {
-      return background;
-    }
-    
-    // If background is a string, convert to object (legacy support)
-    if (typeof background === 'string') {
-      console.warn('🔧 Match: Converting string background to object:', background);
-      // You could add a mapping here, but for now return default
-      return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
-    }
-    
-    // Invalid format, return default
-    console.warn('🔧 Match: Invalid background format, using default:', background);
-    return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
-  };
-
-  // Get valid background objects
-  const currentPlayerBackground = getValidBackgroundObject(currentPlayer.matchBackgroundEquipped);
-  const opponentBackground = getValidBackgroundObject(opponent.matchBackgroundEquipped);
-
-  // Debug logging for background data
-  console.log('🎨 Match backgrounds:', {
-    originalCurrentPlayerBackground: currentPlayer.matchBackgroundEquipped,
-    originalOpponentBackground: opponent.matchBackgroundEquipped,
-    validatedCurrentPlayerBackground: currentPlayerBackground,
-    validatedOpponentBackground: opponentBackground,
-    currentPlayerBackgroundType: typeof currentPlayer.matchBackgroundEquipped,
-    opponentBackgroundType: typeof opponent.matchBackgroundEquipped,
-    currentPlayerRarity: currentPlayerBackground?.rarity,
-    opponentRarity: opponentBackground?.rarity,
-    currentPlayerFile: currentPlayerBackground?.file,
-    opponentFile: opponentBackground?.file
-  });
 
   return (
     <>
@@ -663,28 +678,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 {/* Player Background */}
                 {currentPlayerBackground ? (
                   currentPlayerBackground.type === 'video' ? (
-                    <video
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      controls={false}
-                      webkit-playsinline="true"
-                      x5-playsinline="true"
-                      preload="metadata"
-                      disablePictureInPicture
-                      controlsList="nodownload noplaybackrate"
+                    <VideoBackground 
+                      background={currentPlayerBackground}
                       className="absolute inset-0 w-full h-full object-cover"
-                      style={{ 
-                        pointerEvents: 'none'
-                      }}
-                    >
-                      <source src={currentPlayerBackground.file} type="video/mp4" />
-                    </video>
+                    />
                   ) : (
-                    <img
-                      src={currentPlayerBackground.file}
-                      alt={currentPlayerBackground.name}
+                    <ImageBackground
+                      background={currentPlayerBackground}
                       className="absolute inset-0 w-full h-full object-cover"
                     />
                   )
