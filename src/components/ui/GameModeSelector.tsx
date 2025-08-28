@@ -19,7 +19,7 @@ const GAME_MODES: GameMode[] = [
     id: 'quickfire',
     name: 'Quickfire',
     description: '',
-    icon: '/Design Elements/Shield Mode.webp'
+    icon: '/Design Elements/Shield.webp'
   },
   {
     id: 'classic',
@@ -31,7 +31,7 @@ const GAME_MODES: GameMode[] = [
     id: 'zero-hour',
     name: 'Zero Hour',
     description: '',
-    icon: '/Design Elements/Clock Breaker Mode.webp'
+    icon: '/Design Elements/time out.webp'
   },
   {
     id: 'last-line',

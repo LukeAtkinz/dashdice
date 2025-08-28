@@ -18,9 +18,9 @@ export const GameInvitationNotification: React.FC = () => {
   // Game mode icons mapping
   const getGameModeIcon = (gameType: string): string => {
     const iconMap: { [key: string]: string } = {
-      'quickfire': '/Design Elements/shield.webp',
+      'quickfire': '/Design Elements/Shield.webp',
       'classic': '/Design Elements/Crown Mode.webp',
-      'zero-hour': '/Design Elements/clockbreaker.webp',
+      'zero-hour': '/Design Elements/time out.webp',
       'last-line': '/Design Elements/skull.webp',
       'true-grit': '/Design Elements/Castle.webp'
     };

@@ -15,11 +15,11 @@ import ErrorBoundary from '@/components/ui/ErrorBoundary';
 const getGameModeIcon = (gameType: string): string => {
   const iconMap: { [key: string]: string } = {
     'classic': '/Design Elements/Crown Mode.webp',
-    'quickfire': '/Design Elements/Shield Mode.webp',
-    'zero-hour': '/Design Elements/Clock Breaker Mode.webp',
-    'blitz': '/Design Elements/Lightning Mode.webp',
-    'puzzle': '/Design Elements/Brain Mode.webp',
-    'survival': '/Design Elements/Heart Mode.webp'
+    'quickfire': '/Design Elements/Shield.webp',
+    'zero-hour': '/Design Elements/time out.webp',
+    'blitz': '/Design Elements/Shield.webp',
+    'puzzle': '/Design Elements/Crown Mode.webp',
+    'survival': '/Design Elements/skull.webp'
   };
   
   return iconMap[gameType.toLowerCase()] || '/Design Elements/Crown Mode.webp';
@@ -305,9 +305,9 @@ export default function FriendCard({ friend, compact = false, showActions = true
 
   // Game mode options for inline selector
   const gameModes = [
-    { id: 'quickfire', name: 'Quickfire', icon: '/Design Elements/shield.webp' },
+    { id: 'quickfire', name: 'Quickfire', icon: '/Design Elements/Shield.webp' },
     { id: 'classic', name: 'Classic Mode', icon: '/Design Elements/Crown Mode.webp' },
-    { id: 'zero-hour', name: 'Zero Hour', icon: '/Design Elements/clockbreaker.webp' },
+    { id: 'zero-hour', name: 'Zero Hour', icon: '/Design Elements/time out.webp' },
     { id: 'last-line', name: 'Last Line', icon: '/Design Elements/skull.webp' },
     { id: 'true-grit', name: 'True Grit', icon: '/Design Elements/Castle.webp' }
   ];

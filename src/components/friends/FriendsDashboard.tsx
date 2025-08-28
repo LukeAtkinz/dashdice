@@ -68,7 +68,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
   const { friends, pendingRequests, gameInvitations, getOnlineFriendsCount } = useFriends();
   const { hasInvitations } = useGameInvitationNotifications();
   const { DisplayBackgroundEquip } = useBackground();
-  const [activeTab, setActiveTab] = useState<'friends' | 'manage' | 'invitations'>('friends');
+  const [activeTab, setActiveTab] = useState<'friends' | 'manage'>('friends');
 
   const onlineFriendsCount = getOnlineFriendsCount?.() || 0;
 
@@ -87,14 +87,6 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       count: pendingRequests.length,
       isActive: pendingRequests.length > 0,
       color: 'linear-gradient(135deg, #FF0080, #FF4DB8)'
-    },
-    {
-      id: 'invitations' as const,
-      label: 'Game Invites',
-      mobileLabel: 'Invites', // Mobile short label
-      count: gameInvitations.length,
-      isActive: hasInvitations,
-      color: 'linear-gradient(135deg, #00FF80, #00A855)'
     }
   ];
 
@@ -126,16 +118,12 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
     };
   };
 
-  // Auto-switch to manage/invitations when they arrive
+  // Auto-switch to manage when friend requests arrive
   React.useEffect(() => {
-    if (activeTab === 'friends') {
-      if (gameInvitations.length > 0) {
-        setActiveTab('invitations');
-      } else if (pendingRequests.length > 0) {
-        setActiveTab('manage');
-      }
+    if (activeTab === 'friends' && pendingRequests.length > 0) {
+      setActiveTab('manage');
     }
-  }, [gameInvitations.length, pendingRequests.length, activeTab]);
+  }, [pendingRequests.length, activeTab]);
 
   return (
     <>
@@ -213,7 +201,23 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       {/* Content */}
       <div className="w-full max-w-[80rem] flex-1 overflow-y-auto scrollbar-hide px-4">
         {activeTab === 'friends' && (
-          <FriendsList showAddButton={false} />
+          <div className="space-y-6">
+            {/* Game Invitations Section - Only show when there are invitations */}
+            {gameInvitations.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-xl font-audiowide text-white mb-4 uppercase flex items-center gap-2">
+                  Game Invitations
+                  <span className="bg-green-500 text-white px-2 py-1 rounded-full text-sm animate-pulse">
+                    {gameInvitations.length}
+                  </span>
+                </h3>
+                <GameInvitations />
+              </div>
+            )}
+            
+            {/* Friends List */}
+            <FriendsList showAddButton={false} />
+          </div>
         )}
         
         {activeTab === 'manage' && (
@@ -235,7 +239,11 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
                 ) : (
                   <div className="text-center py-8">
                     <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-3">
-                      <div className="text-2xl">📬</div>
+                      <img 
+                        src="/backgrounds/location not found.png" 
+                        alt="No requests" 
+                        className="w-12 h-12 object-contain opacity-80"
+                      />
                     </div>
                     <p className="text-gray-500 dark:text-gray-400 mb-1 font-audiowide">No friend requests</p>
                     <p className="text-sm text-gray-400 dark:text-gray-500 font-montserrat">
@@ -265,23 +273,6 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
             </div>
           </div>
         )}
-        
-        {activeTab === 'invitations' && (
-          <GameInvitations />
-        )}
-
-        {/* Empty States */}
-        {activeTab === 'invitations' && gameInvitations.length === 0 && (
-          <div className="text-center py-8">
-            <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-3">
-              <div className="text-2xl">⚡</div>
-            </div>
-            <p className="text-gray-500 dark:text-gray-400 mb-1 font-audiowide">No game invitations</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500 font-montserrat">
-              When friends invite you to games, invitations will appear here
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Notification badges for inactive tabs */}
@@ -295,25 +286,6 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
             <button
               onClick={() => setActiveTab('manage')}
               className="ml-2 text-green-200 hover:text-white"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {activeTab !== 'invitations' && gameInvitations.length > 0 && (
-        <div className="fixed top-16 right-4 z-50">
-          <div className="bg-blue-500 text-white px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-pulse">
-            <div className="text-lg">⚡</div>
-            <span className="text-sm font-montserrat">
-              {gameInvitations.length} game invitation{gameInvitations.length !== 1 ? 's' : ''}
-            </span>
-            <button
-              onClick={() => setActiveTab('invitations')}
-              className="ml-2 text-blue-200 hover:text-white"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
