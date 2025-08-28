@@ -15,6 +15,18 @@ export const GameInvitationNotification: React.FC = () => {
   const { currentSection, setCurrentSection } = useNavigation();
   const [timeLeft, setTimeLeft] = useState<{ [key: string]: number }>({});
 
+  // Game mode icons mapping
+  const getGameModeIcon = (gameType: string): string => {
+    const iconMap: { [key: string]: string } = {
+      'quickfire': '/Design Elements/shield.webp',
+      'classic': '/Design Elements/Crown Mode.webp',
+      'zero-hour': '/Design Elements/clockbreaker.webp',
+      'last-line': '/Design Elements/skull.webp',
+      'true-grit': '/Design Elements/Castle.webp'
+    };
+    return iconMap[gameType.toLowerCase()] || iconMap['classic'];
+  };
+
   // Don't show notifications if user is already in a match
   const shouldShowNotifications = currentSection !== 'match';
 
@@ -169,7 +181,7 @@ export const GameInvitationNotification: React.FC = () => {
   }
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-3 max-w-sm">
+    <div className="fixed top-4 right-4 z-50 space-y-3 max-w-sm w-full max-w-xs md:max-w-sm">
       <AnimatePresence>
         {gameInvitations.map((invitation) => (
           <motion.div
@@ -183,62 +195,83 @@ export const GameInvitationNotification: React.FC = () => {
               damping: 30,
               duration: 0.3 
             }}
-            className="bg-gradient-to-br from-blue-900/95 to-purple-900/95 
-                     border border-blue-400/50 rounded-xl p-4 shadow-2xl
-                     backdrop-blur-md relative overflow-hidden"
+            className="bg-gradient-to-br from-slate-900/95 via-blue-900/95 to-purple-900/95 
+                     border border-blue-400/60 rounded-xl p-4 shadow-2xl
+                     backdrop-blur-lg relative overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 58, 138, 0.95) 50%, rgba(88, 28, 135, 0.95) 100%)'
+            }}
           >
-            {/* Animated background gradient */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-blue-600/20 
-                          animate-pulse opacity-50"></div>
+            {/* Animated background accent */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-blue-500/10 
+                          animate-pulse opacity-60"></div>
             
             <div className="relative z-10">
               {/* Header */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                  <h3 className="text-white font-bold text-sm font-audiowide">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
+                  <h3 className="text-white font-bold text-sm md:text-base font-audiowide tracking-wider">
                     GAME INVITATION
                   </h3>
                 </div>
                 {timeLeft[invitation.id] && (
-                  <div className="bg-red-600/80 px-2 py-1 rounded text-xs text-white font-mono">
+                  <div className="bg-gradient-to-r from-red-600 to-red-700 px-3 py-1 rounded-full 
+                                text-xs text-white font-mono font-bold shadow-lg">
                     {formatTime(timeLeft[invitation.id])}
                   </div>
                 )}
               </div>
 
-              {/* Invitation Content */}
-              <div className="mb-4">
-                <p className="text-white text-sm mb-1">
-                  <span className="font-semibold text-blue-300">
-                    {invitation.fromUserName || 'Friend'}
-                  </span>
-                  {' '}invited you to play
-                </p>
-                <p className="text-blue-200 text-sm font-medium">
-                  {invitation.gameType}
-                </p>
+              {/* Invitation Content with Game Mode Icon */}
+              <div className="mb-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <img 
+                    src={getGameModeIcon(invitation.gameType)} 
+                    alt={invitation.gameType}
+                    className="w-10 h-10 md:w-12 md:h-12 object-contain opacity-90 drop-shadow-lg"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/Design Elements/Crown Mode.webp'; // Fallback icon
+                    }}
+                  />
+                  <div className="flex-1">
+                    <p className="text-white text-sm md:text-base mb-1 font-audiowide">
+                      <span className="font-bold text-blue-300">
+                        {invitation.fromUserName || 'Friend'}
+                      </span>
+                      <span className="text-gray-300 mx-2">invited you to</span>
+                    </p>
+                    <p className="text-blue-200 text-base md:text-lg font-bold font-audiowide tracking-wide">
+                      {invitation.gameType.toUpperCase()}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleAccept(invitation.id)}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white 
-                           text-xs font-semibold py-2 px-3 rounded-lg
-                           transition-colors duration-200 font-audiowide"
+                  className="flex-1 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500
+                           text-black text-sm md:text-base font-bold py-3 px-4 rounded-lg
+                           transition-all duration-200 font-audiowide tracking-wide
+                           shadow-lg shadow-yellow-500/30 hover:shadow-yellow-400/40
+                           border border-yellow-400/50"
                 >
                   ACCEPT
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleDecline(invitation.id)}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white 
-                           text-xs font-semibold py-2 px-3 rounded-lg
-                           transition-colors duration-200 font-audiowide"
+                  className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600
+                           text-white text-sm md:text-base font-bold py-3 px-4 rounded-lg
+                           transition-all duration-200 font-audiowide tracking-wide
+                           shadow-lg shadow-red-600/30 hover:shadow-red-500/40
+                           border border-red-500/50"
                 >
                   DECLINE
                 </motion.button>

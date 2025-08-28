@@ -11,6 +11,20 @@ import MiniGameModeSelector from './MiniGameModeSelector';
 import { useBackground } from '@/context/BackgroundContext';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
+// Game mode icon mapping
+const getGameModeIcon = (gameType: string): string => {
+  const iconMap: { [key: string]: string } = {
+    'classic': '/Design Elements/Crown Mode.webp',
+    'quickfire': '/Design Elements/Shield Mode.webp',
+    'zero-hour': '/Design Elements/Clock Breaker Mode.webp',
+    'blitz': '/Design Elements/Lightning Mode.webp',
+    'puzzle': '/Design Elements/Brain Mode.webp',
+    'survival': '/Design Elements/Heart Mode.webp'
+  };
+  
+  return iconMap[gameType.toLowerCase()] || '/Design Elements/Crown Mode.webp';
+};
+
 interface FriendCardProps {
   friend: FriendWithStatus;
   compact?: boolean;
@@ -251,7 +265,13 @@ export default function FriendCard({ friend, compact = false, showActions = true
       const result = await sendGameInvitation(friend.friendId, gameMode);
       if (result?.success) {
         console.log('✅ Game invitation sent successfully');
-        showToast(`Game invitation sent to ${friend.friendData?.displayName || 'friend'}!`, 'success');
+        
+        // Enhanced toast with game mode info
+        const gameModeName = gameMode.charAt(0).toUpperCase() + gameMode.slice(1);
+        showToast(
+          `🎯 ${gameModeName} invitation sent to ${friend.friendData?.displayName || 'friend'}!`, 
+          'success'
+        );
       } else {
         console.error('❌ Failed to send game invitation:', result?.error);
         showToast(result?.error || 'Failed to send game invitation', 'error');
@@ -552,7 +572,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                   className="overflow-hidden"
                 >
-                  <div className="bg-transparent backdrop-blur-[0.5px] border border-gray-700/50 rounded-xl p-4">
+                  <div className="bg-transparent backdrop-blur-[0.5px] border border-gray-700/50 rounded-xl p-4 md:pl-8">
                     <div className="grid grid-cols-2 gap-3 mb-3">
                       {gameModes.map((mode, index) => (
                         <motion.button
@@ -563,21 +583,21 @@ export default function FriendCard({ friend, compact = false, showActions = true
                           onClick={() => handleGameInvite(mode.id)}
                           whileHover={{ scale: 1.05, y: -2 }}
                           whileTap={{ scale: 0.95 }}
-                          className="flex flex-col md:flex-row items-center justify-center md:justify-start p-4 rounded-lg
+                          className="flex flex-col md:flex-row items-center justify-center md:justify-start p-4 md:p-5 rounded-lg
                                    bg-gray-800/30 hover:bg-gray-700/40 border border-gray-600/50
-                                   hover:border-blue-400/70 transition-all duration-200 min-h-[100px] md:gap-3"
+                                   hover:border-blue-400/70 transition-all duration-200 min-h-[100px] md:min-h-[120px] md:gap-4"
                         >
                           <img 
                             src={mode.icon} 
                             alt={mode.name}
-                            className="w-12 h-12 md:w-16 md:h-16 object-contain mb-3 md:mb-0 opacity-60 md:flex-shrink-0"
+                            className="w-12 h-12 md:w-20 md:h-20 object-contain mb-3 md:mb-0 opacity-60 md:flex-shrink-0"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
                               target.src = '/Design Elements/Crown Mode.webp'; // Fallback icon
                             }}
                           />
-                          <span className="text-sm md:text-lg text-white font-medium text-center md:text-left leading-tight
-                                         drop-shadow-lg md:flex-1" 
+                          <span className="text-sm md:text-xl text-white font-medium text-center md:text-left leading-tight
+                                         drop-shadow-lg md:flex-1 font-audiowide tracking-wide" 
                                 style={{ 
                                   textShadow: '0 0 8px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.1)' 
                                 }}>

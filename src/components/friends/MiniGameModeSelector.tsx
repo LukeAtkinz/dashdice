@@ -32,12 +32,12 @@ const MiniGameModeSelector: React.FC<MiniGameModeSelectorProps> = ({
     {
       id: 'quickfire',
       name: 'Quickfire',
-      icon: '/Design Elements/Gem Bucket.webp'
+      icon: '/Design Elements/Shield Mode.webp'
     },
     {
       id: 'zero-hour',
       name: 'Zero Hour',
-      icon: '/Design Elements/Satelite.webp'
+      icon: '/Design Elements/Clock Breaker Mode.webp'
     },
     {
       id: 'last-line',
@@ -95,9 +95,9 @@ const MiniGameModeSelector: React.FC<MiniGameModeSelectorProps> = ({
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="absolute top-full left-0 right-0 mt-2 z-50 
                        bg-gray-900/95 backdrop-blur-md border border-gray-700 
-                       rounded-xl p-4 shadow-xl"
+                       rounded-xl p-4 md:p-6 shadow-xl"
           >
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 md:gap-4">
               {gameModes.map((mode, index) => (
                 <motion.button
                   key={mode.id}
@@ -107,20 +107,20 @@ const MiniGameModeSelector: React.FC<MiniGameModeSelectorProps> = ({
                   onClick={() => handleModeSelect(mode.id)}
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  className="flex flex-col items-center p-3 rounded-lg
+                  className="flex flex-col items-center p-3 md:p-4 rounded-lg
                            bg-gray-800/50 hover:bg-gray-700/50 border border-gray-600
                            hover:border-blue-400 transition-all duration-200"
                 >
                   <img 
                     src={mode.icon} 
                     alt={mode.name}
-                    className="w-8 h-8 object-contain mb-2"
+                    className="w-8 h-8 md:w-10 md:h-10 object-contain mb-2 md:mb-3"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = '/Design Elements/Crown Mode.webp'; // Fallback icon
                     }}
                   />
-                  <span className="text-xs text-white font-medium text-center leading-tight">
+                  <span className="text-xs md:text-sm text-white font-medium text-center leading-tight">
                     {mode.name}
                   </span>
                 </motion.button>
@@ -133,8 +133,8 @@ const MiniGameModeSelector: React.FC<MiniGameModeSelectorProps> = ({
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
               onClick={() => setIsExpanded(false)}
-              className="w-full mt-3 py-2 px-4 bg-gray-700 hover:bg-gray-600 
-                         text-white rounded-lg font-medium transition-colors"
+              className="w-full mt-3 md:mt-4 py-2 md:py-3 px-4 bg-gray-700 hover:bg-gray-600 
+                         text-white rounded-lg font-medium transition-colors text-sm md:text-base"
               style={{ fontFamily: 'Audiowide' }}
             >
               CANCEL

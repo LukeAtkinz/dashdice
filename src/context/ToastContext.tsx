@@ -50,13 +50,13 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const getToastStyles = (type: Toast['type']) => {
     switch (type) {
       case 'success':
-        return 'bg-green-600/90 border-green-400/50';
+        return 'bg-gradient-to-br from-green-700/95 via-emerald-700/95 to-green-800/95 border-green-400/60 shadow-green-500/20';
       case 'error':
-        return 'bg-red-600/90 border-red-400/50';
+        return 'bg-gradient-to-br from-red-700/95 via-red-600/95 to-red-800/95 border-red-400/60 shadow-red-500/20';
       case 'warning':
-        return 'bg-yellow-600/90 border-yellow-400/50';
+        return 'bg-gradient-to-br from-yellow-700/95 via-amber-600/95 to-yellow-800/95 border-yellow-400/60 shadow-yellow-500/20';
       default:
-        return 'bg-blue-600/90 border-blue-400/50';
+        return 'bg-gradient-to-br from-blue-700/95 via-blue-600/95 to-blue-800/95 border-blue-400/60 shadow-blue-500/20';
     }
   };
 
@@ -65,7 +65,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
       {children}
       
       {/* Toast Container */}
-      <div className="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm">
+      <div className="fixed bottom-4 right-4 z-50 space-y-3 max-w-xs md:max-w-sm">
         <AnimatePresence>
           {toasts.map((toast) => (
             <motion.div
@@ -80,14 +80,28 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
               }}
               className={`
                 ${getToastStyles(toast.type)} 
-                border rounded-lg p-4 shadow-lg backdrop-blur-md
-                cursor-pointer
+                border rounded-xl p-4 shadow-2xl backdrop-blur-lg
+                cursor-pointer relative overflow-hidden
               `}
               onClick={() => removeToast(toast.id)}
             >
-              <p className="text-white text-sm font-medium">
-                {toast.message}
-              </p>
+              {/* Animated background accent */}
+              <div className="absolute inset-0 bg-gradient-to-r from-white/5 via-white/10 to-white/5 
+                            animate-pulse opacity-60"></div>
+              
+              <div className="relative z-10 flex items-center gap-3">
+                {/* Status indicator */}
+                <div className={`w-2 h-2 rounded-full shadow-lg ${
+                  toast.type === 'success' ? 'bg-green-400 shadow-green-400/50' :
+                  toast.type === 'error' ? 'bg-red-400 shadow-red-400/50' :
+                  toast.type === 'warning' ? 'bg-yellow-400 shadow-yellow-400/50' :
+                  'bg-blue-400 shadow-blue-400/50'
+                } animate-pulse`}></div>
+                
+                <p className="text-white text-sm md:text-base font-medium font-audiowide tracking-wide flex-1">
+                  {toast.message}
+                </p>
+              </div>
             </motion.div>
           ))}
         </AnimatePresence>
