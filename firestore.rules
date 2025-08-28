@@ -49,6 +49,12 @@ service cloud.firestore {
       allow write: if request.auth != null;
     }
     
+    // Global Notifications - users can read their own notifications, system can write
+    match /notifications/{notificationId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow write: if request.auth != null;
+    }
+    
     // User Notifications (subcollection)
     match /users/{userId}/notifications/{notificationId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
