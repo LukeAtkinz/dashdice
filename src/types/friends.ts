@@ -32,6 +32,7 @@ export interface GameInvitation {
   id: string;
   fromUserId: string;
   toUserId: string;
+  fromUserName?: string; // Display name of the user sending the invitation
   gameType: string;
   status: 'pending' | 'accepted' | 'declined' | 'expired';
   createdAt: Timestamp;

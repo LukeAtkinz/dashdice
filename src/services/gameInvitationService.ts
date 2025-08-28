@@ -31,11 +31,14 @@ export class GameInvitationService {
         return { success: false, error: 'Can only invite friends to games' };
       }
 
-      // Get target user's privacy settings
+      // Get target user's basic info
       const targetUser = await this.getUser(toUserId);
-      if (!targetUser?.privacy?.allowGameInvites) {
-        return { success: false, error: 'This user is not accepting game invitations' };
+      if (!targetUser) {
+        return { success: false, error: 'User not found' };
       }
+
+      // Skip privacy check for friends - always allow game invitations between friends
+      // Friends can always invite each other regardless of privacy settings
 
       // Check if target user is online
       if (!targetUser.isOnline) {
@@ -53,6 +56,10 @@ export class GameInvitationService {
         return { success: false, error: 'Game invitation already pending' };
       }
 
+      // Get sender's display name
+      const fromUser = await this.getUser(fromUserId);
+      const fromUserName = fromUser?.displayName || 'Unknown Player';
+
       // Create invitation with 5-minute expiration
       const expiresAt = new Date();
       expiresAt.setMinutes(expiresAt.getMinutes() + 5);
@@ -60,6 +67,7 @@ export class GameInvitationService {
       await addDoc(collection(db, 'gameInvitations'), {
         fromUserId,
         toUserId,
+        fromUserName,
         gameType,
         gameSettings: gameSettings || {},
         status: 'pending',
@@ -85,6 +93,7 @@ export class GameInvitationService {
       }
 
       const invitation = invitationDoc.data() as GameInvitation;
+      invitation.id = invitationId; // Add the document ID to the invitation object
       
       // Check if invitation is still valid
       if (invitation.status !== 'pending') {
@@ -130,12 +139,6 @@ export class GameInvitationService {
   // Get user's game invitations
   static async getUserGameInvitations(userId: string): Promise<GameInvitation[]> {
     try {
-      // Temporarily disable complex queries until indexes are ready
-      console.log('GameInvitation service: getUserGameInvitations temporarily disabled until Firebase indexes are ready');
-      return [];
-      
-      // Original query (commented out until indexes are built):
-      /*
       const invitationsQuery = query(
         collection(db, 'gameInvitations'),
         where('toUserId', '==', userId),
@@ -161,7 +164,6 @@ export class GameInvitationService {
       });
 
       return validInvitations;
-      */
     } catch (error) {
       console.error('Error getting user game invitations:', error);
       return [];
@@ -170,13 +172,6 @@ export class GameInvitationService {
 
   // Subscribe to user's game invitations
   static subscribeToGameInvitations(userId: string, callback: (invitations: GameInvitation[]) => void): () => void {
-    // Temporarily disable complex queries until indexes are ready
-    console.log('GameInvitation service: subscribeToGameInvitations temporarily disabled until Firebase indexes are ready');
-    callback([]);
-    return () => {}; // Return empty unsubscribe function
-    
-    // Original query (commented out until indexes are built):
-    /*
     const invitationsQuery = query(
       collection(db, 'gameInvitations'),
       where('toUserId', '==', userId),
@@ -202,32 +197,83 @@ export class GameInvitationService {
       });
 
       callback(validInvitations);
+    }, (error) => {
+      console.error('Error in game invitations subscription:', error);
+      callback([]);
     });
-    */
   }
 
   // Create game session from invitation
   private static async createGameSession(invitation: GameInvitation): Promise<string> {
     try {
-      // Create a new match/game session
-      const gameData = {
-        players: [invitation.fromUserId, invitation.toUserId],
-        gameType: invitation.gameType,
-        settings: invitation.gameSettings,
-        status: 'waiting',
+      // Get user data for both players
+      const [fromUser, toUser] = await Promise.all([
+        this.getUser(invitation.fromUserId),
+        this.getUser(invitation.toUserId)
+      ]);
+
+      if (!fromUser || !toUser) {
+        throw new Error('User data not found');
+      }
+
+      // Default background
+      const defaultBackground = { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+
+      // Create waiting room data with both players
+      const waitingRoomData = {
+        gameMode: invitation.gameType,
+        gameType: 'Friend Invitation',
+        playersRequired: 0, // Both players already confirmed
         createdAt: serverTimestamp(),
+        expiresAt: new Date(Date.now() + (20 * 60 * 1000)), // 20 minute expiry
+        hostData: {
+          playerDisplayName: fromUser.displayName || 'Unknown Player',
+          playerId: invitation.fromUserId,
+          displayBackgroundEquipped: defaultBackground,
+          matchBackgroundEquipped: defaultBackground,
+          playerStats: {
+            bestStreak: 0,
+            currentStreak: 0,
+            gamesPlayed: 0,
+            matchWins: 0
+          }
+        },
+        opponentData: {
+          playerDisplayName: toUser.displayName || 'Unknown Player',
+          playerId: invitation.toUserId,
+          displayBackgroundEquipped: defaultBackground,
+          matchBackgroundEquipped: defaultBackground,
+          playerStats: {
+            bestStreak: 0,
+            currentStreak: 0,
+            gamesPlayed: 0,
+            matchWins: 0
+          }
+        },
+        gameData: {
+          type: 'dice',
+          settings: invitation.gameSettings || {}
+        },
         invitationId: invitation.id
       };
 
-      const gameRef = await addDoc(collection(db, 'matches'), gameData);
+      // Create waiting room
+      const waitingRoomRef = await addDoc(collection(db, 'waitingroom'), waitingRoomData);
       
-      // Update both users' currentGame field
-      await Promise.all([
-        updateDoc(doc(db, 'users', invitation.fromUserId), { currentGame: gameRef.id }),
-        updateDoc(doc(db, 'users', invitation.toUserId), { currentGame: gameRef.id })
-      ]);
+      // Import MatchmakingService for moving to matches
+      const { MatchmakingService } = await import('./matchmakingService');
+      
+      // Start countdown to move to matches after 3 seconds (gives users time to see the room)
+      setTimeout(async () => {
+        try {
+          await MatchmakingService.moveToMatches(waitingRoomRef.id);
+          console.log('✅ GameInvitationService: Friend game moved to matches automatically');
+        } catch (error) {
+          console.error('❌ GameInvitationService: Error moving friend game to matches:', error);
+        }
+      }, 3000);
 
-      return gameRef.id;
+      return waitingRoomRef.id;
     } catch (error) {
       console.error('Error creating game session:', error);
       throw error;

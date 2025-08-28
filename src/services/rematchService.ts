@@ -206,12 +206,20 @@ export class RematchService {
     );
     
     return onSnapshot(rematchQuery, (snapshot) => {
-      const rematches = snapshot.docs.map(doc => ({
-        ...doc.data(),
-        id: doc.id
-      })) as RematchRoom[];
-      
-      callback(rematches);
+      try {
+        const rematches = snapshot.docs.map(doc => ({
+          ...doc.data(),
+          id: doc.id
+        })) as RematchRoom[];
+        
+        callback(rematches);
+      } catch (error) {
+        console.error('❌ RematchService: Error processing rematch updates:', error);
+        callback([]); // Return empty array on error
+      }
+    }, (error) => {
+      console.error('❌ RematchService: Error in rematch subscription:', error);
+      callback([]); // Return empty array on error
     });
   }
 

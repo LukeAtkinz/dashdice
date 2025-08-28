@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FriendWithStatus } from '@/types/friends';
 import { useFriends } from '@/context/FriendsContext';
 import { useChat } from '@/context/ChatContext';
+import { useToast } from '@/context/ToastContext';
 import { openFriendChatInUnified } from '@/components/chat/UnifiedChatWindow';
 import MiniGameModeSelector from './MiniGameModeSelector';
 import { useBackground } from '@/context/BackgroundContext';
@@ -208,6 +209,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
   }
 
   const { removeFriend, sendGameInvitation, friendPresences } = useFriends();
+  const { showToast } = useToast();
   const [isRemoving, setIsRemoving] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
   const [isGameSelectorExpanded, setIsGameSelectorExpanded] = useState(false);
@@ -236,20 +238,27 @@ export default function FriendCard({ friend, compact = false, showActions = true
     try {
       if (!friend?.friendId || typeof friend.friendId !== 'string') {
         console.error('Invalid friend ID:', friend?.friendId);
+        showToast('Unable to send invitation - invalid friend data', 'error');
         return;
       }
       
       if (!gameMode || typeof gameMode !== 'string') {
         console.error('Invalid game mode:', gameMode);
+        showToast('Please select a valid game mode', 'error');
         return;
       }
       
       const result = await sendGameInvitation(friend.friendId, gameMode);
       if (result?.success) {
-        console.log('Game invitation sent successfully');
+        console.log('✅ Game invitation sent successfully');
+        showToast(`Game invitation sent to ${friend.friendData?.displayName || 'friend'}!`, 'success');
+      } else {
+        console.error('❌ Failed to send game invitation:', result?.error);
+        showToast(result?.error || 'Failed to send game invitation', 'error');
       }
     } catch (error) {
-      console.error('Error sending game invitation:', error);
+      console.error('❌ Error sending game invitation:', error);
+      showToast('An error occurred while sending the invitation', 'error');
     } finally {
       setIsInviting(false);
     }
@@ -473,7 +482,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
                   disabled={isRemoving}
                   className="w-24 px-2 py-2 bg-purple-600/60 hover:bg-purple-700/60 disabled:bg-gray-600/60 disabled:cursor-not-allowed text-white text-xs rounded-xl font-montserrat transition-colors"
                 >
-                  {isRemoving ? 'Managing...' : 'Manage'}
+                  {isRemoving ? 'Removing...' : 'Remove'}
                 </button>
               </div>
             </div>

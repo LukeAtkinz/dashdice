@@ -221,6 +221,10 @@ export class ChatService {
       });
       // Reverse to show oldest first
       callback(messages.reverse());
+    }, (error) => {
+      console.error('❌ Error listening to chat messages:', error);
+      // Call callback with empty array to prevent UI issues
+      callback([]);
     });
   }
 
@@ -584,6 +588,10 @@ export class ChatService {
         }
       });
       callback(indicators);
+    }, (error) => {
+      console.error('❌ Error listening to typing indicators:', error);
+      // Call callback with empty array to prevent UI issues
+      callback([]);
     });
   }
 

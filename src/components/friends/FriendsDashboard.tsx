@@ -77,7 +77,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       id: 'friends' as const,
       label: 'Friends',
       count: friends.length,
-      badge: undefined, // Removed online count display
+      badge: undefined, 
       color: 'linear-gradient(135deg, #667eea, #764ba2)'
     },
     {
@@ -204,20 +204,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
                   </span>
                 )}
               </div>
-              {/* Online badge for friends */}
-              {tab.id === 'friends' && tab.badge && (
-                <span 
-                  className="px-2 py-0.5 text-xs mt-1 md:rounded-full rounded-[20px]"
-                  style={{
-                    background: 'black',
-                    color: '#FFF',
-                    fontFamily: 'Montserrat',
-                    fontSize: '10px'
-                  }}
-                >
-                  {tab.badge}
-                </span>
-              )}
+              
             </div>
           </button>
         ))}

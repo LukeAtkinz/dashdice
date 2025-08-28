@@ -14,9 +14,9 @@ import ProfileSection from '@/components/dashboard/ProfileSection';
 import AchievementNotificationDisplay from '@/components/achievements/AchievementNotification';
 import AchievementsDashboard from '@/components/achievements/AchievementsDashboard';
 import FriendsDashboard from '@/components/friends/FriendsDashboard';
-import InvitationPopupManager from '@/components/friends/InvitationPopupManager';
 import GlobalChatButton from '@/components/chat/GlobalChatButton';
 import { GlobalRematchNotification } from '@/components/rematch/GlobalRematchNotification';
+import { GameInvitationNotification } from '@/components/friends/GameInvitationNotification';
 import { RematchProvider } from '@/context/RematchContext';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
@@ -26,7 +26,7 @@ import { useOnlinePlayerCount } from '@/hooks/useOnlinePlayerCount';
 import NotificationBadge from '@/components/ui/NotificationBadge';
 import { MobileBackgroundControl } from '@/components/ui/MobileBackgroundControl';
 import { createTestMatch } from '@/utils/testMatchData';
-import '@/utils/testUtils'; // Load test utilities for development
+import { ToastProvider } from '@/context/ToastContext';
 
 const DashboardContent: React.FC = () => {
   const { currentSection, sectionParams, setCurrentSection, isGameOver } = useNavigation();
@@ -664,11 +664,11 @@ const DashboardContent: React.FC = () => {
         {/* Achievement Notifications */}
         <AchievementNotificationDisplay />
         
-        {/* Game Invitation Popups */}
-        <InvitationPopupManager />
-        
         {/* Global Rematch Notifications */}
         <GlobalRematchNotification />
+        
+        {/* Game Invitation Notifications */}
+        <GameInvitationNotification />
         
         {/* Global Chat Button */}
         <GlobalChatButton />
@@ -680,11 +680,13 @@ const DashboardContent: React.FC = () => {
 export default function SinglePageDashboard() {
   return (
     <ProtectedRoute>
-      <NavigationProvider>
-        <RematchProvider>
-          <DashboardContent />
-        </RematchProvider>
-      </NavigationProvider>
+      <ToastProvider>
+        <NavigationProvider>
+          <RematchProvider>
+            <DashboardContent />
+          </RematchProvider>
+        </NavigationProvider>
+      </ToastProvider>
     </ProtectedRoute>
   );
 }

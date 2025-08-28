@@ -25,18 +25,27 @@ export const RematchProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     console.log('🔄 RematchContext: Subscribing to incoming rematches for user:', user.uid);
     
-    const unsubscribe = RematchService.subscribeToIncomingRematches(
-      user.uid,
-      (rematches) => {
-        console.log('🔔 RematchContext: Incoming rematches updated:', rematches);
-        setIncomingRematches(rematches);
-      }
-    );
+    try {
+      const unsubscribe = RematchService.subscribeToIncomingRematches(
+        user.uid,
+        (rematches) => {
+          console.log('🔔 RematchContext: Incoming rematches updated:', rematches);
+          setIncomingRematches(rematches);
+        }
+      );
 
-    return () => {
-      console.log('🔄 RematchContext: Unsubscribing from rematch notifications');
-      unsubscribe();
-    };
+      return () => {
+        console.log('🔄 RematchContext: Unsubscribing from rematch notifications');
+        try {
+          unsubscribe();
+        } catch (error) {
+          console.error('❌ RematchContext: Error unsubscribing from rematches:', error);
+        }
+      };
+    } catch (error) {
+      console.error('❌ RematchContext: Error setting up rematch subscription:', error);
+      return () => {}; // Return empty cleanup function
+    }
   }, [user?.uid]);
 
   // Accept rematch function
