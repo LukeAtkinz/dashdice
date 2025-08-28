@@ -267,7 +267,19 @@ export default function FriendCard({ friend, compact = false, showActions = true
         console.log('✅ Game invitation sent successfully');
         
         // Enhanced toast with game mode info and icon
-        const gameModeName = gameMode.charAt(0).toUpperCase() + gameMode.slice(1);
+        const getGameModeDisplayName = (gameType: string): string => {
+          const modeNames: Record<string, string> = {
+            'classic': 'Classic Mode',
+            'quickfire': 'Quick Fire',
+            'zero-hour': 'Zero Hour',
+            'last-line': 'Last Line',
+            'true-grit': 'True Grit',
+            'tag-team': 'Tag Team'
+          };
+          return modeNames[gameType.toLowerCase()] || gameType.charAt(0).toUpperCase() + gameType.slice(1);
+        };
+        
+        const gameModeName = getGameModeDisplayName(gameMode);
         const gameModeIcon = getGameModeIcon(gameMode);
         showToast(
           `${gameModeName} invite sent to ${friend.friendData?.displayName || 'friend'}!`, 

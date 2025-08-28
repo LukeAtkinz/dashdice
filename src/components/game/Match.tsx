@@ -70,6 +70,19 @@ export const Match: React.FC<MatchProps> = ({ matchId, onBack }) => {
   const [isHost, setIsHost] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Game mode display name mapping
+  const getGameModeDisplayName = (gameType: string): string => {
+    const modeNames: Record<string, string> = {
+      'classic': 'Classic Mode',
+      'quickfire': 'Quick Fire',
+      'zero-hour': 'Zero Hour',
+      'last-line': 'Last Line',
+      'true-grit': 'True Grit',
+      'tag-team': 'Tag Team'
+    };
+    return modeNames[gameType.toLowerCase()] || gameType.charAt(0).toUpperCase() + gameType.slice(1);
+  };
+
   console.log('🎮 Match: Component rendered with props:', { matchId, user: user?.uid });
   console.log('🔍 DEBUG: Match component entry point:', { matchId, userId: user?.uid });
   console.log('🔍 DEBUG: Match component context:', { matchData: !!matchData, isHost, loading });
@@ -190,7 +203,7 @@ export const Match: React.FC<MatchProps> = ({ matchId, onBack }) => {
           
           <div className="text-white text-center">
             <h1 className="text-3xl font-bold" style={{ fontFamily: "Audiowide" }}>
-              {matchData.gameData.gameMode.toUpperCase()} MATCH
+              {getGameModeDisplayName(matchData.gameData.gameMode)} MATCH
             </h1>
             <p className="text-lg">Objective: {matchData.gameData.roundObjective} points</p>
           </div>

@@ -336,6 +336,23 @@ export class MatchService {
       const dice1 = Math.floor(Math.random() * 6) + 1;
       const dice2 = Math.floor(Math.random() * 6) + 1;
       
+      // 🏆 TRACK DICE ROLL ACHIEVEMENTS: Update total dice rolled count (2 dice per roll)
+      try {
+        const achievementService = AchievementTrackingService.getInstance();
+        
+        // Track 2 dice rolls (dice1 and dice2) for total_dice_rolled metric
+        await achievementService.updateMetric(playerId, 'total_dice_rolled', 2, 'increment');
+        
+        // Track individual dice values for specific dice achievements
+        await achievementService.updateMetric(playerId, `dice_${this.numberToWord(dice1)}s_rolled`, 1, 'increment');
+        await achievementService.updateMetric(playerId, `dice_${this.numberToWord(dice2)}s_rolled`, 1, 'increment');
+        
+        console.log(`🎲 Achievement tracking: Player ${playerId} rolled [${dice1}, ${dice2}], total dice count updated`);
+      } catch (achievementError) {
+        console.error('❌ Error tracking dice roll achievements:', achievementError);
+        // Don't throw - achievements failing shouldn't break gameplay
+      }
+      
       // Start rolling animation with dice values provided immediately
       await updateDoc(matchRef, {
         'gameData.isRolling': true,
@@ -997,7 +1014,7 @@ export class MatchService {
           console.log(`💰 Zero Hour - Banked ${matchData.gameData.turnScore}, new score: ${newPlayerScore}`);
         }
       } else if (gameMode.id === 'last-line') {
-        // Last Line (Tug-of-War): transfer turn score from current player to opponent
+        // Last Line (Tug-of-War): transfer turn score from opponent to current player
         console.log('🎲 Last Line - Banking triggers tug-of-war transfer');
         
         const currentPlayerScore = currentPlayer.playerScore || 0;
@@ -1005,12 +1022,11 @@ export class MatchService {
         const opponentScore = opponentPlayer.playerScore || 0;
         const turnScore = matchData.gameData.turnScore;
         
-        // Calculate transfer amount (can't go below 0, combined can't exceed 100)
-        const transferAmount = Math.min(turnScore, currentPlayerScore);
-        newPlayerScore = currentPlayerScore - transferAmount;
-        const newOpponentScore = Math.min(100, opponentScore + transferAmount);
+        // Calculate transfer amount (transfer turn score from opponent to current player)
+        const transferAmount = Math.min(turnScore, opponentScore);
+        newPlayerScore = currentPlayerScore + transferAmount;
         
-        console.log(`💰 Last Line - Transferred ${transferAmount} points on bank (${currentPlayerScore} -> ${newPlayerScore}, opponent: ${opponentScore} -> ${newOpponentScore})`);
+        console.log(`💰 Last Line - Transferred ${transferAmount} points on bank (opponent: ${opponentScore} -> ${opponentScore - transferAmount}, current: ${currentPlayerScore} -> ${newPlayerScore})`);
         
         // We'll update the opponent score in the updates object below
         bankingSuccess = transferAmount > 0; // Banking succeeds if any points were transferred
@@ -1071,9 +1087,10 @@ export class MatchService {
       
       // Handle Last Line tug-of-war opponent score update and win condition check
       if (gameMode.id === 'last-line' && bankingSuccess) {
-        // Calculate opponent's new score (subtract the banked amount)
+        // Calculate opponent's new score (subtract the transferred amount)
         const opponentCurrentScore = isHost ? matchData.opponentData.playerScore : matchData.hostData.playerScore;
-        const opponentNewScore = opponentCurrentScore - matchData.gameData.turnScore;
+        const transferAmount = Math.min(matchData.gameData.turnScore, opponentCurrentScore);
+        const opponentNewScore = opponentCurrentScore - transferAmount;
         
         // Update opponent's score
         if (isHost) {
@@ -1128,6 +1145,13 @@ export class MatchService {
         const achievementService = AchievementTrackingService.getInstance();
         const currentDiceRoll = [matchData.gameData.diceOne, matchData.gameData.diceTwo];
         
+        // Check if players are friends for friend-related achievements
+        const hostId = matchData.hostData.playerId;
+        const opponentId = matchData.opponentData.playerId;
+        const isFriendMatch = await this.arePlayersFriends(hostId, opponentId);
+        
+        console.log(`🤝 Friend check: Host ${hostId} and Opponent ${opponentId} are ${isFriendMatch ? 'friends' : 'not friends'}`);
+        
         // Record achievement data for winner
         await achievementService.recordGameEnd(
           winnerId,
@@ -1136,7 +1160,8 @@ export class MatchService {
           {
             opponentId: isHost ? matchData.opponentData.playerId : matchData.hostData.playerId,
             gameMode: matchData.gameMode,
-            finalScore: newPlayerScore
+            finalScore: newPlayerScore,
+            isFriend: isFriendMatch
           }
         );
         
@@ -1300,6 +1325,34 @@ export class MatchService {
     } catch (error) {
       console.error('❌ Error archiving completed match:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Helper method to convert numbers to words for achievement metrics
+   */
+  private static numberToWord(num: number): string {
+    const words = ['', 'one', 'two', 'three', 'four', 'five', 'six'];
+    return words[num] || '';
+  }
+
+  /**
+   * Helper method to check if two players are friends
+   */
+  private static async arePlayersFriends(userId1: string, userId2: string): Promise<boolean> {
+    try {
+      const friendshipQuery = query(
+        collection(db, 'friends'),
+        where('userId', '==', userId1),
+        where('friendId', '==', userId2),
+        where('status', '==', 'accepted')
+      );
+      
+      const snapshot = await getDocs(friendshipQuery);
+      return !snapshot.empty;
+    } catch (error) {
+      console.error('❌ Error checking friendship:', error);
+      return false;
     }
   }
 }

@@ -290,8 +290,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 </p>
               </div>
               
-              {/* 2X Multiplier Indicator - Absolutely positioned - 2x bigger on mobile */}
-              {matchData.gameData.hasDoubleMultiplier && (
+              {/* Multiplier Indicators - Absolutely positioned */}
+              {/* Classic/Zero Hour 2X Multiplier */}
+              {matchData.gameData.hasDoubleMultiplier && matchData.gameMode !== 'true-grit' && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -302,6 +303,22 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     style={{ fontFamily: "Audiowide" }}
                   >
                     2X
+                  </p>
+                </motion.div>
+              )}
+              
+              {/* True Grit Multiplier */}
+              {matchData.gameMode === 'true-grit' && matchData.gameData.trueGritMultiplier && matchData.gameData.trueGritMultiplier > 1 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="absolute -right-20 md:-right-24 top-1/2 transform -translate-y-1/2 px-6 md:px-4 py-3 md:py-2 bg-orange-600/40 border-2 border-orange-400 rounded-xl backdrop-blur-sm shadow-xl"
+                >
+                  <p 
+                    className="text-xl md:text-2xl font-bold text-orange-300" 
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    {matchData.gameData.trueGritMultiplier}X
                   </p>
                 </motion.div>
               )}
@@ -341,21 +358,24 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 PLAY
               </button>
               
-              <button
-                onClick={onBankScore}
-                disabled={!canBank}
-                className={`px-12 py-6 rounded-xl text-2xl font-bold transition-all transform ${
-                  canBank
-                    ? 'text-white hover:scale-105'
-                    : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
-                }`}
-                style={{ 
-                  fontFamily: "Audiowide",
-                  ...(canBank ? getButtonGradientStyle('rgba(34, 197, 94, 0.8)') : {})
-                }}
-              >
-                BANK
-              </button>
+              {/* Only show bank button for modes other than True Grit on desktop */}
+              {matchData.gameMode !== 'true-grit' && (
+                <button
+                  onClick={onBankScore}
+                  disabled={!canBank}
+                  className={`px-12 py-6 rounded-xl text-2xl font-bold transition-all transform ${
+                    canBank
+                      ? 'text-white hover:scale-105'
+                      : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
+                  }`}
+                  style={{ 
+                    fontFamily: "Audiowide",
+                    ...(canBank ? getButtonGradientStyle('rgba(34, 197, 94, 0.8)') : {})
+                  }}
+                >
+                  {matchData.gameMode === 'last-line' ? 'TRANSFER' : 'BANK'}
+                </button>
+              )}
             </>
           ) : (
             <div className="text-center">
@@ -392,7 +412,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   : 'text-gray-300 cursor-not-allowed'
               }`}
               style={{ 
-                width: (matchData.gameMode === 'true-grit' || matchData.gameMode === 'last-line') ? '100%' : '50%',
+                width: (matchData.gameMode === 'true-grit') ? '100%' : '50%',
                 height: '100%',
                 display: 'flex',
                 justifyContent: 'center',
@@ -408,8 +428,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               PLAY
             </button>
             
-            {/* Only show bank button for modes other than True Grit and Last Line on mobile */}
-            {matchData.gameMode !== 'true-grit' && matchData.gameMode !== 'last-line' && (
+            {/* Only show bank button for modes other than True Grit on mobile */}
+            {matchData.gameMode !== 'true-grit' && (
               <button
                 onClick={onBankScore}
                 disabled={!canBank}
@@ -432,7 +452,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   backdropFilter: 'blur(2px)',
                 }}
               >
-                BANK
+                {matchData.gameMode === 'last-line' ? 'TRANSFER' : 'BANK'}
               </button>
             )}
           </>

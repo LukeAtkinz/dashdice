@@ -31,7 +31,7 @@ const MiniGameModeSelector: React.FC<MiniGameModeSelectorProps> = ({
     },
     {
       id: 'quickfire',
-      name: 'Quickfire',
+      name: 'Quick Fire',
       icon: '/Design Elements/Shield.webp'
     },
     {
@@ -105,11 +105,10 @@ const MiniGameModeSelector: React.FC<MiniGameModeSelectorProps> = ({
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05, duration: 0.2 }}
                   onClick={() => handleModeSelect(mode.id)}
-                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                   className="flex flex-col items-center p-3 md:p-4 rounded-lg
-                           bg-gray-800/50 hover:bg-gray-700/50 border border-gray-600
-                           hover:border-blue-400 transition-all duration-200"
+                           bg-gray-800/50 border border-gray-600
+                           transition-all duration-200"
                 >
                   <img 
                     src={mode.icon} 

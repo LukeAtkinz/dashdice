@@ -27,6 +27,19 @@ export const GameInvitationNotification: React.FC = () => {
     return iconMap[gameType.toLowerCase()] || iconMap['classic'];
   };
 
+  // Game mode display name mapping
+  const getGameModeDisplayName = (gameType: string): string => {
+    const modeNames: Record<string, string> = {
+      'classic': 'Classic Mode',
+      'quickfire': 'Quick Fire',
+      'zero-hour': 'Zero Hour',
+      'last-line': 'Last Line',
+      'true-grit': 'True Grit',
+      'tag-team': 'Tag Team'
+    };
+    return modeNames[gameType.toLowerCase()] || gameType.charAt(0).toUpperCase() + gameType.slice(1);
+  };
+
   // Don't show notifications if user is already in a match
   const shouldShowNotifications = currentSection !== 'match';
 
@@ -248,7 +261,7 @@ export const GameInvitationNotification: React.FC = () => {
                       <span className="text-gray-300 mx-2">invited you to</span>
                     </p>
                     <p className="text-blue-200 text-base md:text-lg font-bold font-audiowide tracking-wide">
-                      {invitation.gameType.toUpperCase()}
+                      {getGameModeDisplayName(invitation.gameType)}
                     </p>
                   </div>
                 </div>

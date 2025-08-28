@@ -859,13 +859,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           type: roomData.gameData?.type || 'dice',
           settings: roomData.gameData?.settings || {},
           turnDecider: roomData.gameData?.turnDecider || Math.floor(Math.random() * 2) + 1, // Random 1 or 2
-          currentTurn: 1, // Initialize current turn
+          chooserPlayerIndex: Math.floor(Math.random() * 2) + 1, // Random 1 or 2 (same as turnDecider)
           turnScore: 0,
           diceOne: 0,
           diceTwo: 0,
           roundObjective: roomData.gameData?.roundObjective || getRoundObjective(roomData.gameMode),
           startingScore: roomData.gameData?.startingScore || getStartingScore(roomData.gameMode),
-          status: 'active',
+          status: 'active' as const,
           startedAt: serverTimestamp(),
           // Start with turn decider phase so players can choose who goes first
           gamePhase: 'turnDecider' as const,

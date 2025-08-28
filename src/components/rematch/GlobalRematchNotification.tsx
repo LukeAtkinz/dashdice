@@ -12,6 +12,19 @@ export const GlobalRematchNotification: React.FC = () => {
   const { currentSection } = useNavigation();
   const [timeLeft, setTimeLeft] = useState<{ [key: string]: number }>({});
 
+  // Game mode display name mapping
+  const getGameModeDisplayName = (gameType: string): string => {
+    const modeNames: Record<string, string> = {
+      'classic': 'Classic Mode',
+      'quickfire': 'Quick Fire',
+      'zero-hour': 'Zero Hour',
+      'last-line': 'Last Line',
+      'true-grit': 'True Grit',
+      'tag-team': 'Tag Team'
+    };
+    return modeNames[gameType.toLowerCase()] || gameType.charAt(0).toUpperCase() + gameType.slice(1);
+  };
+
   // Don't show notifications if user is already in a match
   const shouldShowNotifications = currentSection !== 'match';
 
@@ -115,7 +128,7 @@ export const GlobalRematchNotification: React.FC = () => {
                 className="text-yellow-400 font-bold text-lg"
                 style={{ fontFamily: 'Audiowide' }}
               >
-                {rematch.gameMode.toUpperCase()}
+                {getGameModeDisplayName(rematch.gameMode)}
               </p>
             </motion.div>
 

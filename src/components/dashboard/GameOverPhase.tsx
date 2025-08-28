@@ -33,6 +33,19 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
   const opponentDisplayName = opponent.playerDisplayName;
   const opponentId = opponent.playerId;
 
+  // Game mode display name mapping
+  const getGameModeDisplayName = (gameType: string): string => {
+    const modeNames: Record<string, string> = {
+      'classic': 'Classic Mode',
+      'quickfire': 'Quick Fire',
+      'zero-hour': 'Zero Hour',
+      'last-line': 'Last Line',
+      'true-grit': 'True Grit',
+      'tag-team': 'Tag Team'
+    };
+    return modeNames[gameType.toLowerCase()] || gameType.charAt(0).toUpperCase() + gameType.slice(1);
+  };
+
   // Rematch handlers
   const handleShowGameModeSelector = () => {
     setRematchState('selecting');
@@ -582,7 +595,7 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
           <div className="flex flex-col items-center gap-4 px-8 py-4 bg-yellow-600/20 border-2 border-yellow-400 rounded-xl">
             <div className="text-center">
               <p className="text-yellow-400 font-bold text-sm mb-1" style={{ fontFamily: "Audiowide" }}>
-                GAME MODE: {selectedGameMode.toUpperCase()}
+                GAME MODE: {getGameModeDisplayName(selectedGameMode)}
               </p>
               <span className="text-yellow-400 font-bold text-xl" style={{ fontFamily: "Audiowide" }}>
                 WAITING FOR {opponentDisplayName}
