@@ -600,89 +600,59 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         }
       }
 
-      // Check if room was already moved to matches collection
+      // OPTIMIZED: Check if room was already moved to matches collection with parallel queries
       try {
         console.log('🔍 DEBUG: Checking for existing match...');
         
-        // First check by originalRoomId
-        let existingMatchQuery = query(
-          collection(db, 'matches'), 
-          where('originalRoomId', '==', roomIdToUse)
-        );
-        let matchDoc = await getDocs(existingMatchQuery);
+        // Use Promise.all for parallel queries instead of sequential
+        const [originalRoomMatches, hostMatches, opponentMatches] = await Promise.all([
+          getDocs(query(collection(db, 'matches'), where('originalRoomId', '==', roomIdToUse))),
+          getDocs(query(collection(db, 'matches'), where('hostData.playerId', '==', user.uid))),
+          getDocs(query(collection(db, 'matches'), where('opponentData.playerId', '==', user.uid)))
+        ]);
         
-        // If not found by originalRoomId, check by player IDs for recent matches
-        if (matchDoc.empty) {
-          console.log('🔍 DEBUG: No match found by originalRoomId, checking by player ID...');
-          
-          // Check for matches where user is either host or opponent
-          const hostMatchQuery = query(
-            collection(db, 'matches'),
-            where('hostData.playerId', '==', user.uid)
-          );
-          const opponentMatchQuery = query(
-            collection(db, 'matches'),
-            where('opponentData.playerId', '==', user.uid)
-          );
-          
-          const [hostMatches, opponentMatches] = await Promise.all([
-            getDocs(hostMatchQuery),
-            getDocs(opponentMatchQuery)
-          ]);
-          
-          // Find the most recent match for this user
-          const allMatches = [...hostMatches.docs, ...opponentMatches.docs];
-          const recentMatch = allMatches
-            .filter(doc => {
-              const data = doc.data();
-              // Only consider matches created in the last 30 seconds to avoid old matches
-              const matchTime = data.createdAt?.toDate?.() || new Date(0);
-              const now = new Date();
-              const timeDiff = now.getTime() - matchTime.getTime();
-              return timeDiff < 30000; // 30 seconds
-            })
-            .sort((a, b) => {
-              const aTime = a.data().createdAt?.toDate?.() || new Date(0);
-              const bTime = b.data().createdAt?.toDate?.() || new Date(0);
-              return bTime.getTime() - aTime.getTime(); // Most recent first
-            })[0];
-          
-          if (recentMatch) {
-            matchDoc = { docs: [recentMatch], empty: false } as any;
-          }
-        }
-        
-        if (!matchDoc.empty) {
-          const existingMatch = matchDoc.docs[0];
+        // Check originalRoomId matches first
+        if (!originalRoomMatches.empty) {
+          const existingMatch = originalRoomMatches.docs[0];
           const matchData = existingMatch.data();
           
-          console.log('🎮 GameWaitingRoom: Found existing match, navigating...');
-          console.log('🔍 DEBUG: Found existing match:', {
+          console.log('🎮 GameWaitingRoom: Found existing match by originalRoomId, navigating...');
+          setCurrentSection('match', {
+            gameMode: matchData.gameMode || gameMode,
             matchId: existingMatch.id,
-            originalRoomId: matchData.originalRoomId,
-            gameMode: matchData.gameMode,
-            status: matchData.gameData?.status || matchData.status,
-            hostPlayerId: matchData.hostData?.playerId,
-            opponentPlayerId: matchData.opponentData?.playerId
+            roomId: existingMatch.id
           });
+          return;
+        }
+        
+        // Find most recent active match by player ID (within last 30 seconds)
+        const allUserMatches = [...hostMatches.docs, ...opponentMatches.docs];
+        const activeMatch = allUserMatches.find(doc => {
+          const data = doc.data();
+          const matchTime = data.createdAt?.toDate?.() || new Date(0);
+          const timeDiff = new Date().getTime() - matchTime.getTime();
+          return data.status === 'active' && timeDiff < 30000; // 30 seconds
+        });
+        
+        if (activeMatch) {
+          const matchData = activeMatch.data();
           
-          // SECURITY CHECK: Ensure user is part of the existing match
+          // SECURITY CHECK: Ensure user is part of the match
           const userInMatch = matchData.hostData?.playerId === user.uid || 
                              matchData.opponentData?.playerId === user.uid;
           
           if (!userInMatch) {
             console.error('❌ SECURITY: User not authorized for existing match');
-            console.log('🔙 SECURITY: Redirecting unauthorized user from existing match');
             setError('Unauthorized access to match');
             setTimeout(() => onBack(), 2000);
             return;
           }
           
-          console.log('🎯 NAVIGATION: Calling setCurrentSection for existing match');
+          console.log('� GameWaitingRoom: Found recent active match, navigating...');
           setCurrentSection('match', {
             gameMode: matchData.gameMode || gameMode,
-            matchId: existingMatch.id,
-            roomId: existingMatch.id // Use match ID as roomId for the Match component
+            matchId: activeMatch.id,
+            roomId: activeMatch.id
           });
           return;
         }
@@ -739,51 +709,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               return;
             }
           } else {
-            console.log('🎮 GameWaitingRoom: Room not found in waitingroom, might already be moved. Checking matches...');
-            console.log('🔍 DEBUG: Room document does not exist, checking for existing matches');
-            
-            // Check if already in matches with more specific query
-            const matchesQuery = query(
-              collection(db, 'matches'),
-              where('hostData.playerId', '==', user.uid)
-            );
-            const opponentMatchesQuery = query(
-              collection(db, 'matches'),
-              where('opponentData.playerId', '==', user.uid)
-            );
-            
-            const [hostMatches, opponentMatches] = await Promise.all([
-              getDocs(matchesQuery),
-              getDocs(opponentMatchesQuery)
-            ]);
-            
-            const allUserMatches = [...hostMatches.docs, ...opponentMatches.docs];
-            const activeMatch = allUserMatches.find(doc => {
-              const data = doc.data();
-              return data.status === 'active';
-            });
-            
-            if (activeMatch) {
-              const matchData = activeMatch.data();
-              console.log('🎮 GameWaitingRoom: Found existing active match, navigating...');
-              console.log('🔍 DEBUG: Found active match details:', {
-                matchId: activeMatch.id,
-                gameMode: matchData.gameMode,
-                status: matchData.status,
-                hostPlayerId: matchData.hostData?.playerId,
-                opponentPlayerId: matchData.opponentData?.playerId
-              });
-              
-              console.log('🎯 NAVIGATION: Calling setCurrentSection for found active match');
-              setCurrentSection('match', {
-                gameMode: matchData.gameMode || gameMode,
-                matchId: activeMatch.id
-              });
-              return;
-            }
-            
-            console.error('❌ GameWaitingRoom: Room not found in any collection');
-            console.log('🔙 ERROR: No room or match found, redirecting to dashboard');
+            // Room not found - we already checked matches above, so just redirect
+            console.log('🎮 GameWaitingRoom: Room not found in waitingroom and no active matches found');
             setError('Game room no longer exists');
             setTimeout(() => onBack(), 2000);
             return;
