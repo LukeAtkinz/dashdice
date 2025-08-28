@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Minus, Users, GamepadIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { MessageCircle, X, Users, GamepadIcon } from 'lucide-react';
 import { useChat } from '@/context/ChatContext';
 import { useAuth } from '@/context/AuthContext';
+import { useFriends } from '@/context/FriendsContext';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 
@@ -29,6 +30,7 @@ interface UnifiedChatWindowProps {
     friendId?: string;
     gameId?: string;
   };
+  onUnreadCountChange?: (count: number) => void;
 }
 
 // Global state for managing chat requests
@@ -43,9 +45,11 @@ export default function UnifiedChatWindow({
   isVisible, 
   onToggle, 
   position = 'bottom-left',
-  initialTab 
+  initialTab,
+  onUnreadCountChange 
 }: UnifiedChatWindowProps) {
   const { user } = useAuth();
+  const { friends } = useFriends();
   const { 
     messages, 
     activeRooms, 
@@ -57,9 +61,38 @@ export default function UnifiedChatWindow({
     typingIndicators
   } = useChat();
   
-  const [isMinimized, setIsMinimized] = useState(false);
   const [tabs, setTabs] = useState<ChatTab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string>('');
+  const [isMobile, setIsMobile] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  // Mobile detection and keyboard height tracking
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    const handleViewportChange = () => {
+      if (window.visualViewport && isMobile) {
+        const keyboardHeight = window.innerHeight - window.visualViewport.height;
+        setKeyboardHeight(Math.max(0, keyboardHeight));
+      }
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleViewportChange);
+    }
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleViewportChange);
+      }
+    };
+  }, [isMobile]);
 
   // Load persisted tabs from localStorage
   useEffect(() => {
@@ -278,9 +311,139 @@ export default function UnifiedChatWindow({
     }
   };
 
+  // Get friend background style for chat styling
+  const getFriendBackgroundStyle = (friendId: string) => {
+    const friend = friends.find(f => f.friendId === friendId);
+    if (!friend) return {};
+
+    const friendData = friend.friendData as any;
+    
+    // Check if friend has display background equipped
+    if (friendData?.inventory?.displayBackgroundEquipped) {
+      const background = friendData.inventory.displayBackgroundEquipped;
+      
+      // Handle complete background objects with name, file, and type
+      if (typeof background === 'object' && background.file && background.type) {
+        // For video backgrounds, return empty style (videos handled separately)
+        if (background.type === 'video') {
+          return {}; 
+        }
+        
+        // For image backgrounds
+        if (background.type === 'image' && background.file) {
+          let backgroundPath = background.file;
+          
+          // Fix common background paths
+          if (backgroundPath === 'All For Glory.jpg' || backgroundPath === '/backgrounds/All For Glory.jpg') {
+            backgroundPath = '/backgrounds/All For Glory.jpg';
+          } else if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
+            backgroundPath = `/backgrounds/${backgroundPath}`;
+          }
+          
+          return {
+            backgroundImage: `url('${backgroundPath}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          };
+        }
+      }
+    }
+    
+    return {};
+  };
+
+  // Get friend video background if applicable
+  const getFriendVideoBackground = (friendId: string) => {
+    const friend = friends.find(f => f.friendId === friendId);
+    if (!friend) return null;
+
+    const friendData = friend.friendData as any;
+    
+    if (friendData?.inventory?.displayBackgroundEquipped) {
+      const background = friendData.inventory.displayBackgroundEquipped;
+      
+      if (typeof background === 'object' && background.type === 'video' && background.file) {
+        let videoPath = background.file;
+        
+        // Fix common video background paths
+        if (videoPath === 'New Day.mp4' || videoPath === '/backgrounds/New Day.mp4') {
+          videoPath = '/backgrounds/New Day.mp4';
+        } else if (videoPath === 'On A Mission.mp4' || videoPath === '/backgrounds/On A Mission.mp4') {
+          videoPath = '/backgrounds/On A Mission.mp4';
+        } else if (videoPath === 'Underwater.mp4' || videoPath === '/backgrounds/Underwater.mp4') {
+          videoPath = '/backgrounds/Underwater.mp4';
+        } else if (!videoPath.startsWith('/') && !videoPath.startsWith('http')) {
+          videoPath = `/backgrounds/${videoPath}`;
+        }
+        
+        return videoPath;
+      }
+    }
+    
+    return null;
+  };
+
+  // Calculate unread count for friend chats only
+  const calculateUnreadCount = (tab: ChatTab) => {
+    if (tab.type !== 'friend') return 0;
+    
+    // Get messages for this room
+    const roomMessages = messages.get(tab.roomId) || [];
+    
+    // For now, simulate unread count based on messages from other users
+    // In a real implementation, you'd track last read timestamp
+    const unreadMessages = roomMessages.filter(msg => 
+      msg.userId !== user?.uid && 
+      // Simulate: messages from last 10 minutes are "unread"
+      msg.timestamp && msg.timestamp.toDate() > new Date(Date.now() - 10 * 60 * 1000)
+    );
+    
+    return unreadMessages.length;
+  };
+
+  // Update unread counts when messages change
+  useEffect(() => {
+    setTabs(prevTabs => {
+      const updatedTabs = prevTabs.map(tab => ({
+        ...tab,
+        unreadCount: tab.type === 'friend' ? calculateUnreadCount(tab) : 0
+      }));
+      
+      // Calculate total unread count for friend chats only and notify parent
+      const totalUnread = updatedTabs
+        .filter(tab => tab.type === 'friend')
+        .reduce((sum, tab) => sum + tab.unreadCount, 0);
+      
+      if (onUnreadCountChange) {
+        onUnreadCountChange(totalUnread);
+      }
+      
+      return updatedTabs;
+    });
+  }, [messages, user?.uid, onUnreadCountChange]);
+
+  // Clear unread count when tab becomes active
+  useEffect(() => {
+    if (activeTabId) {
+      setTabs(prevTabs => prevTabs.map(tab => 
+        tab.id === activeTabId ? { ...tab, unreadCount: 0 } : tab
+      ));
+    }
+  }, [activeTabId]);
+
   const activeTab = tabs.find(tab => tab.id === activeTabId);
   const currentMessages = activeTab ? messages.get(activeTab.roomId) || [] : [];
   const roomTyping = activeTab ? typingIndicators.get(activeTab.roomId) || [] : [];
+
+  // Get friend background styles for active tab
+  const friendBackgroundStyle = activeTab?.type === 'friend' && activeTab.friendId 
+    ? getFriendBackgroundStyle(activeTab.friendId) 
+    : {};
+  
+  const friendVideoBackground = activeTab?.type === 'friend' && activeTab.friendId 
+    ? getFriendVideoBackground(activeTab.friendId) 
+    : null;
 
   if (!isVisible) return null;
 
@@ -289,16 +452,46 @@ export default function UnifiedChatWindow({
       initial={{ opacity: 0, y: 100 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 100 }}
-      className={`fixed ${position === 'bottom-left' ? 'bottom-4 left-4' : 'bottom-4 right-4'} z-50 bg-gray-900/95 backdrop-blur-lg shadow-xl border border-gray-700`}
+      className={`fixed z-50 shadow-xl border border-gray-700 overflow-hidden ${
+        isMobile 
+          ? 'bottom-0 left-0 right-0' 
+          : `${position === 'bottom-left' ? 'bottom-4 left-4' : 'bottom-4 right-4'}`
+      }`}
       style={{
-        width: isMinimized ? '300px' : '400px',
-        height: isMinimized ? 'auto' : '500px',
-        maxHeight: '80vh',
-        borderRadius: '20px' // Added 20px border radius
+        width: isMobile ? '100vw' : '400px',
+        height: isMobile 
+          ? `min(500px, calc(100vh - ${keyboardHeight}px))` 
+          : 'min(500px, 80vh)',
+        maxHeight: isMobile ? `calc(100vh - ${keyboardHeight}px)` : '80vh',
+        borderRadius: isMobile ? '20px 20px 0 0' : '20px',
+        // Apply friend background or default
+        ...friendBackgroundStyle,
+        // Ensure proper z-indexing
+        zIndex: 50
       }}
     >
+      {/* Friend video background if applicable */}
+      {friendVideoBackground && (
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ zIndex: -2 }}
+        >
+          <source src={friendVideoBackground} type="video/mp4" />
+        </video>
+      )}
+      
+      {/* Default background for non-friend chats */}
+      {!friendBackgroundStyle.backgroundImage && !friendVideoBackground && (
+        <div className="absolute inset-0 bg-gray-900/95 backdrop-blur-lg" style={{ zIndex: -1 }} />
+      )}
+
       {/* Header with tabs - FIXED AT TOP */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-700 flex-shrink-0 rounded-t-[20px]">
+      <div className="flex items-center justify-between p-3 border-b border-gray-700 flex-shrink-0 rounded-t-[20px] relative z-10"
+           style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
         <div className="flex items-center gap-2 flex-1 overflow-x-auto">
           {tabs.map((tab) => (
             <button
@@ -314,7 +507,8 @@ export default function UnifiedChatWindow({
               <span className={`truncate ${tab.type === 'global' ? 'max-w-none' : 'max-w-16'}`}>
                 {tab.type === 'global' ? 'Everyone' : tab.title}
               </span>
-              {tab.unreadCount > 0 && (
+              {/* Only show unread count for friend chats */}
+              {tab.type === 'friend' && tab.unreadCount > 0 && (
                 <span className="bg-red-500 text-white text-xs rounded-full px-1 min-w-4 h-4 flex items-center justify-center">
                   {tab.unreadCount}
                 </span>
@@ -336,12 +530,6 @@ export default function UnifiedChatWindow({
         
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setIsMinimized(!isMinimized)}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
-            <Minus size={16} />
-          </button>
-          <button
             onClick={onToggle}
             className="text-gray-400 hover:text-white transition-colors"
           >
@@ -351,16 +539,14 @@ export default function UnifiedChatWindow({
       </div>
 
       {/* Chat content - ABSOLUTE POSITIONED FOR PROPER LAYOUT */}
-      <AnimatePresence>
-        {!isMinimized && (
-          <motion.div
-            initial={{ height: 0 }}
-            animate={{ height: 'auto' }}
-            exit={{ height: 0 }}
-            className="absolute inset-x-0 bottom-0 top-[60px] flex flex-col"
-          >
-            {/* Messages area - SCROLLABLE MIDDLE SECTION */}
-            <div className="flex-1 overflow-hidden min-h-0">
+      <div className="absolute inset-x-0 bottom-0 top-[60px] flex flex-col">
+        {/* Messages area - SCROLLABLE MIDDLE SECTION */}
+            <div className="flex-1 overflow-hidden min-h-0 relative"
+                 style={{ 
+                   backgroundColor: (friendBackgroundStyle.backgroundImage || friendVideoBackground) 
+                     ? 'rgba(0, 0, 0, 0.3)' 
+                     : 'transparent'
+                 }}>
               {activeTab && (
                 <MessageList
                   roomId={activeTab.roomId}
@@ -375,7 +561,12 @@ export default function UnifiedChatWindow({
             </div>
 
             {/* Message input - ABSOLUTELY FIXED AT BOTTOM */}
-            <div className="flex-shrink-0 border-t border-gray-700 bg-gray-800 rounded-b-[20px]">
+            <div className="flex-shrink-0 border-t border-gray-700 rounded-b-[20px] relative"
+                 style={{ 
+                   backgroundColor: (friendBackgroundStyle.backgroundImage || friendVideoBackground) 
+                     ? 'rgba(0, 0, 0, 0.7)' 
+                     : 'rgb(31 41 55)' // bg-gray-800
+                 }}>
               {/* Typing indicators */}
               {roomTyping.length > 0 && (
                 <div className="px-3 py-1 text-xs text-gray-400 italic border-b border-gray-700">
@@ -391,9 +582,7 @@ export default function UnifiedChatWindow({
                 placeholder={`Message ${activeTab?.type === 'global' ? 'Everyone' : activeTab?.title || 'chat'}...`}
               />
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
     </motion.div>
   );
 }

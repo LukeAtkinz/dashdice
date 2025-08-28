@@ -108,7 +108,8 @@ const MiniGameModeSelector: React.FC<MiniGameModeSelectorProps> = ({
                   whileTap={{ scale: 0.95 }}
                   className="flex flex-col items-center p-3 md:p-4 rounded-lg
                            bg-gray-800/50 border border-gray-600
-                           transition-all duration-200"
+                           hover:border-yellow-400 hover:shadow-lg hover:shadow-yellow-400/50
+                           transition-all duration-300 ease-in-out"
                 >
                   <img 
                     src={mode.icon} 

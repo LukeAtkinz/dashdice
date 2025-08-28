@@ -24,7 +24,7 @@ const gameConfig = {
   classic: { 
     name: 'CLASSIC\nMODE', 
     icon: '/Design Elements/Crown Mode.webp', 
-    description: 'first to 50,\nbest of 3',
+    description: 'ONLY ONE\nWILL RISE',
     rotation: '0deg',
     mobileRotation: '0deg',
     position: { top: '-2rem', left: '-2rem' },
@@ -46,7 +46,7 @@ const gameConfig = {
   'last-line': { 
     name: 'LAST\nLINE', 
     icon: '/Design Elements/skull.webp', 
-    description: 'one roll,\nhighest wins',
+    description: 'SHIFT THE\nBALANCE',
     rotation: '5deg',
     mobileRotation: '5deg',
     position: { top: '-1rem', left: '-5rem' },

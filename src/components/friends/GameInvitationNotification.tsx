@@ -171,10 +171,15 @@ export const GameInvitationNotification: React.FC = () => {
 
   const handleAccept = async (invitationId: string) => {
     try {
+      // Find the invitation to get the game mode
+      const invitation = validInvitations.find(inv => inv.id === invitationId);
       const result = await acceptGameInvitation(invitationId);
       if (result.success && result.gameId) {
-        // Navigate to waiting room with the room ID (gameId from invitation service is the waiting room ID)
-        setCurrentSection('waiting-room', { roomId: result.gameId });
+        // Navigate to waiting room with the room ID and game mode
+        setCurrentSection('waiting-room', { 
+          roomId: result.gameId,
+          gameMode: invitation?.gameType || 'classic'
+        });
       }
     } catch (error) {
       console.error('Error accepting game invitation:', error);
