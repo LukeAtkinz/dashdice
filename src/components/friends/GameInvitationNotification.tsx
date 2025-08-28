@@ -222,8 +222,7 @@ export const GameInvitationNotification: React.FC = () => {
                   </h3>
                 </div>
                 {timeLeft[invitation.id] && (
-                  <div className="px-3 py-1 rounded-full 
-                                text-xs text-white font-mono font-bold shadow-lg bg-slate-700/80 border border-slate-500">
+                  <div className="px-3 py-1 text-xs text-white font-mono font-bold bg-transparent">
                     {formatTime(timeLeft[invitation.id])}
                   </div>
                 )}

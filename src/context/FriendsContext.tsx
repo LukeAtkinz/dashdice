@@ -1,7 +1,10 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { collection, query, where, onSnapshot, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { db } from '@/services/firebase';
 import { useAuth } from './AuthContext';
+import { useToast } from './ToastContext';
 import { FriendsService } from '@/services/friendsService';
 import { GameInvitationService } from '@/services/gameInvitationService';
 import { PresenceService } from '@/services/presenceService';
@@ -21,6 +24,7 @@ interface FriendsProviderProps {
 
 export function FriendsProvider({ children }: FriendsProviderProps) {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [friends, setFriends] = useState<FriendWithStatus[]>([]);
   const [pendingRequests, setPendingRequests] = useState<FriendRequest[]>([]);
   const [gameInvitations, setGameInvitations] = useState<GameInvitation[]>([]);
@@ -86,6 +90,53 @@ export function FriendsProvider({ children }: FriendsProviderProps) {
     };
   }, [user?.uid]);
 
+  // Listen for game invitation decline notifications
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const notificationsQuery = query(
+      collection(db, 'notifications'),
+      where('userId', '==', user.uid),
+      where('type', '==', 'game_invitation_declined'),
+      where('read', '==', false),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'added') {
+          const notification = change.doc.data();
+          
+          // Get game mode icon function
+          const getGameModeIcon = (gameType: string): string => {
+            const iconMap: { [key: string]: string } = {
+              'quickfire': '/Design Elements/Shield.webp',
+              'classic': '/Design Elements/Crown Mode.webp',
+              'zero-hour': '/Design Elements/time out.webp',
+              'last-line': '/Design Elements/skull.webp',
+              'true-grit': '/Design Elements/Castle.webp'
+            };
+            return iconMap[gameType.toLowerCase()] || iconMap['classic'];
+          };
+
+          // Show toast notification with red background for decline
+          showToast(
+            notification.message,
+            'error',
+            5000,
+            getGameModeIcon(notification.gameType)
+          );
+
+          // Mark notification as read
+          const notificationRef = doc(db, 'notifications', change.doc.id);
+          updateDoc(notificationRef, { read: true }).catch(console.error);
+        }
+      });
+    });
+
+    return () => unsubscribe();
+  }, [user?.uid, showToast]);
+
   // Friend management functions
   const sendFriendRequest = async (friendCode: string, message?: string) => {
     if (!user?.uid) {
@@ -134,7 +185,7 @@ export function FriendsProvider({ children }: FriendsProviderProps) {
   const declineGameInvitation = async (invitationId: string): Promise<boolean> => {
     if (!user?.uid) return false;
     
-    return await GameInvitationService.declineGameInvitation(invitationId);
+    return await GameInvitationService.declineGameInvitation(invitationId, user.uid);
   };
 
   // User status functions

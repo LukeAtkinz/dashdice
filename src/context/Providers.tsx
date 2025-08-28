@@ -9,6 +9,7 @@ import { AchievementProvider } from './AchievementContext';
 import { FriendsProvider } from './FriendsContext';
 import { GameModeProvider } from './GameModeContext';
 import { ChatProvider } from './ChatContext';
+import { ToastProvider } from './ToastContext';
 import { CleanupService } from '@/services/cleanupService';
 import { GameInvitationService } from '@/services/gameInvitationService';
 import { RematchService } from '@/services/rematchService';
@@ -30,21 +31,23 @@ export const Providers: React.FC<ProvidersProps> = ({ children }) => {
 
   return (
     <AuthProvider>
-      <BackgroundProvider>
-        <InventoryProvider>
-          <AchievementProvider>
-            <FriendsProvider>
-              <ChatProvider>
-                <GameModeProvider>
-                  <GameProvider>
-                    {children}
-                  </GameProvider>
-                </GameModeProvider>
-              </ChatProvider>
-            </FriendsProvider>
-          </AchievementProvider>
-        </InventoryProvider>
-      </BackgroundProvider>
+      <ToastProvider>
+        <BackgroundProvider>
+          <InventoryProvider>
+            <AchievementProvider>
+              <FriendsProvider>
+                <ChatProvider>
+                  <GameModeProvider>
+                    <GameProvider>
+                      {children}
+                    </GameProvider>
+                  </GameModeProvider>
+                </ChatProvider>
+              </FriendsProvider>
+            </AchievementProvider>
+          </InventoryProvider>
+        </BackgroundProvider>
+      </ToastProvider>
     </AuthProvider>
   );
 };

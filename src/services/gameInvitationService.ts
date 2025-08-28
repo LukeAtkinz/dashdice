@@ -143,12 +143,46 @@ export class GameInvitationService {
   }
 
   // Decline game invitation
-  static async declineGameInvitation(invitationId: string): Promise<boolean> {
+  static async declineGameInvitation(invitationId: string, currentUserId: string): Promise<boolean> {
     try {
       const invitationRef = doc(db, 'gameInvitations', invitationId);
+      
+      // Get the invitation data before deleting to send notification to inviter
+      const invitationDoc = await getDoc(invitationRef);
+      if (!invitationDoc.exists()) {
+        console.warn('GameInvitationService: Invitation not found for decline:', invitationId);
+        return false;
+      }
+      
+      const invitationData = invitationDoc.data() as GameInvitation;
+      
       await updateDoc(invitationRef, {
         status: 'declined'
       });
+      
+      // Send decline notification to the inviter
+      if (invitationData.fromUserId && invitationData.gameType) {
+        try {
+          // Get current user's data to include their name in the notification
+          const currentUserDoc = await getDoc(doc(db, 'users', currentUserId));
+          const currentUserData = currentUserDoc.data();
+          const currentUserName = currentUserData?.displayName || currentUserData?.username || 'Someone';
+          
+          // Create a notification for the inviter
+          await addDoc(collection(db, 'notifications'), {
+            userId: invitationData.fromUserId,
+            type: 'game_invitation_declined',
+            message: `${currentUserName} declined your invite`,
+            gameType: invitationData.gameType,
+            fromUserName: currentUserName,
+            createdAt: serverTimestamp(),
+            read: false
+          });
+          console.log('✅ GameInvitationService: Sent decline notification to inviter');
+        } catch (notificationError) {
+          console.error('❌ GameInvitationService: Failed to send decline notification:', notificationError);
+        }
+      }
       
       // Delete the invitation from the database after decline
       await deleteDoc(invitationRef);

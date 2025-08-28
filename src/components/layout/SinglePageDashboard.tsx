@@ -26,7 +26,6 @@ import { useOnlinePlayerCount } from '@/hooks/useOnlinePlayerCount';
 import NotificationBadge from '@/components/ui/NotificationBadge';
 import { MobileBackgroundControl } from '@/components/ui/MobileBackgroundControl';
 import { createTestMatch } from '@/utils/testMatchData';
-import { ToastProvider } from '@/context/ToastContext';
 
 const DashboardContent: React.FC = () => {
   const { currentSection, sectionParams, setCurrentSection, isGameOver } = useNavigation();
@@ -691,13 +690,11 @@ const DashboardContent: React.FC = () => {
 export default function SinglePageDashboard() {
   return (
     <ProtectedRoute>
-      <ToastProvider>
-        <NavigationProvider>
-          <RematchProvider>
-            <DashboardContent />
-          </RematchProvider>
-        </NavigationProvider>
-      </ToastProvider>
+      <NavigationProvider>
+        <RematchProvider>
+          <DashboardContent />
+        </RematchProvider>
+      </NavigationProvider>
     </ProtectedRoute>
   );
 }

@@ -187,18 +187,6 @@ export default function AddFriend({ onClose, onSuccess }: AddFriendProps) {
           </button>
         </div>
       </form>
-
-      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          How to add friends:
-        </h3>
-        <ul className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-          <li>• Ask your friend for their 8-character friend code</li>
-          <li>• Enter the code exactly as shown (letters and numbers)</li>
-          <li>• Add a personal message to introduce yourself</li>
-          <li>• They'll receive a notification to accept your request</li>
-        </ul>
-      </div>
     </div>
   );
 }

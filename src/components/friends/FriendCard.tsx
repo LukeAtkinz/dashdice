@@ -69,7 +69,7 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
           }
           
           return {
-            backgroundImage: `url(${backgroundPath})`,
+            backgroundImage: `url("${backgroundPath}")`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
@@ -97,7 +97,7 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
         }
         
         return {
-          backgroundImage: `url(${backgroundPath})`,
+          backgroundImage: `url("${backgroundPath}")`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -124,7 +124,7 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
       }
       
       return {
-        backgroundImage: `url(${backgroundPath})`,
+        backgroundImage: `url("${backgroundPath}")`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -154,7 +154,7 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
         }
         
         return {
-          backgroundImage: `url(${backgroundPath})`,
+          backgroundImage: `url("${backgroundPath}")`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

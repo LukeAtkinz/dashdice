@@ -67,6 +67,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const { user } = useAuth();
   const { DisplayBackgroundEquip, MatchBackgroundEquip } = useBackground();
   
+  // Debug: Log the received gameMode
+  console.log('🎮 GameWaitingRoom: Received gameMode:', gameMode);
+  
   // Add logging to see what backgrounds we're getting from context
   useEffect(() => {
     console.log('GameWaitingRoom: Background context updated', {
@@ -173,6 +176,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   };
 
   const currentGameMode = gameModeConfig[gameMode as keyof typeof gameModeConfig] || gameModeConfig.classic;
+  
+  // Debug: Log the selected game mode configuration
+  console.log('🎯 GameWaitingRoom: Selected currentGameMode:', currentGameMode, 'for gameMode:', gameMode);
 
   // Get user data from profile
   const getUserData = async () => {

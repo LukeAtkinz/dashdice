@@ -6,7 +6,6 @@ import { useFriends, useGameInvitationNotifications } from '@/context/FriendsCon
 import { useBackground } from '@/context/BackgroundContext';
 import FriendsList from './FriendsList';
 import FriendRequests from './FriendRequests';
-import GameInvitations from './GameInvitations';
 import AddFriend from './AddFriend';
 
 // CSS for custom button styling
@@ -202,13 +201,6 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       <div className="w-full max-w-[80rem] flex-1 overflow-y-auto scrollbar-hide px-4">
         {activeTab === 'friends' && (
           <div className="space-y-6">
-            {/* Game Invitations Section - Only show when there are invitations */}
-            {gameInvitations.length > 0 && (
-              <div className="mb-6">
-                <GameInvitations />
-              </div>
-            )}
-            
             {/* Friends List */}
             <FriendsList showAddButton={false} />
           </div>
@@ -234,12 +226,12 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
                   <div className="text-center py-8">
                     <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-3">
                       <img 
-                        src="/backgrounds/location not found.png" 
+                        src="/backgrounds/location%20not%20found.png" 
                         alt="No requests" 
                         className="w-12 h-12 object-contain opacity-80"
                       />
                     </div>
-                    <p className="text-gray-500 dark:text-gray-400 mb-1 font-audiowide">No friend requests</p>
+                    <p className="text-gray-600 dark:text-gray-300 mb-1 font-audiowide text-lg font-semibold">No friend requests</p>
                     <p className="text-sm text-gray-400 dark:text-gray-500 font-montserrat">
                       When someone sends you a friend request, it will appear here
                     </p>
