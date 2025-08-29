@@ -1,4 +1,4 @@
-import { collection, doc, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, getDocs, getDoc, query, where } from 'firebase/firestore';
 import { db } from './firebase';
 import { GameMode, GameModeSpecificData, GameActionResult } from '@/types/gameModes';
 
@@ -35,22 +35,25 @@ export class GameModeService {
   // Get specific game mode configuration
   static async getGameMode(modeId: string): Promise<GameMode | null> {
     try {
-      // First try to get from Firestore
-      const modeDoc = await getDocs(query(
-        collection(db, 'gameModes'),
-        where('__name__', '==', modeId)
-      ));
+      console.log('🎮 GameModeService: Looking for mode:', modeId);
       
-      if (!modeDoc.empty) {
-        return { id: modeDoc.docs[0].id, ...modeDoc.docs[0].data() } as GameMode;
+      // First try to get from Firestore using doc() for direct document access
+      const modeDocRef = doc(db, 'gameModes', modeId);
+      const modeDocSnapshot = await getDoc(modeDocRef);
+      
+      if (modeDocSnapshot.exists()) {
+        console.log('✅ GameModeService: Found mode in Firestore:', modeId);
+        return { id: modeDocSnapshot.id, ...modeDocSnapshot.data() } as GameMode;
       }
       
       // Fall back to default modes
-      console.log(`Game mode ${modeId} not found in Firestore, using default`);
-      return this.getDefaultGameModes().find(mode => mode.id === modeId) || null;
+      console.log(`⚠️ GameModeService: Mode ${modeId} not found in Firestore, checking defaults`);
+      const defaultMode = this.getDefaultGameModes().find(mode => mode.id === modeId);
+      console.log('🔍 GameModeService: Default mode found:', defaultMode ? defaultMode.id : 'NONE');
+      return defaultMode || null;
     } catch (error) {
-      console.error('Error fetching game mode from Firestore:', error);
-      console.log(`Falling back to default mode for ${modeId}`);
+      console.error('❌ GameModeService: Error fetching game mode from Firestore:', error);
+      console.log(`🔄 GameModeService: Falling back to default mode for ${modeId}`);
       return this.getDefaultGameModes().find(mode => mode.id === modeId) || null;
     }
   }

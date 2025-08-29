@@ -134,15 +134,9 @@ export class MatchmakingService {
       const waitingRoomRef = await addDoc(collection(db, 'waitingroom'), waitingRoomData);
       console.log('✅ MatchmakingService: Rematch waiting room created:', waitingRoomRef.id);
       
-      // Start countdown to move to matches after 3 seconds (gives users time to see the room)
-      setTimeout(async () => {
-        try {
-          await this.moveToMatches(waitingRoomRef.id);
-          console.log('✅ MatchmakingService: Rematch moved to matches automatically');
-        } catch (error) {
-          console.error('❌ MatchmakingService: Error moving rematch to matches:', error);
-        }
-      }, 3000);
+      // ✅ FIXED: Remove automatic timeout for rematch rooms
+      // The GameWaitingRoom component will handle the transition to matches
+      // This prevents race conditions between automatic timeout and manual triggers
       
       return waitingRoomRef.id; // Return the waiting room ID
     } catch (error) {
@@ -230,9 +224,11 @@ export class MatchmakingService {
       if (roomSnap.exists()) {
         const roomData = roomSnap.data();
         console.log('✅ MatchmakingService: Found room data:', roomData);
+        console.log('🎮 MatchmakingService: Room gameMode:', roomData.gameMode);
         
         // Get game mode configuration to determine starting score
         const gameMode = await GameModeService.getGameMode(roomData.gameMode || 'classic');
+        console.log('📋 MatchmakingService: Retrieved gameMode config:', gameMode);
         const startingScore = gameMode?.rules.startingScore || 0;
         
         // Create enhanced data for matches collection

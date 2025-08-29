@@ -35,15 +35,15 @@ export default function GlobalChatButton() {
           onClick={handleToggleChat}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="fixed z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors relative
-                     bottom-4 left-4 md:bottom-4 md:left-4 
-                     sm:bottom-20 sm:right-4 sm:left-auto"
+          className="fixed bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors
+                     bottom-20 right-4 
+                     md:bottom-4 md:left-4"
           style={{
-            width: '3rem', // 48px - same as height
+            width: '3rem', // 48px
             height: '3rem', // 48px
             padding: '0.75rem',
             position: 'fixed', // Ensure it stays fixed to viewport
-            zIndex: 9999 // High z-index to stay above everything
+            zIndex: 9999 // High z-index to stay above navigation and everything else
           }}
           title="Open Chat"
         >

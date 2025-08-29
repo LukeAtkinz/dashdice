@@ -185,8 +185,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const currentGameMode = gameModeConfig[gameMode as keyof typeof gameModeConfig] || gameModeConfig.classic;
   
   // Debug: Log the selected game mode configuration
-  // Remove performance-impacting logs
-  // console.log('🎯 GameWaitingRoom: Selected currentGameMode:', currentGameMode, 'for gameMode:', gameMode);
+  console.log('🎯 GameWaitingRoom: gameMode received:', gameMode);
+  console.log('🎯 GameWaitingRoom: currentGameMode selected:', currentGameMode);
+  console.log('🎯 GameWaitingRoom: All available configs:', Object.keys(gameModeConfig));
 
   // Get user data from profile
   const getUserData = async () => {

@@ -336,6 +336,8 @@ export class GameInvitationService {
       // Default background
       const defaultBackground = { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
 
+      console.log('🎮 GameInvitationService: Creating waiting room with gameType:', invitation.gameType);
+
       // Create waiting room data with both players
       const waitingRoomData = {
         gameMode: invitation.gameType,
@@ -377,18 +379,10 @@ export class GameInvitationService {
       // Create waiting room
       const waitingRoomRef = await addDoc(collection(db, 'waitingroom'), waitingRoomData);
       
-      // Import MatchmakingService for moving to matches
-      const { MatchmakingService } = await import('./matchmakingService');
-      
-      // Start countdown to move to matches after 3 seconds (gives users time to see the room)
-      setTimeout(async () => {
-        try {
-          await MatchmakingService.moveToMatches(waitingRoomRef.id);
-          console.log('✅ GameInvitationService: Friend game moved to matches automatically');
-        } catch (error) {
-          console.error('❌ GameInvitationService: Error moving friend game to matches:', error);
-        }
-      }, 3000);
+      // ✅ FIXED: Remove automatic timeout for friend invitations
+      // The GameWaitingRoom component will handle the transition to matches
+      // This prevents race conditions between automatic timeout and manual triggers
+      console.log('✅ GameInvitationService: Friend game waiting room created:', waitingRoomRef.id);
 
       return waitingRoomRef.id;
     } catch (error) {

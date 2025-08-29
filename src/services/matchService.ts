@@ -544,24 +544,31 @@ export class MatchService {
           newTurnScore = 0; // Turn score stays 0
         }
         else if (isDoubleOne) {
-          // Double 1: special rule - subtract 20 from turn score
-          console.log('🎲 Last Line - Double 1s: -20 to turn score');
-          newTurnScore = Math.max(0, currentTurnScore - 20); // Can't go below 0
+          // Double 1: special rule - add 20 to turn score
+          console.log('🎲 Last Line - Double 1s: +20 to turn score');
+          newTurnScore = currentTurnScore + 20;
           turnOver = false; // Continue turn after double 1
         }
         else if (isDouble) {
-          // Any other double: apply 2x multiplier to the dice sum
+          // Any other double: apply 2x multiplier to the dice sum AND activate multiplier for future rolls
           const multiplier = 2; // Fixed 2x multiplier for all doubles
           const effectiveRoll = diceSum * multiplier;
           
-          console.log(`🎲 Last Line - Double ${dice1}s: ${diceSum} × ${multiplier} = ${effectiveRoll} added to turn score`);
+          console.log(`🎲 Last Line - Double ${dice1}s: ${diceSum} × ${multiplier} = ${effectiveRoll} added to turn score, 2x multiplier activated`);
           newTurnScore = currentTurnScore + effectiveRoll;
+          
+          // Activate multiplier for subsequent rolls in this turn
+          updates['gameData.hasDoubleMultiplier'] = true;
+          
           turnOver = false; // Continue turn after double
         }
         else {
-          // Normal roll: add dice sum to turn score
-          console.log(`🎲 Last Line - Normal roll: ${dice1} + ${dice2} = ${diceSum} added to turn score`);
-          newTurnScore = currentTurnScore + diceSum;
+          // Normal roll: add dice sum to turn score (with multiplier if active)
+          const hasMultiplier = matchData.gameData.hasDoubleMultiplier || false;
+          const scoreToAdd = hasMultiplier ? diceSum * 2 : diceSum;
+          
+          console.log(`🎲 Last Line - Normal roll: ${dice1} + ${dice2} = ${diceSum}${hasMultiplier ? ' (2x = ' + scoreToAdd + ')' : ''} added to turn score`);
+          newTurnScore = currentTurnScore + scoreToAdd;
           turnOver = false; // Continue turn
         }
       }
@@ -587,10 +594,27 @@ export class MatchService {
             newTurnScore = 0;
         }
       }
-      // Handle single 1 (non-elimination modes) - already handled by Zero Hour and True Grit above
+      // Handle single 1 (non-elimination modes) - auto-bank turn score then end turn
       else if (isSingleOne) {
-        // Other modes: Single 1 ends turn, no score added
-        console.log('🎲 Single 1 rolled - Turn over, no score added');
+        // First, bank any existing turn score to player score
+        if (currentTurnScore > 0) {
+          const newPlayerScore = currentPlayerScore + currentTurnScore;
+          if (isHost) {
+            updates['hostData.playerScore'] = newPlayerScore;
+          } else {
+            updates['opponentData.playerScore'] = newPlayerScore;
+          }
+          console.log(`💰 Single 1 rolled - Auto-banked ${currentTurnScore} points, new total: ${newPlayerScore}`);
+          
+          // Update bank statistics
+          const playerStatsPath = isHost ? 'hostData.matchStats' : 'opponentData.matchStats';
+          const currentStats = currentPlayer.matchStats || { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0 };
+          updates[`${playerStatsPath}.banks`] = currentStats.banks + 1;
+        } else {
+          console.log('🎲 Single 1 rolled - Turn over, no score to bank');
+        }
+        
+        // Then end the turn
         turnOver = true;
         newTurnScore = 0;
       }
@@ -666,9 +690,15 @@ export class MatchService {
       
       // Auto-win logic for reaching target score
       const targetScore = gameMode.rules.targetScore;
+      
+      // Get the potentially updated player score (if auto-banking occurred)
+      const updatedPlayerScore = isHost ? 
+        (updates['hostData.playerScore'] !== undefined ? updates['hostData.playerScore'] : currentPlayerScore) :
+        (updates['opponentData.playerScore'] !== undefined ? updates['opponentData.playerScore'] : currentPlayerScore);
+      
       const shouldCheckAutoWin = gameMode.rules.scoreDirection === 'up' && 
-                                currentPlayerScore + newTurnScore >= targetScore && 
-                                !turnOver && !eliminatePlayer;
+                                updatedPlayerScore >= targetScore && 
+                                !gameOver && !eliminatePlayer;
 
       if (shouldCheckAutoWin) {
         console.log(`🏆 AUTO-WIN! ${currentPlayer.playerDisplayName} reached ${targetScore} points!`);
@@ -676,10 +706,10 @@ export class MatchService {
         winner = currentPlayer.playerDisplayName;
         gameOverReason = 'Game completed!';
         
-        // Auto-bank the winning score
-        if (isHost) {
+        // Ensure the score is set correctly (may already be set by auto-banking)
+        if (isHost && updates['hostData.playerScore'] === undefined) {
           updates['hostData.playerScore'] = currentPlayerScore + newTurnScore;
-        } else {
+        } else if (!isHost && updates['opponentData.playerScore'] === undefined) {
           updates['opponentData.playerScore'] = currentPlayerScore + newTurnScore;
         }
         
@@ -1158,10 +1188,25 @@ export class MatchService {
     try {
       console.log('📦 Getting and archiving completed match:', matchId);
       
-      // First, get the match data
-      const matchData = await this.getMatch(matchId);
+      // First, try to get the match data from active matches
+      let matchData = await this.getMatch(matchId);
+      
       if (!matchData) {
-        console.error('❌ Match not found for archival:', matchId);
+        // If not found in active matches, check if it's already in completed matches
+        console.log('🔍 Match not found in active matches, checking completed matches...');
+        try {
+          const completedMatchRef = doc(db, 'completedmatches', matchId);
+          const completedMatchSnapshot = await getDoc(completedMatchRef);
+          
+          if (completedMatchSnapshot.exists()) {
+            console.log('✅ Found match in completed collection, returning data');
+            return completedMatchSnapshot.data() as MatchData;
+          }
+        } catch (completedError) {
+          console.log('🔍 Not found in completed matches either');
+        }
+        
+        console.error('❌ Match not found in either collection:', matchId);
         return null;
       }
       
@@ -1177,13 +1222,22 @@ export class MatchService {
         ? matchData.hostData 
         : matchData.opponentData;
       
-      await CompletedMatchService.moveMatchToCompleted(matchId, {
-        playerId: winnerData.playerId,
-        playerDisplayName: winnerData.playerDisplayName,
-        finalScore: winnerData.playerScore
-      });
+      try {
+        await CompletedMatchService.moveMatchToCompleted(matchId, {
+          playerId: winnerData.playerId,
+          playerDisplayName: winnerData.playerDisplayName,
+          finalScore: winnerData.playerScore
+        });
+        console.log('✅ Match data retrieved and archived successfully');
+      } catch (archiveError: any) {
+        // If archiving fails because match is already moved, that's OK
+        if (archiveError.message?.includes('not found')) {
+          console.log('ℹ️ Match already archived by another player, continuing...');
+        } else {
+          console.error('❌ Error archiving match:', archiveError);
+        }
+      }
       
-      console.log('✅ Match data retrieved and archived successfully');
       return matchData;
     } catch (error) {
       console.error('❌ Error getting and archiving completed match:', error);
