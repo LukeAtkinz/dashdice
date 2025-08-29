@@ -614,10 +614,20 @@ const DashboardContent: React.FC = () => {
                 )}
                 {currentSection === 'waiting-room' && (
                   <GameWaitingRoom 
-                    gameMode={sectionParams.gameMode || 'classic'}
+                    gameMode={(() => {
+                      console.log('🐛 DEBUG: SinglePageDashboard gameMode logic:', {
+                        'sectionParams.gameMode': sectionParams.gameMode,
+                        'fallback': 'classic',
+                        'result': sectionParams.gameMode || 'classic',
+                        'fullSectionParams': sectionParams
+                      });
+                      return sectionParams.gameMode || 'classic';
+                    })()}
                     actionType={sectionParams.actionType || 'live'}
                     roomId={sectionParams.roomId}
                     onBack={async () => {
+                      // Debug logging
+                      console.log('🐛 DEBUG: GameWaitingRoom onBack - sectionParams:', sectionParams);
                       // Clear the currentGame field when user manually exits waiting room
                       if (user?.uid) {
                         try {
