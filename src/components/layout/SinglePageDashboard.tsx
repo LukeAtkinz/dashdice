@@ -233,7 +233,7 @@ const DashboardContent: React.FC = () => {
       {/* Main Layout */}
       <div className="relative z-20 min-h-screen flex flex-col">
         {/* Top Navigation Header */}
-        <header className={`${((currentSection === 'match' || currentSection === 'waiting-room') && !isGameOver) ? 'hidden' : 'hidden md:flex'} flex-shrink-0 w-full flex-row items-center justify-center gap-[1.25rem] relative z-30 px-[1rem] md:px-[4rem] py-[1rem] md:py-[2rem]`}>
+        <header className={`${(currentSection === 'match' || currentSection === 'waiting-room') ? 'hidden' : 'hidden md:flex'} flex-shrink-0 w-full flex-row items-center justify-center gap-[1.25rem] relative z-30 px-[1rem] md:px-[4rem] py-[1rem] md:py-[2rem]`}>
           <div className="flex-1 flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px] w-full max-w-none" style={{ 
             background: DisplayBackgroundEquip?.name === 'On A Mission' 
               ? 'transparent'

@@ -65,7 +65,7 @@ const gameConfig = {
     position: { top: '-1rem', left: '-5rem' },
     mobilePosition: { top: '0rem', left: '-4rem' },
     mobileScale: '1.0',
-    available: true // Enable true grit mode
+    available: false // Disable true grit mode - coming soon
   },
   'tag-team': { 
     name: 'TAG\nTEAM', 

@@ -99,8 +99,8 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
     const rollPhase = matchData?.gameData.rollPhase;
     const gameMode = matchData?.gameMode;
     
-    // Special handling for Zero Hour and True Grit modes
-    const isSpecialMode = gameMode === 'zero-hour' || gameMode === 'true-grit';
+    // Special handling for Zero Hour, True Grit, and Last Line modes
+    const isSpecialMode = gameMode === 'zero-hour' || gameMode === 'true-grit' || gameMode === 'last-line';
     
     // 🌟 UNIVERSAL GOLD GLOW FOR ALL DOUBLES 🌟
     // Check for any double (1-1, 2-2, 3-3, 4-4, 5-5, 6-6) and make them all gold
@@ -148,9 +148,9 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
       } else if (dice1Value === 6) {
         // First dice is 6
         if (isRolling && rollPhase === 'dice2') {
-          // Second dice still rolling
+          // Second dice still rolling - no glow for 6s in special modes
           if (isSpecialMode) {
-            // Zero Hour/True Grit: No red glow on 6s while rolling
+            // Zero Hour/True Grit/Last Line: No glow on 6s at all
             return { shouldGlow: false, color: '', intensity: '' };
           } else {
             // Other modes: keep 6 red while rolling
@@ -161,13 +161,18 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             };
           }
         } else if (!isRolling && dice2Value) {
-          // Both dice settled
-          if (dice2Value === 6) {
-            // Double sixes handled above in doubles section
+          // Both dice settled - no glow for 6s in special modes
+          if (isSpecialMode) {
+            // Zero Hour/True Grit/Last Line: No glow on 6s at all
             return { shouldGlow: false, color: '', intensity: '' };
           } else {
-            // Second dice is not 6 - remove glow
-            return { shouldGlow: false, color: '', intensity: '' };
+            if (dice2Value === 6) {
+              // Double sixes handled above in doubles section
+              return { shouldGlow: false, color: '', intensity: '' };
+            } else {
+              // Second dice is not 6 - remove glow
+              return { shouldGlow: false, color: '', intensity: '' };
+            }
           }
         }
       }
