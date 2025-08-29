@@ -186,7 +186,21 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     }
   };
 
-  const currentGameMode = gameModeConfig[gameMode as keyof typeof gameModeConfig] || gameModeConfig.classic;
+  // Current game mode configuration - use waiting room data if available, fallback to prop
+  const currentGameMode = (() => {
+    // If we have waiting room data with a gameMode, use that
+    const actualGameMode = waitingRoomEntry?.gameMode || gameMode;
+    const config = gameModeConfig[actualGameMode as keyof typeof gameModeConfig] || gameModeConfig.classic;
+    
+    console.log('🎯 GameWaitingRoom: Game mode resolution:', {
+      propGameMode: gameMode,
+      waitingRoomGameMode: waitingRoomEntry?.gameMode,
+      resolvedGameMode: actualGameMode,
+      configUsed: config.name
+    });
+    
+    return config;
+  })();
   
   // Debug: Log the selected game mode configuration
   console.log('🎯 GameWaitingRoom: gameMode received:', gameMode);
@@ -2048,7 +2062,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         </div>
 
         {/* Ready Button for Friend Invitations */}
-        {waitingRoomEntry?.friendInvitation && !opponentJoined && vsCountdown === null && (
+        {waitingRoomEntry?.friendInvitation && waitingRoomEntry?.opponentData && vsCountdown === null && (
           <button
             onClick={handlePlayerReady}
             disabled={isMarkingReady || isReady}
