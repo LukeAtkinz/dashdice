@@ -323,8 +323,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
     { id: 'quickfire', name: 'Quickfire', icon: '/Design Elements/Shield.webp' },
     { id: 'classic', name: 'Classic Mode', icon: '/Design Elements/Crown Mode.webp' },
     { id: 'zero-hour', name: 'Zero Hour', icon: '/Design Elements/time out.webp' },
-    { id: 'last-line', name: 'Last Line', icon: '/Design Elements/skull.webp' },
-    { id: 'true-grit', name: 'True Grit', icon: '/Design Elements/Castle.webp' }
+    { id: 'last-line', name: 'Last Line', icon: '/Design Elements/skull.webp' }
   ];
 
   const getStatusColor = (status: string) => {

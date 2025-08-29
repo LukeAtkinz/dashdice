@@ -81,11 +81,6 @@ export default function GameModeSelector({
                     Quick
                   </span>
                 )}
-                {mode.id === 'true-grit' && (
-                  <span className="bg-orange-600 text-xs px-2 py-1 rounded-full">
-                    No Banking
-                  </span>
-                )}
               </div>
 
               {/* Description */}
@@ -176,14 +171,6 @@ export default function GameModeSelector({
               <p>• Rolling doubles grants one extra roll</p>
               <p>• Highest single roll wins</p>
               <p>• Quick elimination rounds</p>
-            </div>
-          )}
-          {selectedMode === 'true-grit' && (
-            <div className="text-sm text-gray-300">
-              <p>• No banking allowed - one continuous turn</p>
-              <p>• Rolling a single 1 eliminates you</p>
-              <p>• Double 6s score normally (no reset)</p>
-              <p>• Pure risk vs. reward strategy</p>
             </div>
           )}
         </div>

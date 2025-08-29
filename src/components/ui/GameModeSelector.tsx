@@ -38,12 +38,6 @@ const GAME_MODES: GameMode[] = [
     name: 'Last Line',
     description: '',
     icon: '/Design Elements/skull.webp'
-  },
-  {
-    id: 'true-grit',
-    name: 'True Grit',
-    description: '',
-    icon: '/Design Elements/Castle.webp'
   }
 ];
 

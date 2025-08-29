@@ -449,7 +449,7 @@ export class GameModeService {
 
   private static checkZeroHourWin(gameMode: GameMode, gameState: any) {
     const winner = Object.entries(gameState.scores).find(
-      ([_, score]) => (score as number) === 0
+      ([_, score]) => (score as number) <= 0
     );
 
     return {

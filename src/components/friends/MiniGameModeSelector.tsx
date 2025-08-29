@@ -43,11 +43,6 @@ const MiniGameModeSelector: React.FC<MiniGameModeSelectorProps> = ({
       id: 'last-line',
       name: 'Last Line',
       icon: '/Design Elements/skull.webp'
-    },
-    {
-      id: 'true-grit',
-      name: 'True Grit',
-      icon: '/Design Elements/Castle.webp'
     }
   ];
 

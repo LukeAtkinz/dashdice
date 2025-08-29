@@ -552,16 +552,6 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => handleSelectGameMode('trueGrit')}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-xl transition-all border-2 border-red-400/50"
-                style={{ fontFamily: "Audiowide" }}
-              >
-                ⚡ TRUE GRIT
-              </motion.button>
-              
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
                 onClick={() => handleSelectGameMode('rapidFire')}
                 className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 px-6 rounded-xl transition-all border-2 border-orange-400/50"
                 style={{ fontFamily: "Audiowide" }}
