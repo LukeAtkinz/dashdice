@@ -457,12 +457,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       }
     }, animationDuration * 0.6); // Exactly 60% of duration
 
-    // 🎰 Overshoot Effect - Shows wrong number briefly before final value
+    // 🎰 Overshoot Effect - Shows wrong number briefly before final value (can be disabled if flutter persists)
     setTimeout(() => {
       clearTimeout(intervalId);
       clearTimeout(nearMissTimeout);
       
-      // Show wrong number briefly (overshoot effect)
+      // Option 1: Overshoot effect with minimal tick-back for excitement
       const overshoot = finalValue < 6 ? finalValue + 1 : finalValue - 1;
       setDiceState({
         isSpinning: false,
@@ -472,7 +472,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         animationKey: Date.now()
       });
 
-      // 🎰 Tick-Back Delay - 150ms pause before showing final result
+      // 🎰 Tick-Back Delay - 50ms pause before showing final result (further reduced)
       setTimeout(() => {
         setDiceState({
           isSpinning: false,
@@ -481,7 +481,16 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           reelSpeed: 0.1, // Reset reel speed
           animationKey: Date.now()
         });
-      }, 150); // Reduced from 300ms to 150ms for smoother transition
+      }, 50); // Further reduced from 75ms to 50ms for minimal visual flutter
+      
+      // Option 2: Direct transition (uncomment below and comment above to eliminate flutter completely)
+      // setDiceState({
+      //   isSpinning: false,
+      //   currentNumber: finalValue,
+      //   finalNumber: finalValue,
+      //   reelSpeed: 0.1,
+      //   animationKey: Date.now()
+      // });
       
     }, animationDuration);
   };

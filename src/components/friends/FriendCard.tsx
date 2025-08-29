@@ -310,8 +310,8 @@ export default function FriendCard({ friend, compact = false, showActions = true
       const { openChatWindow } = await import('../chat/GlobalChatButton');
       openChatWindow();
 
-      // Wait a short moment to ensure the chat window is fully initialized
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Wait a minimal moment to ensure the chat window is initialized (reduced from 300ms to 100ms)
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Then open the friend's chat tab
       const friendName = friend.friendData?.displayName || 'Unknown Player';

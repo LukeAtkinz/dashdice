@@ -146,11 +146,11 @@ export default function UnifiedChatWindow({
       createMatchChat();
     }
     
-    // Handle leaving a match - add delay to prevent immediate deletion
+    // Handle leaving a match - add delay to prevent immediate deletion but reduce to avoid flicker
     if (wasInMatch && !inMatch && previousMatchId) {
       console.log('🚪 Leaving match, will remove match chat tab after delay:', previousMatchId);
       
-      // Add a delay before removing the match chat to prevent race conditions
+      // Reduced delay from 1000ms to 500ms to prevent noticeable flicker
       setTimeout(() => {
         console.log('🗑️ Actually removing match chat tab now');
         setTabs(prevTabs => {
@@ -163,7 +163,7 @@ export default function UnifiedChatWindow({
           
           return filteredTabs;
         });
-      }, 1000); // 1 second delay
+      }, 500); // Reduced from 1000ms to 500ms to minimize flicker
     }
   }, [currentSection, sectionParams.matchId, isInMatch, currentMatchId, getGameChatRoom, joinRoom, activeTabId]);
 
