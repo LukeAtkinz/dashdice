@@ -35,7 +35,9 @@ export default function GlobalChatButton() {
           onClick={handleToggleChat}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="fixed bottom-4 left-4 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors relative"
+          className="fixed z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors relative
+                     bottom-4 left-4 md:bottom-4 md:left-4 
+                     sm:bottom-20 sm:right-4 sm:left-auto"
           style={{
             width: '3rem', // 48px - same as height
             height: '3rem', // 48px
