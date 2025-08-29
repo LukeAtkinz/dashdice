@@ -394,7 +394,45 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       animationKey: Date.now() // Force refresh for same values
     });
 
-    // 🎰 3-Phase Progressive Deceleration System
+    // Special handling for dice 2 - simplified animation without slowdown
+    if (diceNumber === 2) {
+      // Simple animation for dice 2 - consistent speed throughout
+      let currentSpeed = 80; // Consistent speed
+      let intervalId: NodeJS.Timeout;
+      let elapsedTime = 0;
+
+      const animateReel = () => {
+        setDiceState((prev: any) => ({
+          ...prev,
+          currentNumber: Math.floor(Math.random() * 6) + 1
+        }));
+        
+        elapsedTime += currentSpeed;
+        
+        if (elapsedTime < animationDuration) {
+          intervalId = setTimeout(animateReel, currentSpeed);
+        }
+      };
+
+      intervalId = setTimeout(animateReel, currentSpeed);
+
+      // Finish animation directly without overshoot or slowdown
+      setTimeout(() => {
+        clearTimeout(intervalId);
+        
+        setDiceState({
+          isSpinning: false,
+          currentNumber: finalValue,
+          finalNumber: finalValue,
+          reelSpeed: 0.1,
+          animationKey: Date.now()
+        });
+      }, animationDuration);
+      
+      return; // Exit early for dice 2
+    }
+
+    // Original 3-phase animation for dice 1 and turnDecider
     let currentSpeed = 60; // Initial speed: 60ms intervals
     let intervalId: NodeJS.Timeout;
     let elapsedTime = 0;

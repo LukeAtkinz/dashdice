@@ -169,9 +169,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             }}
           >
             {!isMyTurn ? (
-              // Show "YOUR TURN" when it's opponent's turn  
+              // Show "YOUR TURN" when it's opponent's turn - HIDDEN ON DESKTOP per user request
               <motion.div 
-                className="text-center"
+                className="text-center md:hidden" // Added md:hidden to hide on desktop
                 initial={{ scale: 0.9 }}
                 animate={{ scale: 1 }}
                 transition={{ duration: 0.2 }}
@@ -190,9 +190,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 </p>
               </motion.div>
             ) : gameRuleResult && !matchData.gameData.isRolling && matchData.gameData.diceOne > 0 && matchData.gameData.diceTwo > 0 ? (
-              // Show game rule result when dice have been rolled
+              // Show game rule result when dice have been rolled - HIDDEN ON DESKTOP per user request
               <motion.div 
-                className="text-center"
+                className="text-center md:hidden" // Added md:hidden to hide on desktop
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3 }}
@@ -211,9 +211,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 </p>
               </motion.div>
             ) : (
-              // Default state - show turn instructions (with multiplier status if active)
+              // Default state - show turn instructions - HIDDEN ON DESKTOP per user request
               <motion.div 
-                className="text-center"
+                className="text-center md:hidden" // Added md:hidden to hide on desktop
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}

@@ -103,9 +103,19 @@ export default function UnifiedChatWindow({
     const wasInMatch = isInMatch;
     const previousMatchId = currentMatchId;
     
-    // Check if user is currently in a match
-    const inMatch = currentSection === 'match' && !!sectionParams.matchId;
+    // Check if user is currently in a match - more robust detection
+    const inMatch = (currentSection === 'match' && !!sectionParams.matchId) || 
+                   (currentSection === 'dashboard' && !!sectionParams.matchId);
     const matchId = sectionParams.matchId || null;
+    
+    console.log('🔍 Match detection debug:', {
+      currentSection,
+      matchIdParam: sectionParams.matchId,
+      inMatch,
+      wasInMatch,
+      previousMatchId,
+      matchId
+    });
     
     setIsInMatch(inMatch);
     setCurrentMatchId(matchId);
@@ -146,11 +156,11 @@ export default function UnifiedChatWindow({
       createMatchChat();
     }
     
-    // Handle leaving a match - add delay to prevent immediate deletion but reduce to avoid flicker
-    if (wasInMatch && !inMatch && previousMatchId) {
+    // Handle leaving a match - be more careful about when to remove match chat
+    if (wasInMatch && !inMatch && previousMatchId && currentSection !== 'match') {
       console.log('🚪 Leaving match, will remove match chat tab after delay:', previousMatchId);
       
-      // Reduced delay from 1000ms to 500ms to prevent noticeable flicker
+      // Only remove if we're definitely not in a match anymore
       setTimeout(() => {
         console.log('🗑️ Actually removing match chat tab now');
         setTabs(prevTabs => {
@@ -163,7 +173,7 @@ export default function UnifiedChatWindow({
           
           return filteredTabs;
         });
-      }, 500); // Reduced from 1000ms to 500ms to minimize flicker
+      }, 1000); // Increased back to 1000ms to ensure stability
     }
   }, [currentSection, sectionParams.matchId, isInMatch, currentMatchId, getGameChatRoom, joinRoom, activeTabId]);
 
