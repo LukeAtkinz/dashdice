@@ -2057,12 +2057,35 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               }}
             >
               {searchingText}
+              
+              {/* Friend Invitation Auto-Ready Status */}
+              {waitingRoomEntry?.friendInvitation && waitingRoomEntry?.opponentData && (
+                <div
+                  style={{
+                    color: '#00FF80',
+                    fontFamily: 'Audiowide',
+                    fontSize: window.innerWidth < 768 ? '14px' : '24px',
+                    fontWeight: 400,
+                    textAlign: 'center',
+                    marginTop: '10px',
+                    padding: '10px 20px',
+                    borderRadius: '12px',
+                    background: 'rgba(0, 255, 128, 0.1)',
+                    border: '1px solid rgba(0, 255, 128, 0.3)',
+                    textTransform: 'uppercase',
+                    animation: 'glow 2s ease-in-out infinite alternate'
+                  }}
+                >
+                  Both Players Ready - Starting Soon!
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* Ready Button for Friend Invitations */}
-        {waitingRoomEntry?.friendInvitation && waitingRoomEntry?.opponentData && vsCountdown === null && (
+        {/* Ready Button for Friend Invitations - REMOVED: Auto-ready implemented */}
+        {/* For friend invitations, both players are automatically ready and countdown starts immediately */}
+        {waitingRoomEntry?.friendInvitation && waitingRoomEntry?.opponentData && vsCountdown === null && false && (
           <button
             onClick={handlePlayerReady}
             disabled={isMarkingReady || isReady}

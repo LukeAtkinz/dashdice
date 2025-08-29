@@ -386,7 +386,7 @@ export class GameInvitationService {
         gameType: 'Friend Invitation',
         playersRequired: 0, // Both players already confirmed
         friendInvitation: true, // Add flag to indicate this is a friend invitation
-        readyPlayers: [], // Track which players are ready
+        readyPlayers: [invitation.fromUserId, invitation.toUserId], // ✅ Auto-ready both players
         createdAt: serverTimestamp(),
         expiresAt: new Date(Date.now() + (20 * 60 * 1000)), // 20 minute expiry
         hostData: {
