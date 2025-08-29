@@ -586,6 +586,23 @@ export class ChatService {
     return mentions;
   }
 
+  // Helper function to get username from user ID
+  static async getUserDisplayName(userId: string): Promise<string> {
+    try {
+      const userRef = doc(db, 'users', userId);
+      const userSnap = await getDoc(userRef);
+      
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        return userData.displayName || userData.email?.split('@')[0] || 'Unknown User';
+      }
+      return 'Unknown User';
+    } catch (error) {
+      console.error('Error getting user display name:', error);
+      return 'Unknown User';
+    }
+  }
+
   // Subscribe to typing indicators
   static subscribeToTypingIndicators(
     roomId: string,
@@ -597,18 +614,31 @@ export class ChatService {
       where('isTyping', '==', true)
     );
 
-    return onSnapshot(q, (snapshot) => {
+    return onSnapshot(q, async (snapshot) => {
       const indicators: TypingIndicator[] = [];
+      
+      // Collect all typing participants first
+      const typingUsers: { userId: string; timestamp: any }[] = [];
       snapshot.forEach((doc) => {
         const data = doc.data() as ChatParticipant;
         if (data.isTyping && data.typingTimestamp) {
-          indicators.push({
+          typingUsers.push({
             userId: data.userId,
-            username: data.userId, // You'd need to get actual username
             timestamp: data.typingTimestamp
           });
         }
       });
+
+      // Get usernames for all typing users
+      for (const typingUser of typingUsers) {
+        const username = await this.getUserDisplayName(typingUser.userId);
+        indicators.push({
+          userId: typingUser.userId,
+          username: username,
+          timestamp: typingUser.timestamp
+        });
+      }
+
       callback(indicators);
     }, (error) => {
       console.error('❌ Error listening to typing indicators:', error);

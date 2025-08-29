@@ -83,15 +83,10 @@ export default function MessageList({
         transition={{ duration: 0.2, delay: index * 0.05 }}
         className={`flex flex-col ${isOwnMessage(message) ? 'items-end' : 'items-start'} mb-4`}
       >
-        {/* Username and timestamp */}
-        {message.messageType !== 'system' && (
-          <div className={`text-xs text-gray-400 mb-1 ${isOwnMessage(message) ? 'text-right' : 'text-left'}`}>
-            {!isOwnMessage(message) && (
-              <span className="font-medium">{message.username}</span>
-            )}
-            <span className={!isOwnMessage(message) ? 'ml-2' : ''}>
-              {formatTimestamp(message.timestamp)}
-            </span>
+        {/* Username only */}
+        {message.messageType !== 'system' && !isOwnMessage(message) && (
+          <div className="text-xs text-gray-400 mb-1 font-medium">
+            {message.username}
           </div>
         )}
 
@@ -120,6 +115,13 @@ export default function MessageList({
               Mentioned: {message.mentions.join(', ')}
             </div>
           )}
+
+          {/* Time ago separator and timestamp */}
+          <div className="mt-3 pt-2 border-t border-gray-600 border-opacity-30">
+            <div className="text-xs text-gray-400 opacity-75">
+              {formatTimestamp(message.timestamp)}
+            </div>
+          </div>
         </div>
 
         {/* Reactions */}

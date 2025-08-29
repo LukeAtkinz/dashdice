@@ -146,21 +146,24 @@ export default function UnifiedChatWindow({
       createMatchChat();
     }
     
-    // Handle leaving a match
+    // Handle leaving a match - add delay to prevent immediate deletion
     if (wasInMatch && !inMatch && previousMatchId) {
-      console.log('🚪 Leaving match, removing match chat tab:', previousMatchId);
+      console.log('🚪 Leaving match, will remove match chat tab after delay:', previousMatchId);
       
-      // Remove match chat tab and show Everyone tab again
-      setTabs(prevTabs => {
-        const filteredTabs = prevTabs.filter(tab => tab.id !== 'match-chat');
-        
-        // If we were on match chat tab, switch to Everyone tab
-        if (activeTabId === 'match-chat') {
-          setActiveTabId('global');
-        }
-        
-        return filteredTabs;
-      });
+      // Add a delay before removing the match chat to prevent race conditions
+      setTimeout(() => {
+        console.log('🗑️ Actually removing match chat tab now');
+        setTabs(prevTabs => {
+          const filteredTabs = prevTabs.filter(tab => tab.id !== 'match-chat');
+          
+          // If we were on match chat tab, switch to Everyone tab
+          if (activeTabId === 'match-chat') {
+            setActiveTabId('global');
+          }
+          
+          return filteredTabs;
+        });
+      }, 1000); // 1 second delay
     }
   }, [currentSection, sectionParams.matchId, isInMatch, currentMatchId, getGameChatRoom, joinRoom, activeTabId]);
 
@@ -641,7 +644,7 @@ export default function UnifiedChatWindow({
             </div>
 
             {/* Message input - ABSOLUTELY FIXED AT BOTTOM */}
-            <div className="flex-shrink-0 border-t border-gray-700 rounded-b-[20px] relative"
+            <div className={`flex-shrink-0 border-t border-gray-700 relative ${isMobile ? 'rounded-b-0' : 'rounded-b-[20px]'}`}
                  style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
               {/* Typing indicators */}
               {roomTyping.length > 0 && (

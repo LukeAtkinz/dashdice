@@ -310,6 +310,9 @@ export default function FriendCard({ friend, compact = false, showActions = true
       const { openChatWindow } = await import('../chat/GlobalChatButton');
       openChatWindow();
 
+      // Wait a short moment to ensure the chat window is fully initialized
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       // Then open the friend's chat tab
       const friendName = friend.friendData?.displayName || 'Unknown Player';
       openFriendChatInUnified(friend.friendId, friendName);

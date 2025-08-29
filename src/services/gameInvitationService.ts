@@ -247,6 +247,48 @@ export class GameInvitationService {
     }
   }
 
+  // Mark player as ready in friend invitation room
+  static async markPlayerReady(roomId: string, playerId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const roomRef = doc(db, 'waitingroom', roomId);
+      const roomDoc = await getDoc(roomRef);
+      
+      if (!roomDoc.exists()) {
+        return { success: false, error: 'Room not found' };
+      }
+      
+      const roomData = roomDoc.data();
+      
+      // Check if this is a friend invitation room
+      if (!roomData.friendInvitation) {
+        return { success: false, error: 'Not a friend invitation room' };
+      }
+      
+      // Check if player is part of this room
+      const isHost = roomData.hostData?.playerId === playerId;
+      const isOpponent = roomData.opponentData?.playerId === playerId;
+      
+      if (!isHost && !isOpponent) {
+        return { success: false, error: 'Player not part of this room' };
+      }
+      
+      // Add player to ready list if not already ready
+      const readyPlayers = roomData.readyPlayers || [];
+      if (!readyPlayers.includes(playerId)) {
+        readyPlayers.push(playerId);
+        
+        await updateDoc(roomRef, {
+          readyPlayers: readyPlayers
+        });
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error marking player ready:', error);
+      return { success: false, error: 'Failed to mark player ready' };
+    }
+  }
+
   // Get user's game invitations
   static async getUserGameInvitations(userId: string): Promise<GameInvitation[]> {
     try {
@@ -343,6 +385,8 @@ export class GameInvitationService {
         gameMode: invitation.gameType,
         gameType: 'Friend Invitation',
         playersRequired: 0, // Both players already confirmed
+        friendInvitation: true, // Add flag to indicate this is a friend invitation
+        readyPlayers: [], // Track which players are ready
         createdAt: serverTimestamp(),
         expiresAt: new Date(Date.now() + (20 * 60 * 1000)), // 20 minute expiry
         hostData: {

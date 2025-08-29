@@ -27,6 +27,8 @@ interface WaitingRoomEntry {
   rankedGame?: boolean; // Add ranked game flag
   competitiveType?: GameType; // Add competitive type
   playersRequired: number;
+  friendInvitation?: boolean; // Add flag to indicate friend invitation room
+  readyPlayers?: string[]; // Track which players are ready
   hostData: {
     playerDisplayName: string;
     playerId: string;
@@ -96,6 +98,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const [opponentJoined, setOpponentJoined] = useState(false);
   const [vsCountdown, setVsCountdown] = useState<number | null>(null);
   const [isLeaving, setIsLeaving] = useState(false); // Add flag to prevent multiple leave operations
+  const [isReady, setIsReady] = useState(false); // Track if current player is ready
+  const [isMarkingReady, setIsMarkingReady] = useState(false); // Track ready button state
   const [isScrolled, setIsScrolled] = useState(false); // Track scroll position for mobile button animation
 
   // Waiting room cleanup functionality
@@ -288,10 +292,24 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 setWaitingRoomEntry({ ...data, id: doc.id });
                 setError(''); // Clear any previous errors
                 
-                // Check if opponent joined
+                // Update ready state for current user
+                if (data.friendInvitation && data.readyPlayers && user?.uid) {
+                  setIsReady(data.readyPlayers.includes(user.uid));
+                  
+                  // Check if both players are ready
+                  if (data.hostData && data.opponentData && data.readyPlayers.length === 2) {
+                    startVsCountdown();
+                  }
+                }
+                
+                // Check if opponent joined - but don't auto-start countdown for friend invitations
                 if (data.opponentData && !opponentJoined) {
                   setOpponentJoined(true);
-                  startVsCountdown();
+                  
+                  // Only auto-start countdown for non-friend invitations
+                  if (!data.friendInvitation) {
+                    startVsCountdown();
+                  }
                 }
               } else {
                 console.log('🔄 GameWaitingRoom: Room no longer exists in waitingroom (likely moved to matches)');
@@ -335,10 +353,24 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 console.log('GameWaitingRoom: Received room update as host', data);
                 setWaitingRoomEntry({ ...data, id: doc.id });
                 
-                // Check if opponent joined
+                // Update ready state for current user
+                if (data.friendInvitation && data.readyPlayers && user?.uid) {
+                  setIsReady(data.readyPlayers.includes(user.uid));
+                  
+                  // Check if both players are ready
+                  if (data.hostData && data.opponentData && data.readyPlayers.length === 2) {
+                    startVsCountdown();
+                  }
+                }
+                
+                // Check if opponent joined - but don't auto-start countdown for friend invitations
                 if (data.opponentData && !opponentJoined) {
                   setOpponentJoined(true);
-                  startVsCountdown();
+                  
+                  // Only auto-start countdown for non-friend invitations
+                  if (!data.friendInvitation) {
+                    startVsCountdown();
+                  }
                 }
               }
             });
@@ -367,11 +399,24 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 const data = doc.data() as WaitingRoomEntry;
                 setWaitingRoomEntry({ ...data, id: doc.id });
                 
+                // Update ready state for current user
+                if (data.friendInvitation && data.readyPlayers && user?.uid) {
+                  setIsReady(data.readyPlayers.includes(user.uid));
+                  
+                  // Check if both players are ready
+                  if (data.hostData && data.opponentData && data.readyPlayers.length === 2) {
+                    startVsCountdown();
+                  }
+                }
+                
                 // Check if opponent joined (we are the opponent in this case)
                 if (data.opponentData) {
                   setOpponentJoined(true);
-                  // Start countdown immediately since we just joined
-                  startVsCountdown();
+                  
+                  // Only auto-start countdown for non-friend invitations
+                  if (!data.friendInvitation) {
+                    startVsCountdown();
+                  }
                 }
               }
             });
@@ -424,10 +469,24 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               
               setWaitingRoomEntry({ ...data, id: doc.id });
               
-              // Check if opponent joined
+              // Update ready state for current user
+              if (data.friendInvitation && data.readyPlayers && user?.uid) {
+                setIsReady(data.readyPlayers.includes(user.uid));
+                
+                // Check if both players are ready
+                if (data.hostData && data.opponentData && data.readyPlayers.length === 2) {
+                  startVsCountdown();
+                }
+              }
+              
+              // Check if opponent joined - but don't auto-start countdown for friend invitations
               if (data.opponentData && !opponentJoined) {
                 setOpponentJoined(true);
-                startVsCountdown();
+                
+                // Only auto-start countdown for non-friend invitations
+                if (!data.friendInvitation) {
+                  startVsCountdown();
+                }
               }
             }
           });
@@ -546,6 +605,32 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       });
     } catch (err) {
       console.error('Error adding test opponent:', err);
+    }
+  };
+
+  // Handle marking player as ready for friend invitations
+  const handlePlayerReady = async () => {
+    if (!user?.uid || !waitingRoomEntry?.id || !waitingRoomEntry?.friendInvitation) {
+      return;
+    }
+
+    setIsMarkingReady(true);
+
+    try {
+      // Use the GameInvitationService to mark player as ready
+      const result = await import('@/services/gameInvitationService').then(module => 
+        module.GameInvitationService.markPlayerReady(waitingRoomEntry.id!, user.uid)
+      );
+
+      if (result.success) {
+        setIsReady(true);
+      } else {
+        console.error('Failed to mark player ready:', result.error);
+      }
+    } catch (error) {
+      console.error('Error marking player ready:', error);
+    } finally {
+      setIsMarkingReady(false);
     }
   };
 
@@ -1961,6 +2046,55 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             </div>
           )}
         </div>
+
+        {/* Ready Button for Friend Invitations */}
+        {waitingRoomEntry?.friendInvitation && !opponentJoined && vsCountdown === null && (
+          <button
+            onClick={handlePlayerReady}
+            disabled={isMarkingReady || isReady}
+            style={{
+              display: 'flex',
+              padding: window.innerWidth < 768 ? '15px 20px' : '20px',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '10px',
+              borderRadius: '18px',
+              background: isReady ? '#00FF80' : isMarkingReady ? '#666666' : '#0080FF',
+              backdropFilter: 'blur(20px)',
+              color: '#FFF',
+              fontFamily: 'Audiowide',
+              fontSize: window.innerWidth < 768 ? '18px' : '36px',
+              fontStyle: 'normal',
+              fontWeight: 400,
+              lineHeight: '30px',
+              border: 'none',
+              cursor: isMarkingReady || isReady ? 'not-allowed' : 'pointer',
+              opacity: isMarkingReady || isReady ? 0.7 : 1,
+              textTransform: 'uppercase',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              margin: window.innerWidth < 768 ? '10px 20px' : '20px auto',
+              width: window.innerWidth < 768 ? 'calc(100vw - 40px)' : 'auto',
+              boxShadow: isReady ? 
+                '0 4px 15px rgba(0, 255, 128, 0.4)' : 
+                '0 4px 15px rgba(0, 128, 255, 0.3)'
+            }}
+            onMouseEnter={(e) => {
+              if (!isMarkingReady && !isReady) {
+                e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 128, 255, 0.5)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isMarkingReady && !isReady) {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 128, 255, 0.3)';
+              }
+            }}
+          >
+            {isMarkingReady ? 'Marking Ready...' : 
+             isReady ? 'Ready!' : 'Mark Ready'}
+          </button>
+        )}
 
         {/* Leave Button */}
         <button
