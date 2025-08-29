@@ -231,8 +231,8 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
 
   const handleRematchTimeout = () => {
     setRematchState('expired');
-    if (rematchRoomId) {
-      RematchService.cancelRematch(rematchRoomId, user?.uid || '');
+    if (rematchRoomId && user?.uid) {
+      RematchService.cancelRematch(rematchRoomId, user.uid, 'timeout');
     }
   };
 

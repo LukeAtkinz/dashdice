@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { ProfilePictureUpload } from '@/components/ui/ProfilePictureUpload';
+import { MatchHistory } from '@/components/profile/MatchHistory';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
@@ -390,6 +391,16 @@ const ProfileSection: React.FC = () => {
               </CardContent>
             </Card>
             </div>
+
+            {/* Matches History Card */}
+            <Card className="bg-black bg-opacity-60 border-gray-600 text-white">
+              <CardHeader>
+                <CardTitle className="text-white font-audiowide">Matches</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <MatchHistory />
+              </CardContent>
+            </Card>
         </div>
       )}
 

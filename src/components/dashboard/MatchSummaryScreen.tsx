@@ -143,6 +143,9 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   const handleRematchTimeout = () => {
     setRematchState('expired');
     setRematchRoomId(null);
+    if (rematchRoomId && user?.uid) {
+      RematchService.cancelRematch(rematchRoomId, user.uid, 'timeout');
+    }
   };
 
   const handleLeaveMatch = () => {

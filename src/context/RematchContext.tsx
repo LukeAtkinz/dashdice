@@ -54,19 +54,27 @@ export const RematchProvider: React.FC<{ children: React.ReactNode }> = ({ child
     
     try {
       console.log('✅ RematchContext: Accepting rematch:', rematchId);
+      
+      // Get rematch data to get the game mode
+      const rematchData = incomingRematches.find(r => r.id === rematchId);
+      const gameMode = rematchData?.gameMode || 'classic';
+      
       const newMatchId = await RematchService.acceptRematch(rematchId, user.uid);
       
       // Remove the accepted rematch from the list
       setIncomingRematches(prev => prev.filter(r => r.id !== rematchId));
       
-      // Navigate to the new match
-      setCurrentSection('match' as any, { roomId: newMatchId });
+      // Navigate to the waiting room first, then to match
+      setCurrentSection('waiting-room' as any, { 
+        roomId: newMatchId,
+        gameMode: gameMode
+      });
       
-      console.log('🎮 RematchContext: Navigated to new match:', newMatchId);
+      console.log('🎮 RematchContext: Navigated to waiting room:', newMatchId);
     } catch (error) {
       console.error('❌ RematchContext: Error accepting rematch:', error);
     }
-  }, [user?.uid, setCurrentSection]);
+  }, [user?.uid, setCurrentSection, incomingRematches]);
 
   // Decline rematch function
   const declineRematch = useCallback(async (rematchId: string) => {
@@ -74,7 +82,7 @@ export const RematchProvider: React.FC<{ children: React.ReactNode }> = ({ child
     
     try {
       console.log('❌ RematchContext: Declining rematch:', rematchId);
-      await RematchService.cancelRematch(rematchId, user.uid);
+      await RematchService.cancelRematch(rematchId, user.uid, 'declined');
       
       // Remove the declined rematch from the list
       setIncomingRematches(prev => prev.filter(r => r.id !== rematchId));

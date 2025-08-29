@@ -373,7 +373,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     ...(canBank ? getButtonGradientStyle('rgba(34, 197, 94, 0.8)') : {})
                   }}
                 >
-                  {matchData.gameMode === 'last-line' ? 'TRANSFER' : 'BANK'}
+                  {matchData.gameMode === 'last-line' ? 'ATTACK' : 'BANK'}
                 </button>
               )}
             </>
@@ -452,7 +452,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   backdropFilter: 'blur(2px)',
                 }}
               >
-                {matchData.gameMode === 'last-line' ? 'TRANSFER' : 'BANK'}
+                {matchData.gameMode === 'last-line' ? 'ATTACK' : 'BANK'}
               </button>
             )}
           </>

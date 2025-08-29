@@ -6,6 +6,7 @@ import { MessageCircle, X, Users, GamepadIcon } from 'lucide-react';
 import { useChat } from '@/context/ChatContext';
 import { useAuth } from '@/context/AuthContext';
 import { useFriends } from '@/context/FriendsContext';
+import { useNavigation } from '@/context/NavigationContext';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 
@@ -50,6 +51,7 @@ export default function UnifiedChatWindow({
 }: UnifiedChatWindowProps) {
   const { user } = useAuth();
   const { friends } = useFriends();
+  const { currentSection, sectionParams } = useNavigation();
   const { 
     messages, 
     activeRooms, 
@@ -65,6 +67,8 @@ export default function UnifiedChatWindow({
   const [activeTabId, setActiveTabId] = useState<string>('');
   const [isMobile, setIsMobile] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [isInMatch, setIsInMatch] = useState(false);
+  const [currentMatchId, setCurrentMatchId] = useState<string | null>(null);
 
   // Mobile detection and keyboard height tracking
   useEffect(() => {
@@ -93,6 +97,72 @@ export default function UnifiedChatWindow({
       }
     };
   }, [isMobile]);
+
+  // Match detection and match chat management
+  useEffect(() => {
+    const wasInMatch = isInMatch;
+    const previousMatchId = currentMatchId;
+    
+    // Check if user is currently in a match
+    const inMatch = currentSection === 'match' && !!sectionParams.matchId;
+    const matchId = sectionParams.matchId || null;
+    
+    setIsInMatch(inMatch);
+    setCurrentMatchId(matchId);
+    
+    // Handle entering a match
+    if (inMatch && matchId && (!wasInMatch || previousMatchId !== matchId)) {
+      console.log('🎮 Entering match, creating match chat tab:', matchId);
+      
+      // Create match chat tab and hide Everyone tab
+      const createMatchChat = async () => {
+        try {
+          const roomId = await getGameChatRoom(matchId);
+          await joinRoom(roomId);
+          
+          const matchTab: ChatTab = {
+            id: 'match-chat',
+            roomId,
+            type: 'game',
+            title: 'Match',
+            gameId: matchId,
+            unreadCount: 0
+          };
+          
+          setTabs(prevTabs => {
+            // Remove any existing match chat tab
+            const filteredTabs = prevTabs.filter(tab => tab.id !== 'match-chat');
+            // Add match chat tab
+            return [...filteredTabs, matchTab];
+          });
+          
+          // Switch to match chat tab
+          setActiveTabId('match-chat');
+        } catch (error) {
+          console.error('Error creating match chat:', error);
+        }
+      };
+      
+      createMatchChat();
+    }
+    
+    // Handle leaving a match
+    if (wasInMatch && !inMatch && previousMatchId) {
+      console.log('🚪 Leaving match, removing match chat tab:', previousMatchId);
+      
+      // Remove match chat tab and show Everyone tab again
+      setTabs(prevTabs => {
+        const filteredTabs = prevTabs.filter(tab => tab.id !== 'match-chat');
+        
+        // If we were on match chat tab, switch to Everyone tab
+        if (activeTabId === 'match-chat') {
+          setActiveTabId('global');
+        }
+        
+        return filteredTabs;
+      });
+    }
+  }, [currentSection, sectionParams.matchId, isInMatch, currentMatchId, getGameChatRoom, joinRoom, activeTabId]);
 
   // Load persisted tabs from localStorage
   useEffect(() => {
@@ -493,7 +563,15 @@ export default function UnifiedChatWindow({
       <div className="flex items-center justify-between p-3 border-b border-gray-700 flex-shrink-0 rounded-t-[20px] relative z-10"
            style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
         <div className="flex items-center gap-2 flex-1 overflow-x-auto">
-          {tabs.map((tab) => (
+          {tabs
+            .filter(tab => {
+              // Hide "Everyone" tab when in a match
+              if (isInMatch && tab.type === 'global') {
+                return false;
+              }
+              return true;
+            })
+            .map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTabId(tab.id)}
@@ -513,7 +591,7 @@ export default function UnifiedChatWindow({
                   {tab.unreadCount}
                 </span>
               )}
-              {tab.type !== 'global' && (
+              {tab.type !== 'global' && tab.id !== 'match-chat' && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();

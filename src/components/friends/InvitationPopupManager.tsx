@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useFriends } from '@/context/FriendsContext';
+import { useNavigation } from '@/context/NavigationContext';
 import { GameInvitation } from '@/types/friends';
 
 interface InvitationPopupProps {
@@ -141,6 +142,7 @@ const InvitationPopup: React.FC<InvitationPopupProps> = ({
 // Main component that manages showing invitation popups
 export default function InvitationPopupManager() {
   const { gameInvitations, acceptGameInvitation, declineGameInvitation } = useFriends();
+  const { setCurrentSection } = useNavigation();
   const [visibleInvitations, setVisibleInvitations] = useState<string[]>([]);
 
   // Show new invitations as popups
@@ -156,10 +158,15 @@ export default function InvitationPopupManager() {
 
   const handleAccept = async (invitationId: string) => {
     try {
+      // Find the invitation to get the game mode
+      const invitation = gameInvitations.find(inv => inv.id === invitationId);
       const result = await acceptGameInvitation(invitationId);
       if (result.success && result.gameId) {
-        // Navigate to game or waiting room
-        window.location.href = `/game/${result.gameId}`;
+        // Navigate to waiting room with the room ID and game mode (consistent with other components)
+        setCurrentSection('waiting-room', { 
+          roomId: result.gameId,
+          gameMode: invitation?.gameType || 'classic'
+        });
       }
     } catch (error) {
       console.error('Error accepting invitation:', error);

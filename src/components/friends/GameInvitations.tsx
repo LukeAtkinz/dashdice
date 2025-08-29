@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useFriends } from '@/context/FriendsContext';
+import { useNavigation } from '@/context/NavigationContext';
 import { GameInvitation } from '@/types/friends';
 import { useRouter } from 'next/navigation';
 
@@ -11,6 +12,7 @@ interface GameInvitationsProps {
 
 export default function GameInvitations({ compact = false }: GameInvitationsProps) {
   const { gameInvitations, acceptGameInvitation, declineGameInvitation } = useFriends();
+  const { setCurrentSection } = useNavigation();
   const [processingInvitations, setProcessingInvitations] = useState<Set<string>>(new Set());
   const router = useRouter();
 
@@ -24,10 +26,15 @@ export default function GameInvitations({ compact = false }: GameInvitationsProp
     setProcessingInvitations(prev => new Set(prev).add(invitationId));
     
     try {
+      // Find the invitation to get the game mode
+      const invitation = validInvitations.find(inv => inv.id === invitationId);
       const result = await acceptGameInvitation(invitationId);
       if (result.success && result.gameId) {
-        // Navigate to the game
-        router.push(`/game/${result.gameId}`);
+        // Navigate to waiting room with the room ID and game mode (consistent with GameInvitationNotification)
+        setCurrentSection('waiting-room', { 
+          roomId: result.gameId,
+          gameMode: invitation?.gameType || 'classic'
+        });
       }
     } catch (error) {
       console.error('Error accepting invitation:', error);

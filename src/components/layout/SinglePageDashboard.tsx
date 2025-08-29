@@ -378,6 +378,61 @@ const DashboardContent: React.FC = () => {
                   </div>
                 </button>
 
+                {/* RANKED Button */}
+                <button
+                  onClick={() => handleSectionChange('ranked')}
+                  disabled={currentSection === 'match' && !isGameOver}
+                  className={`flex cursor-pointer transition-all duration-300 ${
+                    currentSection === 'match' && !isGameOver 
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : 'hover:-translate-y-1 hover:scale-105 active:scale-95'
+                  }`}
+                  style={{
+                    display: "flex",
+                    width: "180px",
+                    height: "48px",
+                    padding: "8px 16px",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: "8px",
+                    borderRadius: "18px",
+                    background: currentSection === 'match' && !isGameOver 
+                      ? "#666666" 
+                      : DisplayBackgroundEquip?.name === 'On A Mission'
+                      ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.8) 0%, rgba(255, 193, 7, 0.4) 50%, rgba(255, 215, 0, 0.2) 100%)'
+                      : DisplayBackgroundEquip?.name === 'Long Road Ahead'
+                      ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.8) 0%, rgba(255, 193, 7, 0.6) 25%, rgba(255, 235, 59, 0.4) 50%, rgba(255, 202, 40, 0.6) 75%, rgba(255, 215, 0, 0.4) 100%)'
+                      : "#FFD700",
+                    border: "none",
+                    backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(6px)' : 'none'
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      fontSize: "28px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center"
+                    }}
+                  >
+                    🏆
+                  </div>
+                  <span
+                    style={{
+                      color: "#FFF",
+                      fontFamily: "Audiowide",
+                      fontSize: "22px",
+                      fontStyle: "normal",
+                      fontWeight: 400,
+                      lineHeight: "22px"
+                    }}
+                  >
+                    RANKED
+                  </span>
+                </button>
+
                 {/* SHOP Button - Disabled for future implementation */}
                 {false && currentSection !== 'match' && (
                   <button

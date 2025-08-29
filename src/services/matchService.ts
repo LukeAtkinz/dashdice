@@ -500,34 +500,29 @@ export class MatchService {
           updates['gameData.trueGritMultiplier'] = 1;
         }
         else if (isDoubleOne) {
-          // Double 1 = x7 multiplier
-          const newMultiplier = currentMultiplier * 7;
-          console.log(`🎲 True Grit - Double 1s: Multiplier ${currentMultiplier} -> ${newMultiplier}`);
+          // Double 1 = add 20 to turn score and set active x2 multiplier
+          console.log('🎲 True Grit - Double 1s: +20 to turn score, x2 multiplier active');
           
-          // Add current roll with current multiplier
-          const scoreToAdd = diceSum * currentMultiplier;
-          newTurnScore = currentTurnScore + scoreToAdd;
+          // Add 20 to turn score
+          newTurnScore = currentTurnScore + 20;
           
-          // Update multiplier for future rolls
-          updates['gameData.trueGritMultiplier'] = newMultiplier;
+          // Set x2 multiplier for future rolls (don't stack, just set to 2)
+          updates['gameData.trueGritMultiplier'] = 2;
           
-          console.log(`🎲 True Grit - Added ${diceSum} × ${currentMultiplier} = ${scoreToAdd}, Turn score: ${newTurnScore}`);
+          console.log(`🎲 True Grit - Added 20 points, Turn score: ${newTurnScore}, Multiplier set to 2x`);
           turnOver = false;
         }
         else if (isDouble) {
-          // Other doubles increase multiplier multiplicatively
-          const multiplierIncrease = dice1;
-          const newMultiplier = currentMultiplier * multiplierIncrease;
-          console.log(`🎲 True Grit - Double ${dice1}s: Multiplier ${currentMultiplier} -> ${newMultiplier}`);
+          // Other doubles: add dice total to turn score and set x2 multiplier
+          console.log(`🎲 True Grit - Double ${dice1}s: +${diceSum} to turn score, x2 multiplier active`);
           
-          // Add current roll with current multiplier
-          const scoreToAdd = diceSum * currentMultiplier;
-          newTurnScore = currentTurnScore + scoreToAdd;
+          // Add dice total to turn score
+          newTurnScore = currentTurnScore + diceSum;
           
-          // Update multiplier for future rolls
-          updates['gameData.trueGritMultiplier'] = newMultiplier;
+          // Set x2 multiplier for future rolls (don't stack, just set to 2)
+          updates['gameData.trueGritMultiplier'] = 2;
           
-          console.log(`🎲 True Grit - Added ${diceSum} × ${currentMultiplier} = ${scoreToAdd}, Turn score: ${newTurnScore}`);
+          console.log(`🎲 True Grit - Added ${diceSum} points, Turn score: ${newTurnScore}, Multiplier set to 2x`);
           turnOver = false;
         }
         else {
@@ -570,20 +565,6 @@ export class MatchService {
           turnOver = false; // Continue turn
         }
       }
-      // Handle double 1 (Snake Eyes) for other modes
-      else if (isDoubleOne) {
-        if (gameMode.rules.eliminationRules.doubleOne) {
-          // Modes with doubleOne elimination (this shouldn't happen as it's handled by True Grit above)
-          console.log('🎲 Double 1 rolled - Turn over (elimination rule)');
-          turnOver = true;
-          newTurnScore = 0;
-        } else {
-          // All other modes (Classic, Quickfire, Last Line): Snake Eyes +20 rule
-          console.log('🎲 Snake Eyes rolled - +20 to turn score');
-          newTurnScore = currentTurnScore + 20;
-          turnOver = false;
-        }
-      }
       // Handle double 6s based on game mode
       else if (isDoubleSix) {
         switch (gameMode.rules.eliminationRules.doubleSix) {
@@ -613,10 +594,17 @@ export class MatchService {
         turnOver = true;
         newTurnScore = 0;
       }
-      // Handle other doubles
+      // Handle other doubles - all doubles activate x2 multiplier and add dice value
       else if (isDouble) {
-        newTurnScore = currentTurnScore + diceSum;
-        console.log(`🎲 Double ${dice1}s rolled - ${diceSum} points added`);
+        if (dice1 === 1) {
+          // Double 1 (Snake Eyes) - +20 to turn score and activate x2 multiplier
+          newTurnScore = currentTurnScore + 20;
+          console.log(`🎲 Double 1s (Snake Eyes) rolled - +20 points added, 2x multiplier activated`);
+        } else {
+          // All other doubles (2-6) - add dice sum and activate x2 multiplier
+          newTurnScore = currentTurnScore + diceSum;
+          console.log(`🎲 Double ${dice1}s rolled - +${diceSum} points added, 2x multiplier activated`);
+        }
         turnOver = false; // Continue turn
       }
       // Normal scoring
@@ -631,8 +619,8 @@ export class MatchService {
       // Update turn score in the updates object
       updates['gameData.turnScore'] = newTurnScore;
       
-      // Activate 2x multiplier for double 1s in modes that continue turn (Classic, Quickfire, Zero Hour)
-      if (isDoubleOne && !gameMode.rules.eliminationRules.doubleOne) {
+      // Activate 2x multiplier for ALL doubles (including double 1s)
+      if (isDouble) {
         updates['gameData.hasDoubleMultiplier'] = true;
       }
       
@@ -797,13 +785,9 @@ export class MatchService {
         }
       }
       
-      // Handle double multiplier logic (Classic and Quickfire modes)
-      if (gameMode.id === 'classic' || gameMode.id === 'quickfire') {
-        if (dice1 === dice2 && dice1 !== 1 && dice1 !== 6) {
-          updates['gameData.hasDoubleMultiplier'] = true;
-        } else if (turnOver) {
-          updates['gameData.hasDoubleMultiplier'] = false;
-        }
+      // Clear multiplier when turn ends for any reason
+      if (turnOver || eliminatePlayer) {
+        updates['gameData.hasDoubleMultiplier'] = false;
       }
       
       // Handle turn over scenarios

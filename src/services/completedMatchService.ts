@@ -7,7 +7,8 @@ import {
   getDoc,
   query,
   where,
-  getDocs
+  getDocs,
+  Timestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
 import AchievementTrackingService from './achievementTrackingService';
@@ -15,6 +16,73 @@ import AchievementTrackingService from './achievementTrackingService';
 export class CompletedMatchService {
   private static readonly MATCHES_COLLECTION = 'matches';
   private static readonly COMPLETED_MATCHES_COLLECTION = 'completedmatches';
+  private static readonly MATCH_HISTORY_COLLECTION = 'matchHistory';
+
+  /**
+   * Create match history entries for both players
+   */
+  private static async createMatchHistoryEntries(matchData: any, winnerData?: {
+    playerId: string;
+    playerDisplayName: string;
+    finalScore: number;
+  }): Promise<void> {
+    try {
+      console.log('📝 Creating match history entries...');
+      
+      const hostData = matchData.hostData;
+      const opponentData = matchData.opponentData;
+      const matchStartTime = matchData.startedAt || matchData.gameData?.startedAt;
+      const duration = matchStartTime ? Date.now() - matchStartTime.toMillis() : undefined;
+      
+      // Determine winner
+      const winnerId = winnerData?.playerId;
+      const winnerName = winnerData?.playerDisplayName;
+      
+      // Get background info
+      const backgroundFile = hostData.matchBackgroundEquipped?.file || hostData.displayBackgroundEquipped?.file;
+      
+      // Create history entry for host
+      const hostHistoryEntry = {
+        playerUserId: hostData.playerId,
+        opponentUserId: opponentData.playerId,
+        opponentDisplayName: opponentData.playerDisplayName,
+        result: (winnerId === hostData.playerId) ? 'won' : 'lost',
+        playerScore: hostData.playerScore,
+        opponentScore: opponentData.playerScore,
+        gameMode: matchData.gameData?.gameMode || 'classic',
+        gameType: matchData.gameData?.type || 'classic',
+        backgroundFile: backgroundFile,
+        completedAt: serverTimestamp(),
+        duration: duration
+      };
+      
+      // Create history entry for opponent
+      const opponentHistoryEntry = {
+        playerUserId: opponentData.playerId,
+        opponentUserId: hostData.playerId,
+        opponentDisplayName: hostData.playerDisplayName,
+        result: (winnerId === opponentData.playerId) ? 'won' : 'lost',
+        playerScore: opponentData.playerScore,
+        opponentScore: hostData.playerScore,
+        gameMode: matchData.gameData?.gameMode || 'classic',
+        gameType: matchData.gameData?.type || 'classic',
+        backgroundFile: backgroundFile,
+        completedAt: serverTimestamp(),
+        duration: duration
+      };
+      
+      // Add both entries to match history
+      await Promise.all([
+        addDoc(collection(db, this.MATCH_HISTORY_COLLECTION), hostHistoryEntry),
+        addDoc(collection(db, this.MATCH_HISTORY_COLLECTION), opponentHistoryEntry)
+      ]);
+      
+      console.log('✅ Match history entries created for both players');
+    } catch (error) {
+      console.error('❌ Error creating match history entries:', error);
+      // Don't throw - this is not critical for match completion
+    }
+  }
 
   /**
    * Move a completed match to the completedmatches collection
@@ -72,6 +140,9 @@ export class CompletedMatchService {
 
       // Track achievements for both players
       await this.trackMatchAchievements(matchData, winnerData);
+
+      // Create match history entries for both players
+      await this.createMatchHistoryEntries(matchData, winnerData);
 
       console.log('✅ Match moved to completed collection:', completedMatchRef.id);
       return completedMatchRef.id;

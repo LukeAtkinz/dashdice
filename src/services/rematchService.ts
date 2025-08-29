@@ -8,6 +8,7 @@ import {
   where, 
   onSnapshot,
   serverTimestamp,
+  addDoc,
   Timestamp,
   getDocs,
   Unsubscribe
@@ -134,11 +135,11 @@ export class RematchService {
   }
 
   /**
-   * Cancel a rematch request
+   * Cancel a rematch request (can be timeout, decline, or manual cancel)
    */
-  static async cancelRematch(rematchRoomId: string, userId: string): Promise<void> {
+  static async cancelRematch(rematchRoomId: string, userId: string, reason: 'timeout' | 'declined' | 'cancelled' = 'cancelled'): Promise<void> {
     try {
-      console.log('❌ RematchService: Cancelling rematch');
+      console.log(`❌ RematchService: ${reason} rematch`);
       
       const rematchRef = doc(db, this.REMATCH_COLLECTION, rematchRoomId);
       const rematchSnap = await getDoc(rematchRef);
@@ -147,8 +148,35 @@ export class RematchService {
       
       const rematchData = rematchSnap.data() as RematchRoom;
       
-      // Only the requester can cancel
-      if (userId !== rematchData.requesterUserId) {
+      // Send notification to requester if declined or timed out
+      if ((reason === 'declined' || reason === 'timeout') && userId === rematchData.opponentUserId) {
+        try {
+          // Get declining user's data for notification
+          const userRef = doc(db, 'users', userId);
+          const userSnap = await getDoc(userRef);
+          const userData = userSnap.data();
+          const userName = userData?.displayName || userData?.username || 'Someone';
+          
+          // Create notification for the requester
+          await addDoc(collection(db, 'notifications'), {
+            userId: rematchData.requesterUserId,
+            type: 'rematch_declined',
+            message: reason === 'timeout' 
+              ? `${userName} didn't respond to your rematch request`
+              : `${userName} declined your rematch request`,
+            fromUserName: userName,
+            gameMode: rematchData.gameMode,
+            createdAt: serverTimestamp(),
+            read: false
+          });
+          console.log(`✅ RematchService: Sent ${reason} notification to requester`);
+        } catch (notificationError) {
+          console.error(`❌ RematchService: Failed to send ${reason} notification:`, notificationError);
+        }
+      }
+      
+      // Only the requester or opponent can cancel/decline
+      if (userId !== rematchData.requesterUserId && userId !== rematchData.opponentUserId) {
         throw new Error('Unauthorized to cancel this rematch');
       }
       
@@ -158,9 +186,9 @@ export class RematchService {
       await deleteDoc(rematchRef);
       console.log('✅ RematchService: Deleted cancelled rematch room:', rematchRoomId);
       
-      console.log('✅ RematchService: Rematch cancelled');
+      console.log(`✅ RematchService: Rematch ${reason}`);
     } catch (error) {
-      console.error('❌ RematchService: Error cancelling rematch:', error);
+      console.error(`❌ RematchService: Error ${reason} rematch:`, error);
       throw error;
     }
   }
