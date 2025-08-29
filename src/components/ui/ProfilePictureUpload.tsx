@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Camera, Upload, User, X, Check, Image } from 'lucide-react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, updateDoc } from 'firebase/firestore';
 import { storage, db } from '@/services/firebase';
 import { useAuth } from '@/context/AuthContext';
-import { Button } from '@/components/ui/Button';
-import { motion } from 'framer-motion';
 
 interface ProfilePictureUploadProps {
   currentPhotoURL?: string;
@@ -19,69 +19,124 @@ export const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
   onUploadComplete,
   className = ''
 }) => {
-  const { user } = useAuth();
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
-  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-  const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  const isValidImageFile = (file: File): boolean => {
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+    
+    return validTypes.includes(file.type) && file.size <= maxSizeInBytes;
+  };
 
-  const validateFile = (file: File): string | null => {
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      return 'Please select a valid image file (JPEG, PNG, or WebP).';
-    }
-    
-    if (file.size > MAX_FILE_SIZE) {
-      return 'File size must be less than 5MB.';
-    }
-    
-    return null;
+  const resizeImage = (file: File): Promise<File> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = document.createElement('img');
+      
+      img.onload = () => {
+        const maxSize = 400; // Max width/height
+        let { width, height } = img;
+        
+        if (width > height) {
+          if (width > maxSize) {
+            height = (height * maxSize) / width;
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width = (width * maxSize) / height;
+            height = maxSize;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const resizedFile = new File([blob], file.name, { type: file.type });
+            resolve(resizedFile);
+          } else {
+            resolve(file);
+          }
+        }, file.type, 0.8);
+      };
+      
+      img.src = URL.createObjectURL(file);
+    });
   };
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
-    const validationError = validateFile(file);
-    if (validationError) {
-      setError(validationError);
+    if (!isValidImageFile(file)) {
+      alert('Please select a valid image file (JPEG, PNG, or WebP) under 5MB.');
       return;
     }
 
-    setError(null);
-    setUploading(true);
+    // Create preview
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewImage(objectUrl);
+    
+    setIsUploading(true);
+    setUploadProgress(0);
+    setUploadSuccess(false);
 
     try {
-      // Create a reference to the file location
-      const fileExtension = file.name.split('.').pop();
-      const fileName = `profile_${user.uid}_${Date.now()}.${fileExtension}`;
-      const storageRef = ref(storage, `profile_pictures/${fileName}`);
-
-      // Upload the file
-      const snapshot = await uploadBytes(storageRef, file);
+      // Resize image for better performance
+      const resizedFile = await resizeImage(file);
       
-      // Get the download URL
+      // Upload to Firebase Storage
+      const storageRef = ref(storage, `profile-pictures/${user.uid}/${Date.now()}`);
+      
+      // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          const newProgress = prev + Math.random() * 15;
+          return newProgress >= 95 ? 95 : newProgress;
+        });
+      }, 200);
+      
+      const snapshot = await uploadBytes(storageRef, resizedFile);
       const downloadURL = await getDownloadURL(snapshot.ref);
-
-      // Update user's profile in Firestore
-      const userDocRef = doc(db, 'users', user.uid);
-      await updateDoc(userDocRef, {
+      
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      
+      // Update user document in Firestore
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, {
         photoURL: downloadURL,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date()
       });
 
-      // Call callback if provided
-      if (onUploadComplete) {
-        onUploadComplete(downloadURL);
-      }
+      // Show success state
+      setUploadSuccess(true);
+      setTimeout(() => {
+        setUploadSuccess(false);
+        setPreviewImage(null);
+      }, 2000);
 
-      console.log('Profile picture uploaded successfully!');
+      // Callback to parent component
+      onUploadComplete?.(downloadURL);
+      
     } catch (error) {
       console.error('Error uploading profile picture:', error);
-      setError('Failed to upload profile picture. Please try again.');
+      alert('Failed to upload profile picture. Please try again.');
+      setPreviewImage(null);
     } finally {
-      setUploading(false);
+      setIsUploading(false);
+      setUploadProgress(0);
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -93,77 +148,148 @@ export const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
     fileInputRef.current?.click();
   };
 
+  const cancelPreview = () => {
+    setPreviewImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   return (
-    <div className={`flex flex-col items-center space-y-4 ${className}`}>
-      {/* Profile Picture Display */}
-      <div className="relative">
-        <motion.div
-          className="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-300 bg-gray-200 flex items-center justify-center"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.2 }}
-        >
-          {currentPhotoURL ? (
-            <img
-              src={currentPhotoURL}
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span className="text-4xl text-gray-400">👤</span>
-          )}
-        </motion.div>
-        
-        {/* Upload Button Overlay */}
-        <motion.button
-          onClick={handleUploadClick}
-          disabled={uploading}
-          className="absolute inset-0 w-24 h-24 rounded-full bg-black bg-opacity-50 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity duration-200 disabled:cursor-not-allowed"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          {uploading ? (
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-          ) : (
-            <span className="text-sm">📷</span>
-          )}
-        </motion.button>
-      </div>
-
-      {/* Upload Button */}
-      <Button
-        onClick={handleUploadClick}
-        disabled={uploading || !user}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
-      >
-        {uploading ? 'Uploading...' : 'Change Photo'}
-      </Button>
-
-      {/* Hidden File Input */}
+    <div className={`relative ${className}`}>
       <input
         ref={fileInputRef}
         type="file"
-        accept={ALLOWED_TYPES.join(',')}
+        accept="image/*"
         onChange={handleFileSelect}
         className="hidden"
-        aria-label="Upload profile picture"
+        disabled={isUploading}
       />
-
-      {/* Error Message */}
-      {error && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-red-500 text-sm text-center bg-red-50 p-2 rounded-lg border border-red-200"
-        >
-          {error}
-        </motion.div>
-      )}
-
-      {/* File Requirements */}
-      <div className="text-xs text-gray-500 text-center">
-        <p>JPEG, PNG, or WebP format</p>
-        <p>Maximum file size: 5MB</p>
-      </div>
+      
+      <motion.div
+        className="relative group"
+        onHoverStart={() => setIsHovered(true)}
+        onHoverEnd={() => setIsHovered(false)}
+        whileHover={{ scale: 1.02 }}
+        transition={{ duration: 0.2 }}
+      >
+        {/* Main Profile Picture Container */}
+        <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-gray-300 bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg">
+          {/* Profile Image */}
+          <div className="w-full h-full relative">
+            {previewImage || currentPhotoURL ? (
+              <motion.img
+                src={previewImage || currentPhotoURL}
+                alt="Profile"
+                className="w-full h-full object-cover"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
+                <User className="w-16 h-16 text-gray-400" />
+              </div>
+            )}
+          </div>
+          
+          {/* Upload Progress Overlay */}
+          <AnimatePresence>
+            {isUploading && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-center"
+              >
+                <div className="w-16 h-16 rounded-full border-4 border-white border-t-transparent animate-spin mb-2" />
+                <div className="text-white text-sm font-semibold">{Math.round(uploadProgress)}%</div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          {/* Success Overlay */}
+          <AnimatePresence>
+            {uploadSuccess && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="absolute inset-0 bg-green-500 bg-opacity-90 flex items-center justify-center"
+              >
+                <Check className="w-12 h-12 text-white" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          {/* Hover Overlay */}
+          <AnimatePresence>
+            {isHovered && !isUploading && !uploadSuccess && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center cursor-pointer"
+                onClick={handleUploadClick}
+              >
+                <div className="text-center">
+                  <Camera className="w-8 h-8 text-white mx-auto mb-1" />
+                  <span className="text-white text-xs font-medium">Change Photo</span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+        
+        {/* Camera Icon Button */}
+        <AnimatePresence>
+          {!isUploading && !uploadSuccess && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleUploadClick}
+              className="absolute -bottom-2 -right-2 w-10 h-10 bg-blue-500 hover:bg-blue-600 rounded-full flex items-center justify-center shadow-lg border-3 border-white transition-colors"
+            >
+              <Camera className="w-5 h-5 text-white" />
+            </motion.button>
+          )}
+        </AnimatePresence>
+        
+        {/* Preview Cancel Button */}
+        <AnimatePresence>
+          {previewImage && !isUploading && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={cancelPreview}
+              className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg border-2 border-white transition-colors"
+            >
+              <X className="w-4 h-4 text-white" />
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </motion.div>
+      
+      {/* Upload Instructions */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="mt-4 text-center"
+      >
+        <p className="text-sm text-gray-600 font-medium mb-1">
+          Click camera icon to upload
+        </p>
+        <p className="text-xs text-gray-500">
+          JPEG, PNG, WebP • Max 5MB
+        </p>
+      </motion.div>
     </div>
   );
 };

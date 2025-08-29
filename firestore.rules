@@ -376,5 +376,38 @@ service cloud.firestore {
     match /statistics/{document=**} {
       allow read: if request.auth != null;
     }
+    
+    // Ranked System Collections
+    // Ranked Stats - users can read all, only system can write
+    match /rankedStats/{userId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only server-side operations should write ranked stats
+    }
+    
+    // Seasons - read for all authenticated users, write only by system
+    match /seasons/{seasonId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only server-side operations should write seasons
+    }
+    
+    // Ranked Matches - players can read matches they're involved in
+    match /rankedMatches/{matchId} {
+      allow read: if request.auth != null && 
+        (request.auth.uid == resource.data.hostData.playerId || 
+         request.auth.uid == resource.data.opponentData.playerId);
+      allow create: if request.auth != null && 
+        (request.auth.uid == request.resource.data.hostData.playerId || 
+         request.auth.uid == request.resource.data.opponentData.playerId);
+      allow update: if request.auth != null && 
+        (request.auth.uid == resource.data.hostData.playerId || 
+         request.auth.uid == resource.data.opponentData.playerId);
+    }
+    
+    // Ranked Achievements - users can read their own achievements
+    match /rankedAchievements/{achievementId} {
+      allow read: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      allow write: if false; // Only server-side operations should write achievements
+    }
   }
 }

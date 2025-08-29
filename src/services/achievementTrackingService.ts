@@ -185,10 +185,13 @@ class AchievementTrackingService {
    */
   async updateMultipleMetrics(
     userId: string, 
-    updates: MetricUpdate[]
+    updates: MetricUpdate[],
+    retryCount: number = 0
   ): Promise<AchievementEvaluationResult[]> {
+    const maxRetries = 3;
+    
     try {
-      console.log(`🎯 Updating metrics for user ${userId}:`, updates);
+      console.log(`🎯 Updating metrics for user ${userId} (attempt ${retryCount + 1}):`, updates);
       
       return await runTransaction(db, async (transaction) => {
         // Get current progress within transaction
@@ -242,19 +245,24 @@ class AchievementTrackingService {
         return []; // Return empty array for now, achievement checking will be done separately
       });
     } catch (error: any) {
-      console.error(`❌ Error updating metrics for user ${userId}:`, error);
+      console.error(`❌ Error updating metrics for user ${userId} (attempt ${retryCount + 1}):`, error);
       
-      // Handle specific Firebase errors
-      if (error?.code === 'failed-precondition') {
-        console.log('⚠️ Document version conflict detected, retrying...');
-        // Retry once after a small delay
-        await new Promise(resolve => setTimeout(resolve, 100));
-        return this.updateMultipleMetrics(userId, updates);
+      // Handle specific Firebase errors with improved retry logic
+      if (error?.code === 'failed-precondition' && retryCount < maxRetries) {
+        const delay = Math.min(1000 * Math.pow(2, retryCount), 5000) + Math.random() * 1000;
+        console.log(`⚠️ Document conflict detected, retrying in ${Math.round(delay)}ms (attempt ${retryCount + 1}/${maxRetries})`);
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return this.updateMultipleMetrics(userId, updates, retryCount + 1);
       }
       
       if (error?.code === 'permission-denied') {
         console.log('⚠️ Permission denied for metric update');
         return [];
+      }
+      
+      if (retryCount >= maxRetries) {
+        console.error(`❌ Max retries (${maxRetries}) exceeded for user ${userId}`);
       }
       
       throw error;

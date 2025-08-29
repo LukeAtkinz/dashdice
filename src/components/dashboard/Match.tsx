@@ -10,6 +10,7 @@ import { TurnDeciderPhase } from './TurnDeciderPhase';
 import { GameplayPhase } from './GameplayPhase';
 import { GameOverWrapper } from './GameOverWrapper';
 import { useGameAchievements } from '@/hooks/useGameAchievements';
+import { useMatchAchievements } from '@/hooks/useMatchAchievements';
 import { db } from '@/services/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
@@ -30,7 +31,20 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   
   const { user } = useAuth();
   const { setCurrentSection, isGameOver, setIsGameOver } = useNavigation();
-  const { recordGameCompletion } = useGameAchievements();
+  // Legacy achievement system - temporarily disabled to prevent concurrent updates
+  // const { recordGameCompletion } = useGameAchievements();
+  
+  // Fast batched achievement tracking for performance
+  const { 
+    recordDiceRoll, 
+    recordTurn, 
+    recordStreak, 
+    recordMatchEnd, 
+    resetBatch 
+  } = useMatchAchievements();
+  
+  // Track match start time for duration calculation
+  const matchStartTime = React.useRef<number>(Date.now());
   
   // Remove performance-impacting debug logs
   // console.log('🔍 DEBUG: Match component context:', {
@@ -63,20 +77,23 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         const isHost = matchData.hostData.playerId === user.uid;
         const playerWon = matchData.gameData.winner === (isHost ? 'host' : 'opponent');
         
-        // Collect dice rolls from the game (this would be more comprehensive in a real implementation)
-        const diceRolls: number[] = [];
-        
-        // Record game completion for achievements
-        recordGameCompletion(playerWon, diceRolls, {
-          gameMode: 'classic',
+        // Flush all batched achievements to database (single write)
+        const matchDuration = Date.now() - matchStartTime.current;
+        recordMatchEnd(playerWon, {
+          duration: matchDuration,
           finalScore: isHost ? matchData.hostData.playerScore : matchData.opponentData?.playerScore || 0,
-          opponentScore: isHost ? matchData.opponentData?.playerScore || 0 : matchData.hostData.playerScore
+          opponentScore: isHost ? matchData.opponentData?.playerScore || 0 : matchData.hostData.playerScore,
+          gameMode: 'classic',
+          wasCloseGame: Math.abs((matchData.hostData.playerScore) - (matchData.opponentData?.playerScore || 0)) <= 2
         }).catch(error => {
-          console.error('Error recording game achievements:', error);
+          console.error('Error flushing batched achievements:', error);
         });
+        
+        // NOTE: Legacy recordGameCompletion() removed to prevent concurrent achievement updates
+        // All achievements are now handled by the batched system above
       }
     }
-  }, [matchData?.gameData?.gamePhase, matchData?.gameData?.winner, setIsGameOver, recordGameCompletion, user?.uid, matchData?.hostData, matchData?.opponentData]);
+  }, [matchData?.gameData?.gamePhase, matchData?.gameData?.winner, setIsGameOver, recordMatchEnd, user?.uid, matchData?.hostData, matchData?.opponentData]);
 
   // Handle game over delay
   useEffect(() => {
@@ -296,9 +313,28 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         if (!data.gameData.gamePhase) {
           MatchService.initializeGamePhase(roomId);
         }
+        
+        // Reset achievement batch for new match
+        if (data.gameData.gamePhase === 'turnDecider') {
+          resetBatch();
+          matchStartTime.current = Date.now();
+        }
+        
+        // Clear any previous errors when we receive valid data
+        setError(null);
       } else {
-        console.error('❌ Match: No match data received');
-        setError('Match not found');
+        // Don't immediately show error - match might be transitioning
+        console.log('⚠️ Match: No match data received - match may be ending or transitioning');
+        
+        // Only set error after a brief delay to handle transitions
+        setTimeout(() => {
+          setMatchData(prev => {
+            if (!prev) {
+              setError('Match not found');
+            }
+            return prev;
+          });
+        }, 2000);
       }
       setLoading(false);
     });
@@ -521,6 +557,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       // 🎰 Animation Durations per specification:
       // Both Dice 1 & 2: 1200ms (1.2 seconds)
       startSlotMachineAnimation(1, matchData.gameData.diceOne, 1200);
+      
+      // Record dice roll for achievements (batched - no DB write)
+      recordDiceRoll(matchData.gameData.diceOne);
     }
 
     if (matchData.gameData.isRolling && matchData.gameData.rollPhase === 'dice2' && 
@@ -530,6 +569,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       // Both Dice 1 & 2: 1200ms (1.2 seconds)
       console.log('🎲 Starting Dice 2 animation with value:', matchData.gameData.diceTwo);
       startSlotMachineAnimation(2, matchData.gameData.diceTwo, 1200);
+      
+      // Record dice roll for achievements (batched - no DB write)
+      recordDiceRoll(matchData.gameData.diceTwo);
+      
+      // Also record the turn completion
+      recordTurn();
     }
   }, [
     matchData?.gameData.turnDeciderChoice, 

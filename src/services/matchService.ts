@@ -317,18 +317,16 @@ export class MatchService {
       
       // 🏆 TRACK DICE ROLL ACHIEVEMENTS: Update total dice rolled count (2 dice per roll)
       try {
-        const achievementService = AchievementTrackingService.getInstance();
+        // PERFORMANCE: Achievement tracking moved to match end to prevent lag
+        // Individual dice roll tracking will be batched and written at match completion
+        // const achievementService = AchievementTrackingService.getInstance();
+        // await achievementService.updateMetric(playerId, 'total_dice_rolled', 2, 'increment');
+        // await achievementService.updateMetric(playerId, `dice_${this.numberToWord(dice1)}s_rolled`, 1, 'increment');
+        // await achievementService.updateMetric(playerId, `dice_${this.numberToWord(dice2)}s_rolled`, 1, 'increment');
         
-        // Track 2 dice rolls (dice1 and dice2) for total_dice_rolled metric
-        await achievementService.updateMetric(playerId, 'total_dice_rolled', 2, 'increment');
-        
-        // Track individual dice values for specific dice achievements
-        await achievementService.updateMetric(playerId, `dice_${this.numberToWord(dice1)}s_rolled`, 1, 'increment');
-        await achievementService.updateMetric(playerId, `dice_${this.numberToWord(dice2)}s_rolled`, 1, 'increment');
-        
-        console.log(`🎲 Achievement tracking: Player ${playerId} rolled [${dice1}, ${dice2}], total dice count updated`);
+        console.log(`🎲 Dice rolled: Player ${playerId} rolled [${dice1}, ${dice2}] (achievements batched)`);
       } catch (achievementError) {
-        console.error('❌ Error tracking dice roll achievements:', achievementError);
+        console.error('❌ Error in dice roll:', achievementError);
         // Don't throw - achievements failing shouldn't break gameplay
       }
       

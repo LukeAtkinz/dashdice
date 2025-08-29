@@ -14,6 +14,7 @@ import ProfileSection from '@/components/dashboard/ProfileSection';
 import AchievementNotificationDisplay from '@/components/achievements/AchievementNotification';
 import AchievementsDashboard from '@/components/achievements/AchievementsDashboard';
 import FriendsDashboard from '@/components/friends/FriendsDashboard';
+import { RankedDashboard } from '@/components/ranked/RankedDashboard';
 import GlobalChatButton from '@/components/chat/GlobalChatButton';
 import { GlobalRematchNotification } from '@/components/rematch/GlobalRematchNotification';
 import { GameInvitationNotification } from '@/components/friends/GameInvitationNotification';
@@ -599,6 +600,12 @@ const DashboardContent: React.FC = () => {
                   {currentSection === 'inventory' && <InventorySection />}
                   {currentSection === 'achievements' && <AchievementsDashboard />}
                   {currentSection === 'friends' && <FriendsDashboard />}
+                  {currentSection === 'ranked' && (
+                    <RankedDashboard 
+                      userId={user?.uid || ''} 
+                      userDisplayName={user?.displayName || user?.email || 'Player'} 
+                    />
+                  )}
                   {currentSection === 'profile' && <ProfileSection />}
                   {currentSection === 'settings' && <ProfileSection />}
                 </motion.div>
@@ -631,7 +638,7 @@ const DashboardContent: React.FC = () => {
             }}>
               <button
                 onClick={() => handleSectionChange('dashboard')}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[22vw] ${
+                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
                   currentSection === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
@@ -639,8 +646,17 @@ const DashboardContent: React.FC = () => {
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PLAY</span>
               </button>
               <button
+                onClick={() => handleSectionChange('ranked')}
+                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
+                  currentSection === 'ranked' ? 'bg-white/20' : 'hover:bg-white/10'
+                }`}
+              >
+                <span className="text-2xl">🏆</span>
+                <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>RANKED</span>
+              </button>
+              <button
                 onClick={() => handleSectionChange('friends')}
-                className={`relative flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[22vw] ${
+                className={`relative flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
                   currentSection === 'friends' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
@@ -650,7 +666,7 @@ const DashboardContent: React.FC = () => {
               </button>
               <button
                 onClick={() => handleSectionChange('inventory')}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[22vw] ${
+                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
                   currentSection === 'inventory' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
@@ -659,7 +675,7 @@ const DashboardContent: React.FC = () => {
               </button>
               <button
                 onClick={() => handleSectionChange('settings')}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[22vw] ${
+                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
                   currentSection === 'settings' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >

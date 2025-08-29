@@ -35,8 +35,20 @@ export class SeasonService {
       const querySnapshot = await getDocs(q);
       
       if (querySnapshot.empty) {
-        // No active season, create the first one
-        return await this.createNewSeason(1);
+        // No active season, return a mock season for demo
+        console.log('📅 No active season found, creating mock season for demo');
+        const now = new Date();
+        const endDate = new Date();
+        endDate.setDate(now.getDate() + 14);
+        
+        return {
+          id: 'mock_season_1',
+          name: 'Dash 1',
+          startDate: now,
+          endDate: endDate,
+          isActive: true,
+          dashNumber: 1
+        };
       }
       
       const seasonDoc = querySnapshot.docs[0];

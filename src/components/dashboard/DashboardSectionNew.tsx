@@ -7,7 +7,9 @@ import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { MatchmakingService } from '@/services/matchmakingService';
 import { UserService } from '@/services/userService';
+import { RankedMatchmakingService } from '@/services/rankedMatchmakingService';
 import AchievementsMini from '@/components/achievements/AchievementsMini';
+import { CompactLeaderboard } from '@/components/ranked/Leaderboard';
 
 const gameConfig = {
   quickfire: { 
@@ -115,7 +117,7 @@ export const DashboardSection: React.FC = () => {
   const handleGameModeAction = async (gameMode: string, action: string) => {
     console.log(`${gameMode} - ${action} clicked`);
     
-    if (action === 'live' && user) {
+    if ((action === 'live' || action === 'ranked') && user) {
       setIsExiting(true);
       
       try {
@@ -140,7 +142,39 @@ export const DashboardSection: React.FC = () => {
         
         console.log('✅ DashboardSectionNew: Host data prepared:', hostData);
 
-        // Search for existing room or create new one
+        if (action === 'ranked') {
+          // Validate ranked eligibility first
+          console.log('🏆 Validating ranked eligibility...');
+          const eligibility = await RankedMatchmakingService.validateRankedEligibility(user.uid);
+          
+          if (!eligibility.valid) {
+            alert(`❌ ${eligibility.reason}`);
+            setIsExiting(false);
+            return;
+          }
+
+          // Get or initialize ranked stats
+          const rankedStats = await RankedMatchmakingService.getUserRankedStats(user.uid);
+          if (!rankedStats) {
+            alert('❌ Unable to initialize ranked stats. Please try again.');
+            setIsExiting(false);
+            return;
+          }
+
+          console.log('🏆 Starting ranked match...');
+          const result = await MatchmakingService.findOrCreateRoom(gameMode, hostData, 'ranked');
+          
+          if (result) {
+            console.log('✅ Ranked room created/joined:', result);
+            setCurrentSection('match');
+          } else {
+            alert('❌ Failed to create/join ranked match. Please try again.');
+            setIsExiting(false);
+          }
+          return;
+        }
+
+        // Search for existing room or create new one (for Quick Games)
         const { roomId, isNewRoom, hasOpponent } = await MatchmakingService.findOrCreateRoom(gameMode, hostData);
         
         console.log(`${isNewRoom ? 'Created' : 'Joined'} room:`, roomId);
@@ -283,13 +317,13 @@ export const DashboardSection: React.FC = () => {
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        console.log(`🎮 ${mode.toUpperCase()} LIVE BUTTON CLICKED!`);
+                        console.log(`🎮 ${mode.toUpperCase()} QUICK GAME CLICKED!`);
                         handleGameModeAction(mode, 'live');
                       }}
                       onTouchEnd={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        console.log(`🎮 ${mode.toUpperCase()} LIVE TOUCH END!`);
+                        console.log(`🎮 ${mode.toUpperCase()} QUICK GAME TOUCH END!`);
                         handleGameModeAction(mode, 'live');
                       }}
                       className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300 pointer-events-auto"
@@ -308,7 +342,7 @@ export const DashboardSection: React.FC = () => {
                       }}
                     >
                       <span
-                        className="text-[20px] md:text-[28px] leading-[24px] md:leading-[40px] pointer-events-none"
+                        className="text-[18px] md:text-[24px] leading-[22px] md:leading-[28px] pointer-events-none"
                         style={{
                           color: '#E2E2E2',
                           textAlign: 'center',
@@ -318,31 +352,31 @@ export const DashboardSection: React.FC = () => {
                           textTransform: 'uppercase',
                         }}
                       >
-                        BEST OF 1
+                        QUICK GAME
                       </span>
                     </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        console.log(`🎮 ${mode.toUpperCase()} CUSTOM BUTTON CLICKED!`);
-                        alert('Coming Soon!');
+                        console.log(`🎮 ${mode.toUpperCase()} RANKED CLICKED!`);
+                        handleGameModeAction(mode, 'ranked');
                       }}
                       onTouchEnd={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        console.log(`🎮 ${mode.toUpperCase()} CUSTOM TOUCH END!`);
-                        alert('Coming Soon!');
+                        console.log(`🎮 ${mode.toUpperCase()} RANKED TOUCH END!`);
+                        handleGameModeAction(mode, 'ranked');
                       }}
                       className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300 pointer-events-auto"
                       style={{
                         borderRadius: '30px',
-                        background: 'var(--ui-button-bg)',
+                        background: 'linear-gradient(135deg, #8B5CF6 0%, #A855F7 50%, #9333EA 100%)',
                         height: '80px',
                         alignContent: 'center',
                         justifyContent: 'center',
                         border: 0,
-                        boxShadow: '0 4px 15px rgba(255, 0, 128, 0.3)',
+                        boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)',
                         touchAction: 'manipulation',
                         zIndex: 10,
                         position: 'relative',
@@ -350,7 +384,7 @@ export const DashboardSection: React.FC = () => {
                       }}
                     >
                       <span
-                        className="text-[20px] md:text-[28px] leading-[24px] md:leading-[40px] pointer-events-none"
+                        className="text-[18px] md:text-[24px] leading-[22px] md:leading-[28px] pointer-events-none"
                         style={{
                           color: '#E2E2E2',
                           textAlign: 'center',
@@ -360,7 +394,7 @@ export const DashboardSection: React.FC = () => {
                           textTransform: 'uppercase',
                         }}
                       >
-                        BEST OF 3
+                        🏆 RANKED
                       </span>
                     </button>
                   </>
@@ -454,6 +488,13 @@ export const DashboardSection: React.FC = () => {
             )}
           </div>
         ))}
+      </div>
+      
+      {/* Leaderboard Preview Section */}
+      <div className="w-full flex justify-center mt-6 mb-4">
+        <div className="w-full max-w-md">
+          <CompactLeaderboard userId={user?.uid} />
+        </div>
       </div>
       
       {/* Achievements Preview Section */}

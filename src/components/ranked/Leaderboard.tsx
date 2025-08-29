@@ -152,6 +152,172 @@ export function Leaderboard({
     );
   }
 
+  // Compact mode with friends card styling
+  if (compactMode) {
+    return (
+      <div className="space-y-3">
+        {/* Header with friends card styling */}
+        <div className="relative overflow-hidden" style={{ borderRadius: '20px' }}>
+          {/* Dark gradient overlay similar to friends card */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              background: 'linear-gradient(135deg, rgba(30, 30, 50, 0.95) 0%, rgba(15, 15, 35, 0.9) 100%)',
+              borderRadius: '20px'
+            }}
+          />
+          
+          <div className="relative z-10 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-bold flex items-center text-white font-audiowide">
+                <Trophy className="w-5 h-5 mr-2 text-yellow-500" />
+                Leaderboard
+              </h3>
+              
+              {seasonInfo && (
+                <div className="text-right">
+                  <SeasonProgressIndicator timeRemaining={timeRemaining} />
+                </div>
+              )}
+            </div>
+
+            {/* Season type selector - compact */}
+            <div className="flex space-x-2 mb-4">
+              <button
+                onClick={() => setLeaderboardType('current')}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors font-montserrat ${
+                  leaderboardType === 'current'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/50'
+                }`}
+              >
+                Current
+              </button>
+              <button
+                onClick={() => setLeaderboardType('allTime')}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors font-montserrat ${
+                  leaderboardType === 'allTime'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/50'
+                }`}
+              >
+                All Time
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Leaderboard entries with friends card styling */}
+        {loading ? (
+          <div className="relative overflow-hidden" style={{ borderRadius: '20px' }}>
+            <div 
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)',
+                borderRadius: '20px'
+              }}
+            />
+            <div className="relative z-10 p-4 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto"></div>
+              <p className="text-white text-sm mt-2 font-montserrat">Loading rankings...</p>
+            </div>
+          </div>
+        ) : entries.length === 0 ? (
+          <div className="relative overflow-hidden" style={{ borderRadius: '20px' }}>
+            <div 
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)',
+                borderRadius: '20px'
+              }}
+            />
+            <div className="relative z-10 p-4 text-center">
+              <Users className="w-8 h-8 mx-auto text-gray-500 mb-2" />
+              <p className="text-gray-400 text-sm font-montserrat">No rankings yet</p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {entries.slice(0, 5).map((entry, index) => (
+              <motion.div
+                key={entry.playerId}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="relative overflow-hidden"
+                style={{ borderRadius: '20px' }}
+              >
+                {/* Friends card style gradient overlay */}
+                <div 
+                  className="absolute inset-0"
+                  style={{
+                    background: entry.playerId === userId 
+                      ? 'linear-gradient(to right, rgba(147, 51, 234, 0.8) 0%, rgba(139, 92, 246, 0.4) 50%, transparent 100%)'
+                      : 'linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)',
+                    borderRadius: '20px'
+                  }}
+                />
+                
+                <div className="relative z-10 flex items-center gap-3 p-3">
+                  {/* Rank indicator */}
+                  <div className="w-8 h-8 flex items-center justify-center">
+                    {getRankIcon(entry.rank)}
+                  </div>
+                  
+                  {/* Player info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-medium font-audiowide truncate text-sm">
+                      {entry.displayName}
+                    </p>
+                    <div className="flex items-center space-x-2">
+                      <LevelTierBadge level={entry.level} animated={false} />
+                      <span className="text-green-400 text-xs font-montserrat">
+                        {entry.totalWins}W
+                      </span>
+                      <span className="text-blue-400 text-xs font-montserrat">
+                        {entry.winRate}%
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Win streak indicator */}
+                  {entry.winStreak >= 3 && (
+                    <div className="text-orange-400 text-xs font-bold">
+                      🔥{entry.winStreak}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+            
+            {/* User rank if not in top 5 */}
+            {showUserRank && userRank && userRank > 5 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="relative overflow-hidden mt-3"
+                style={{ borderRadius: '20px' }}
+              >
+                <div 
+                  className="absolute inset-0"
+                  style={{
+                    background: 'linear-gradient(to right, rgba(59, 130, 246, 0.8) 0%, rgba(59, 130, 246, 0.4) 50%, transparent 100%)',
+                    borderRadius: '20px'
+                  }}
+                />
+                <div className="relative z-10 p-3 text-center">
+                  <p className="text-blue-300 text-sm font-montserrat">
+                    Your Rank: <span className="font-bold text-blue-400">#{userRank}</span>
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="bg-gray-900 rounded-lg text-white">
       {/* Header */}

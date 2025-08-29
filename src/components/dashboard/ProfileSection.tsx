@@ -105,7 +105,7 @@ const useForm = <T extends Record<string, string>>(initialValues: T) => {
 const ProfileSection: React.FC = () => {
   const { user, signOut, updateUserProfile } = useAuth();
   const { currentSection } = useNavigation();
-  const { DisplayBackgroundEquip } = useBackground();
+  const { DisplayBackgroundEquip, MatchBackgroundEquip } = useBackground();
   const { stats, loading: statsLoading, error: statsError } = useUserStats();
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'profile' | 'settings'>('profile');
@@ -316,29 +316,113 @@ const ProfileSection: React.FC = () => {
         {/* Profile Tab Content */}
         {activeTab === 'profile' && (
           <div className="space-y-6">
-            {/* Profile Information */}
+            {/* Account Stats */}
+            <div 
+              className="relative overflow-hidden rounded-2xl"
+              style={{
+                background: MatchBackgroundEquip?.file 
+                  ? `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${MatchBackgroundEquip.file})`
+                  : 'rgba(0, 0, 0, 0.6)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }}
+            >
+              <Card className="bg-transparent border-gray-600 text-white">
+                <CardHeader>
+                  <CardTitle className="text-white font-audiowide">
+                    {user?.displayName || 'Player'}'s Statistics
+                  </CardTitle>
+                </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-400 font-audiowide">
+                      {statsLoading ? '...' : (stats?.gamesPlayed || 0)}
+                    </div>
+                    <div className="text-sm text-gray-300 font-montserrat">Games Played</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-400 font-audiowide">
+                      {statsLoading ? '...' : (stats?.matchWins || 0)}
+                    </div>
+                    <div className="text-sm text-gray-300 font-montserrat">Games Won</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-400 font-audiowide">
+                      {statsLoading ? '...' : (stats?.itemsCollected || 0)}
+                    </div>
+                    <div className="text-sm text-gray-300 font-montserrat">Items Collected</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-orange-400 font-audiowide">
+                      {statsLoading ? '...' : (stats?.currentStreak || 0)}
+                    </div>
+                    <div className="text-sm text-gray-300 font-montserrat">Current Streak</div>
+                  </div>
+                </div>
+                
+                {/* Additional stats row */}
+                <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-600">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-yellow-400 font-audiowide">
+                      {statsLoading ? '...' : (stats?.bestStreak || 0)}
+                    </div>
+                    <div className="text-sm text-gray-300 font-montserrat">Best Streak</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-cyan-400 font-audiowide">
+                      {statsLoading ? '...' : (
+                        stats?.gamesPlayed 
+                          ? Math.round(((stats.matchWins || 0) / stats.gamesPlayed) * 100)
+                          : 0
+                      )}%
+                    </div>
+                    <div className="text-sm text-gray-300 font-montserrat">Win Rate</div>
+                  </div>
+                </div>
+                
+                {statsError && (
+                  <div className="mt-4 text-center text-red-400 text-sm font-montserrat">
+                    {statsError}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            </div>
+        </div>
+      )}
+
+        {/* Settings Tab Content */}
+        {activeTab === 'settings' && (
+          <div className="space-y-6">
+            {/* Profile Information - Moved to Settings Tab */}
             <Card className="bg-black bg-opacity-60 border-gray-600 text-white">
               <CardHeader>
                 <CardTitle className="text-white font-audiowide">Profile Information</CardTitle>
               </CardHeader>
               <CardContent>
               <form onSubmit={handleUpdateProfile} className="space-y-4">
-                <div className="flex items-center space-x-4 mb-6">
-                  <ProfilePictureUpload 
-                    currentPhotoURL={user?.photoURL}
-                    onUploadComplete={(newPhotoURL) => {
-                      console.log('Profile picture updated:', newPhotoURL);
-                      // The user context will automatically update when the document changes
-                    }}
-                  />
-                  <div>
-                    <h3 className="text-lg font-semibold font-audiowide text-white">{user?.displayName || 'Unknown User'}</h3>
-                    <p className="text-black font-montserrat">Member since {user?.createdAt?.toLocaleDateString()}</p>
+                <div className="flex items-center space-x-6 mb-6">
+                  <div className="relative">
+                    <ProfilePictureUpload 
+                      currentPhotoURL={user?.photoURL}
+                      onUploadComplete={(newPhotoURL) => {
+                        console.log('Profile picture updated:', newPhotoURL);
+                        // The user context will automatically update when the document changes
+                      }}
+                      className="enhanced-profile-upload"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold font-audiowide text-white mb-2">{user?.displayName || 'Unknown User'}</h3>
+                    <p className="text-gray-300 font-montserrat mb-1">Member since {user?.createdAt?.toLocaleDateString()}</p>
+                    <p className="text-sm text-gray-400 font-montserrat">{user?.email}</p>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-black mb-2 font-montserrat">
+                  <label className="block text-sm font-medium text-white mb-2 font-montserrat">
                     Display Name
                   </label>
                   <Input
@@ -353,7 +437,7 @@ const ProfileSection: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-black mb-2 font-montserrat">
+                  <label className="block text-sm font-medium text-white mb-2 font-montserrat">
                     Email Address
                   </label>
                   <Input
@@ -363,7 +447,7 @@ const ProfileSection: React.FC = () => {
                     placeholder="Enter your email"
                     disabled
                   />
-                  <p className="text-xs text-black mt-1 font-montserrat">
+                  <p className="text-xs text-gray-400 mt-1 font-montserrat">
                     Email cannot be changed at this time
                   </p>
                 </div>
@@ -393,72 +477,6 @@ const ProfileSection: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Account Stats */}
-          <Card className="bg-black bg-opacity-60 border-gray-600 text-white">
-            <CardHeader>
-              <CardTitle className="text-white font-audiowide">Account Statistics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-400 font-audiowide">
-                    {statsLoading ? '...' : (stats?.gamesPlayed || 0)}
-                  </div>
-                  <div className="text-sm text-gray-300 font-montserrat">Games Played</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-400 font-audiowide">
-                    {statsLoading ? '...' : (stats?.matchWins || 0)}
-                  </div>
-                  <div className="text-sm text-gray-300 font-montserrat">Games Won</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-400 font-audiowide">
-                    {statsLoading ? '...' : (stats?.itemsCollected || 0)}
-                  </div>
-                  <div className="text-sm text-gray-300 font-montserrat">Items Collected</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-400 font-audiowide">
-                    {statsLoading ? '...' : (stats?.currentStreak || 0)}
-                  </div>
-                  <div className="text-sm text-gray-300 font-montserrat">Current Streak</div>
-                </div>
-              </div>
-              
-              {/* Additional stats row */}
-              <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-600">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-400 font-audiowide">
-                    {statsLoading ? '...' : (stats?.bestStreak || 0)}
-                  </div>
-                  <div className="text-sm text-gray-300 font-montserrat">Best Streak</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-cyan-400 font-audiowide">
-                    {statsLoading ? '...' : (
-                      stats?.gamesPlayed 
-                        ? Math.round(((stats.matchWins || 0) / stats.gamesPlayed) * 100)
-                        : 0
-                    )}%
-                  </div>
-                  <div className="text-sm text-gray-300 font-montserrat">Win Rate</div>
-                </div>
-              </div>
-              
-              {statsError && (
-                <div className="mt-4 text-center text-red-400 text-sm font-montserrat">
-                  {statsError}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-        {/* Settings Tab Content */}
-        {activeTab === 'settings' && (
-          <div className="space-y-6">
             {/* General Settings */}
             <Card className="bg-black bg-opacity-60 border-gray-600 text-white">
               <CardHeader>
@@ -486,27 +504,8 @@ const ProfileSection: React.FC = () => {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-medium font-audiowide text-white">Sound Effects</div>
-                  <div className="text-sm text-gray-300 font-montserrat">Enable game sound effects</div>
-                </div>
-                <button
-                  onClick={() => handleToggle('soundEffects')}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    settings.soundEffects ? 'bg-blue-600' : 'bg-gray-200'
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      settings.soundEffects ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
                   <div className="font-medium font-audiowide">Auto-Save</div>
-                  <div className="text-sm text-gray-600 font-montserrat">Automatically save game progress</div>
+                  <div className="text-sm text-gray-300 font-montserrat">Automatically save game progress</div>
                 </div>
                 <button
                   onClick={() => handleToggle('autoSave')}
@@ -520,92 +519,6 @@ const ProfileSection: React.FC = () => {
                     }`}
                   />
                 </button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Audio Settings */}
-          <Card className="bg-black bg-opacity-60 border-gray-600 text-white">
-            <CardHeader>
-              <CardTitle className="text-white font-audiowide">Audio</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="font-medium font-audiowide text-white">Music Volume</label>
-                  <span className="text-sm text-gray-300 font-audiowide">{settings.musicVolume}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={settings.musicVolume}
-                  onChange={(e) => handleSliderChange('musicVolume', parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="font-medium font-audiowide text-white">Sound Effects Volume</label>
-                  <span className="text-sm text-gray-300 font-audiowide">{settings.sfxVolume}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={settings.sfxVolume}
-                  onChange={(e) => handleSliderChange('sfxVolume', parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Appearance Settings */}
-          <Card className="bg-black bg-opacity-60 border-gray-600 text-white">
-            <CardHeader>
-              <CardTitle className="text-white font-audiowide">Appearance</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="block font-medium mb-2 font-audiowide text-white">Theme</label>
-                <select
-                  value={settings.theme}
-                  onChange={(e) => handleSelectChange('theme', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-montserrat"
-                >
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                  <option value="auto">Auto</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-medium mb-2 font-audiowide text-white">Animation Speed</label>
-                <select
-                  value={settings.animationSpeed}
-                  onChange={(e) => handleSelectChange('animationSpeed', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-montserrat"
-                >
-                  <option value="slow">Slow</option>
-                  <option value="normal">Normal</option>
-                  <option value="fast">Fast</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-medium mb-2 font-audiowide text-white">Language</label>
-                <select
-                  value={settings.language}
-                  onChange={(e) => handleSelectChange('language', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-montserrat"
-                >
-                  <option value="en">English</option>
-                  <option value="es">Spanish</option>
-                  <option value="fr">French</option>
-                  <option value="de">German</option>
-                </select>
               </div>
             </CardContent>
           </Card>

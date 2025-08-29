@@ -25,6 +25,12 @@ const navigationItems: NavigationItem[] = [
     description: 'Create or join games'
   },
   {
+    id: 'ranked',
+    label: 'Ranked',
+    icon: '🏆',
+    description: 'Competitive seasons'
+  },
+  {
     id: 'inventory',
     label: 'Vault',
     icon: '🎒',
@@ -101,7 +107,7 @@ export const DashboardNavigation: React.FC = () => {
 
           {/* Navigation Items */}
           <div className="hidden md:flex items-center gap-[20px]">
-            {navigationItems.slice(0, 3).map((item) => {
+            {navigationItems.slice(0, 4).map((item) => {
               const isActive = currentSection === item.id;
               
               return (
@@ -132,7 +138,7 @@ export const DashboardNavigation: React.FC = () => {
 
         {/* Right Navigation */}
         <div className="flex flex-row items-center justify-end gap-[20px]">
-          {navigationItems.slice(3).map((item) => {
+          {navigationItems.slice(4).map((item) => {
             const isActive = currentSection === item.id;
             
             return (

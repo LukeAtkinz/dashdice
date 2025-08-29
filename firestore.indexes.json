@@ -151,6 +151,138 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "rankedStats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "currentSeason.dashNumber",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "currentSeason.level",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "currentSeason.totalWins",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "currentSeason.winsInLevel",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "rankedStats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "allTime.maxLevelReached",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "allTime.totalRankedWins",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "allTime.totalRankedGames",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "rankedStats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "currentSeason.dashNumber",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "currentSeason.level",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "currentSeason.totalWins",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "currentSeason.winsInLevel",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "rankedStats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "currentSeason.level",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "currentSeason.level",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "seasons",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isActive",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dashNumber",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "rankedMatches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "hostData.playerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "completedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "rankedMatches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "opponentData.playerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "completedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "rankedAchievements",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "unlockedAt",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []
