@@ -120,7 +120,9 @@ service cloud.firestore {
       allow update: if request.auth != null && 
         (request.auth.uid in resource.data.participants || 
          request.auth.uid in resource.data.participantIds ||
-         request.auth.uid == resource.data.createdBy);
+         request.auth.uid == resource.data.createdBy ||
+         // Allow game room participants to join (for match chat)
+         resource.data.type == 'game');
       allow delete: if request.auth != null && 
         request.auth.uid == resource.data.createdBy;
     }

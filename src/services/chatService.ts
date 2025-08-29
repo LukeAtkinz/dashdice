@@ -292,12 +292,34 @@ export class ChatService {
       }
 
       // Create game chat room if it doesn't exist
-      // Get game participants (you'd need to implement this based on your game structure)
-      const participants: string[] = []; // Get from game document
+      // Get game participants from match document
+      const participants: string[] = [];
+      
+      try {
+        const matchRef = doc(db, 'matches', gameId);
+        const matchDoc = await getDoc(matchRef);
+        
+        if (matchDoc.exists()) {
+          const matchData = matchDoc.data();
+          // Add host and opponent as participants
+          if (matchData.hostData?.playerId) {
+            participants.push(matchData.hostData.playerId);
+          }
+          if (matchData.opponentData?.playerId) {
+            participants.push(matchData.opponentData.playerId);
+          }
+        }
+      } catch (matchError) {
+        console.warn('Could not fetch match participants, creating room without participants:', matchError);
+      }
+      
       return await this.createChatRoom('game', participants, `Game Chat - ${gameId}`, gameId);
     } catch (error) {
       console.error('Error getting game chat room:', error);
-      throw error;
+      if (error instanceof Error && error.message.includes('permission')) {
+        throw new Error('You do not have permission to access game chat rooms. Please check your authentication.');
+      }
+      throw new Error('Failed to access game chat room. Please try again.');
     }
   }
 

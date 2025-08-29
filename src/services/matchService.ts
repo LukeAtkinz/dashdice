@@ -550,8 +550,8 @@ export class MatchService {
           turnOver = false; // Continue turn after double 1
         }
         else if (isDouble) {
-          // Any other double: apply multiplier (die value) to the roll
-          const multiplier = dice1; // dice1 = dice2 for doubles
+          // Any other double: apply 2x multiplier to the dice sum
+          const multiplier = 2; // Fixed 2x multiplier for all doubles
           const effectiveRoll = diceSum * multiplier;
           
           console.log(`🎲 Last Line - Double ${dice1}s: ${diceSum} × ${multiplier} = ${effectiveRoll} added to turn score`);

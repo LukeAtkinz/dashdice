@@ -13,6 +13,18 @@ export const GlobalRematchNotification: React.FC = () => {
   const { currentSection } = useNavigation();
   const [timeLeft, setTimeLeft] = useState<{ [key: string]: number }>({});
 
+  // Game mode icons mapping
+  const getGameModeIcon = (gameType: string): string => {
+    const iconMap: { [key: string]: string } = {
+      'quickfire': '/Design Elements/Shield.webp',
+      'classic': '/Design Elements/Crown Mode.webp',
+      'zero-hour': '/Design Elements/time out.webp',
+      'last-line': '/Design Elements/skull.webp',
+      'true-grit': '/Design Elements/Castle.webp'
+    };
+    return iconMap[gameType.toLowerCase()] || iconMap['classic'];
+  };
+
   // Game mode display name mapping
   const getGameModeDisplayName = (gameType: string): string => {
     const modeNames: Record<string, string> = {
@@ -126,9 +138,15 @@ export const GlobalRematchNotification: React.FC = () => {
               {/* Rematch Content */}
               <div className="mb-5">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">🎮</span>
-                  </div>
+                  <img 
+                    src={getGameModeIcon(rematch.gameMode)} 
+                    alt={rematch.gameMode}
+                    className="w-10 h-10 md:w-12 md:h-12 object-contain opacity-90 drop-shadow-lg"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/Design Elements/Crown Mode.webp'; // Fallback icon
+                    }}
+                  />
                   <div className="flex-1">
                     <p className="text-white text-sm md:text-base mb-1 font-audiowide">
                       <span className="font-bold text-blue-300">
