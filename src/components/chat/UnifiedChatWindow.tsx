@@ -169,7 +169,8 @@ export default function UnifiedChatWindow({
     const loadPersistedTabs = async () => {
       try {
         const persistedTabsStr = localStorage.getItem('chatTabs');
-        const persistedTabs = persistedTabsStr ? JSON.parse(persistedTabsStr) : [];
+        console.log('🗃️ Loading persisted chat tabs:', persistedTabsStr);
+        const persistedData = persistedTabsStr ? JSON.parse(persistedTabsStr) : { tabs: [], activeTabId: null };
         
         // Always ensure global chat is present
         const globalRoomId = await getGlobalChatRoom();
@@ -187,9 +188,10 @@ export default function UnifiedChatWindow({
         let hasActiveTab = false;
 
         // Re-create friend chats from persisted data
-        for (const persistedTab of persistedTabs) {
+        for (const persistedTab of persistedData.tabs || []) {
           if (persistedTab.type === 'friend' && persistedTab.friendId) {
             try {
+              console.log('🔄 Restoring friend chat tab:', persistedTab.title, persistedTab.friendId);
               const roomId = await getFriendChatRoom(persistedTab.friendId);
               await joinRoom(roomId);
               
@@ -204,7 +206,7 @@ export default function UnifiedChatWindow({
               
               validTabs.push(friendTab);
               
-              if (persistedTab.id === persistedTab.activeTabId) {
+              if (persistedTab.id === persistedData.activeTabId) {
                 hasActiveTab = true;
                 setActiveTabId(friendTab.id);
               }
@@ -215,6 +217,7 @@ export default function UnifiedChatWindow({
         }
 
         setTabs(validTabs);
+        console.log('✅ Chat tabs restored:', validTabs.length, 'tabs loaded');
         
         // If no active tab was restored, default to global
         if (!hasActiveTab) {
@@ -239,14 +242,14 @@ export default function UnifiedChatWindow({
       }
     };
 
-    if (isVisible && tabs.length === 0) {
+    if (isVisible && user?.uid) {
       loadPersistedTabs();
     }
-  }, [isVisible, getGlobalChatRoom, getFriendChatRoom, joinRoom, tabs.length]);
+  }, [isVisible, user?.uid, getGlobalChatRoom, getFriendChatRoom, joinRoom]);
 
   // Save tabs to localStorage whenever they change
   useEffect(() => {
-    if (tabs.length > 0) {
+    if (tabs.length > 0 && user?.uid) {
       const persistData = {
         tabs: tabs.filter(tab => tab.type === 'friend').map(tab => ({
           id: tab.id,
@@ -256,9 +259,10 @@ export default function UnifiedChatWindow({
         })),
         activeTabId
       };
+      console.log('💾 Saving chat tabs to localStorage:', persistData);
       localStorage.setItem('chatTabs', JSON.stringify(persistData));
     }
-  }, [tabs, activeTabId]);
+  }, [tabs, activeTabId, user?.uid]);
 
   // Register this instance globally
   useEffect(() => {
@@ -554,14 +558,14 @@ export default function UnifiedChatWindow({
         </video>
       )}
       
-      {/* Default background for non-friend chats */}
+      {/* Default background for non-friend chats - LIGHT OVERLAY */}
       {!friendBackgroundStyle.backgroundImage && !friendVideoBackground && (
-        <div className="absolute inset-0 bg-gray-900/95 backdrop-blur-lg" style={{ zIndex: -1 }} />
+        <div className="absolute inset-0 bg-gray-900/30 backdrop-blur-sm" style={{ zIndex: -1 }} />
       )}
 
       {/* Header with tabs - FIXED AT TOP */}
       <div className="flex items-center justify-between p-3 border-b border-gray-700 flex-shrink-0 rounded-t-[20px] relative z-10"
-           style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+           style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
         <div className="flex items-center gap-2 flex-1 overflow-x-auto">
           {tabs
             .filter(tab => {
@@ -575,13 +579,16 @@ export default function UnifiedChatWindow({
             <button
               key={tab.id}
               onClick={() => setActiveTabId(tab.id)}
-              className={`flex items-center gap-2 px-3 py-1 rounded text-sm whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-2 px-3 py-1 rounded-lg text-sm whitespace-nowrap transition-colors ${
                 activeTabId === tab.id
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               } ${tab.type === 'global' ? 'min-w-[80px]' : ''}`}
+              style={{ borderRadius: '8px', fontFamily: 'Audiowide, monospace' }}
             >
-              {tab.type !== 'global' && getTabIcon(tab.type)}
+              {/* Only show icon for global and game tabs, not friend tabs */}
+              {tab.type === 'global' && <Users size={14} />}
+              {tab.type === 'game' && <GamepadIcon size={14} />}
               <span className={`truncate ${tab.type === 'global' ? 'max-w-none' : 'max-w-16'}`}>
                 {tab.type === 'global' ? 'Everyone' : tab.title}
               </span>
@@ -619,12 +626,7 @@ export default function UnifiedChatWindow({
       {/* Chat content - ABSOLUTE POSITIONED FOR PROPER LAYOUT */}
       <div className="absolute inset-x-0 bottom-0 top-[60px] flex flex-col">
         {/* Messages area - SCROLLABLE MIDDLE SECTION */}
-            <div className="flex-1 overflow-hidden min-h-0 relative"
-                 style={{ 
-                   backgroundColor: (friendBackgroundStyle.backgroundImage || friendVideoBackground) 
-                     ? 'rgba(0, 0, 0, 0.3)' 
-                     : 'transparent'
-                 }}>
+            <div className="flex-1 overflow-hidden min-h-0 relative">
               {activeTab && (
                 <MessageList
                   roomId={activeTab.roomId}
@@ -640,11 +642,7 @@ export default function UnifiedChatWindow({
 
             {/* Message input - ABSOLUTELY FIXED AT BOTTOM */}
             <div className="flex-shrink-0 border-t border-gray-700 rounded-b-[20px] relative"
-                 style={{ 
-                   backgroundColor: (friendBackgroundStyle.backgroundImage || friendVideoBackground) 
-                     ? 'rgba(0, 0, 0, 0.7)' 
-                     : 'rgb(31 41 55)' // bg-gray-800
-                 }}>
+                 style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
               {/* Typing indicators */}
               {roomTyping.length > 0 && (
                 <div className="px-3 py-1 text-xs text-gray-400 italic border-b border-gray-700">
