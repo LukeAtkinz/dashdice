@@ -170,6 +170,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     currentNumber: number;
     finalNumber: number | null;
     reelSpeed?: number;
+    animationKey?: number;
   }>({ isSpinning: false, currentNumber: 1, finalNumber: null, reelSpeed: 0.1 });
   
   const [dice2Animation, setDice2Animation] = useState<{
@@ -177,6 +178,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     currentNumber: number;
     finalNumber: number | null;
     reelSpeed?: number;
+    animationKey?: number;
   }>({ isSpinning: false, currentNumber: 1, finalNumber: null, reelSpeed: 0.1 });
 
   // Turn decider dice animation
@@ -185,6 +187,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     currentNumber: number;
     finalNumber: number | null;
     reelSpeed?: number;
+    animationKey?: number;
   }>({ isSpinning: false, currentNumber: 1, finalNumber: null, reelSpeed: 0.1 });
 
   // All useCallback hooks must be declared before any conditional logic
@@ -387,7 +390,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       isSpinning: true,
       currentNumber: Math.floor(Math.random() * 6) + 1,
       finalNumber: null,
-      reelSpeed: 0.1
+      reelSpeed: 0.1,
+      animationKey: Date.now() // Force refresh for same values
     });
 
     // 🎰 3-Phase Progressive Deceleration System
@@ -397,7 +401,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     let reelAnimationSpeed = 0.1; // Background reel speed: very fast
 
     const animateReel = () => {
-      setDiceState(prev => ({
+      setDiceState((prev: any) => ({
         ...prev,
         currentNumber: Math.floor(Math.random() * 6) + 1
       }));
@@ -429,10 +433,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       }
       
       // Update the animation speed for the reel background
-      setDiceState(prev => ({
+      setDiceState((prev: any) => ({
         ...prev,
         currentNumber: Math.floor(Math.random() * 6) + 1,
-        reelSpeed: reelAnimationSpeed // Synchronized background reel speed
+        reelSpeed: reelAnimationSpeed, // Synchronized background reel speed
+        animationKey: Date.now()
       }));
       
       if (elapsedTime < animationDuration) {
@@ -445,7 +450,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     // 🎰 Near Miss Timing - Triggered at 60% of animation duration
     const nearMissTimeout = setTimeout(() => {
       if (Math.random() < 0.7) { // 70% chance of near miss
-        setDiceState(prev => ({
+        setDiceState((prev: any) => ({
           ...prev,
           currentNumber: 6 // Briefly show a 6 for excitement
         }));
@@ -463,7 +468,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         isSpinning: false,
         currentNumber: overshoot,
         finalNumber: finalValue,
-        reelSpeed: 0.1 // Reset reel speed
+        reelSpeed: 0.1, // Reset reel speed
+        animationKey: Date.now()
       });
 
       // 🎰 Tick-Back Delay - 150ms pause before showing final result
@@ -472,7 +478,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           isSpinning: false,
           currentNumber: finalValue,
           finalNumber: finalValue,
-          reelSpeed: 0.1 // Reset reel speed
+          reelSpeed: 0.1, // Reset reel speed
+          animationKey: Date.now()
         });
       }, 150); // Reduced from 300ms to 150ms for smoother transition
       
@@ -551,7 +558,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       startSlotMachineAnimation('turnDecider', matchData.gameData.turnDeciderDice, 1500);
     }
 
-    // Gameplay dice animations - Simplified with immediate values
+    // Gameplay dice animations - Always animate even for same values
     if (matchData.gameData.isRolling && matchData.gameData.rollPhase === 'dice1' && 
         matchData.gameData.diceOne > 0 && !dice1Animation.isSpinning) {
       // 🎰 Animation Durations per specification:
@@ -563,10 +570,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     }
 
     if (matchData.gameData.isRolling && matchData.gameData.rollPhase === 'dice2' && 
-        matchData.gameData.diceTwo > 0 && !dice2Animation.isSpinning &&
-        dice2Animation.finalNumber !== matchData.gameData.diceTwo) {
+        matchData.gameData.diceTwo > 0 && !dice2Animation.isSpinning) {
       // 🎰 Animation Durations per specification:
       // Both Dice 1 & 2: 1200ms (1.2 seconds)
+      // Removed final number check to force animation even for same values
       console.log('🎲 Starting Dice 2 animation with value:', matchData.gameData.diceTwo);
       startSlotMachineAnimation(2, matchData.gameData.diceTwo, 1200);
       
