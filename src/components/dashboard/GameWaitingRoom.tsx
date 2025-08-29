@@ -188,15 +188,19 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
   // Current game mode configuration - use waiting room data if available, fallback to prop
   const currentGameMode = (() => {
-    // If we have waiting room data with a gameMode, use that
-    const actualGameMode = waitingRoomEntry?.gameMode || gameMode;
+    // PRIORITY: Use the gameMode prop over waitingRoomEntry for friend invitations
+    // This ensures the correct game mode is used when accepting friend invitations
+    const actualGameMode = gameMode || waitingRoomEntry?.gameMode;
     const config = gameModeConfig[actualGameMode as keyof typeof gameModeConfig] || gameModeConfig.classic;
     
     console.log('🎯 GameWaitingRoom: Game mode resolution:', {
       propGameMode: gameMode,
       waitingRoomGameMode: waitingRoomEntry?.gameMode,
       resolvedGameMode: actualGameMode,
-      configUsed: config.name
+      configUsed: config.name,
+      waitingRoomId: waitingRoomEntry?.id,
+      roomIdProp: roomId,
+      isFriendInvitation: waitingRoomEntry?.friendInvitation
     });
     
     return config;
@@ -327,8 +331,99 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 }
               } else {
                 console.log('🔄 GameWaitingRoom: Room no longer exists in waitingroom (likely moved to matches)');
-                // Don't set error here - room might have been moved to matches by other player
-                // The moveToMatchesAndNavigate function will handle navigation
+                // For friend invitations, immediately check if room was moved to matches
+                console.log('🔍 GameWaitingRoom: Room not found, checking for existing matches...');
+                
+                // Check if this room was moved to matches collection
+                const checkForExistingMatch = async () => {
+                  try {
+                    console.log('🔍 DEBUG: Starting match search for roomId:', roomId);
+                    
+                    // Check for match by originalRoomId
+                    const matchQuery = query(
+                      collection(db, 'matches'), 
+                      where('originalRoomId', '==', roomId)
+                    );
+                    const matchSnapshot = await getDocs(matchQuery);
+                    
+                    console.log('🔍 DEBUG: originalRoomId query results:', {
+                      roomId,
+                      matchCount: matchSnapshot.docs.length,
+                      matches: matchSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        originalRoomId: doc.data().originalRoomId,
+                        gameMode: doc.data().gameMode,
+                        status: doc.data().status
+                      }))
+                    });
+                    
+                    if (!matchSnapshot.empty) {
+                      const existingMatch = matchSnapshot.docs[0];
+                      const matchData = existingMatch.data();
+                      
+                      console.log('✅ GameWaitingRoom: Found existing match by originalRoomId, navigating...');
+                      setCurrentSection('match', {
+                        gameMode: matchData.gameMode || gameMode,
+                        matchId: existingMatch.id,
+                        roomId: existingMatch.id
+                      });
+                      return;
+                    }
+                    
+                    // If no match found by originalRoomId, check by player ID
+                    console.log('🔍 DEBUG: No match found by originalRoomId, checking by player ID...');
+                    const [hostMatches, opponentMatches] = await Promise.all([
+                      getDocs(query(collection(db, 'matches'), where('hostData.playerId', '==', user.uid))),
+                      getDocs(query(collection(db, 'matches'), where('opponentData.playerId', '==', user.uid)))
+                    ]);
+                    
+                    const allUserMatches = [...hostMatches.docs, ...opponentMatches.docs];
+                    console.log('🔍 DEBUG: Player ID query results:', {
+                      userUid: user.uid,
+                      hostMatches: hostMatches.docs.length,
+                      opponentMatches: opponentMatches.docs.length,
+                      totalMatches: allUserMatches.length,
+                      matches: allUserMatches.map(doc => ({
+                        id: doc.id,
+                        gameMode: doc.data().gameMode,
+                        status: doc.data().status,
+                        createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || 'unknown',
+                        hostPlayerId: doc.data().hostData?.playerId,
+                        opponentPlayerId: doc.data().opponentData?.playerId
+                      }))
+                    });
+                    
+                    const recentMatch = allUserMatches.find(doc => {
+                      const data = doc.data();
+                      const matchTime = data.createdAt?.toDate?.() || new Date(0);
+                      const timeDiff = new Date().getTime() - matchTime.getTime();
+                      return data.status === 'active' && timeDiff < 30000; // 30 seconds
+                    });
+                    
+                    if (recentMatch) {
+                      const matchData = recentMatch.data();
+                      console.log('✅ GameWaitingRoom: Found recent match by player ID, navigating...');
+                      setCurrentSection('match', {
+                        gameMode: matchData.gameMode || gameMode,
+                        matchId: recentMatch.id,
+                        roomId: recentMatch.id
+                      });
+                      return;
+                    }
+                    
+                    // If no matches found, show error
+                    console.log('❌ GameWaitingRoom: No existing matches found for room');
+                    setError('Game room no longer exists');
+                    setTimeout(() => onBack(), 2000);
+                    
+                  } catch (error) {
+                    console.error('❌ GameWaitingRoom: Error checking for existing matches:', error);
+                    setError('Failed to find game room');
+                    setTimeout(() => onBack(), 2000);
+                  }
+                };
+                
+                checkForExistingMatch();
               }
             },
             (error) => {
