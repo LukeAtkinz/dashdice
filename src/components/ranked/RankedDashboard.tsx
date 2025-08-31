@@ -17,7 +17,7 @@ import { leaderboardService } from '../../services/leaderboardService';
 import { rankedAchievementService } from '../../services/rankedAchievementService';
 import { useBackground } from '@/context/BackgroundContext';
 
-// CSS for custom button styling matching Friends component
+// CSS for custom button styling matching Friends component with new animations
 const buttonStyles = `
   .custom-ranked-button {
     background: var(--ui-inventory-button-bg, linear-gradient(135deg, #2a1810 0%, #1a0f08 100%));
@@ -39,6 +39,56 @@ const buttonStyles = `
     background: var(--ui-inventory-button-active-bg, linear-gradient(135deg, #4a3020 0%, #3a2420 100%));
     border-color: var(--ui-inventory-button-active-border, #c9a96e);
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* New Tab Button Animations */
+  @keyframes borderLoad {
+    0% {
+      background: linear-gradient(90deg, 
+        #FFD700 0%, 
+        #FFD700 0%, 
+        transparent 0%, 
+        transparent 100%);
+    }
+    100% {
+      background: linear-gradient(90deg, 
+        #FFD700 0%, 
+        #FFD700 100%, 
+        transparent 100%, 
+        transparent 100%);
+    }
+  }
+  
+  .tab-button {
+    position: relative;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+  }
+  
+  .tab-button::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(90deg, transparent 0%, transparent 100%);
+    border-radius: inherit;
+    z-index: -1;
+    transition: all 0.3s ease;
+  }
+  
+  .tab-button:hover::before {
+    animation: borderLoad 0.8s ease-in-out forwards;
+  }
+  
+  .tab-button.active {
+    border-color: #FFD700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+  }
+  
+  .tab-button.active::before {
+    background: linear-gradient(90deg, #FFD700 0%, #FFD700 100%);
   }
   
   /* Ranked-style navigation button hover effects */
@@ -333,12 +383,13 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
         {/* Header */}
         <div className="text-center mb-8 flex-shrink-0">
           <h1 
-            className="text-5xl font-bold text-white mb-4"
+            className="text-5xl font-bold text-white mb-4 cursor-pointer hover:text-yellow-400 transition-colors duration-300"
             style={{
               fontFamily: "Audiowide",
               textTransform: "uppercase",
               textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
             }}
+            onClick={() => setActiveTab('overview')}
           >
             Ranked
           </h1>
@@ -346,12 +397,12 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
 
         {/* Navigation Tabs - Using Friends Template */}
         <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8 flex-shrink-0">
-          {tabs.filter(tab => tab.id !== 'matchmaking' && tab.id !== 'achievements').map((tab) => (
+          {tabs.filter(tab => tab.id !== 'matchmaking' && tab.id !== 'achievements' && tab.id !== 'history' && tab.id !== 'overview').map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`
-                nav-button
+                tab-button nav-button
                 flex flex-col items-center justify-center gap-2 p-4 rounded-[20px]
                 transition-all duration-300
                 h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px]
@@ -463,20 +514,7 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
           )}
 
           {/* Achievements tab removed */}
-
-          {activeTab === 'history' && (
-            <div className="bg-gray-900 rounded-lg p-6 text-white">
-              <h3 className="text-xl font-bold mb-4 flex items-center" style={{ fontFamily: 'Audiowide' }}>
-                <Star className="w-5 h-5 mr-2 text-yellow-400" />
-                Match History
-              </h3>
-              <div className="text-center py-8 text-gray-400">
-                <Clock className="w-12 h-12 mx-auto mb-4" />
-                <p style={{ fontFamily: 'Audiowide' }}>Match history coming soon!</p>
-                <p className="text-sm">Track your ranked game performance over time</p>
-              </div>
-            </div>
-          )}
+          {/* History tab removed */}
 
           {/* Animations */}
           <AnimatePresence>

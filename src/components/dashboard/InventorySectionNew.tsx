@@ -43,6 +43,8 @@ const rarityColors = {
 
 export const InventorySection: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('backgrounds');
+  const [previewBackground, setPreviewBackground] = useState<any>(null);
+  const [previewDisplayBackground, setPreviewDisplayBackground] = useState<any>(null);
   const { setCurrentSection } = useNavigation();
   const { 
     availableBackgrounds, 
@@ -148,11 +150,74 @@ export const InventorySection: React.FC = () => {
   };
 
   return (
-    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full">{/* Changed overflow-hidden to allow scrolling, removed max-h-full constraint */}
+    <>
+      {/* CSS Animations for Tab Buttons */}
+      <style jsx>{`
+        @keyframes borderLoad {
+          0% {
+            background: linear-gradient(90deg, 
+              #FFD700 0%, 
+              #FFD700 0%, 
+              transparent 0%, 
+              transparent 100%);
+          }
+          100% {
+            background: linear-gradient(90deg, 
+              #FFD700 0%, 
+              #FFD700 100%, 
+              transparent 100%, 
+              transparent 100%);
+          }
+        }
+        
+        @keyframes borderLoadComplete {
+          0% {
+            border-color: transparent;
+          }
+          100% {
+            border-color: #FFD700;
+          }
+        }
+        
+        .tab-button {
+          position: relative;
+          border: 2px solid transparent;
+          transition: all 0.3s ease;
+        }
+        
+        .tab-button::before {
+          content: '';
+          position: absolute;
+          top: -2px;
+          left: -2px;
+          right: -2px;
+          bottom: -2px;
+          background: linear-gradient(90deg, transparent 0%, transparent 100%);
+          border-radius: inherit;
+          z-index: -1;
+          transition: all 0.3s ease;
+        }
+        
+        .tab-button:hover::before {
+          animation: borderLoad 0.8s ease-in-out forwards;
+        }
+        
+        .tab-button.active {
+          border-color: #FFD700;
+          box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .tab-button.active::before {
+          background: linear-gradient(90deg, #FFD700 0%, #FFD700 100%);
+        }
+      `}</style>
+      
+      <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full overflow-hidden">{/* Disabled scrolling on main container */}
       {/* Header */}
       <div className="text-center mb-8 flex-shrink-0">
+        {/* Desktop Title */}
         <h1 
-          className="text-5xl font-bold text-white mb-4"
+          className="hidden md:block text-5xl font-bold text-white mb-4"
           style={{
             fontFamily: "Audiowide",
             textTransform: "uppercase",
@@ -161,13 +226,39 @@ export const InventorySection: React.FC = () => {
         >
           Inventory
         </h1>
+        
+        {/* Mobile Title - Hide and show previews instead */}
+        <div className="block md:hidden mb-4">
+          {(previewBackground || previewDisplayBackground) ? (
+            <div className="space-y-2">
+              <h1 
+                className="text-xl font-bold text-white"
+                style={{
+                  fontFamily: "Audiowide",
+                  textTransform: "uppercase",
+                  textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
+                }}
+              >
+                {previewBackground ? `Match Preview` : 
+                 previewDisplayBackground ? `Dashboard Preview` : ''}
+              </h1>
+              <p className="text-sm text-white/70" style={{ fontFamily: "Montserrat" }}>
+                {previewBackground ? previewBackground.name : 
+                 previewDisplayBackground ? previewDisplayBackground.name : ''}
+              </p>
+            </div>
+          ) : null}
+        </div>
+        
         <p 
           className="text-xl text-white/80"
           style={{
             fontFamily: "Montserrat",
           }}
         >
-          Manage your collection
+          {previewBackground ? 'See how this background looks in matches' : 
+           previewDisplayBackground ? 'See how this background looks on dashboard' : 
+           'Manage your collection'}
         </p>
       </div>
 
@@ -177,7 +268,7 @@ export const InventorySection: React.FC = () => {
           <motion.button
             key={category.key}
             onClick={() => setSelectedCategory(category.key)}
-            className="flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] transition-all duration-300"
+            className={`tab-button flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] transition-all duration-300 h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px] ${selectedCategory === category.key ? 'active' : ''}`}
             style={getNavButtonStyle(category, selectedCategory === category.key)}
             whileHover={{ 
               scale: 1.05,
@@ -185,12 +276,12 @@ export const InventorySection: React.FC = () => {
             }}
             whileTap={{ scale: 0.95 }}
           >
-            <div className="text-3xl mb-2">{category.icon}</div>
+            <div className="text-lg md:text-xl mb-1">{category.icon}</div>
             <span
               style={{
                 color: DisplayBackgroundEquip?.name === 'On A Mission' ? "#FFF" : "#FFF",
                 fontFamily: "Audiowide",
-                fontSize: "14px",
+                fontSize: "12px",
                 fontWeight: 400,
                 textTransform: "uppercase",
               }}
@@ -201,8 +292,148 @@ export const InventorySection: React.FC = () => {
         ))}
       </div>
 
+      {/* Match UI Preview - Only show for backgrounds and when preview is active */}
+      {selectedCategory === 'backgrounds' && previewBackground && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="w-full max-w-[50rem] mb-6 p-2 md:p-4 rounded-[15px] md:rounded-[20px] bg-black/30 backdrop-blur-md border border-white/20"
+        >
+          <div className="text-center mb-2 md:mb-4 hidden md:block">
+            <h3 className="text-xl font-bold text-white/90" style={{ fontFamily: "Audiowide" }}>
+              Match Preview: {previewBackground.name}
+            </h3>
+          </div>
+          
+          {/* Mini Match UI - Mobile optimized */}
+          <div 
+            className="relative w-full h-[120px] md:h-[200px] rounded-[10px] md:rounded-[15px] overflow-hidden border border-white/30 md:border-2"
+            style={{
+              backgroundImage: previewBackground.preview.includes('.') 
+                ? `url(${previewBackground.preview})`
+                : 'none',
+              backgroundColor: !previewBackground.preview.includes('.') 
+                ? previewBackground.preview 
+                : 'transparent',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          >
+            {/* Overlay game elements - Mobile optimized */}
+            <div className="absolute inset-0 bg-black/20">
+              {/* Player areas */}
+              <div className="absolute top-1 md:top-4 left-1 md:left-4 bg-black/50 rounded p-1 md:p-2 backdrop-blur-sm">
+                <div className="text-white text-xs md:text-sm font-bold">You</div>
+                <div className="text-white/70 text-xs">HP: 100</div>
+              </div>
+              <div className="absolute top-1 md:top-4 right-1 md:right-4 bg-black/50 rounded p-1 md:p-2 backdrop-blur-sm">
+                <div className="text-white text-xs md:text-sm font-bold">Opponent</div>
+                <div className="text-white/70 text-xs">HP: 100</div>
+              </div>
+              
+              {/* Dice area */}
+              <div className="absolute bottom-1 md:bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 rounded p-1 md:p-3 backdrop-blur-sm">
+                <div className="flex gap-1 md:gap-2">
+                  <div className="w-4 md:w-8 h-4 md:h-8 bg-white/20 rounded border border-white/40 md:border-2 flex items-center justify-center text-white font-bold text-xs md:text-base">🎲</div>
+                  <div className="w-4 md:w-8 h-4 md:h-8 bg-white/20 rounded border border-white/40 md:border-2 flex items-center justify-center text-white font-bold text-xs md:text-base">🎲</div>
+                </div>
+              </div>
+              
+              {/* Action button */}
+              <div className="absolute bottom-1 md:bottom-4 right-1 md:right-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded px-2 md:px-4 py-1 md:py-2">
+                <span className="text-white font-bold text-xs md:text-sm">ROLL</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-center mt-1 md:mt-3">
+            <button
+              onClick={() => setPreviewBackground(null)}
+              className="px-2 md:px-4 py-1 md:py-2 bg-white/20 rounded text-white/80 hover:bg-white/30 transition-all text-xs md:text-sm"
+            >
+              Close
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Dashboard Preview - Only show for backgrounds and when display preview is active */}
+      {selectedCategory === 'backgrounds' && previewDisplayBackground && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="w-full max-w-[50rem] mb-6 p-2 md:p-4 rounded-[15px] md:rounded-[20px] bg-black/30 backdrop-blur-md border border-white/20"
+        >
+          <div className="text-center mb-2 md:mb-4 hidden md:block">
+            <h3 className="text-xl font-bold text-white/90" style={{ fontFamily: "Audiowide" }}>
+              Dashboard Preview: {previewDisplayBackground.name}
+            </h3>
+          </div>
+          
+          {/* Mini Dashboard UI - Mobile optimized */}
+          <div 
+            className="relative w-full h-[120px] md:h-[200px] rounded-[10px] md:rounded-[15px] overflow-hidden border border-white/30 md:border-2"
+            style={{
+              backgroundImage: previewDisplayBackground.preview.includes('.') 
+                ? `url(${previewDisplayBackground.preview})`
+                : 'none',
+              backgroundColor: !previewDisplayBackground.preview.includes('.') 
+                ? previewDisplayBackground.preview 
+                : 'transparent',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          >
+            {/* Overlay dashboard elements - Mobile optimized */}
+            <div className="absolute inset-0 bg-black/20">
+              {/* Navigation bar */}
+              <div className="absolute top-1 md:top-4 left-1 md:left-4 right-1 md:right-4 bg-black/50 rounded p-1 md:p-2 backdrop-blur-sm">
+                <div className="flex justify-between items-center">
+                  <div className="text-white text-xs md:text-sm font-bold">DashDice</div>
+                  <div className="text-white/70 text-xs">Profile</div>
+                </div>
+              </div>
+              
+              {/* Main dashboard cards */}
+              <div className="absolute bottom-1 md:bottom-4 left-1 md:left-4 right-1 md:right-4 grid grid-cols-3 gap-1 md:gap-2">
+                <div className="bg-black/50 rounded p-1 md:p-2 backdrop-blur-sm">
+                  <div className="text-white text-xs font-bold">Inventory</div>
+                </div>
+                <div className="bg-black/50 rounded p-1 md:p-2 backdrop-blur-sm">
+                  <div className="text-white text-xs font-bold">Friends</div>
+                </div>
+                <div className="bg-black/50 rounded p-1 md:p-2 backdrop-blur-sm">
+                  <div className="text-white text-xs font-bold">Ranked</div>
+                </div>
+              </div>
+              
+              {/* Center action */}
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-blue-500 to-purple-600 rounded px-2 md:px-4 py-1 md:py-2">
+                <span className="text-white font-bold text-xs md:text-sm">PLAY</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-center mt-1 md:mt-3">
+            <button
+              onClick={() => setPreviewDisplayBackground(null)}
+              className="px-2 md:px-4 py-1 md:py-2 bg-white/20 rounded text-white/80 hover:bg-white/30 transition-all text-xs md:text-sm"
+            >
+              Close
+            </button>
+          </div>
+        </motion.div>
+      )}
+
       {/* Items Grid */}
-      <div className="w-full max-w-[80rem] flex flex-row items-start justify-center flex-wrap gap-[2rem] flex-1 overflow-y-auto scrollbar-hide px-4">
+      <div className="w-full max-w-[80rem] flex flex-row items-start justify-center flex-wrap gap-[2rem] flex-1 overflow-y-auto px-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <style jsx>{`
+          div::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
         {getCurrentItems().map((item) => (
           <motion.div
             key={item.id}
@@ -304,7 +535,7 @@ export const InventorySection: React.FC = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  {isEquippedDisplay(item) ? 'Equipped Display' : 'Equip Display'}
+                  {isEquippedDisplay(item) ? 'Vibin' : 'Vibin'}
                 </motion.button>
                 <motion.button
                   onClick={() => handleEquipMatch(item)}
@@ -313,7 +544,45 @@ export const InventorySection: React.FC = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  {isEquippedMatch(item) ? 'Equipped Match' : 'Equip Match'}
+                  {isEquippedMatch(item) ? 'Flexin' : 'Flexin'}
+                </motion.button>
+                <motion.button
+                  onClick={() => setPreviewBackground(previewBackground?.id === item.id ? null : item)}
+                  className="px-4 py-2 rounded-[10px] text-sm font-bold w-full"
+                  style={{
+                    background: previewBackground?.id === item.id
+                      ? "linear-gradient(135deg, #FFD700, #FFA500)"
+                      : "linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1))",
+                    color: "#FFF",
+                    fontFamily: "Audiowide",
+                    textTransform: "uppercase",
+                    border: previewBackground?.id === item.id 
+                      ? "2px solid #FFD700" 
+                      : "2px solid transparent",
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {previewBackground?.id === item.id ? 'Hide Preview' : 'Preview Match'}
+                </motion.button>
+                <motion.button
+                  onClick={() => setPreviewDisplayBackground(previewDisplayBackground?.id === item.id ? null : item)}
+                  className="px-4 py-2 rounded-[10px] text-sm font-bold w-full"
+                  style={{
+                    background: previewDisplayBackground?.id === item.id
+                      ? "linear-gradient(135deg, #00FF80, #00A855)"
+                      : "linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1))",
+                    color: "#FFF",
+                    fontFamily: "Audiowide",
+                    textTransform: "uppercase",
+                    border: previewDisplayBackground?.id === item.id 
+                      ? "2px solid #00FF80" 
+                      : "2px solid transparent",
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {previewDisplayBackground?.id === item.id ? 'Hide Dashboard' : 'Preview Dashboard'}
                 </motion.button>
               </div>
             ) : (
@@ -378,5 +647,6 @@ export const InventorySection: React.FC = () => {
         </span>
       </motion.button>
     </div>
+    </>
   );
 };

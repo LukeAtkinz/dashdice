@@ -8,7 +8,7 @@ import FriendsList from './FriendsList';
 import FriendRequests from './FriendRequests';
 import AddFriend from './AddFriend';
 
-// CSS for custom button styling
+// CSS for custom button styling and new animations
 const buttonStyles = `
   .custom-inventory-button {
     background: var(--ui-inventory-button-bg, linear-gradient(135deg, #2a1810 0%, #1a0f08 100%));
@@ -32,7 +32,57 @@ const buttonStyles = `
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
   }
   
-  /* Inventory-style navigation button hover effects */
+  /* New Tab Button Animations */
+  @keyframes borderLoad {
+    0% {
+      background: linear-gradient(90deg, 
+        #FFD700 0%, 
+        #FFD700 0%, 
+        transparent 0%, 
+        transparent 100%);
+    }
+    100% {
+      background: linear-gradient(90deg, 
+        #FFD700 0%, 
+        #FFD700 100%, 
+        transparent 100%, 
+        transparent 100%);
+    }
+  }
+  
+  .tab-button {
+    position: relative;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+  }
+  
+  .tab-button::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(90deg, transparent 0%, transparent 100%);
+    border-radius: inherit;
+    z-index: -1;
+    transition: all 0.3s ease;
+  }
+  
+  .tab-button:hover::before {
+    animation: borderLoad 0.8s ease-in-out forwards;
+  }
+  
+  .tab-button.active {
+    border-color: #FFD700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+  }
+  
+  .tab-button.active::before {
+    background: linear-gradient(90deg, #FFD700 0%, #FFD700 100%);
+  }
+  
+  /* Legacy navigation button hover effects */
   .nav-button {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -149,7 +199,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`
-              nav-button
+              tab-button nav-button
               flex flex-col items-center justify-center gap-2 p-4 rounded-[20px]
               transition-all duration-300
               h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px]

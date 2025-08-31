@@ -12,6 +12,7 @@ import { NewMatchmakingService } from '@/services/newMatchmakingService';
 import { userDataCache } from '@/services/userDataCache';
 import AchievementsMini from '@/components/achievements/AchievementsMini';
 import { CompactLeaderboard } from '@/components/ranked/Leaderboard';
+import { CompactProgressionDisplay } from '@/components/ranked/ProgressionDisplay';
 import { AlreadyInMatchNotification } from '@/components/notifications/AlreadyInMatchNotification';
 
 const gameConfig = {
@@ -344,16 +345,18 @@ export const DashboardSection: React.FC = () => {
       {skillRating && (
         <div className="w-full flex justify-center mb-4">
           <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl px-6 py-3 border border-gray-700/50">
-            <div className="flex items-center gap-3">
-              <div className="text-yellow-400">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              </div>
+            <div className="flex items-center gap-4">
               <div className="text-white">
-                <span className="text-sm font-medium opacity-80">Ranked: </span>
+                <span className="text-sm font-medium opacity-80">Elo: </span>
                 <span className="font-bold text-yellow-400" style={{ fontFamily: 'Audiowide' }}>
-                  Dash {skillRating.dashNumber} - Level {skillRating.level}
+                  {skillRating.level * 100 + skillRating.dashNumber * 10}
+                </span>
+              </div>
+              <div className="h-4 w-px bg-gray-600"></div>
+              <div className="text-white">
+                <span className="text-sm font-medium opacity-80">Rank: </span>
+                <span className="font-bold text-yellow-400" style={{ fontFamily: 'Audiowide' }}>
+                  Dash {skillRating.dashNumber}
                 </span>
               </div>
             </div>
@@ -578,14 +581,49 @@ export const DashboardSection: React.FC = () => {
         ))}
       </div>
       
-      {/* Leaderboard Preview Section */}
-      <div className="w-full flex justify-center mt-6 mb-4">
-        <div className="w-full max-w-md">
-          <CompactLeaderboard userId={user?.uid} />
+      {/* Mini Components Layout - Between Game Modes and Achievements */}
+      <div className="w-full flex flex-col lg:flex-row justify-center items-start gap-6 mt-6 mb-4">
+        
+        {/* Mobile: Stack all mini components vertically */}
+        <div className="w-full flex flex-col lg:hidden gap-6">
+          {/* Leaderboard Preview Section */}
+          <div className="w-full flex justify-center">
+            <div className="w-full max-w-md">
+              <CompactLeaderboard userId={user?.uid} />
+            </div>
+          </div>
+          
+          {/* Ranked Progression Section */}
+          <div className="w-full flex justify-center">
+            <div className="w-full max-w-md">
+              <CompactProgressionDisplay
+                currentLevel={skillRating?.level || 1}
+                winsInLevel={0}
+                dashNumber={skillRating?.dashNumber || 1}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop: Side by side mini components layout - 45% width each */}
+        <div className="hidden lg:flex w-full max-w-7xl justify-center gap-6">
+          {/* Leaderboard Preview - 45% width */}
+          <div className="w-full max-w-lg">
+            <CompactLeaderboard userId={user?.uid} />
+          </div>
+          
+          {/* Ranked Progression - 45% width */}
+          <div className="w-full max-w-lg">
+            <CompactProgressionDisplay
+              currentLevel={skillRating?.level || 1}
+              winsInLevel={0}
+              dashNumber={skillRating?.dashNumber || 1}
+            />
+          </div>
         </div>
       </div>
-      
-      {/* Achievements Preview Section */}
+
+      {/* Achievements Preview Section - Full Width */}
       <div className="w-full flex justify-center mt-4">
         <AchievementsMini maxDisplay={3} />
       </div>

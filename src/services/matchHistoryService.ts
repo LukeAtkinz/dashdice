@@ -35,9 +35,11 @@ export interface MatchHistoryEntry {
 
 export class MatchHistoryService {
   private static readonly MATCH_HISTORY_COLLECTION = 'matchHistory';
+  private static readonly COMPLETED_MATCHES_COLLECTION = 'completedmatches';
 
   /**
    * Subscribe to a user's match history (last 10 matches)
+   * First tries matchHistory collection, then falls back to completedmatches
    */
   static subscribeToMatchHistory(
     userId: string,
@@ -46,6 +48,7 @@ export class MatchHistoryService {
     try {
       console.log('🔄 MatchHistoryService: Subscribing to match history for user:', userId);
       
+      // First try the dedicated matchHistory collection
       const q = query(
         collection(db, this.MATCH_HISTORY_COLLECTION),
         where('playerUserId', '==', userId),
@@ -64,15 +67,115 @@ export class MatchHistoryService {
           } as MatchHistoryEntry);
         });
 
-        console.log('📊 MatchHistoryService: Match history updated:', matches.length, 'matches');
-        callback(matches);
+        console.log('📊 MatchHistoryService: Match history from matchHistory collection:', matches.length, 'matches');
+        
+        // If no matches found in matchHistory, try completedmatches collection
+        if (matches.length === 0) {
+          console.log('🔄 MatchHistoryService: No matches in matchHistory, trying completedmatches collection...');
+          this.queryCompletedMatches(userId, callback);
+        } else {
+          callback(matches);
+        }
       }, (error) => {
         console.error('❌ MatchHistoryService: Error in match history subscription:', error);
-        callback([]);
+        // Fallback to completedmatches collection
+        console.log('🔄 MatchHistoryService: Falling back to completedmatches collection...');
+        this.queryCompletedMatches(userId, callback);
       });
     } catch (error) {
       console.error('❌ MatchHistoryService: Failed to subscribe to match history:', error);
+      // Fallback to completedmatches collection
+      console.log('🔄 MatchHistoryService: Falling back to completedmatches collection...');
+      this.queryCompletedMatches(userId, callback);
       return () => {}; // Return empty cleanup function
+    }
+  }
+
+  /**
+   * Query completed matches collection and transform to match history format
+   */
+  private static queryCompletedMatches(userId: string, callback: (matches: MatchHistoryEntry[]) => void): Unsubscribe {
+    try {
+      // Query completedmatches where user was either host or opponent
+      const q = query(
+        collection(db, this.COMPLETED_MATCHES_COLLECTION),
+        orderBy('completedAt', 'desc'),
+        limit(50) // Get more to filter
+      );
+
+      return onSnapshot(q, (snapshot) => {
+        const matches: MatchHistoryEntry[] = [];
+        
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          
+          // Check if user was involved in this match
+          const hostId = data.hostData?.playerId;
+          const opponentId = data.opponentData?.playerId;
+          
+          if (hostId === userId || opponentId === userId) {
+            // Transform completed match data to match history format
+            const isHost = hostId === userId;
+            const playerData = isHost ? data.hostData : data.opponentData;
+            const opponentData = isHost ? data.opponentData : data.hostData;
+            
+            // Determine result based on winner
+            let result: 'won' | 'lost' = 'lost';
+            if (data.winner) {
+              if (data.winner.playerId === userId) {
+                result = 'won';
+              }
+            } else if (playerData?.playerScore && opponentData?.playerScore) {
+              // Fallback: determine by score
+              result = playerData.playerScore > opponentData.playerScore ? 'won' : 'lost';
+            }
+            
+            const historyEntry: MatchHistoryEntry = {
+              id: doc.id,
+              playerUserId: userId,
+              opponentUserId: opponentData?.playerId || 'unknown',
+              opponentDisplayName: opponentData?.playerDisplayName || 'Unknown Player',
+              result: result,
+              playerScore: playerData?.playerScore || 0,
+              opponentScore: opponentData?.playerScore || 0,
+              gameMode: data.gameData?.gameMode || 'classic',
+              gameType: data.gameData?.type || 'classic',
+              background: playerData?.matchBackgroundEquipped?.name || playerData?.displayBackgroundEquipped?.name,
+              backgroundFile: playerData?.matchBackgroundEquipped?.file || playerData?.displayBackgroundEquipped?.file,
+              completedAt: data.completedAt || data.endedAt,
+              duration: data.duration,
+              isFriendMatch: data.isFriendMatch || false,
+              matchData: {
+                playerBanks: playerData?.banks,
+                playerDoubles: playerData?.doubles,
+                biggestTurn: playerData?.biggestTurn,
+                totalTurns: data.gameData?.totalTurns
+              }
+            };
+            
+            matches.push(historyEntry);
+          }
+        });
+
+        // Sort by completion date and limit to 10
+        matches.sort((a, b) => {
+          const aTime = a.completedAt?.toMillis?.() || 0;
+          const bTime = b.completedAt?.toMillis?.() || 0;
+          return bTime - aTime;
+        });
+        
+        const limitedMatches = matches.slice(0, 10);
+        
+        console.log('📊 MatchHistoryService: Match history from completedmatches collection:', limitedMatches.length, 'matches');
+        callback(limitedMatches);
+      }, (error) => {
+        console.error('❌ MatchHistoryService: Error querying completedmatches:', error);
+        callback([]);
+      });
+    } catch (error) {
+      console.error('❌ MatchHistoryService: Failed to query completedmatches:', error);
+      callback([]);
+      return () => {};
     }
   }
 
