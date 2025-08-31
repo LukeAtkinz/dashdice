@@ -16,6 +16,7 @@ import { db } from './firebase';
 import { GameModeService } from './gameModeService';
 import { NewMatchmakingService } from './newMatchmakingService';
 import { PlayerHeartbeatService } from './playerHeartbeatService';
+import { SessionCompatibilityService } from './sessionCompatibilityService';
 import { AbandonedMatchService } from './abandonedMatchService';
 
 // Initialize the new unified system
@@ -89,8 +90,12 @@ export class MatchmakingService {
         // Start heartbeat for the player
         await PlayerHeartbeatService.startHeartbeat(hostData.playerId, result.sessionId);
         
+        // Create a waiting room proxy for compatibility with GameWaitingRoom component
+        const proxyRoomId = await SessionCompatibilityService.createWaitingRoomProxy(result.sessionId);
+        
         return {
-          id: result.sessionId,
+          id: proxyRoomId, // Return the proxy room ID for GameWaitingRoom compatibility
+          sessionId: result.sessionId, // Keep the actual session ID for reference
           isNewRoom: result.isNewRoom,
           hasOpponent: result.hasOpponent
         };
@@ -110,6 +115,18 @@ export class MatchmakingService {
    */
   private static async findOrCreateRoomLegacy(gameMode: string, hostData: any, gameType: 'quick' | 'ranked' = 'quick') {
     try {
+      // Validate hostData to prevent undefined values
+      if (!hostData || !hostData.playerId) {
+        throw new Error('Invalid hostData: playerId is required');
+      }
+
+      // Ensure all required fields have fallback values
+      const validatedHostData = {
+        playerId: hostData.playerId,
+        displayName: hostData.displayName || hostData.playerDisplayName || 'Unknown Player',
+        ...hostData
+      };
+
       // Try to find an existing room first
       const existingRoom = await this.findOpenRoom(gameMode);
       
@@ -127,13 +144,21 @@ export class MatchmakingService {
         gameType: 'Open Server',
         rankedGame: gameType === 'ranked', // Add ranked game flag
         competitiveType: gameType, // Track if this is 'quick' or 'ranked'
-        host: hostData.displayName,
-        hostUserId: hostData.playerId,
+        host: validatedHostData.displayName,
+        hostUserId: validatedHostData.playerId,
         playersRequired: 1,
-        players: [hostData.playerId],
+        players: [validatedHostData.playerId],
         createdAt: serverTimestamp(),
         status: 'waiting'
       };
+
+      // Validate that no fields are undefined
+      Object.entries(roomData).forEach(([key, value]) => {
+        if (value === undefined) {
+          console.error(`❌ Field ${key} is undefined in roomData`);
+          throw new Error(`Invalid room data: ${key} cannot be undefined`);
+        }
+      });
 
       const roomRef = await addDoc(collection(db, 'waitingroom'), roomData);
       

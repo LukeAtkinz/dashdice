@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
@@ -8,8 +8,11 @@ import { useBackground } from '@/context/BackgroundContext';
 import { MatchmakingService } from '@/services/matchmakingService';
 import { UserService } from '@/services/userService';
 import { RankedMatchmakingService } from '@/services/rankedMatchmakingService';
+import { NewMatchmakingService } from '@/services/newMatchmakingService';
+import { userDataCache } from '@/services/userDataCache';
 import AchievementsMini from '@/components/achievements/AchievementsMini';
 import { CompactLeaderboard } from '@/components/ranked/Leaderboard';
+import { AlreadyInMatchNotification } from '@/components/notifications/AlreadyInMatchNotification';
 
 const gameConfig = {
   quickfire: { 
@@ -87,6 +90,39 @@ export const DashboardSection: React.FC = () => {
   const [hoveredGameMode, setHoveredGameMode] = useState<string | null>(null);
   const [tappedGameMode, setTappedGameMode] = useState<string | null>(null);
   const [isExiting, setIsExiting] = useState(false);
+  const [showAlreadyInMatchNotification, setShowAlreadyInMatchNotification] = useState(false);
+  const [currentMatchInfo, setCurrentMatchInfo] = useState<{ gameMode: string; currentGame: string } | null>(null);
+  const [skillRating, setSkillRating] = useState<{ level: number; dashNumber: number } | null>(null);
+
+  // Preload user data for faster matchmaking
+  useEffect(() => {
+    if (user?.uid) {
+      userDataCache.preloadUserData(user.uid).catch(error => {
+        console.warn('Failed to preload user data:', error);
+      });
+    }
+  }, [user?.uid]);
+
+  // Fetch user's skill rating
+  useEffect(() => {
+    const fetchSkillRating = async () => {
+      if (user?.uid) {
+        try {
+          const rankedStats = await RankedMatchmakingService.getUserRankedStats(user.uid);
+          if (rankedStats && rankedStats.currentSeason) {
+            setSkillRating({
+              level: rankedStats.currentSeason.level,
+              dashNumber: rankedStats.currentSeason.dashNumber
+            });
+          }
+        } catch (error) {
+          console.warn('Failed to fetch skill rating:', error);
+        }
+      }
+    };
+
+    fetchSkillRating();
+  }, [user?.uid]);
 
   // Get background-specific game mode selector styling
   const getGameModeSelectorBackground = () => {
@@ -121,15 +157,33 @@ export const DashboardSection: React.FC = () => {
       setIsExiting(true);
       
       try {
-        // Get complete user profile data instead of using basic auth data
-        console.log('🔍 DashboardSectionNew: Fetching user profile for:', user.uid);
-        const userProfile = await UserService.getUserProfile(user.uid);
+        // First, check if user is already in a match
+        console.log('🔍 Checking if user is already in a match...');
+        const matchStatus = await NewMatchmakingService.checkUserInMatch(user.uid);
         
-        if (!userProfile) {
-          throw new Error('Could not fetch user profile');
+        if (matchStatus.inMatch) {
+          console.log('⚠️ User is already in a match:', matchStatus);
+          setCurrentMatchInfo({
+            gameMode: matchStatus.gameMode || 'Unknown',
+            currentGame: matchStatus.currentGame || ''
+          });
+          setShowAlreadyInMatchNotification(true);
+          setIsExiting(false);
+          return;
         }
+
+        // Get complete user profile data from cache for faster loading
+        const cachedData = await userDataCache.getCachedUserData(user.uid);
         
-        console.log('📊 DashboardSectionNew: User profile fetched:', userProfile);
+        let userProfile;
+        if (cachedData && cachedData.profile) {
+          userProfile = cachedData.profile;
+        } else {
+          userProfile = await UserService.getUserProfile(user.uid);
+          if (!userProfile) {
+            throw new Error('Could not fetch user profile');
+          }
+        }
         
         // Prepare host data using complete profile data
         const hostData = {
@@ -139,13 +193,20 @@ export const DashboardSection: React.FC = () => {
           matchBackgroundEquipped: userProfile.inventory.matchBackgroundEquipped,
           playerStats: userProfile.stats
         };
-        
-        console.log('✅ DashboardSectionNew: Host data prepared:', hostData);
 
         if (action === 'ranked') {
-          // Validate ranked eligibility first
-          console.log('🏆 Validating ranked eligibility...');
-          const eligibility = await RankedMatchmakingService.validateRankedEligibility(user.uid);
+          // Use cached ranked data if available for faster validation
+          let eligibility, rankedStats;
+          
+          if (cachedData && cachedData.rankedEligibility && cachedData.rankedStats) {
+            eligibility = cachedData.rankedEligibility;
+            rankedStats = cachedData.rankedStats;
+          } else {
+            [eligibility, rankedStats] = await Promise.all([
+              RankedMatchmakingService.validateRankedEligibility(user.uid),
+              RankedMatchmakingService.getUserRankedStats(user.uid)
+            ]);
+          }
           
           if (!eligibility.valid) {
             alert(`❌ ${eligibility.reason}`);
@@ -153,8 +214,6 @@ export const DashboardSection: React.FC = () => {
             return;
           }
 
-          // Get or initialize ranked stats
-          const rankedStats = await RankedMatchmakingService.getUserRankedStats(user.uid);
           if (!rankedStats) {
             alert('❌ Unable to initialize ranked stats. Please try again.');
             setIsExiting(false);
@@ -165,8 +224,15 @@ export const DashboardSection: React.FC = () => {
           const result = await MatchmakingService.findOrCreateRoom(gameMode, hostData, 'ranked');
           
           if (result) {
-            console.log('✅ Ranked room created/joined:', result);
-            setCurrentSection('match');
+            // Navigate to waiting room for ranked match
+            // Use the proxy room ID (result.id) for GameWaitingRoom compatibility
+            const roomId = result.id;
+            setCurrentSection('waiting-room', { 
+              gameMode, 
+              actionType: 'live',
+              roomId: roomId,
+              gameType: 'ranked'
+            });
           } else {
             alert('❌ Failed to create/join ranked match. Please try again.');
             setIsExiting(false);
@@ -188,7 +254,8 @@ export const DashboardSection: React.FC = () => {
           setCurrentSection('waiting-room', { 
             gameMode, 
             actionType: action as 'live' | 'custom',
-            roomId: roomId 
+            roomId: roomId,
+            gameType: 'quick'
           });
         }, 600);
 
@@ -272,6 +339,27 @@ export const DashboardSection: React.FC = () => {
           }
         }
       `}</style>
+
+      {/* Skill Rating Display */}
+      {skillRating && (
+        <div className="w-full flex justify-center mb-4">
+          <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl px-6 py-3 border border-gray-700/50">
+            <div className="flex items-center gap-3">
+              <div className="text-yellow-400">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              </div>
+              <div className="text-white">
+                <span className="text-sm font-medium opacity-80">Ranked: </span>
+                <span className="font-bold text-yellow-400" style={{ fontFamily: 'Audiowide' }}>
+                  Dash {skillRating.dashNumber} - Level {skillRating.level}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Game Mode Container - Ensure proper scrolling */}
       <div 
@@ -501,6 +589,26 @@ export const DashboardSection: React.FC = () => {
       <div className="w-full flex justify-center mt-4">
         <AchievementsMini maxDisplay={3} />
       </div>
+
+      {/* Already in Match Notification */}
+      {showAlreadyInMatchNotification && currentMatchInfo && user && (
+        <AlreadyInMatchNotification
+          gameMode={currentMatchInfo.gameMode}
+          currentGame={currentMatchInfo.currentGame}
+          userId={user.uid}
+          onClose={() => {
+            setShowAlreadyInMatchNotification(false);
+            setCurrentMatchInfo(null);
+          }}
+          onJoin={() => {
+            // Navigate to the existing match
+            setCurrentSection('match', { 
+              matchId: currentMatchInfo.currentGame, 
+              gameMode: currentMatchInfo.gameMode.toLowerCase() 
+            });
+          }}
+        />
+      )}
     </motion.div>
   );
 };

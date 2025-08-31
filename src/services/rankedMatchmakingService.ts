@@ -11,7 +11,8 @@ import {
   limit as firestoreLimit,
   serverTimestamp,
   runTransaction,
-  increment
+  increment,
+  writeBatch
 } from 'firebase/firestore';
 import { db } from '@/services/firebase';
 import { GameType, RankedStats, RankedMatch } from '@/types/ranked';
@@ -99,6 +100,72 @@ export class RankedMatchmakingService {
       return initialStats;
     } catch (error) {
       console.error('Error initializing ranked stats:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Initialize ranked stats for all users in the system (for season creation)
+   */
+  static async initializeAllUsersForSeason(dashNumber: number): Promise<void> {
+    try {
+      console.log(`🔄 Initializing ranked stats for all users for Dash ${dashNumber}...`);
+      
+      const usersRef = collection(db, 'users');
+      const usersSnapshot = await getDocs(usersRef);
+      
+      let updateCount = 0;
+      const batch = writeBatch(db);
+      
+      usersSnapshot.docs.forEach((userDoc) => {
+        const userData = userDoc.data();
+        
+        // Check if user already has ranked stats for this season
+        if (!userData.rankedStats || userData.rankedStats.currentSeason.dashNumber !== dashNumber) {
+          const rankedStats: RankedStats = {
+            currentSeason: {
+              dashNumber,
+              level: 1,
+              winsInLevel: 0,
+              totalWins: 0,
+              totalLosses: 0,
+              winStreak: 0,
+              longestWinStreak: 0,
+              gamesPlayed: 0
+            },
+            allTime: userData.rankedStats?.allTime || {
+              totalDashes: 1,
+              maxLevelReached: 1,
+              totalRankedWins: 0,
+              totalRankedLosses: 0,
+              totalRankedGames: 0,
+              longestWinStreak: 0,
+              averageLevel: 1.0
+            }
+          };
+          
+          // Increment total dashes if this isn't their first season
+          if (userData.rankedStats?.allTime) {
+            rankedStats.allTime.totalDashes = userData.rankedStats.allTime.totalDashes + 1;
+          }
+
+          batch.update(userDoc.ref, {
+            rankedStats,
+            updatedAt: serverTimestamp()
+          });
+          
+          updateCount++;
+        }
+      });
+
+      if (updateCount > 0) {
+        await batch.commit();
+        console.log(`✅ Initialized ranked stats for ${updateCount} users for Dash ${dashNumber}`);
+      } else {
+        console.log(`✅ All users already have ranked stats for Dash ${dashNumber}`);
+      }
+    } catch (error) {
+      console.error('Error initializing all users for season:', error);
       throw error;
     }
   }

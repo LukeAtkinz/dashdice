@@ -82,8 +82,8 @@ const InvitationPopup: React.FC<InvitationPopupProps> = ({
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-2">
             <img 
-              src={getGameModeIcon(invitation.gameType)} 
-              alt={getGameModeDisplayName(invitation.gameType)}
+              src={getGameModeIcon(invitation.gameMode)} 
+              alt={getGameModeDisplayName(invitation.gameMode)}
               className="w-6 h-6 object-contain"
             />
             <h3 className="text-white font-bold font-audiowide text-sm">
@@ -104,7 +104,7 @@ const InvitationPopup: React.FC<InvitationPopupProps> = ({
         <div className="space-y-3">
           <div className="text-center">
             <div className="text-white font-medium font-audiowide">
-              {getGameModeDisplayName(invitation.gameType)}
+              {getGameModeDisplayName(invitation.gameMode)}
             </div>
             <div className="text-gray-300 text-sm font-montserrat">
               Your friend wants to play!
@@ -165,7 +165,7 @@ export default function InvitationPopupManager() {
         // Navigate to waiting room with the room ID and game mode (consistent with other components)
         setCurrentSection('waiting-room', { 
           roomId: result.gameId,
-          gameMode: invitation?.gameType || 'classic'
+          gameMode: invitation?.gameMode || 'classic'
         });
       }
     } catch (error) {

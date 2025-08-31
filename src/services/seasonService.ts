@@ -35,20 +35,9 @@ export class SeasonService {
       const querySnapshot = await getDocs(q);
       
       if (querySnapshot.empty) {
-        // No active season, return a mock season for demo
-        console.log('📅 No active season found, creating mock season for demo');
-        const now = new Date();
-        const endDate = new Date();
-        endDate.setDate(now.getDate() + 14);
-        
-        return {
-          id: 'mock_season_1',
-          name: 'Dash 1',
-          startDate: now,
-          endDate: endDate,
-          isActive: true,
-          dashNumber: 1
-        };
+        // No active season found
+        console.log('📅 No active season found - use Admin Utilities to create first season');
+        return null;
       }
       
       const seasonDoc = querySnapshot.docs[0];
@@ -100,6 +89,40 @@ export class SeasonService {
       };
     } catch (error) {
       console.error('Error creating new season:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create the first season with custom end date
+   */
+  static async createFirstSeason(customEndDate: Date): Promise<Season> {
+    try {
+      const startDate = new Date();
+      
+      const seasonData = {
+        name: 'Dash 1',
+        startDate: Timestamp.fromDate(startDate),
+        endDate: Timestamp.fromDate(customEndDate),
+        isActive: true,
+        dashNumber: 1,
+        createdAt: serverTimestamp()
+      };
+      
+      const docRef = await addDoc(collection(db, this.COLLECTION_NAME), seasonData);
+      
+      console.log(`✅ Created first season: Dash 1 ending at ${customEndDate.toLocaleString()}`);
+      
+      return {
+        id: docRef.id,
+        name: seasonData.name,
+        startDate,
+        endDate: customEndDate,
+        isActive: true,
+        dashNumber: 1
+      };
+    } catch (error) {
+      console.error('Error creating first season:', error);
       throw error;
     }
   }

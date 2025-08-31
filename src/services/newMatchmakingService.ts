@@ -8,6 +8,8 @@ import { MatchmakingOrchestrator, MatchmakingRequest, MatchmakingResult } from '
 import { UserService } from './userService';
 import { PlayerHeartbeatService } from './playerHeartbeatService';
 import { AbandonedMatchService } from './abandonedMatchService';
+import { DatabaseOptimizationService } from './databaseOptimizationService';
+import { CDNOptimizationService } from './cdnOptimizationService';
 
 /**
  * NEW UNIFIED MATCHMAKING SERVICE
@@ -16,16 +18,20 @@ import { AbandonedMatchService } from './abandonedMatchService';
 export class NewMatchmakingService {
   
   /**
-   * Initialize the matchmaking system
+   * Initialize the matchmaking system with optimization services
    */
   static initialize(): void {
     console.log('🎯 Initializing Unified Matchmaking System...');
+    
+    // Initialize optimization services
+    DatabaseOptimizationService.initialize();
+    CDNOptimizationService.initialize();
     
     // Initialize cleanup services
     PlayerHeartbeatService.initializeCleanupService();
     AbandonedMatchService.initializeCleanupService();
     
-    console.log('✅ Unified Matchmaking System initialized');
+    console.log('✅ Unified Matchmaking System initialized with optimizations');
   }
 
   /**
@@ -48,8 +54,15 @@ export class NewMatchmakingService {
       // Start heartbeat for the user
       await PlayerHeartbeatService.startHeartbeat(userId);
 
-      // Get user profile and data
-      const userProfile = await UserService.getUserProfile(userId);
+      // Get user profile with optimized sharding (with fallback)
+      let userProfile;
+      try {
+        userProfile = await DatabaseOptimizationService.getUserFromShard(userId);
+      } catch (error) {
+        console.warn('Sharding failed, using UserService fallback:', error);
+        userProfile = await UserService.getUserProfile(userId);
+      }
+      
       if (!userProfile) {
         throw new Error('User profile not found');
       }
@@ -66,15 +79,16 @@ export class NewMatchmakingService {
         },
         displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped || {
           name: 'Relax',
-          file: '/backgrounds/Relax.png',
+          file: CDNOptimizationService.getAssetUrl('backgrounds', 'Relax.png'),
           type: 'image'
         },
         matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped || {
           name: 'Relax',
-          file: '/backgrounds/Relax.png',
+          file: CDNOptimizationService.getAssetUrl('backgrounds', 'Relax.png'),
           type: 'image'
         },
-        ready: false
+        ready: false,
+        joinedAt: new Date()
       };
 
       // Create matchmaking request
@@ -154,10 +168,34 @@ export class NewMatchmakingService {
         // Update user's current room
         await PlayerHeartbeatService.updateCurrentRoom(userId, sessionId);
         
+        // Find the waiting room proxy ID for this session
+        const { collection, query, where, getDocs } = await import('firebase/firestore');
+        const { db } = await import('./firebase');
+        
+        let proxyRoomId = sessionId; // Default fallback
+        
+        try {
+          const waitingRoomQuery = query(
+            collection(db, 'waitingroom'),
+            where('sessionProxy', '==', sessionId)
+          );
+          
+          const querySnapshot = await getDocs(waitingRoomQuery);
+          
+          if (!querySnapshot.empty) {
+            proxyRoomId = querySnapshot.docs[0].id;
+            console.log(`🔗 Found waiting room proxy ${proxyRoomId} for session ${sessionId}`);
+          } else {
+            console.log(`⚠️ No waiting room proxy found for session ${sessionId}, using session ID`);
+          }
+        } catch (error) {
+          console.error('Error finding waiting room proxy:', error);
+        }
+        
         return {
           success: true,
           sessionId,
-          roomId: sessionId, // For backward compatibility
+          roomId: proxyRoomId, // Return the proxy room ID for GameWaitingRoom compatibility
           hasOpponent: true,
           isNewRoom: false
         };
@@ -178,20 +216,26 @@ export class NewMatchmakingService {
   }
 
   /**
-   * Leave a session
+   * Leave a session and clean up all related documents
    */
   static async leaveSession(userId: string, sessionId: string): Promise<void> {
     try {
       console.log(`🚪 NewMatchmakingService: ${userId} leaving session ${sessionId}`);
 
-      // Remove from session
+      // Remove from game session
       await GameSessionService.removePlayer(sessionId, userId);
 
-      // Clear user's current room
+      // Clean up waiting room documents (both legacy and unified)
+      await this.cleanupWaitingRoomDocuments(userId, sessionId);
+
+      // Clear user's current room and game
       await PlayerHeartbeatService.updateCurrentRoom(userId, null);
+      await PlayerHeartbeatService.updateCurrentGame(userId, null);
 
       // Stop heartbeat if not in any other session
       PlayerHeartbeatService.stopHeartbeat(userId);
+
+      console.log(`✅ NewMatchmakingService: ${userId} successfully left session ${sessionId}`);
 
     } catch (error) {
       console.error('Error leaving session:', error);
@@ -199,8 +243,182 @@ export class NewMatchmakingService {
   }
 
   /**
-   * Cancel matchmaking
+   * Clean up waiting room documents for a user
    */
+  private static async cleanupWaitingRoomDocuments(userId: string, sessionId?: string): Promise<void> {
+    try {
+      const { db } = await import('./firebase');
+      const { collection, query, where, getDocs, deleteDoc } = await import('firebase/firestore');
+
+      console.log(`🧹 NewMatchmakingService: Cleaning up waiting room documents for ${userId}`);
+
+      // Query for waiting room documents where user is host or participant
+      const waitingRoomRef = collection(db, 'waitingroom');
+      const hostQuery = query(waitingRoomRef, where('hostData.playerId', '==', userId));
+      const participantQuery = query(waitingRoomRef, where('participants', 'array-contains-any', [userId]));
+
+      // Clean up documents where user is host
+      const hostSnapshot = await getDocs(hostQuery);
+      for (const doc of hostSnapshot.docs) {
+        console.log(`🗑️ Deleting waiting room document ${doc.id} where ${userId} is host`);
+        await deleteDoc(doc.ref);
+      }
+
+      // Clean up documents where user is participant
+      const participantSnapshot = await getDocs(participantQuery);
+      for (const doc of participantSnapshot.docs) {
+        console.log(`🗑️ Deleting waiting room document ${doc.id} where ${userId} is participant`);
+        await deleteDoc(doc.ref);
+      }
+
+      // If sessionId provided, also try direct deletion in case it exists with that ID
+      if (sessionId) {
+        try {
+          const { doc, getDoc, deleteDoc: deleteDocument } = await import('firebase/firestore');
+          const waitingRoomDoc = doc(db, 'waitingroom', sessionId);
+          const docSnapshot = await getDoc(waitingRoomDoc);
+          if (docSnapshot.exists()) {
+            console.log(`🗑️ Deleting waiting room document by sessionId: ${sessionId}`);
+            await deleteDocument(waitingRoomDoc);
+          }
+        } catch (error) {
+          // Non-critical error, document might not exist
+          console.log(`ℹ️ No waiting room document found with sessionId: ${sessionId}`);
+        }
+      }
+
+      console.log(`✅ NewMatchmakingService: Cleaned up waiting room documents for ${userId}`);
+
+    } catch (error) {
+      console.error('Error cleaning up waiting room documents:', error);
+    }
+  }
+
+  /**
+   * Check if user is already in a match
+   */
+  static async checkUserInMatch(userId: string): Promise<{ inMatch: boolean; currentGame?: string; gameMode?: string }> {
+    try {
+      const { db } = await import('./firebase');
+      const { doc, getDoc } = await import('firebase/firestore');
+
+      const userRef = doc(db, 'users', userId);
+      const userDoc = await getDoc(userRef);
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const currentGame = userData.currentGame;
+        
+        if (currentGame) {
+          // Try to get game mode from current room or game session
+          let gameMode = 'unknown';
+          
+          // Check current room for game mode
+          const currentRoom = userData.currentRoom;
+          if (currentRoom) {
+            try {
+              const sessionDoc = await getDoc(doc(db, 'gameSessions', currentRoom));
+              if (sessionDoc.exists()) {
+                gameMode = sessionDoc.data()?.gameMode || 'unknown';
+              }
+            } catch (error) {
+              console.log('Could not fetch game mode from session');
+            }
+          }
+
+          return {
+            inMatch: true,
+            currentGame,
+            gameMode
+          };
+        }
+      }
+
+      return { inMatch: false };
+    } catch (error) {
+      console.error('Error checking user match status:', error);
+      return { inMatch: false };
+    }
+  }
+
+  /**
+   * Force leave current match (with loss penalty)
+   */
+  static async forceLeaveMatch(userId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      console.log(`🏃‍♂️ NewMatchmakingService: Force leaving match for ${userId}`);
+
+      const { db } = await import('./firebase');
+      const { doc, getDoc, updateDoc, serverTimestamp, deleteDoc } = await import('firebase/firestore');
+
+      // Get user's current game info
+      const userRef = doc(db, 'users', userId);
+      const userDoc = await getDoc(userRef);
+
+      if (!userDoc.exists()) {
+        return { success: false, error: 'User not found' };
+      }
+
+      const userData = userDoc.data();
+      const currentGame = userData.currentGame;
+      const currentRoom = userData.currentRoom;
+
+      // Record the loss for leaving
+      await this.recordMatchAbandonLoss(userId);
+
+      // Clean up user state
+      await updateDoc(userRef, {
+        currentGame: null,
+        currentRoom: null,
+        status: 'online',
+        lastSeen: serverTimestamp()
+      });
+
+      // Clean up session if exists
+      if (currentRoom) {
+        try {
+          await this.cleanupWaitingRoomDocuments(userId, currentRoom);
+          await GameSessionService.removePlayer(currentRoom, userId);
+        } catch (error) {
+          console.log('Session cleanup error (non-critical):', error);
+        }
+      }
+
+      // Stop heartbeat
+      PlayerHeartbeatService.stopHeartbeat(userId);
+
+      console.log(`✅ NewMatchmakingService: Successfully force left match for ${userId}`);
+      return { success: true };
+
+    } catch (error) {
+      console.error('Error force leaving match:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
+  /**
+   * Record a loss for abandoning a match
+   */
+  private static async recordMatchAbandonLoss(userId: string): Promise<void> {
+    try {
+      const { db } = await import('./firebase');
+      const { doc, updateDoc, increment } = await import('firebase/firestore');
+
+      console.log(`📊 Recording abandon loss for ${userId}`);
+
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, {
+        'stats.gamesPlayed': increment(1),
+        'stats.currentStreak': 0, // Reset streak for abandoning
+        'rankedStats.losses': increment(1),
+        'rankedStats.rating': increment(-25) // Penalty for leaving
+      });
+
+      console.log(`✅ Recorded abandon loss for ${userId}`);
+    } catch (error) {
+      console.error('Error recording abandon loss:', error);
+    }
+  }
   static async cancelMatchmaking(userId: string): Promise<void> {
     try {
       console.log(`❌ NewMatchmakingService: Canceling matchmaking for ${userId}`);
@@ -423,7 +641,7 @@ export class NewMatchmakingService {
       const sessionConfig: SessionConfiguration = {
         maxPlayers: 2,
         allowedPlayerIds: [hostUserId, guestUserId],
-        expirationTime: 30 // 30 minutes for friend matches
+        expirationTime: 60 // 60 minutes for friend matches (extra long)
       };
 
       // Create the session using GameSessionService
@@ -433,6 +651,11 @@ export class NewMatchmakingService {
         hostData,
         sessionConfig
       );
+
+      console.log('✅ Created friend session:', sessionId, 'Now adding guest player...');
+
+      // Add a small delay to ensure session is fully created before joining
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Now add the guest player to the session
       const guestData: SessionPlayerData = {
@@ -458,6 +681,8 @@ export class NewMatchmakingService {
         joinedAt: new Date()
       };
 
+      console.log('🔄 Adding guest player to session...', { sessionId, guestUserId });
+
       // Join the guest to the session
       const joinResult = await GameSessionService.joinSession(sessionId, guestData);
       
@@ -475,9 +700,23 @@ export class NewMatchmakingService {
       ]);
 
       console.log('✅ Friend match created successfully:', sessionId);
+      
+      // Create a waiting room proxy for compatibility with GameWaitingRoom component
+      let proxyRoomId = sessionId; // Default fallback
+      
+      try {
+        const { SessionCompatibilityService } = await import('./sessionCompatibilityService');
+        proxyRoomId = await SessionCompatibilityService.createWaitingRoomProxy(sessionId);
+        console.log(`✅ Created waiting room proxy ${proxyRoomId} for friend session ${sessionId}`);
+      } catch (error) {
+        console.error('⚠️ Failed to create waiting room proxy for friend match:', error);
+        // Use session ID as fallback if proxy creation fails
+      }
+      
       return {
         success: true,
         sessionId: sessionId,
+        roomId: proxyRoomId, // Return proxy room ID for navigation
         isNewRoom: true,
         hasOpponent: true
       };

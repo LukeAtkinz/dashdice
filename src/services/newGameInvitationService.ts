@@ -327,11 +327,11 @@ export class NewGameInvitationService {
         return { available: false, reason: 'User is currently offline' };
       }
 
-      if (userData.currentGame) {
-        return { available: false, reason: 'User is currently in a game' };
-      }
-
+      // For friend invitations, we allow users to accept even if they have a current game
+      // The system will handle session cleanup automatically
+      console.log('🔧 DEBUG: User availability check passed for friend invitations (current game ignored)');
       return { available: true };
+      
     } catch (error) {
       console.error('Error checking user availability:', error);
       return { available: false, reason: 'Unable to verify user availability' };

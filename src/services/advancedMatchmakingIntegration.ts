@@ -334,7 +334,7 @@ export class AdvancedMatchmakingIntegration {
         estimatedWaitTime: queueStatus?.estimatedWaitTime,
         skillRating,
         activeSession: undefined, // TODO: Check for active sessions
-        tournamentId: undefined // TODO: Check for active tournaments
+        // tournamentId: undefined // TODO: Check for active tournaments
       };
     } catch (error) {
       console.error('❌ Error getting player status:', error);

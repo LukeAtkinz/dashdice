@@ -18,6 +18,7 @@ import { RankedDashboard } from '@/components/ranked/RankedDashboard';
 import GlobalChatButton from '@/components/chat/GlobalChatButton';
 import { GlobalRematchNotification } from '@/components/rematch/GlobalRematchNotification';
 import { GameInvitationNotification } from '@/components/friends/GameInvitationNotification';
+import { GameType } from '@/types/ranked';
 import { RematchProvider } from '@/context/RematchContext';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
@@ -624,6 +625,18 @@ const DashboardContent: React.FC = () => {
                       return sectionParams.gameMode || 'classic';
                     })()}
                     actionType={sectionParams.actionType || 'live'}
+                    gameType={(() => {
+                      // Use gameType from sectionParams if available, otherwise default to quick
+                      const gameType = sectionParams.gameType || 'quick';
+                      console.log('🎯 DEBUG: Determining gameType for waiting room:', {
+                        actionType: sectionParams.actionType,
+                        roomId: sectionParams.roomId,
+                        gameMode: sectionParams.gameMode,
+                        gameType: gameType,
+                        sectionParams: sectionParams
+                      });
+                      return gameType as GameType;
+                    })()}
                     roomId={sectionParams.roomId}
                     onBack={async () => {
                       // Debug logging

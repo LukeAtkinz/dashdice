@@ -76,8 +76,9 @@ export function FriendsProvider({ children }: FriendsProviderProps) {
       setPendingRequests(requests);
     });
 
-    // Subscribe to game invitations
-    unsubscribeInvitations = GameInvitationService.subscribeToGameInvitations(user.uid, (invitations) => {
+    // Subscribe to game invitations from friendGameInvites collection  
+    unsubscribeInvitations = EnhancedFriendInviteService.subscribeToInvitations(user.uid, (invitations) => {
+      console.log(`🔍 FriendsContext: Received ${invitations.length} invitations for user ${user.uid}:`, invitations);
       setGameInvitations(invitations);
     });
 
@@ -91,51 +92,24 @@ export function FriendsProvider({ children }: FriendsProviderProps) {
     };
   }, [user?.uid]);
 
-  // Listen for game invitation decline notifications
+  // Listen for game invitation decline notifications - DISABLED
+  // This is disabled to prevent infinite notification loops
+  // All decline notifications are now handled directly in EnhancedFriendInviteService
   useEffect(() => {
-    if (!user?.uid) return;
+    console.log('🔕 Decline notification listener disabled to prevent duplicate notifications');
+    // if (!user?.uid) return;
+    // ... disabled notification listener code ...
+    // return () => {}; // No cleanup needed
+  }, [user?.uid, showToast]);
 
-    const notificationsQuery = query(
-      collection(db, 'notifications'),
-      where('userId', '==', user.uid),
-      where('type', '==', 'game_invitation_declined'),
-      where('read', '==', false),
-      orderBy('createdAt', 'desc')
-    );
-
-    const unsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === 'added') {
-          const notification = change.doc.data();
-          
-          // Get game mode icon function
-          const getGameModeIcon = (gameType: string): string => {
-            const iconMap: { [key: string]: string } = {
-              'quickfire': '/Design Elements/Shield.webp',
-              'classic': '/Design Elements/Crown Mode.webp',
-              'zero-hour': '/Design Elements/time out.webp',
-              'last-line': '/Design Elements/skull.webp',
-              'true-grit': '/Design Elements/Castle.webp'
-            };
-            return iconMap[gameType.toLowerCase()] || iconMap['classic'];
-          };
-
-          // Show toast notification with red background for decline
-          showToast(
-            notification.message,
-            'error',
-            5000,
-            getGameModeIcon(notification.gameType)
-          );
-
-          // Mark notification as read
-          const notificationRef = doc(db, 'notifications', change.doc.id);
-          updateDoc(notificationRef, { read: true }).catch(console.error);
-        }
-      });
-    });
-
-    return () => unsubscribe();
+  // Listen for enhanced friend invitation notifications - DISABLED
+  // This is also disabled to prevent duplicate notifications from multiple sources
+  useEffect(() => {
+    console.log('🔕 Enhanced notification listener also disabled to prevent duplicates');
+    // if (!user?.uid) return;
+    // let unsubscribeNotifications: (() => void) | undefined;
+    // ... disabled enhanced notification listener code ...
+    // return () => {};
   }, [user?.uid, showToast]);
 
   // Friend management functions

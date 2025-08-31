@@ -4,6 +4,8 @@ import { TournamentService } from './tournamentService';
 import { UserService } from './userService';
 import { RematchService } from './rematchService';
 import { GameInvitationService } from './gameInvitationService';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from './firebase';
 
 // Matchmaking request interface
 export interface MatchmakingRequest {
@@ -102,19 +104,42 @@ export class MatchmakingOrchestrator {
   private static async handleQuickMatch(request: MatchmakingRequest): Promise<MatchmakingResult> {
     console.log('⚡ Processing quick match request');
     
-    // Find existing sessions
-    const availableSessions = await GameSessionService.findAvailableSessions(
+    // Find existing sessions with enhanced retry logic for race conditions
+    let availableSessions = await GameSessionService.findAvailableSessions(
       'quick',
       request.gameMode,
       request.hostData
     );
     
+    // Enhanced retry logic with multiple attempts
+    let retryCount = 0;
+    const maxRetries = 3;
+    const retryDelays = [500, 1000, 2000]; // Progressive delays
+    
+    while (availableSessions.length === 0 && retryCount < maxRetries) {
+      const delay = retryDelays[retryCount];
+      console.log(`🔄 No sessions found on attempt ${retryCount + 1}, waiting ${delay}ms and retrying...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      
+      availableSessions = await GameSessionService.findAvailableSessions(
+        'quick',
+        request.gameMode,
+        request.hostData
+      );
+      
+      console.log(`🔄 Retry ${retryCount + 1} found ${availableSessions.length} sessions`);
+      retryCount++;
+    }
+    
     if (availableSessions.length > 0) {
       // Join existing session
       const session = availableSessions[0];
+      console.log(`🔗 Attempting to join existing session ${session.id}`);
+      
       const joinResult = await GameSessionService.joinSession(session.id, request.hostData);
       
       if (joinResult.success) {
+        console.log(`✅ Successfully joined session ${session.id}`);
         return {
           success: true,
           sessionId: session.id,
@@ -122,10 +147,13 @@ export class MatchmakingOrchestrator {
           isNewRoom: false,
           hasOpponent: true
         };
+      } else {
+        console.log(`❌ Failed to join session ${session.id}, creating new session instead`);
       }
     }
     
     // Create new session
+    console.log('🆕 Creating new session as no suitable sessions found after retries');
     const sessionId = await GameSessionService.createSession(
       'quick',
       request.gameMode,
@@ -156,34 +184,48 @@ export class MatchmakingOrchestrator {
     if (!eligibility.valid) {
       throw new Error(eligibility.reason || 'Not eligible for ranked matches');
     }
+
+    // Remove skill-based filtering completely to allow all players to connect
+    console.log('🔧 DEBUG: Searching for ANY available ranked sessions (no skill filtering)');
     
-    // Get user's ranked stats for skill-based matching
-    const rankedStats = await RankedMatchmakingService.getUserRankedStats(request.hostData.playerId);
-    const skillLevel = rankedStats?.currentSeason.level || 1;
-    
-    // Find skill-appropriate sessions
-    const skillRange = {
-      min: Math.max(1, skillLevel - (request.allowSkillGap || 3)),
-      max: Math.min(10, skillLevel + (request.allowSkillGap || 3))
-    };
-    
-    const availableSessions = await GameSessionService.findAvailableSessions(
+    let availableSessions = await GameSessionService.findAvailableSessions(
       'ranked',
       request.gameMode,
-      request.hostData,
-      skillRange
+      request.hostData
+      // Removed skillRange parameter entirely
     );
     
+    // Enhanced retry logic with multiple attempts  
+    let retryCount = 0;
+    const maxRetries = 3;
+    const retryDelays = [500, 1000, 2000]; // Progressive delays
+    
+    while (availableSessions.length === 0 && retryCount < maxRetries) {
+      const delay = retryDelays[retryCount];
+      console.log(`🔄 No ranked sessions found on attempt ${retryCount + 1}, waiting ${delay}ms and retrying...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      
+      availableSessions = await GameSessionService.findAvailableSessions(
+        'ranked',
+        request.gameMode,
+        request.hostData
+      );
+      
+      console.log(`🔄 Ranked retry ${retryCount + 1} found ${availableSessions.length} sessions`);
+      retryCount++;
+    }
+    
     if (availableSessions.length > 0) {
-      // Join best skill-matched session
-      const bestMatch = this.findBestSkillMatch(availableSessions, skillLevel);
-      const joinResult = await GameSessionService.joinSession(bestMatch.id, request.hostData);
+      // Join the first available session (no skill matching)
+      const session = availableSessions[0];
+      console.log(`🔗 Joining existing ranked session: ${session.id}`);
+      const joinResult = await GameSessionService.joinSession(session.id, request.hostData);
       
       if (joinResult.success) {
         return {
           success: true,
-          sessionId: bestMatch.id,
-          roomId: bestMatch.id,
+          sessionId: session.id,
+          roomId: session.id,
           isNewRoom: false,
           hasOpponent: true
         };
@@ -191,15 +233,14 @@ export class MatchmakingOrchestrator {
     }
     
     // Create new ranked session
+    console.log('🆕 Creating new ranked session');
     const sessionId = await GameSessionService.createSession(
       'ranked',
       request.gameMode,
       request.hostData,
       {
         maxPlayers: 2,
-        skillRange,
-        requireActiveRanked: true,
-        expirationTime: 30 // 30 minutes for ranked
+        expirationTime: 20 // 20 minutes
       }
     );
     
@@ -392,18 +433,15 @@ export class MatchmakingOrchestrator {
       throw new Error('Game mode is required');
     }
     
-    // Check if player already has active sessions
-    const activeSessions = await GameSessionService.findAvailableSessions(
-      request.sessionType,
-      request.gameMode,
-      request.hostData
+    // Check if player already has active sessions (query directly for user sessions)
+    const activeSessionsQuery = query(
+      collection(db, 'gameSessions'),
+      where('hostData.playerId', '==', request.hostData.playerId),
+      where('status', 'in', ['waiting', 'matched', 'active'])
     );
     
-    const playerActiveSessions = activeSessions.filter(session => 
-      session.hostData.playerId === request.hostData.playerId
-    );
-    
-    if (playerActiveSessions.length > 0) {
+    const activeSnapshot = await getDocs(activeSessionsQuery);
+    if (activeSnapshot.docs.length > 0 && request.sessionType !== 'friend') {
       throw new Error('Player already has an active matchmaking session');
     }
     

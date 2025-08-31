@@ -110,9 +110,14 @@ export class AbandonedMatchService {
 
       console.log(`✅ Match ${matchId} moved to abandoned matches`);
 
-    } catch (error) {
+    } catch (error: any) {
+      // Handle permission errors more gracefully
+      if (error?.code === 'permission-denied') {
+        console.warn(`⚠️ Permission denied abandoning match ${matchId} - insufficient permissions`);
+        return; // Don't throw, just log and continue
+      }
       console.error(`Error abandoning match ${matchId}:`, error);
-      throw error;
+      // Don't throw error to prevent breaking the cleanup batch
     }
   }
 
@@ -121,7 +126,8 @@ export class AbandonedMatchService {
    */
   static async cleanupInactiveMatches(): Promise<void> {
     try {
-      const collections_to_check = ['waitingroom', 'gameRooms', 'gameSessions'];
+      // Only clean up collections that actually exist and are used
+      const collections_to_check = ['waitingroom', 'gameSessions'];
       let totalCleaned = 0;
 
       for (const collection_name of collections_to_check) {
@@ -192,7 +198,12 @@ export class AbandonedMatchService {
 
       return cleanedCount;
 
-    } catch (error) {
+    } catch (error: any) {
+      // Handle permission errors more gracefully
+      if (error?.code === 'permission-denied') {
+        console.warn(`⚠️ Permission denied cleaning up ${collection_name} - skipping collection`);
+        return 0;
+      }
       console.error(`Error cleaning up ${collection_name}:`, error);
       return 0;
     }
@@ -308,7 +319,8 @@ export class AbandonedMatchService {
     try {
       console.log('🧹 Starting manual cleanup of inactive matches...');
       
-      const collections_to_check = ['waitingroom', 'gameRooms', 'gameSessions'];
+      // Only clean up collections that actually exist and are used
+      const collections_to_check = ['waitingroom', 'gameSessions'];
       let totalCleaned = 0;
       const errors: string[] = [];
 

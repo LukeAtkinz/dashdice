@@ -178,7 +178,7 @@ export const GameInvitationNotification: React.FC = () => {
         // Navigate to waiting room with the room ID and game mode
         setCurrentSection('waiting-room', { 
           roomId: result.gameId,
-          gameMode: invitation?.gameType || 'classic'
+          gameMode: invitation?.gameMode || 'classic'
         });
       }
     } catch (error) {
@@ -250,8 +250,8 @@ export const GameInvitationNotification: React.FC = () => {
               <div className="mb-5">
                 <div className="flex items-center gap-3 mb-3">
                   <img 
-                    src={getGameModeIcon(invitation.gameType)} 
-                    alt={invitation.gameType}
+                    src={getGameModeIcon(invitation.gameMode)} 
+                    alt={invitation.gameMode}
                     className="w-10 h-10 md:w-12 md:h-12 object-contain opacity-90 drop-shadow-lg"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
@@ -261,12 +261,12 @@ export const GameInvitationNotification: React.FC = () => {
                   <div className="flex-1">
                     <p className="text-white text-sm md:text-base mb-1 font-audiowide">
                       <span className="font-bold text-blue-300">
-                        {invitation.fromUserName || 'Friend'}
+                        {invitation.fromDisplayName || 'Friend'}
                       </span>
                       <span className="text-gray-300 mx-2">invited you to</span>
                     </p>
                     <p className="text-blue-200 text-base md:text-lg font-bold font-audiowide tracking-wide">
-                      {getGameModeDisplayName(invitation.gameType)}
+                      {getGameModeDisplayName(invitation.gameMode)}
                     </p>
                   </div>
                 </div>

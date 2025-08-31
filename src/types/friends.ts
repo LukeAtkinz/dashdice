@@ -31,13 +31,19 @@ export interface FriendRequest {
 export interface GameInvitation {
   id: string;
   fromUserId: string;
+  fromDisplayName: string;
   toUserId: string;
-  fromUserName?: string; // Display name of the user sending the invitation
-  gameType: string;
-  status: 'pending' | 'accepted' | 'declined' | 'expired';
+  toDisplayName: string;
+  gameMode: string;
+  gameType: 'quick' | 'ranked';
+  sessionId?: string;
+  status: 'pending' | 'accepted' | 'declined' | 'expired' | 'cancelled';
   createdAt: Timestamp;
-  expiresAt: Timestamp; // Auto-expire after 5 minutes
-  gameSettings?: Record<string, any>;
+  expiresAt: Timestamp;
+  acceptedAt?: Timestamp;
+  declinedAt?: Timestamp;
+  cancelledAt?: Timestamp;
+  message?: string;
 }
 
 // Friend with status information

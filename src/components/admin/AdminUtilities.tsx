@@ -6,6 +6,8 @@ import { TournamentService } from '@/services/tournamentService';
 import { NewMatchmakingService } from '@/services/newMatchmakingService';
 import { PlayerHeartbeatService } from '@/services/playerHeartbeatService';
 import { AbandonedMatchService } from '@/services/abandonedMatchService';
+import { SeasonService } from '@/services/seasonService';
+import { RankedMatchmakingService } from '@/services/rankedMatchmakingService';
 
 /**
  * Enhanced Admin Utilities Component
@@ -177,6 +179,71 @@ export default function AdminUtilities() {
     }
   };
 
+  // Initialize first season (ending Friday 19/9/2025 at 5:00 PM)
+  const handleInitializeFirstSeason = async () => {
+    if (!confirm('Initialize the first ranked season? This will create "Dash 1" ending Friday 19/9/2025 at 5:00 PM and initialize ranked stats for all users.')) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Create custom season with specific end date
+      const startDate = new Date();
+      const endDate = new Date('2025-09-19T17:00:00+01:00'); // Friday 19/9/2025 at 5:00 PM BST
+      
+      // Use the SeasonService but with custom timing
+      const season = await SeasonService.createFirstSeason(endDate);
+      
+      // Initialize ranked stats for all users
+      await RankedMatchmakingService.initializeAllUsersForSeason(season.dashNumber);
+      
+      showMessage(`✅ Successfully created Dash 1! Season runs until ${endDate.toLocaleDateString()} at ${endDate.toLocaleTimeString()}`, 'success');
+    } catch (error) {
+      console.error('Season initialization error:', error);
+      showMessage(`❌ Season initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Check current season status
+  const handleCheckSeasonStatus = async () => {
+    setIsLoading(true);
+    try {
+      const currentSeason = await SeasonService.getCurrentSeason();
+      if (currentSeason) {
+        const timeRemaining = await SeasonService.getTimeRemainingInSeason();
+        const timeString = SeasonService.formatTimeRemaining(timeRemaining);
+        showMessage(`✅ Current Season: ${currentSeason.name} (Dash ${currentSeason.dashNumber}) - Time remaining: ${timeString}`, 'info');
+      } else {
+        showMessage('❌ No active season found. Click "Initialize First Season" to create Dash 1.', 'error');
+      }
+    } catch (error) {
+      console.error('Season check error:', error);
+      showMessage(`❌ Season check failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Force season rotation (for testing)
+  const handleForceSeasonRotation = async () => {
+    if (!confirm('Force season rotation? This will end the current season and create a new one. This should only be used for testing!')) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const newSeason = await SeasonService.checkAndRotateSeason();
+      showMessage(`✅ Season rotated! New season: ${newSeason.name} (Dash ${newSeason.dashNumber})`, 'success');
+    } catch (error) {
+      console.error('Season rotation error:', error);
+      showMessage(`❌ Season rotation failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
@@ -274,6 +341,67 @@ export default function AdminUtilities() {
                 className="bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors"
               >
                 {isLoading ? 'Creating...' : 'Create Weekly Tournaments'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Season Management Section */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 font-audiowide">
+            🏆 Season Management (Ranked System)
+          </h2>
+          <div className="space-y-4">
+            <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+              <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-2">
+                🚀 Initialize First Season (Dash 1)
+              </h3>
+              <p className="text-purple-700 dark:text-purple-300 text-sm mb-3">
+                <strong>Create the first ranked season ending Friday 19/9/2025 at 5:00 PM</strong>
+                <br />• Creates "Dash 1" with custom longer duration
+                <br />• Initializes ranked stats for all existing users
+                <br />• Enables ranked matchmaking system
+                <br />• Subsequent seasons will be 2 weeks each
+              </p>
+              <button
+                onClick={handleInitializeFirstSeason}
+                disabled={isLoading}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              >
+                {isLoading ? 'Creating Season...' : 'Initialize First Season'}
+              </button>
+            </div>
+
+            <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                📅 Check Current Season Status
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
+                View current active season information and time remaining.
+              </p>
+              <button
+                onClick={handleCheckSeasonStatus}
+                disabled={isLoading}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              >
+                {isLoading ? 'Checking...' : 'Check Season Status'}
+              </button>
+            </div>
+
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <h3 className="font-semibold text-red-800 dark:text-red-200 mb-2">
+                🔄 Force Season Rotation (Testing Only)
+              </h3>
+              <p className="text-red-600 dark:text-red-300 text-sm mb-3">
+                <strong>⚠️ TESTING ONLY:</strong> Manually end current season and create next one. 
+                This will reset all player rankings!
+              </p>
+              <button
+                onClick={handleForceSeasonRotation}
+                disabled={isLoading}
+                className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              >
+                {isLoading ? 'Rotating...' : 'Force Season Rotation'}
               </button>
             </div>
           </div>

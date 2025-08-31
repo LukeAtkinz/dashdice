@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useNavigation } from '@/context/NavigationContext';
 import { useAuth } from '@/context/AuthContext';
 import { WaitingRoomService } from '@/services/waitingRoomService';
+import { NewMatchmakingService } from '@/services/newMatchmakingService';
 
 export const useWaitingRoomCleanup = (currentRoomId?: string) => {
   const router = useRouter();
@@ -21,16 +22,13 @@ export const useWaitingRoomCleanup = (currentRoomId?: string) => {
     }, 3000); // Wait 3 seconds after component mount
 
     const handleBeforeUnload = async (event: BeforeUnloadEvent) => {
-      // TEMPORARILY DISABLED: All cleanup to prevent rooms being deleted
-      console.log('🚫 Browser exit cleanup temporarily disabled');
-      return;
-      
       // Always clean up on browser close/refresh
       if (currentSection === 'waiting-room' && currentRoomId && user?.uid) {
         try {
-          // Use non-null assertion since we've already checked these values above
-          await WaitingRoomService.leaveRoom(currentRoomId!, user!.uid);
-          console.log('🧹 Cleaned up waiting room on browser exit:', currentRoomId);
+          console.log('🧹 Cleaning up session on browser exit:', currentRoomId);
+          // Use enhanced cleanup that removes both game session and waiting room documents
+          await NewMatchmakingService.leaveSession(user.uid, currentRoomId);
+          console.log('✅ Enhanced cleanup completed on browser exit');
         } catch (error) {
           // Gracefully handle cleanup errors - don't prevent page exit
           console.log('⚠️ Cleanup error handled gracefully on browser exit:', error);
@@ -39,10 +37,6 @@ export const useWaitingRoomCleanup = (currentRoomId?: string) => {
     };
 
     const handleVisibilityChange = async () => {
-      // TEMPORARILY DISABLED: Visibility-based cleanup to prevent immediate room deletion
-      console.log('🚫 Visibility-based cleanup temporarily disabled');
-      return;
-      
       // Only cleanup if enough time has passed and user is actually leaving
       if (!cleanupEnabled) {
         console.log('⏸️ Cleanup not yet enabled, skipping visibility cleanup');
@@ -53,9 +47,9 @@ export const useWaitingRoomCleanup = (currentRoomId?: string) => {
       if (document.visibilityState === 'hidden' && user?.uid) {
         if (currentSection === 'waiting-room' && currentRoomId) {
           try {
-            // Use non-null assertion since we've already checked these values above
-            await WaitingRoomService.leaveRoom(currentRoomId!, user!.uid);
-            console.log('🧹 Cleaned up waiting room on page hide:', currentRoomId);
+            console.log('🧹 Enhanced cleanup on page hide:', currentRoomId);
+            await NewMatchmakingService.leaveSession(user.uid, currentRoomId);
+            console.log('✅ Enhanced cleanup completed on page hide');
           } catch (error) {
             // Gracefully handle cleanup errors
             console.log('⚠️ Cleanup error handled gracefully on page hide:', error);
@@ -79,15 +73,15 @@ export const useWaitingRoomCleanup = (currentRoomId?: string) => {
   const leaveWaitingRoom = async () => {
     if (currentSection === 'waiting-room' && currentRoomId && user) {
       try {
-        await WaitingRoomService.leaveRoom(currentRoomId, user.uid);
-        console.log('🧹 Manually left waiting room:', currentRoomId);
+        console.log('🚪 Manual leave waiting room with enhanced cleanup:', currentRoomId);
+        await NewMatchmakingService.leaveSession(user.uid, currentRoomId);
+        console.log('✅ Manual enhanced cleanup completed');
         
         // Navigate back to dashboard
         setCurrentSection('dashboard');
         router.push('/dashboard');
       } catch (error) {
-        // Gracefully handle cleanup errors - still navigate away
-        console.log('⚠️ Cleanup error handled gracefully during manual leave:', error);
+        console.error('❌ Error during manual waiting room leave:', error);
         // Still navigate away even if cleanup fails
         setCurrentSection('dashboard');
         router.push('/dashboard');

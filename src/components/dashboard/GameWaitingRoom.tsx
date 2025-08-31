@@ -10,6 +10,7 @@ import { db } from '@/services/firebase';
 import { collection, addDoc, doc, onSnapshot, updateDoc, deleteDoc, query, where, getDocs, getDoc, serverTimestamp } from 'firebase/firestore';
 import { GameType } from '@/types/ranked';
 import { RankedMatchmakingService } from '@/services/rankedMatchmakingService';
+import { NewMatchmakingService } from '@/services/newMatchmakingService';
 
 interface GameWaitingRoomProps {
   gameMode: string;
@@ -29,6 +30,7 @@ interface WaitingRoomEntry {
   playersRequired: number;
   friendInvitation?: boolean; // Add flag to indicate friend invitation room
   readyPlayers?: string[]; // Track which players are ready
+  sessionProxy?: string; // Reference to gameSessions collection for unified system
   hostData: {
     playerDisplayName: string;
     playerId: string;
@@ -320,13 +322,23 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   }
                 }
                 
-                // Check if opponent joined - but don't auto-start countdown for friend invitations
-                if (data.opponentData && !opponentJoined) {
-                  setOpponentJoined(true);
+                // Check if opponent joined - improved detection for initial load
+                if (data.opponentData) {
+                  if (!opponentJoined) {
+                    console.log('🎯 GameWaitingRoom: Opponent detected, updating state');
+                    setOpponentJoined(true);
+                  }
                   
                   // Only auto-start countdown for non-friend invitations
-                  if (!data.friendInvitation) {
+                  if (!data.friendInvitation && vsCountdown === null) {
+                    console.log('🚀 GameWaitingRoom: Starting countdown for matched players');
                     startVsCountdown();
+                  }
+                } else {
+                  // Reset opponent joined state if opponent is no longer present
+                  if (opponentJoined) {
+                    console.log('⚠️ GameWaitingRoom: Opponent no longer present, resetting state');
+                    setOpponentJoined(false);
                   }
                 }
               } else {
@@ -635,51 +647,17 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
   // Function to start 5-second countdown for VS section
   const startVsCountdown = () => {
-    // Remove performance-impacting logs
-    // console.log('🕐 GameWaitingRoom: Starting VS countdown...');
-    console.log('🔍 DEBUG: startVsCountdown called with:', {
-      waitingRoomEntry: waitingRoomEntry?.id,
-      opponentJoined,
-      user: user?.uid,
-      gameMode,
-      actionType
-    });
+    console.log('🕐 Starting VS countdown...');
     
     setVsCountdown(5);
     const timer = setInterval(() => {
       setVsCountdown((prev) => {
-        // Remove performance-impacting logs
-        // console.log('🕐 GameWaitingRoom: Countdown tick:', prev);
-        console.log('🔍 DEBUG: Countdown state:', {
-          prev,
-          waitingRoomEntryId: waitingRoomEntry?.id,
-          hostPlayerId: waitingRoomEntry?.hostData?.playerId,
-          opponentPlayerId: waitingRoomEntry?.opponentData?.playerId,
-          currentUserId: user?.uid
-        });
-        
         if (prev === null || prev <= 1) {
           clearInterval(timer);
-          // Remove performance-impacting logs
-          // console.log('🕐 GameWaitingRoom: Countdown finished! Showing GO!');
-          console.log('🔍 DEBUG: About to call moveToMatchesAndNavigate with data:', {
-            waitingRoomEntry,
-            roomId,
-            gameMode,
-            actionType,
-            userUid: user?.uid
-          });
+          console.log('� Countdown finished! Starting match...');
           
           // Move to matches collection and navigate to match
           setTimeout(() => {
-            console.log('🕐 GameWaitingRoom: Starting navigation after 1 second delay...');
-            console.log('🔍 DEBUG: Final navigation call with:', {
-              component: 'GameWaitingRoom',
-              function: 'moveToMatchesAndNavigate',
-              timestamp: new Date().toISOString(),
-              waitingRoomData: waitingRoomEntry,
-              userContext: user?.uid
-            });
             moveToMatchesAndNavigate();
           }, 1000); // Wait 1 second after showing "GO!"
           return 0; // Show "GO!"
@@ -1211,14 +1189,28 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     
     try {
       setIsLeaving(true);
-      console.log('🚪 GameWaitingRoom: Leaving game, waiting room entry:', waitingRoomEntry?.id);
+      console.log('🚪 GameWaitingRoom: Leaving game', {
+        waitingRoomId: waitingRoomEntry?.id,
+        roomId: roomId,
+        userId: user?.uid
+      });
       
-      if (waitingRoomEntry?.id) {
-        console.log('🗑️ GameWaitingRoom: Deleting waiting room document:', waitingRoomEntry.id);
-        await deleteDoc(doc(db, 'waitingroom', waitingRoomEntry.id));
-        console.log('✅ GameWaitingRoom: Waiting room document deleted successfully');
+      if (user?.uid) {
+        // Use the enhanced leave session method that cleans up both documents
+        const sessionId = roomId || waitingRoomEntry?.id;
+        if (sessionId) {
+          console.log('🧹 GameWaitingRoom: Using NewMatchmakingService to leave session:', sessionId);
+          await NewMatchmakingService.leaveSession(user.uid, sessionId);
+        } else {
+          console.log('⚠️ GameWaitingRoom: No session ID found, cleaning up waiting room only');
+          // Fallback to manual cleanup if no session ID
+          if (waitingRoomEntry?.id) {
+            await deleteDoc(doc(db, 'waitingroom', waitingRoomEntry.id));
+            console.log('✅ GameWaitingRoom: Waiting room document deleted successfully');
+          }
+        }
       } else {
-        console.log('⚠️ GameWaitingRoom: No waiting room entry to delete');
+        console.log('⚠️ GameWaitingRoom: No user ID available for leave cleanup');
       }
     } catch (err) {
       console.error('❌ GameWaitingRoom: Error leaving game:', err);
@@ -1230,7 +1222,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
   // Render background based on equipped match background
   const renderPlayerBackground = () => {
-    const background = waitingRoomEntry?.hostData.matchBackgroundEquipped;
+    const background = waitingRoomEntry?.hostData?.matchBackgroundEquipped;
     
     console.log('🎨 GameWaitingRoom: renderPlayerBackground called', {
       background,
@@ -1291,7 +1283,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   };
 
   const getBackgroundStyle = () => {
-    const background = waitingRoomEntry?.hostData.matchBackgroundEquipped;
+    const background = waitingRoomEntry?.hostData?.matchBackgroundEquipped;
     
     console.log('🎨 GameWaitingRoom: getBackgroundStyle called', {
       background,
@@ -1599,7 +1591,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   zIndex: 2
                 }}
               >
-                {waitingRoomEntry?.hostData.playerDisplayName}
+                {waitingRoomEntry?.hostData?.playerDisplayName || 'Unknown Player'}
               </div>
             </div>
 
@@ -1642,7 +1634,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
                     textTransform: 'uppercase' 
                   }}>
-                    {waitingRoomEntry?.hostData.playerStats.matchWins}
+                    {waitingRoomEntry?.hostData?.playerStats?.matchWins || 0}
                   </div>
                   <div style={{ 
                     color: '#E2E2E2', 
@@ -1686,7 +1678,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
                     textTransform: 'uppercase' 
                   }}>
-                    {waitingRoomEntry?.hostData.playerStats.gamesPlayed}
+                    {waitingRoomEntry?.hostData?.playerStats?.gamesPlayed || 0}
                   </div>
                   <div style={{ 
                     color: '#E2E2E2', 
@@ -1730,7 +1722,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
                     textTransform: 'uppercase' 
                   }}>
-                    {waitingRoomEntry?.hostData.playerStats.bestStreak}
+                    {waitingRoomEntry?.hostData?.playerStats?.bestStreak || 0}
                   </div>
                   <div style={{ 
                     color: '#E2E2E2', 
@@ -1774,7 +1766,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
                     textTransform: 'uppercase' 
                   }}>
-                    {waitingRoomEntry?.hostData.playerStats.currentStreak}
+                    {waitingRoomEntry?.hostData?.playerStats?.currentStreak || 0}
                   </div>
                   <div style={{ 
                     color: '#E2E2E2', 
@@ -1898,7 +1890,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
                       textTransform: 'uppercase' 
                     }}>
-                      {waitingRoomEntry.opponentData.playerStats.matchWins}
+                      {waitingRoomEntry.opponentData?.playerStats?.matchWins || 0}
                     </div>
                     <div style={{ 
                       color: '#E2E2E2', 
@@ -1942,7 +1934,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
                       textTransform: 'uppercase' 
                     }}>
-                      {waitingRoomEntry.opponentData.playerStats.gamesPlayed}
+                      {waitingRoomEntry.opponentData?.playerStats?.gamesPlayed || 0}
                     </div>
                     <div style={{ 
                       color: '#E2E2E2', 
@@ -1986,7 +1978,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
                       textTransform: 'uppercase' 
                     }}>
-                      {waitingRoomEntry.opponentData.playerStats.bestStreak}
+                      {waitingRoomEntry.opponentData?.playerStats?.bestStreak || 0}
                     </div>
                     <div style={{ 
                       color: '#E2E2E2', 
@@ -2030,7 +2022,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
                       textTransform: 'uppercase' 
                     }}>
-                      {waitingRoomEntry.opponentData.playerStats.currentStreak}
+                      {waitingRoomEntry.opponentData?.playerStats?.currentStreak || 0}
                     </div>
                     <div style={{ 
                       color: '#E2E2E2', 
@@ -2062,13 +2054,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   borderRadius: '15px',
                   position: 'relative',
                   overflow: 'hidden',
-                  background: waitingRoomEntry.opponentData.matchBackgroundEquipped?.type !== 'video' && waitingRoomEntry.opponentData.matchBackgroundEquipped?.file 
+                  background: waitingRoomEntry.opponentData?.matchBackgroundEquipped?.type !== 'video' && waitingRoomEntry.opponentData?.matchBackgroundEquipped?.file 
                     ? `url('${waitingRoomEntry.opponentData.matchBackgroundEquipped.file}') center/cover no-repeat` 
                     : '#332A63'
                 }}
               >
                 {/* Render opponent video background if it's a video */}
-                {waitingRoomEntry.opponentData.matchBackgroundEquipped?.type === 'video' && (
+                {waitingRoomEntry.opponentData?.matchBackgroundEquipped?.type === 'video' && (
                   <video
                     autoPlay
                     loop
@@ -2088,7 +2080,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       zIndex: 0
                     }}
                   >
-                    <source src={waitingRoomEntry.opponentData.matchBackgroundEquipped.file} type="video/mp4" />
+                    <source src={waitingRoomEntry.opponentData?.matchBackgroundEquipped?.file} type="video/mp4" />
                   </video>
                 )}
                 
@@ -2121,7 +2113,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     zIndex: 2
                   }}
                 >
-                  {waitingRoomEntry.opponentData.playerDisplayName}
+                  {waitingRoomEntry.opponentData?.playerDisplayName || 'Unknown Player'}
                 </div>
               </div>
             </div>

@@ -141,6 +141,39 @@ export class EnhancedFriendInviteService {
   }
 
   /**
+   * Helper method to clear user's current session
+   */
+  private static async clearUserCurrentSession(userId: string): Promise<void> {
+    try {
+      const { doc, updateDoc, getDoc } = await import('firebase/firestore');
+      const { db } = await import('./firebase');
+      
+      const userRef = doc(db, 'users', userId);
+      const userDoc = await getDoc(userRef);
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        
+        // Clear current game and room if they exist
+        if (userData.currentGame || userData.currentRoom) {
+          console.log(`🧹 Clearing session for user ${userId}:`, {
+            currentGame: userData.currentGame,
+            currentRoom: userData.currentRoom
+          });
+          
+          await updateDoc(userRef, {
+            currentGame: null,
+            currentRoom: null
+          });
+        }
+      }
+    } catch (error) {
+      console.warn(`Warning: Could not clear session for user ${userId}:`, error);
+      // Don't throw error - this is a cleanup operation that shouldn't block invitation acceptance
+    }
+  }
+
+  /**
    * Accept a game invitation and create the match session
    */
   static async acceptInvitation(
@@ -173,6 +206,13 @@ export class EnhancedFriendInviteService {
         if (invite.expiresAt.toDate() < new Date()) {
           throw new Error('Invitation has expired');
         }
+
+        // Clear any existing sessions for both players before creating new session
+        console.log('🧹 Clearing existing sessions for both players...');
+        await Promise.all([
+          this.clearUserCurrentSession(invite.fromUserId),
+          this.clearUserCurrentSession(invite.toUserId)
+        ]);
 
         // Create the game session using our unified matchmaking service
         const sessionResult = await NewMatchmakingService.createFriendMatch(
@@ -230,7 +270,10 @@ export class EnhancedFriendInviteService {
         ]);
 
         console.log('✅ Invitation accepted, session created:', sessionResult.sessionId);
-        return { success: true, sessionId: sessionResult.sessionId };
+        return { 
+          success: true, 
+          sessionId: sessionResult.roomId || sessionResult.sessionId // Return proxy room ID if available
+        };
       });
 
     } catch (error) {
@@ -273,7 +316,8 @@ export class EnhancedFriendInviteService {
         declinedAt: serverTimestamp()
       });
 
-      // Notify the sender
+      // Send ONLY ONE notification to the sender (preventing duplicate notifications)
+      console.log('📤 Sending single decline notification to prevent duplicates');
       await this.sendNotification(invite.fromUserId, {
         type: 'invite_declined',
         title: 'Invitation Declined',
@@ -345,6 +389,8 @@ export class EnhancedFriendInviteService {
     userId: string,
     callback: (invitations: FriendGameInvitation[]) => void
   ) {
+    console.log(`🔍 EnhancedFriendInviteService: Setting up subscription for user ${userId}`);
+    
     const q = query(
       collection(db, this.INVITES_COLLECTION),
       where('toUserId', '==', userId),
@@ -352,11 +398,29 @@ export class EnhancedFriendInviteService {
     );
 
     return onSnapshot(q, (snapshot) => {
+      console.log(`🔍 EnhancedFriendInviteService: Snapshot received for ${userId}:`, {
+        size: snapshot.size,
+        empty: snapshot.empty,
+        fromCache: snapshot.metadata.fromCache
+      });
+      
       const invitations: FriendGameInvitation[] = [];
       snapshot.forEach((doc) => {
-        invitations.push({ id: doc.id, ...doc.data() } as FriendGameInvitation);
+        const data = doc.data();
+        console.log(`🔍 EnhancedFriendInviteService: Processing invitation:`, {
+          id: doc.id,
+          toUserId: data.toUserId,
+          fromUserId: data.fromUserId,
+          status: data.status,
+          gameMode: data.gameMode
+        });
+        invitations.push({ id: doc.id, ...data } as FriendGameInvitation);
       });
+      
+      console.log(`🔍 EnhancedFriendInviteService: Calling callback with ${invitations.length} invitations`);
       callback(invitations);
+    }, (error) => {
+      console.error(`🔍 EnhancedFriendInviteService: Subscription error for ${userId}:`, error);
     });
   }
 

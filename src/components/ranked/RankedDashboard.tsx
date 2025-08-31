@@ -346,7 +346,7 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
 
         {/* Navigation Tabs - Using Friends Template */}
         <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8 flex-shrink-0">
-          {tabs.map((tab) => (
+          {tabs.filter(tab => tab.id !== 'matchmaking' && tab.id !== 'achievements').map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
@@ -449,13 +449,7 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
             </div>
           )}
 
-          {activeTab === 'matchmaking' && (
-            <AdvancedMatchmaking 
-              userId={userId} 
-              userDisplayName={userDisplayName}
-              compactMode={false}
-            />
-          )}
+          {/* Removed matchmaking and achievements tabs */}
 
           {activeTab === 'tournaments' && (
             <TournamentComponent 
@@ -468,13 +462,7 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
             <Leaderboard userId={userId} />
           )}
 
-          {activeTab === 'achievements' && rankedStats && (
-            <AchievementsDisplay 
-              userId={userId} 
-              rankedStats={rankedStats}
-              currentRank={userRank || undefined}
-            />
-          )}
+          {/* Achievements tab removed */}
 
           {activeTab === 'history' && (
             <div className="bg-gray-900 rounded-lg p-6 text-white">

@@ -70,10 +70,10 @@ export class MatchService {
 
   /**
    * Subscribe to real-time match updates - OPTIMIZED for performance
-   * Only subscribes to active matches collection for faster response
+   * Checks both matches and gameSessions collections for compatibility
    */
   static subscribeToMatch(matchId: string, callback: (data: MatchData | null) => void) {
-    // Single listener for active matches only - completed matches don't need real-time updates
+    // First try the legacy matches collection
     const matchRef = doc(db, 'matches', matchId);
     
     const unsubscribe = onSnapshot(matchRef, (snapshot) => {
@@ -88,11 +88,110 @@ export class MatchService {
           callback(null);
         }
       } else {
-        // Match not found in active collection - check completed once
-        this.checkCompletedMatch(matchId, callback);
+        // Match not found in legacy collection - try gameSessions
+        console.log('🔍 Match not found in matches collection, checking gameSessions...');
+        this.checkGameSession(matchId, callback);
       }
     }, (error) => {
       console.error('❌ Match subscription error:', error);
+      // Fallback to gameSessions on error
+      this.checkGameSession(matchId, callback);
+    });
+    
+    return unsubscribe;
+  }
+
+  /**
+   * Check for match data in gameSessions collection (unified system)
+   */
+  private static checkGameSession(sessionId: string, callback: (data: MatchData | null) => void) {
+    const sessionRef = doc(db, 'gameSessions', sessionId);
+    
+    const unsubscribe = onSnapshot(sessionRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const sessionData = snapshot.data();
+        console.log('✅ Found session data:', sessionData);
+        
+        // Convert session data to match data format
+        if (sessionData.participants && sessionData.participants.length >= 1) {
+          const hostParticipant = sessionData.participants[0];
+          const opponentParticipant = sessionData.participants.length >= 2 ? sessionData.participants[1] : null;
+          
+          const matchData: MatchData = {
+            id: snapshot.id,
+            gameMode: sessionData.gameMode,
+            gameType: sessionData.sessionType === 'ranked' ? 'Ranked' : 'Open Server',
+            gameData: sessionData.gameState || {
+              phase: opponentParticipant ? 'waiting' : 'waiting_for_opponent',
+              currentPlayer: hostParticipant.playerId,
+              turnNumber: 1,
+              playerTurns: {},
+              gameWinner: null
+            },
+            hostData: {
+              playerId: hostParticipant.playerId,
+              playerDisplayName: hostParticipant.playerDisplayName,
+              playerStats: hostParticipant.playerStats,
+              displayBackgroundEquipped: hostParticipant.displayBackgroundEquipped,
+              matchBackgroundEquipped: hostParticipant.matchBackgroundEquipped,
+              // Game-specific fields with defaults
+              turnActive: sessionData.gameState?.currentPlayer === hostParticipant.playerId || false,
+              playerScore: 0,
+              roundScore: 0,
+              isConnected: true,
+              matchStats: {
+                banks: 0,
+                doubles: 0,
+                biggestTurnScore: 0,
+                lastDiceSum: 0
+              }
+            },
+            opponentData: opponentParticipant ? {
+              playerId: opponentParticipant.playerId,
+              playerDisplayName: opponentParticipant.playerDisplayName,
+              playerStats: opponentParticipant.playerStats,
+              displayBackgroundEquipped: opponentParticipant.displayBackgroundEquipped,
+              matchBackgroundEquipped: opponentParticipant.matchBackgroundEquipped,
+              // Game-specific fields with defaults
+              turnActive: sessionData.gameState?.currentPlayer === opponentParticipant.playerId || false,
+              playerScore: 0,
+              roundScore: 0,
+              isConnected: true,
+              matchStats: {
+                banks: 0,
+                doubles: 0,
+                biggestTurnScore: 0,
+                lastDiceSum: 0
+              }
+            } : {
+              // Default opponent data for waiting room
+              playerId: 'waiting',
+              playerDisplayName: 'Waiting for opponent...',
+              playerStats: { bestStreak: 0, currentStreak: 0, gamesPlayed: 0, matchWins: 0 },
+              displayBackgroundEquipped: null,
+              matchBackgroundEquipped: null,
+              turnActive: false,
+              playerScore: 0,
+              roundScore: 0,
+              isConnected: false,
+              matchStats: { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0 }
+            },
+            createdAt: sessionData.createdAt,
+            status: sessionData.status
+          };
+          
+          callback(matchData);
+        } else {
+          console.log('⚠️ Session exists but not enough participants yet');
+          callback(null);
+        }
+      } else {
+        // Not found in either collection - check completed matches
+        console.log('🔍 Not found in gameSessions, checking completed matches...');
+        this.checkCompletedMatch(sessionId, callback);
+      }
+    }, (error) => {
+      console.error('❌ GameSession subscription error:', error);
       callback(null);
     });
     

@@ -33,7 +33,7 @@ export default function GameInvitations({ compact = false }: GameInvitationsProp
         // Navigate to waiting room with the room ID and game mode (consistent with GameInvitationNotification)
         setCurrentSection('waiting-room', { 
           roomId: result.gameId,
-          gameMode: invitation?.gameType || 'classic'
+          gameMode: invitation?.gameMode || 'classic'
         });
       }
     } catch (error) {
@@ -103,7 +103,7 @@ export default function GameInvitations({ compact = false }: GameInvitationsProp
                   Game Invitation
                 </p>
                 <p className="text-xs text-blue-700 dark:text-blue-300">
-                  {getGameTypeDisplayName(invitation.gameType)} • {getTimeRemaining(invitation)}
+                  {getGameTypeDisplayName(invitation.gameMode)} • {getTimeRemaining(invitation)}
                 </p>
               </div>
               <div className="flex gap-1">
@@ -153,7 +153,7 @@ export default function GameInvitations({ compact = false }: GameInvitationsProp
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <h4 className="font-medium text-gray-900 dark:text-white">
-                    {getGameTypeDisplayName(invitation.gameType)}
+                    {getGameTypeDisplayName(invitation.gameMode)}
                   </h4>
                   <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-full">
                     {getTimeRemaining(invitation)}
@@ -161,23 +161,16 @@ export default function GameInvitations({ compact = false }: GameInvitationsProp
                 </div>
                 
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  Invite from {invitation.fromUserName || 'a friend'}
+                  Invite from {invitation.fromDisplayName || 'a friend'}
                 </p>
 
-                {/* Game Settings */}
-                {invitation.gameSettings && Object.keys(invitation.gameSettings).length > 0 && (
+                {/* Show message if available */}
+                {invitation.message && (
                   <div className="mb-3">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Game Settings:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {Object.entries(invitation.gameSettings).map(([key, value]) => (
-                        <span
-                          key={key}
-                          className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded"
-                        >
-                          {key}: {String(value)}
-                        </span>
-                      ))}
-                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Message:</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 italic">
+                      "{invitation.message}"
+                    </p>
                   </div>
                 )}
 
