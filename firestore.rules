@@ -102,8 +102,38 @@ service cloud.firestore {
       allow read, write: if request.auth != null; // Simplified for development
     }
 
+    // Game Invitations - Comprehensive rules for invitation management
     match /gameInvitations/{invitationId} {
-      allow read, write: if request.auth != null; // Simplified for development
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.fromUserId;
+      allow update: if request.auth != null && 
+        (request.auth.uid == resource.data.fromUserId || 
+         request.auth.uid == resource.data.toUserId);
+      allow delete: if request.auth != null && 
+        (request.auth.uid == resource.data.fromUserId || 
+         request.auth.uid == resource.data.toUserId);
+    }
+
+    // Enhanced Friend Game Invites - Rules for advanced invitation system
+    match /friendGameInvites/{inviteId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.fromUserId;
+      allow update: if request.auth != null && 
+        (request.auth.uid == resource.data.fromUserId || 
+         request.auth.uid == resource.data.toUserId);
+      allow delete: if request.auth != null && 
+        (request.auth.uid == resource.data.fromUserId || 
+         request.auth.uid == resource.data.toUserId);
+    }
+
+    // Game Notifications - Rules for invitation notifications
+    match /gameNotifications/{notificationId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
     }
 
     // Chat messages - allow authenticated users to read and write
@@ -316,19 +346,6 @@ service cloud.firestore {
          request.auth.uid == resource.data.opponentUserId);
     }
     
-    // Game Invitations - allow authenticated users to send and receive invites
-    match /gameInvitations/{invitationId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null && 
-        request.auth.uid == request.resource.data.fromUserId;
-      allow update: if request.auth != null && 
-        (request.auth.uid == resource.data.fromUserId || 
-         request.auth.uid == resource.data.toUserId);
-      allow delete: if request.auth != null && 
-        (request.auth.uid == resource.data.fromUserId || 
-         request.auth.uid == resource.data.toUserId);
-    }
-    
     // Chat moderation logs - read only for authenticated users
     match /chatModerationLogs/{logId} {
       allow read: if request.auth != null;
@@ -401,6 +418,76 @@ service cloud.firestore {
       allow read: if request.auth != null && 
         request.auth.uid == resource.data.userId;
       allow write: if false; // Only server-side operations should write achievements
+    }
+    
+    // NEW UNIFIED MATCHMAKING SYSTEM COLLECTIONS
+    
+    // Game Sessions - unified session management for all game types
+    match /gameSessions/{sessionId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.hostData.playerId;
+      allow update: if request.auth != null && 
+        (request.auth.uid == resource.data.hostData.playerId || 
+         (resource.data.opponentData != null && request.auth.uid == resource.data.opponentData.playerId));
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.hostData.playerId;
+    }
+    
+    // Tournaments - read for all authenticated users, managed creation/updates
+    match /tournaments/{tournamentId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null; // For tournament creation (can be restricted to admins later)
+      allow update: if request.auth != null;
+      allow delete: if false; // Only admin should delete tournaments
+    }
+    
+    // Tournament Registrations - participants can manage their own registrations
+    match /tournaments/{tournamentId}/registrations/{playerId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == playerId;
+    }
+    
+    // Tournament Matches - participants can read/update their matches
+    match /tournaments/{tournamentId}/matches/{matchId} {
+      allow read: if request.auth != null;
+      allow update: if request.auth != null;
+    }
+    
+    // Tournament Results - read for all, write for participants
+    match /tournaments/{tournamentId}/results/{resultId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    // Tournament Rewards - read for all, write only by system
+    match /tournamentRewards/{rewardId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only server-side operations should write rewards
+    }
+    
+    // Enhanced Leaderboards for real-time updates
+    match /liveLeaderboards/{leaderboardType} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only server-side operations should write leaderboards
+    }
+    
+    // User Tournament History
+    match /users/{userId}/tournamentHistory/{tournamentId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Matchmaking Statistics (for system monitoring)
+    match /matchmakingStats/{statType} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only server-side operations should write stats
+    }
+    
+    // Session Analytics (for performance monitoring)
+    match /sessionAnalytics/{analyticsId} {
+      allow read: if false; // Only server-side access
+      allow write: if false; // Only server-side operations
     }
   }
 }

@@ -733,13 +733,38 @@ export class MatchService {
       if (shouldCheckZeroHourWin) {
         const newScore = currentPlayerScore - newTurnScore;
         
-        if (newScore === 0) {
-          console.log(`🏆 ZERO HOUR WIN! ${currentPlayer.playerDisplayName} reached exactly 0!`);
+        if (newScore <= 0) {
+          console.log(`🏆 ZERO HOUR WIN! ${currentPlayer.playerDisplayName} reached ${newScore <= 0 ? '0 or below' : 'exactly 0'}!`);
           gameOver = true;
           winner = currentPlayer.playerDisplayName;
           gameOverReason = 'Zero Hour completed!';
           
-          // Auto-bank the winning score (subtract turn score to reach 0)
+          // Auto-bank the winning score (subtract turn score to reach 0 or below)
+          if (isHost) {
+            updates['hostData.playerScore'] = newScore <= 0 ? 0 : newScore;
+          } else {
+            updates['opponentData.playerScore'] = newScore <= 0 ? 0 : newScore;
+          }
+          
+          updates['gameData.turnScore'] = 0;
+          turnOver = true;
+          
+          // Set game over state
+          updates['gameData.gamePhase'] = 'gameOver';
+          updates['gameData.winner'] = winner;
+          updates['gameData.gameOverReason'] = gameOverReason;
+          updates['gameData.status'] = 'completed';
+          updates['hostData.turnActive'] = false;
+          updates['opponentData.turnActive'] = false;
+        } else if (newScore < 0) {
+          // Note: We no longer reset for going below 0 since players can win at 0 or below
+          // Auto-win when reaching 0 or below
+          console.log(`� ZERO HOUR WIN! ${currentPlayer.playerDisplayName} reached 0 or below (${newScore})!`);
+          gameOver = true;
+          winner = currentPlayer.playerDisplayName;
+          gameOverReason = 'Zero Hour completed!';
+          
+          // Auto-bank the winning score and set to 0
           if (isHost) {
             updates['hostData.playerScore'] = 0;
           } else {
@@ -756,16 +781,6 @@ export class MatchService {
           updates['gameData.status'] = 'completed';
           updates['hostData.turnActive'] = false;
           updates['opponentData.turnActive'] = false;
-        } else if (gameMode.rules.specialRules?.exactScoreRequired && newScore < 0) {
-          // Overshoot in Zero Hour - reset to starting score
-          console.log('🎯 Overshoot in Zero Hour during turn - score reset to starting value');
-          if (isHost) {
-            updates['hostData.playerScore'] = gameMode.rules.startingScore;
-          } else {
-            updates['opponentData.playerScore'] = gameMode.rules.startingScore;
-          }
-          updates['gameData.turnScore'] = 0;
-          turnOver = true;
         }
       }
       
@@ -995,15 +1010,12 @@ export class MatchService {
         // Zero Hour: subtract banked score from current score
         const proposedScore = (currentPlayer.playerScore || 0) - matchData.gameData.turnScore;
         
-        if (proposedScore < 0) {
-          // Bust rule: banking would take player below 0, so banking fails
-          console.log('🚫 Zero Hour - Banking would go below 0, bust rule applied');
-          newPlayerScore = currentPlayer.playerScore || 0; // Keep current score
-          bankingSuccess = false;
-        } else {
-          newPlayerScore = proposedScore;
-          console.log(`💰 Zero Hour - Banked ${matchData.gameData.turnScore}, new score: ${newPlayerScore}`);
-        }
+        // Allow banking to 0 or below (this triggers a win)
+        newPlayerScore = proposedScore;
+        console.log(`💰 Zero Hour - Banked ${matchData.gameData.turnScore}, new score: ${newPlayerScore}`);
+        
+        // Banking always succeeds in Zero Hour (no more bust rule for going below 0)
+        bankingSuccess = true;
       } else if (gameMode.id === 'last-line') {
         // Last Line (Tug-of-War): transfer turn score from opponent to current player
         console.log('🎲 Last Line - Banking triggers tug-of-war transfer');
@@ -1032,11 +1044,13 @@ export class MatchService {
       let winner = '';
       
       if (gameMode.rules.scoreDirection === 'down') {
-        // Zero Hour: win by reaching exactly 0 (only if banking was successful)
-        if (bankingSuccess && newPlayerScore === 0) {
+        // Zero Hour: win by reaching 0 or below (only if banking was successful)
+        if (bankingSuccess && newPlayerScore <= 0) {
           gameOver = true;
           winner = currentPlayer.playerDisplayName;
-          console.log(`� Zero Hour Victory! ${winner} reached exactly 0`);
+          console.log(`🏆 Zero Hour Victory! ${winner} reached ${newPlayerScore <= 0 ? '0 or below' : 'exactly 0'}`);
+          // Ensure the final score is set to 0 if it went below
+          newPlayerScore = 0;
         }
       } else if (gameMode.id === 'last-line') {
         // Last Line: tug-of-war mechanics with banking

@@ -24,6 +24,13 @@ export interface MatchHistoryEntry {
   backgroundFile?: string;
   completedAt: Timestamp;
   duration?: number; // in milliseconds
+  isFriendMatch?: boolean; // Whether this was a friend vs friend match
+  matchData?: {
+    playerBanks?: number;
+    playerDoubles?: number;
+    biggestTurn?: number;
+    totalTurns?: number;
+  };
 }
 
 export class MatchHistoryService {

@@ -6,6 +6,8 @@ import { Trophy, TrendingUp, Calendar, Users, Target, Medal, Clock, Star, Award 
 import { ProgressionDisplay, CompactProgressionDisplay } from './ProgressionDisplay';
 import { Leaderboard, CompactLeaderboard } from './Leaderboard';
 import { AchievementsDisplay, CompactAchievements } from './AchievementsDisplay';
+import { TournamentComponent } from './TournamentComponent';
+import { AdvancedMatchmaking } from './AdvancedMatchmaking';
 import { LevelUpAnimation, WinStreakAnimation, SeasonEndAnimation } from './RankedAnimations';
 import { RankBadge, LevelTierBadge, WinStreakIndicator, SeasonProgressIndicator, ParticleEffect } from './RankedVisualEffects';
 import { RankedStats, Season } from '../../types/ranked';
@@ -13,6 +15,61 @@ import { RankedMatchmakingService } from '../../services/rankedMatchmakingServic
 import { SeasonService } from '../../services/seasonService';
 import { leaderboardService } from '../../services/leaderboardService';
 import { rankedAchievementService } from '../../services/rankedAchievementService';
+import { useBackground } from '@/context/BackgroundContext';
+
+// CSS for custom button styling matching Friends component
+const buttonStyles = `
+  .custom-ranked-button {
+    background: var(--ui-inventory-button-bg, linear-gradient(135deg, #2a1810 0%, #1a0f08 100%));
+    border: 2px solid var(--ui-inventory-button-border, #8b7355);
+    color: var(--ui-inventory-button-text, #f4f1eb);
+    transition: all 0.3s ease;
+    font-family: 'Audiowide', monospace;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  }
+  
+  .custom-ranked-button:hover {
+    background: var(--ui-inventory-button-hover-bg, linear-gradient(135deg, #3a2420 0%, #2a1810 100%));
+    border-color: var(--ui-inventory-button-hover-border, #a68b5b);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 115, 85, 0.3);
+  }
+  
+  .custom-ranked-button.active {
+    background: var(--ui-inventory-button-active-bg, linear-gradient(135deg, #4a3020 0%, #3a2420 100%));
+    border-color: var(--ui-inventory-button-active-border, #c9a96e);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Ranked-style navigation button hover effects */
+  .nav-button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid transparent;
+    border-radius: 18px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .nav-button:hover {
+    animation: navPulse 0.6s ease-in-out;
+    box-shadow: 0 8px 25px rgba(255, 0, 128, 0.3);
+    transform: scale(1.05);
+  }
+  .nav-button:active {
+    animation: navClick 0.2s ease-in-out;
+    transform: scale(0.95);
+  }
+  .nav-button.active {
+    box-shadow: 0 6px 20px rgba(255, 0, 128, 0.4);
+  }
+  @keyframes navPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  @keyframes navClick {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+  }
+`;
 
 interface RankedDashboardProps {
   userId: string;
@@ -27,7 +84,7 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'leaderboard' | 'achievements' | 'history'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'leaderboard' | 'achievements' | 'tournaments' | 'matchmaking' | 'history'>('overview');
   
   // Animation states
   const [showLevelUp, setShowLevelUp] = useState(false);
@@ -35,6 +92,68 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
   const [showSeasonEnd, setShowSeasonEnd] = useState(false);
   const [newLevel, setNewLevel] = useState(1);
   const [celebrateRank, setCelebrateRank] = useState(false);
+
+  const { DisplayBackgroundEquip } = useBackground();
+
+  const tabs = [
+    {
+      id: 'overview' as const,
+      label: 'Overview',
+      icon: <TrendingUp className="w-4 h-4" />,
+      color: 'linear-gradient(135deg, #667eea, #764ba2)'
+    },
+    {
+      id: 'matchmaking' as const,
+      label: 'Matchmaking',
+      icon: <Target className="w-4 h-4" />,
+      color: 'linear-gradient(135deg, #4facfe, #00f2fe)'
+    },
+    {
+      id: 'tournaments' as const,
+      label: 'Tournaments',
+      icon: <Medal className="w-4 h-4" />,
+      color: 'linear-gradient(135deg, #ffd89b, #19547b)'
+    },
+    {
+      id: 'leaderboard' as const,
+      label: 'Leaderboard',
+      icon: <Trophy className="w-4 h-4" />,
+      color: 'linear-gradient(135deg, #FF0080, #FF4DB8)'
+    },
+    {
+      id: 'achievements' as const,
+      label: 'Achievements',
+      icon: <Award className="w-4 h-4" />,
+      color: 'linear-gradient(135deg, #f093fb, #f5576c)'
+    },
+    {
+      id: 'history' as const,
+      label: 'History',
+      icon: <Clock className="w-4 h-4" />,
+      color: 'linear-gradient(135deg, #4facfe, #00f2fe)'
+    }
+  ];
+
+  // Get background-specific styling for navigation buttons (matching Friends component)
+  const getNavButtonStyle = (tab: any, isSelected: boolean) => {
+    if (DisplayBackgroundEquip?.name === 'On A Mission') {
+      return {
+        background: isSelected 
+          ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.2) 100%)'
+          : 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)',
+        boxShadow: isSelected 
+          ? '0 0 30px rgba(14, 165, 233, 0.6), inset 0 0 20px rgba(14, 165, 233, 0.2)'
+          : '0 0 15px rgba(14, 165, 233, 0.3)',
+        border: isSelected ? '2px solid rgba(14, 165, 233, 0.8)' : '2px solid rgba(14, 165, 233, 0.4)',
+        backdropFilter: 'blur(8px)'
+      };
+    }
+    return {
+      background: isSelected ? tab.color : 'rgba(255, 255, 255, 0.1)',
+      minHeight: "100px",
+      border: isSelected ? '2px solid #FFD700' : '2px solid transparent'
+    };
+  };
 
   useEffect(() => {
     loadRankedData();
@@ -207,218 +326,195 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header with season info */}
-      <div className="bg-gradient-to-r from-purple-900 via-blue-900 to-indigo-900 rounded-lg p-6 text-white relative overflow-hidden">
-        {/* Particle effects for celebration */}
-        {celebrateRank && <ParticleEffect color="#fbbf24" count={20} />}
+    <>
+      <style jsx>{buttonStyles}</style>
+      <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full">
         
-        <div className="flex items-center justify-between relative z-10">
-          <div>
-            <h1 className="text-3xl font-bold mb-2 flex items-center">
-              Ranked Dashboard
-              {userRank && userRank <= 3 && (
-                <motion.div
-                  className="ml-3"
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  <RankBadge rank={userRank} size="lg" />
-                </motion.div>
-              )}
-            </h1>
-            <div className="flex items-center space-x-4">
-              <p className="text-gray-300">
-                {currentSeason ? `Dash ${currentSeason.dashNumber}` : 'No active season'}
-              </p>
-              {rankedStats && (
-                <LevelTierBadge 
-                  level={rankedStats.currentSeason.level} 
-                  showProgress={true}
-                  winsInLevel={rankedStats.currentSeason.winsInLevel}
-                />
-              )}
-              {rankedStats && rankedStats.currentSeason.winStreak >= 3 && (
-                <WinStreakIndicator streak={rankedStats.currentSeason.winStreak} />
-              )}
-            </div>
-          </div>
-          
-          {currentSeason && (
-            <div className="text-right">
-              <SeasonProgressIndicator timeRemaining={timeRemaining} />
-            </div>
-          )}
+        {/* Header */}
+        <div className="text-center mb-8 flex-shrink-0">
+          <h1 
+            className="text-5xl font-bold text-white mb-4"
+            style={{
+              fontFamily: "Audiowide",
+              textTransform: "uppercase",
+              textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
+            }}
+          >
+            Ranked
+          </h1>
         </div>
-      </div>
 
-      {/* Tab navigation */}
-      <div className="flex space-x-1 bg-gray-800 p-1 rounded-lg">
-        <button
-          onClick={() => setActiveTab('overview')}
-          className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
-            activeTab === 'overview'
-              ? 'bg-blue-600 text-white'
-              : 'text-gray-400 hover:text-white hover:bg-gray-700'
-          }`}
-        >
-          <TrendingUp className="w-4 h-4 inline mr-2" />
-          Overview
-        </button>
-        <button
-          onClick={() => setActiveTab('leaderboard')}
-          className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
-            activeTab === 'leaderboard'
-              ? 'bg-blue-600 text-white'
-              : 'text-gray-400 hover:text-white hover:bg-gray-700'
-          }`}
-        >
-          <Trophy className="w-4 h-4 inline mr-2" />
-          Leaderboard
-        </button>
-        <button
-          onClick={() => setActiveTab('achievements')}
-          className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
-            activeTab === 'achievements'
-              ? 'bg-blue-600 text-white'
-              : 'text-gray-400 hover:text-white hover:bg-gray-700'
-          }`}
-        >
-          <Award className="w-4 h-4 inline mr-2" />
-          Achievements
-        </button>
-        <button
-          onClick={() => setActiveTab('history')}
-          className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
-            activeTab === 'history'
-              ? 'bg-blue-600 text-white'
-              : 'text-gray-400 hover:text-white hover:bg-gray-700'
-          }`}
-        >
-          <Clock className="w-4 h-4 inline mr-2" />
-          History
-        </button>
-      </div>
-
-      {/* Tab content */}
-      <motion.div
-        key={activeTab}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Current progression */}
-            <ProgressionDisplay
-              currentLevel={rankedStats.currentSeason.level}
-              winsInLevel={rankedStats.currentSeason.winsInLevel}
-              totalWins={rankedStats.currentSeason.totalWins}
-              winStreak={rankedStats.currentSeason.winStreak}
-              longestWinStreak={rankedStats.currentSeason.longestWinStreak}
-              dashNumber={rankedStats.currentSeason.dashNumber}
-              gamesPlayed={rankedStats.currentSeason.gamesPlayed}
-            />
-
-            {/* Stats overview */}
-            <div className="bg-gray-900 rounded-lg p-6 text-white">
-              <h3 className="text-xl font-bold mb-4 flex items-center">
-                <Target className="w-5 h-5 mr-2 text-blue-400" />
-                Your Stats
-              </h3>
-              
-              <div className="space-y-4">
-                {/* Current rank */}
-                <div className="flex items-center justify-between p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                  <span className="font-medium">Current Rank</span>
-                  <span className="text-2xl font-bold text-yellow-400">#{userRank || '---'}</span>
+        {/* Navigation Tabs - Using Friends Template */}
+        <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8 flex-shrink-0">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`
+                nav-button
+                flex flex-col items-center justify-center gap-2 p-4 rounded-[20px]
+                transition-all duration-300
+                h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px]
+                ${activeTab === tab.id ? 'active' : ''}
+              `}
+              style={{
+                display: 'flex',
+                width: 'fit-content',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '10px',
+                borderRadius: '18px',
+                cursor: 'pointer',
+                ...getNavButtonStyle(tab, activeTab === tab.id)
+              }}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
+                    color: activeTab === tab.id ? 'var(--ui-inventory-button-text, var(--ui-button-text))' : '#FFF', 
+                    fontFamily: 'Audiowide', 
+                    fontWeight: 400, 
+                    textTransform: 'uppercase' 
+                  }}>
+                    <span className="hidden md:inline">{tab.label}</span>
+                    <span className="md:hidden">{tab.label}</span>
+                  </span>
                 </div>
+              </div>
+            </button>
+          ))}
+        </div>
 
-                {/* Quick stats grid */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gray-800 rounded-lg p-4 text-center">
-                    <p className="text-sm text-gray-400 mb-1">All-Time Best</p>
-                    <p className="text-lg font-bold text-purple-400">
-                      Level {rankedStats.allTime.maxLevelReached}
-                    </p>
+        {/* Content */}
+        <div className="w-full max-w-[80rem] flex-1 overflow-y-auto scrollbar-hide px-4">
+          {activeTab === 'overview' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Current progression */}
+              <ProgressionDisplay
+                currentLevel={rankedStats.currentSeason.level}
+                winsInLevel={rankedStats.currentSeason.winsInLevel}
+                totalWins={rankedStats.currentSeason.totalWins}
+                winStreak={rankedStats.currentSeason.winStreak}
+                longestWinStreak={rankedStats.currentSeason.longestWinStreak}
+                dashNumber={rankedStats.currentSeason.dashNumber}
+                gamesPlayed={rankedStats.currentSeason.gamesPlayed}
+              />
+
+              {/* Stats overview */}
+              <div className="bg-gray-900 rounded-lg p-6 text-white">
+                <h3 className="text-xl font-bold mb-4 flex items-center" style={{ fontFamily: 'Audiowide' }}>
+                  <Target className="w-5 h-5 mr-2 text-blue-400" />
+                  Your Stats
+                </h3>
+                
+                <div className="space-y-4">
+                  {/* Current rank */}
+                  <div className="flex items-center justify-between p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                    <span className="font-medium" style={{ fontFamily: 'Audiowide' }}>Current Rank</span>
+                    <span className="text-2xl font-bold text-yellow-400" style={{ fontFamily: 'Audiowide' }}>#{userRank || '---'}</span>
                   </div>
-                  
-                  <div className="bg-gray-800 rounded-lg p-4 text-center">
-                    <p className="text-sm text-gray-400 mb-1">Total Dashes</p>
-                    <p className="text-lg font-bold text-blue-400">
-                      {rankedStats.allTime.totalDashes}
-                    </p>
-                  </div>
-                  
-                  <div className="bg-gray-800 rounded-lg p-4 text-center">
-                    <p className="text-sm text-gray-400 mb-1">Career Wins</p>
-                    <p className="text-lg font-bold text-green-400">
-                      {rankedStats.allTime.totalRankedWins}
-                    </p>
-                  </div>
-                  
-                  <div className="bg-gray-800 rounded-lg p-4 text-center">
-                    <p className="text-sm text-gray-400 mb-1">Best Streak</p>
-                    <p className="text-lg font-bold text-orange-400">
-                      {rankedStats.allTime.longestWinStreak}
-                    </p>
+
+                  {/* Quick stats grid */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gray-800 rounded-lg p-4 text-center">
+                      <p className="text-sm text-gray-400 mb-1" style={{ fontFamily: 'Audiowide' }}>All-Time Best</p>
+                      <p className="text-lg font-bold text-purple-400" style={{ fontFamily: 'Audiowide' }}>
+                        Level {rankedStats.allTime.maxLevelReached}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-gray-800 rounded-lg p-4 text-center">
+                      <p className="text-sm text-gray-400 mb-1" style={{ fontFamily: 'Audiowide' }}>Total Dashes</p>
+                      <p className="text-lg font-bold text-blue-400" style={{ fontFamily: 'Audiowide' }}>
+                        {rankedStats.allTime.totalDashes}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-gray-800 rounded-lg p-4 text-center">
+                      <p className="text-sm text-gray-400 mb-1" style={{ fontFamily: 'Audiowide' }}>Career Wins</p>
+                      <p className="text-lg font-bold text-green-400" style={{ fontFamily: 'Audiowide' }}>
+                        {rankedStats.allTime.totalRankedWins}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-gray-800 rounded-lg p-4 text-center">
+                      <p className="text-sm text-gray-400 mb-1" style={{ fontFamily: 'Audiowide' }}>Best Streak</p>
+                      <p className="text-lg font-bold text-orange-400" style={{ fontFamily: 'Audiowide' }}>
+                        {rankedStats.allTime.longestWinStreak}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {activeTab === 'leaderboard' && (
-          <Leaderboard userId={userId} />
-        )}
+          {activeTab === 'matchmaking' && (
+            <AdvancedMatchmaking 
+              userId={userId} 
+              userDisplayName={userDisplayName}
+              compactMode={false}
+            />
+          )}
 
-        {activeTab === 'achievements' && rankedStats && (
-          <AchievementsDisplay 
-            userId={userId} 
-            rankedStats={rankedStats}
-            currentRank={userRank || undefined}
-          />
-        )}
+          {activeTab === 'tournaments' && (
+            <TournamentComponent 
+              userId={userId}
+              compactMode={false}
+            />
+          )}
 
-        {activeTab === 'history' && (
-          <div className="bg-gray-900 rounded-lg p-6 text-white">
-            <h3 className="text-xl font-bold mb-4 flex items-center">
-              <Star className="w-5 h-5 mr-2 text-yellow-400" />
-              Match History
-            </h3>
-            <div className="text-center py-8 text-gray-400">
-              <Clock className="w-12 h-12 mx-auto mb-4" />
-              <p>Match history coming soon!</p>
-              <p className="text-sm">Track your ranked game performance over time</p>
+          {activeTab === 'leaderboard' && (
+            <Leaderboard userId={userId} />
+          )}
+
+          {activeTab === 'achievements' && rankedStats && (
+            <AchievementsDisplay 
+              userId={userId} 
+              rankedStats={rankedStats}
+              currentRank={userRank || undefined}
+            />
+          )}
+
+          {activeTab === 'history' && (
+            <div className="bg-gray-900 rounded-lg p-6 text-white">
+              <h3 className="text-xl font-bold mb-4 flex items-center" style={{ fontFamily: 'Audiowide' }}>
+                <Star className="w-5 h-5 mr-2 text-yellow-400" />
+                Match History
+              </h3>
+              <div className="text-center py-8 text-gray-400">
+                <Clock className="w-12 h-12 mx-auto mb-4" />
+                <p style={{ fontFamily: 'Audiowide' }}>Match history coming soon!</p>
+                <p className="text-sm">Track your ranked game performance over time</p>
+              </div>
             </div>
-          </div>
-        )}
-      </motion.div>
+          )}
 
-      {/* Animations */}
-      <AnimatePresence>
-        <LevelUpAnimation
-          newLevel={newLevel}
-          show={showLevelUp}
-          onComplete={() => setShowLevelUp(false)}
-        />
-        
-        <WinStreakAnimation
-          streakCount={rankedStats?.currentSeason.winStreak || 0}
-          show={showWinStreak}
-          onComplete={() => setShowWinStreak(false)}
-        />
-        
-        <SeasonEndAnimation
-          finalLevel={rankedStats?.currentSeason.level || 1}
-          finalRank={userRank || 999}
-          newSeasonNumber={currentSeason?.dashNumber || 1}
-          show={showSeasonEnd}
-          onComplete={() => setShowSeasonEnd(false)}
-        />
-      </AnimatePresence>
-    </div>
+          {/* Animations */}
+          <AnimatePresence>
+            <LevelUpAnimation
+              newLevel={newLevel}
+              show={showLevelUp}
+              onComplete={() => setShowLevelUp(false)}
+            />
+            
+            <WinStreakAnimation
+              streakCount={rankedStats?.currentSeason.winStreak || 0}
+              show={showWinStreak}
+              onComplete={() => setShowWinStreak(false)}
+            />
+            
+            <SeasonEndAnimation
+              finalLevel={rankedStats?.currentSeason.level || 1}
+              finalRank={userRank || 999}
+              newSeasonNumber={currentSeason?.dashNumber || 1}
+              show={showSeasonEnd}
+              onComplete={() => setShowSeasonEnd(false)}
+            />
+          </AnimatePresence>
+        </div>
+      </div>
+    </>
   );
 }
 

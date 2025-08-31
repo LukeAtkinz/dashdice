@@ -329,6 +329,14 @@ const ProfileSection: React.FC = () => {
                 backgroundRepeat: 'no-repeat'
               }}
             >
+              {/* Match Background Info Banner */}
+              <div className="absolute top-4 right-4 bg-black/70 rounded-lg px-3 py-2 backdrop-blur-sm border border-gray-600">
+                <div className="text-xs text-gray-300 font-montserrat">Match Background</div>
+                <div className="text-sm font-bold text-white font-audiowide">
+                  {MatchBackgroundEquip?.name || 'Default'}
+                </div>
+              </div>
+
               <Card className="bg-transparent border-gray-600 text-white">
                 <CardHeader>
                   <CardTitle className="text-white font-audiowide">
@@ -392,13 +400,42 @@ const ProfileSection: React.FC = () => {
             </Card>
             </div>
 
-            {/* Matches History Card */}
+            {/* Match History Card - Enhanced */}
             <Card className="bg-black bg-opacity-60 border-gray-600 text-white">
               <CardHeader>
-                <CardTitle className="text-white font-audiowide">Matches</CardTitle>
+                <CardTitle className="text-white font-audiowide flex items-center gap-2">
+                  🎮 Recent Matches
+                  <span className="text-sm text-gray-400 font-montserrat ml-auto">
+                    Last 10 games
+                  </span>
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <MatchHistory />
+                <MatchHistory className="space-y-3" />
+                
+                {/* Quick Stats Summary */}
+                <div className="mt-6 pt-4 border-t border-gray-600">
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <div className="text-lg font-bold text-green-400 font-audiowide">
+                        {statsLoading ? '...' : (stats?.matchWins || 0)}
+                      </div>
+                      <div className="text-xs text-gray-400 font-montserrat">Total Wins</div>
+                    </div>
+                    <div>
+                      <div className="text-lg font-bold text-blue-400 font-audiowide">
+                        {statsLoading ? '...' : (stats?.gamesPlayed || 0)}
+                      </div>
+                      <div className="text-xs text-gray-400 font-montserrat">Games Played</div>
+                    </div>
+                    <div>
+                      <div className="text-lg font-bold text-orange-400 font-audiowide">
+                        {statsLoading ? '...' : (stats?.currentStreak || 0)}
+                      </div>
+                      <div className="text-xs text-gray-400 font-montserrat">Current Streak</div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
         </div>

@@ -175,7 +175,7 @@ export const DashboardSection: React.FC = () => {
         }
 
         // Search for existing room or create new one (for Quick Games)
-        const { roomId, isNewRoom, hasOpponent } = await MatchmakingService.findOrCreateRoom(gameMode, hostData);
+        const { id: roomId, isNewRoom, hasOpponent } = await MatchmakingService.findOrCreateRoom(gameMode, hostData);
         
         console.log(`${isNewRoom ? 'Created' : 'Joined'} room:`, roomId);
         

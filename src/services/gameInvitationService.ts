@@ -359,6 +359,8 @@ export class GameInvitationService {
   // Create game session from invitation
   private static async createGameSession(invitation: GameInvitation): Promise<string> {
     try {
+      console.log('🎮 Creating friend game session for invitation:', invitation);
+      
       // Get user data for both players
       const [fromUser, toUser] = await Promise.all([
         this.getUser(invitation.fromUserId),
@@ -378,17 +380,17 @@ export class GameInvitationService {
       // Default background
       const defaultBackground = { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
 
-      console.log('🎮 GameInvitationService: Creating waiting room with gameType:', invitation.gameType);
-
-      // Create waiting room data with both players
+      // Create waiting room with both players ready
       const waitingRoomData = {
         gameMode: invitation.gameType,
         gameType: 'Friend Invitation',
         playersRequired: 0, // Both players already confirmed
-        friendInvitation: true, // Add flag to indicate this is a friend invitation
-        readyPlayers: [invitation.fromUserId, invitation.toUserId], // ✅ Auto-ready both players
+        friendInvitation: true,
+        readyPlayers: [invitation.fromUserId, invitation.toUserId], // Both auto-ready
         createdAt: serverTimestamp(),
         expiresAt: new Date(Date.now() + (20 * 60 * 1000)), // 20 minute expiry
+        
+        // Host player data (inviter)
         hostData: {
           playerDisplayName: fromUser.displayName || 'Unknown Player',
           playerId: invitation.fromUserId,
@@ -399,8 +401,11 @@ export class GameInvitationService {
             currentStreak: 0,
             gamesPlayed: 0,
             matchWins: 0
-          }
+          },
+          ready: true // Auto-ready
         },
+        
+        // Opponent player data (invitee)
         opponentData: {
           playerDisplayName: toUser.displayName || 'Unknown Player',
           playerId: invitation.toUserId,
@@ -411,27 +416,58 @@ export class GameInvitationService {
             currentStreak: 0,
             gamesPlayed: 0,
             matchWins: 0
+          },
+          ready: true // Auto-ready
+        },
+        
+        // Players array for compatibility
+        players: [
+          {
+            playerDisplayName: fromUser.displayName || 'Unknown Player',
+            playerId: invitation.fromUserId,
+            displayBackgroundEquipped: fromProfile?.inventory?.displayBackgroundEquipped || defaultBackground,
+            matchBackgroundEquipped: fromProfile?.inventory?.matchBackgroundEquipped || defaultBackground,
+            playerStats: fromProfile?.stats || {
+              bestStreak: 0,
+              currentStreak: 0,
+              gamesPlayed: 0,
+              matchWins: 0
+            },
+            ready: true
+          },
+          {
+            playerDisplayName: toUser.displayName || 'Unknown Player',
+            playerId: invitation.toUserId,
+            displayBackgroundEquipped: toProfile?.inventory?.displayBackgroundEquipped || defaultBackground,
+            matchBackgroundEquipped: toProfile?.inventory?.matchBackgroundEquipped || defaultBackground,
+            playerStats: toProfile?.stats || {
+              bestStreak: 0,
+              currentStreak: 0,
+              gamesPlayed: 0,
+              matchWins: 0
+            },
+            ready: true
           }
-        },
-        gameData: {
-          type: 'dice',
-          settings: invitation.gameSettings || {}
-        },
-        invitationId: invitation.id
+        ]
       };
 
-      // Create waiting room
+      // Create the waiting room
       const waitingRoomRef = await addDoc(collection(db, 'waitingroom'), waitingRoomData);
-      
-      // ✅ FIXED: Remove automatic timeout for friend invitations
-      // The GameWaitingRoom component will handle the transition to matches
-      // This prevents race conditions between automatic timeout and manual triggers
-      console.log('✅ GameInvitationService: Friend game waiting room created:', waitingRoomRef.id);
+      const gameId = waitingRoomRef.id;
 
-      return waitingRoomRef.id;
+      console.log('✅ Friend game session created:', gameId);
+      
+      // Immediately update heartbeat for both players
+      await Promise.all([
+        this.updateUserCurrentGame(invitation.fromUserId, gameId),
+        this.updateUserCurrentGame(invitation.toUserId, gameId)
+      ]);
+
+      return gameId;
+
     } catch (error) {
-      console.error('Error creating game session:', error);
-      throw error;
+      console.error('❌ Error creating friend game session:', error);
+      throw new Error('Failed to create game session');
     }
   }
 

@@ -7,6 +7,7 @@ import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { FriendsService } from '@/services/friendsService';
 import { GameInvitationService } from '@/services/gameInvitationService';
+import { EnhancedFriendInviteService } from '@/services/enhancedFriendInviteService';
 import { PresenceService } from '@/services/presenceService';
 import { 
   FriendWithStatus, 
@@ -171,7 +172,31 @@ export function FriendsProvider({ children }: FriendsProviderProps) {
       return { success: false, error: 'User not authenticated' };
     }
 
-    return await GameInvitationService.sendGameInvitation(user.uid, friendId, gameType, gameSettings);
+    // Use the enhanced friend invite service for better functionality
+    try {
+      // Default to quick game type, could be made configurable based on gameSettings
+      const matchType: 'quick' | 'ranked' = (gameSettings?.type === 'ranked') ? 'ranked' : 'quick';
+      
+      const result = await EnhancedFriendInviteService.sendGameInvitation(
+        user.uid, 
+        friendId, 
+        gameType, 
+        matchType,
+        gameSettings?.message
+      );
+      
+      if (result.success) {
+        showToast?.('Game invitation sent successfully!', 'success');
+      } else {
+        showToast?.(`Failed to send invitation: ${result.error}`, 'error');
+      }
+      
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showToast?.(`Error sending invitation: ${errorMessage}`, 'error');
+      return { success: false, error: errorMessage };
+    }
   };
 
   const acceptGameInvitation = async (invitationId: string) => {
@@ -179,13 +204,41 @@ export function FriendsProvider({ children }: FriendsProviderProps) {
       return { success: false, error: 'User not authenticated' };
     }
 
-    return await GameInvitationService.acceptGameInvitation(invitationId);
+    try {
+      const result = await EnhancedFriendInviteService.acceptInvitation(invitationId, user.uid);
+      
+      if (result.success) {
+        showToast?.('Game invitation accepted! Joining match...', 'success');
+        return { success: true, gameId: result.sessionId };
+      } else {
+        showToast?.(`Failed to accept invitation: ${result.error}`, 'error');
+        return { success: false, error: result.error };
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showToast?.(`Error accepting invitation: ${errorMessage}`, 'error');
+      return { success: false, error: errorMessage };
+    }
   };
 
   const declineGameInvitation = async (invitationId: string): Promise<boolean> => {
     if (!user?.uid) return false;
     
-    return await GameInvitationService.declineGameInvitation(invitationId, user.uid);
+    try {
+      const result = await EnhancedFriendInviteService.declineInvitation(invitationId, user.uid);
+      
+      if (result.success) {
+        showToast?.('Game invitation declined', 'info');
+        return true;
+      } else {
+        showToast?.(`Failed to decline invitation: ${result.error}`, 'error');
+        return false;
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showToast?.(`Error declining invitation: ${errorMessage}`, 'error');
+      return false;
+    }
   };
 
   // User status functions

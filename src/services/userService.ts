@@ -1,4 +1,4 @@
-import { doc, getDoc, updateDoc, setDoc, increment } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, increment, collection, getDocs, writeBatch } from 'firebase/firestore';
 import { db, auth } from './firebase';
 import { validateDisplayName, formatDisplayName } from '@/utils/contentModeration';
 
@@ -9,6 +9,7 @@ export interface UserProfile {
   createdAt: any;
   lastLoginAt: any;
   userTag: string;
+  rankedStatus: 'Ranked - Active' | 'Ranked - Inactive' | 'Unranked';
   inventory: {
     displayBackgroundEquipped: string;
     matchBackgroundEquipped: string;
@@ -50,6 +51,7 @@ export class UserService {
           createdAt: userData.createdAt,
           lastLoginAt: userData.lastLoginAt,
           userTag: userData.userTag || userData.email?.split('@')[0] || 'Anonymous',
+          rankedStatus: userData.rankedStatus || 'Ranked - Active', // Default all players to Ranked - Active
           inventory: {
             // Read from inventory object only - ensure background objects are passed through
             displayBackgroundEquipped: userData.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
@@ -264,6 +266,77 @@ export class UserService {
       }
     } catch (error) {
       console.error('❌ Error debugging user stats:', error);
+    }
+  }
+
+  /**
+   * Set all users to Ranked - Active status (Migration utility)
+   */
+  static async setAllUsersRankedActive(): Promise<void> {
+    try {
+      console.log('🔄 Starting migration: Setting all users to Ranked - Active...');
+      
+      const usersRef = collection(db, 'users');
+      const snapshot = await getDocs(usersRef);
+      
+      let updateCount = 0;
+      const batchSize = 500; // Firestore batch limit
+      let batch = writeBatch(db);
+      let batchCount = 0;
+
+      for (const doc of snapshot.docs) {
+        const userData = doc.data();
+        
+        // Only update if rankedStatus is not already set
+        if (!userData.rankedStatus) {
+          batch.update(doc.ref, {
+            rankedStatus: 'Ranked - Active',
+            updatedAt: new Date()
+          });
+          
+          updateCount++;
+          batchCount++;
+          
+          // Commit batch when it reaches the limit
+          if (batchCount >= batchSize) {
+            await batch.commit();
+            console.log(`✅ Committed batch of ${batchCount} user updates`);
+            batch = writeBatch(db);
+            batchCount = 0;
+          }
+        }
+      }
+      
+      // Commit remaining updates
+      if (batchCount > 0) {
+        await batch.commit();
+        console.log(`✅ Committed final batch of ${batchCount} user updates`);
+      }
+      
+      console.log(`✅ Migration complete: Updated ${updateCount} users to Ranked - Active`);
+    } catch (error) {
+      console.error('❌ Error in user migration:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update user's ranked status
+   */
+  static async updateRankedStatus(uid: string, status: 'Ranked - Active' | 'Ranked - Inactive' | 'Unranked'): Promise<void> {
+    try {
+      console.log(`🏆 Updating ranked status for ${uid} to: ${status}`);
+      
+      const userRef = doc(db, 'users', uid);
+      await updateDoc(userRef, {
+        rankedStatus: status,
+        updatedAt: new Date()
+      });
+      
+      console.log(`✅ Successfully updated ranked status to: ${status}`);
+    } catch (error) {
+      console.error('❌ Error updating ranked status:', error);
+      throw error;
     }
   }
 }

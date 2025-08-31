@@ -14,11 +14,34 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { GameModeService } from './gameModeService';
+import { NewMatchmakingService } from './newMatchmakingService';
+import { PlayerHeartbeatService } from './playerHeartbeatService';
+import { AbandonedMatchService } from './abandonedMatchService';
+
+// Initialize the new unified system
+let systemInitialized = false;
+
+const initializeUnifiedSystem = () => {
+  if (!systemInitialized) {
+    console.log('🎯 Initializing Unified Matchmaking System...');
+    PlayerHeartbeatService.initializeCleanupService();
+    AbandonedMatchService.initializeCleanupService();
+    systemInitialized = true;
+    console.log('✅ Unified Matchmaking System initialized');
+  }
+};
 
 export class MatchmakingService {
+
+  /**
+   * Initialize the unified matchmaking system
+   */
+  static initialize() {
+    initializeUnifiedSystem();
+  }
   
   /**
-   * Search for existing open rooms
+   * Search for existing open rooms (Legacy method)
    */
   static async findOpenRoom(gameMode: string) {
     try {
@@ -39,6 +62,89 @@ export class MatchmakingService {
       return null;
     } catch (error) {
       console.error('Error finding open room:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Enhanced findOrCreateRoom with unified system integration
+   */
+  static async findOrCreateRoom(gameMode: string, hostData: any, gameType: 'quick' | 'ranked' = 'quick') {
+    try {
+      // Initialize the unified system
+      initializeUnifiedSystem();
+
+      console.log('🎯 Using unified matchmaking system for:', gameMode, 'type:', gameType);
+      
+      // Use the new unified matchmaking service
+      const sessionType = gameType === 'ranked' ? 'ranked' : 'quick';
+      const result = await NewMatchmakingService.findOrCreateMatch(
+        hostData.playerId,
+        gameMode,
+        sessionType,
+        { skillBasedMatching: gameType === 'ranked' }
+      );
+
+      if (result.success && result.sessionId) {
+        // Start heartbeat for the player
+        await PlayerHeartbeatService.startHeartbeat(hostData.playerId, result.sessionId);
+        
+        return {
+          id: result.sessionId,
+          isNewRoom: result.isNewRoom,
+          hasOpponent: result.hasOpponent
+        };
+      } else {
+        throw new Error(result.error || 'Failed to create room');
+      }
+
+    } catch (error) {
+      console.error('❌ Error in findOrCreateRoom:', error);
+      // Fallback to original implementation if needed
+      return this.findOrCreateRoomLegacy(gameMode, hostData, gameType);
+    }
+  }
+
+  /**
+   * Legacy implementation as fallback
+   */
+  private static async findOrCreateRoomLegacy(gameMode: string, hostData: any, gameType: 'quick' | 'ranked' = 'quick') {
+    try {
+      // Try to find an existing room first
+      const existingRoom = await this.findOpenRoom(gameMode);
+      
+      if (existingRoom) {
+        return {
+          id: existingRoom.id,
+          isNewRoom: false,
+          hasOpponent: true
+        };
+      }
+
+      // Create new room if none found
+      const roomData = {
+        gameMode: gameMode,
+        gameType: 'Open Server',
+        rankedGame: gameType === 'ranked', // Add ranked game flag
+        competitiveType: gameType, // Track if this is 'quick' or 'ranked'
+        host: hostData.displayName,
+        hostUserId: hostData.playerId,
+        playersRequired: 1,
+        players: [hostData.playerId],
+        createdAt: serverTimestamp(),
+        status: 'waiting'
+      };
+
+      const roomRef = await addDoc(collection(db, 'waitingroom'), roomData);
+      
+      return {
+        id: roomRef.id,
+        isNewRoom: true,
+        hasOpponent: false
+      };
+
+    } catch (error) {
+      console.error('❌ Error in legacy findOrCreateRoom:', error);
       throw error;
     }
   }
@@ -412,161 +518,4 @@ export class MatchmakingService {
     return background;
   }
 
-  /**
-   * Main matchmaking function with transaction to prevent duplicate room creation
-   * Includes 20-minute timeout check and player ID validation
-   * Now supports gameType parameter for Quick vs Ranked games
-   */
-  static async findOrCreateRoom(gameMode: string, hostData: any, gameType: 'quick' | 'ranked' = 'quick') {
-    try {
-      console.log('🔍 Starting findOrCreateRoom for user:', hostData.playerId);
-      console.log('📊 Host data received:', JSON.stringify(hostData, null, 2));
-      console.log('🎮 Game type:', gameType);
-      
-      // Use transaction to atomically check and create room to prevent race conditions
-      const result = await runTransaction(db, async (transaction) => {
-        console.log('🔄 Starting transaction...');
-        
-        // Search for existing room within transaction, excluding rooms where current user is host
-        // For ranked games, also match by gameType
-        const queryConditions = [
-          where('gameMode', '==', gameMode),
-          where('gameType', '==', 'Open Server'),
-          where('playersRequired', '==', 1)
-        ];
-        
-        // Add gameType filter for ranked games (quick games can match any Open Server room)
-        if (gameType === 'ranked') {
-          queryConditions.push(where('rankedGame', '==', true));
-        }
-        
-        const q = query(collection(db, 'waitingroom'), ...queryConditions);
-
-        const querySnapshot = await getDocs(q);
-        console.log(`📋 Found ${querySnapshot.docs.length} existing rooms for ${gameType} game`);
-        
-        // Filter out rooms where the current user is already the host AND check for expired rooms
-        const now = new Date();
-        const twentyMinutesAgo = new Date(now.getTime() - 20 * 60 * 1000); // 20 minutes ago
-        
-        const availableRooms = querySnapshot.docs.filter(doc => {
-          const roomData = doc.data();
-          const isOwnRoom = roomData.hostData?.playerId === hostData.playerId;
-          
-          // Check if room is expired (older than 20 minutes)
-          const createdAt = roomData.createdAt?.toDate();
-          const isExpired = createdAt && createdAt < twentyMinutesAgo;
-          
-          if (isExpired) {
-            console.log(`⏰ Room ${doc.id} expired (created: ${createdAt}), will be removed`);
-            // Delete expired room within transaction
-            transaction.delete(doc.ref);
-            return false;
-          }
-          
-          console.log(`🏠 Room ${doc.id}: host=${roomData.hostData?.playerId}, current=${hostData.playerId}, isOwn=${isOwnRoom}`);
-          return !isOwnRoom;
-        });
-        
-        console.log(`✅ Available rooms for joining (after timeout check): ${availableRooms.length}`);
-        
-        if (availableRooms.length > 0) {
-          // Found existing room where current user is NOT the host - join it
-          const existingDoc = availableRooms[0];
-          const roomRef = doc(db, 'waitingroom', existingDoc.id);
-          
-          console.log(`🤝 Joining room ${existingDoc.id} as opponent`);
-          
-          // Convert background strings to objects if needed
-          const displayBg = typeof hostData.displayBackgroundEquipped === 'string' 
-            ? this.convertBackgroundToObject(hostData.displayBackgroundEquipped)
-            : hostData.displayBackgroundEquipped;
-          
-          const matchBg = typeof hostData.matchBackgroundEquipped === 'string'
-            ? this.convertBackgroundToObject(hostData.matchBackgroundEquipped)
-            : hostData.matchBackgroundEquipped;
-          
-          // Add opponent data and update playersRequired to 0 (LOCKED to 2 players only)
-          transaction.update(roomRef, {
-            opponentData: {
-              displayBackgroundEquipped: displayBg,
-              matchBackgroundEquipped: matchBg,
-              playerDisplayName: hostData.playerDisplayName,
-              playerId: hostData.playerId,
-              playerStats: {
-                bestStreak: hostData.playerStats.bestStreak,
-                currentStreak: hostData.playerStats.currentStreak,
-                gamesPlayed: hostData.playerStats.gamesPlayed,
-                matchWins: hostData.playerStats.matchWins
-              }
-            },
-            playersRequired: 0, // Room is now full and LOCKED
-            allowedPlayerIds: [existingDoc.data().hostData.playerId, hostData.playerId], // Security: Only these 2 players allowed
-            lockedAt: serverTimestamp() // Track when room was locked
-          });
-          
-          console.log(`✅ Joined existing room ${existingDoc.id} as opponent`);
-          return { roomId: existingDoc.id, isNewRoom: false, hasOpponent: true };
-        } else {
-          // No available room (either none exist or all are hosted by current user) - create new one
-          console.log('🆕 Creating new room as host');
-          
-          // Convert background strings to objects if needed
-          const displayBg = typeof hostData.displayBackgroundEquipped === 'string' 
-            ? this.convertBackgroundToObject(hostData.displayBackgroundEquipped)
-            : hostData.displayBackgroundEquipped;
-          
-          const matchBg = typeof hostData.matchBackgroundEquipped === 'string'
-            ? this.convertBackgroundToObject(hostData.matchBackgroundEquipped)
-            : hostData.matchBackgroundEquipped;
-          
-          const roomData = {
-            createdAt: serverTimestamp(),
-            gameMode: gameMode,
-            gameType: "Open Server",
-            rankedGame: gameType === 'ranked', // Add ranked game flag
-            competitiveType: gameType, // Track if this is 'quick' or 'ranked'
-            hostData: {
-              displayBackgroundEquipped: displayBg,
-              matchBackgroundEquipped: matchBg,
-              playerDisplayName: hostData.playerDisplayName,
-              playerId: hostData.playerId,
-              playerStats: {
-                bestStreak: hostData.playerStats.bestStreak,
-                currentStreak: hostData.playerStats.currentStreak,
-                gamesPlayed: hostData.playerStats.gamesPlayed,
-                matchWins: hostData.playerStats.matchWins
-              }
-            },
-            playersRequired: 1
-            // NOTE: NO opponentData field - will only be added when someone joins
-          };
-
-          console.log('📝 Room data to create:', JSON.stringify(roomData, null, 2));
-
-          const newRoomRef = doc(collection(db, 'waitingroom'));
-          transaction.set(newRoomRef, roomData);
-          
-          console.log(`✅ Created new room ${newRoomRef.id} as host - NO OPPONENT DATA`);
-          return { roomId: newRoomRef.id, isNewRoom: true, hasOpponent: false };
-        }
-      });
-
-      // If room is full, start countdown to move to matches
-      if (result.hasOpponent) {
-        console.log('🎯 Match found! Starting countdown...');
-        setTimeout(async () => {
-          await this.moveToMatches(result.roomId);
-        }, 5000);
-      } else {
-        console.log('⏳ Created new room, waiting for opponent...');
-      }
-
-      console.log('🔚 Transaction result:', result);
-      return result;
-    } catch (error) {
-      console.error('❌ Error in findOrCreateRoom:', error);
-      throw error;
-    }
-  }
 }
