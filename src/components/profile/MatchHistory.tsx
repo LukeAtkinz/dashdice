@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronUp, Clock, Trophy, Target, Users } from 'lucide-react';
 import { MatchHistoryService, MatchHistoryEntry } from '@/services/matchHistoryService';
 import { useAuth } from '@/context/AuthContext';
+import { useNavigation } from '@/context/NavigationContext';
 
 interface MatchHistoryProps {
   className?: string;
@@ -12,6 +13,7 @@ interface MatchHistoryProps {
 
 export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) => {
   const { user } = useAuth();
+  const { setCurrentSection } = useNavigation();
   const [matches, setMatches] = useState<MatchHistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
@@ -37,6 +39,13 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
 
   const toggleExpanded = (matchId: string) => {
     setExpandedMatch(expandedMatch === matchId ? null : matchId);
+  };
+
+  const handleViewProfile = (opponentId: string, opponentName: string) => {
+    setCurrentSection('user-profile', { 
+      userId: opponentId, 
+      userName: opponentName 
+    });
   };
 
   if (loading) {
@@ -123,6 +132,17 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
                   <span className="text-white font-semibold font-audiowide">
                     {match.opponentDisplayName}
                   </span>
+                  {match.opponentUserId && match.opponentUserId !== 'unknown' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewProfile(match.opponentUserId, match.opponentDisplayName);
+                      }}
+                      className="ml-2 px-2 py-1 bg-blue-600/60 hover:bg-blue-700/60 text-white text-xs rounded font-audiowide transition-colors"
+                    >
+                      PROFILE
+                    </button>
+                  )}
                 </div>
                 
                 {/* Date */}

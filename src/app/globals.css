@@ -419,3 +419,36 @@ html, body {
 .achievements-carousel:hover .animate-carousel {
   animation-play-state: paused;
 }
+
+/* Mobile scrolling restrictions for specific components */
+@media (max-width: 768px) {
+  /* Disable scrolling on match, waiting room, and game over screens */
+  .match-container, 
+  .waiting-room-container, 
+  .game-over-container {
+    overflow: hidden !important;
+    touch-action: none !important;
+    -webkit-overflow-scrolling: none !important;
+    position: fixed !important;
+    width: 100vw !important;
+    height: 100vh !important;
+  }
+  
+  /* Ensure body doesn't scroll on these screens */
+  body.match-active,
+  body.waiting-room-active,
+  body.game-over-active {
+    overflow: hidden !important;
+    touch-action: none !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+  
+  /* But keep leave match button accessible */
+  .leave-match-button {
+    position: fixed !important;
+    z-index: 9999 !important;
+    touch-action: auto !important;
+  }
+}

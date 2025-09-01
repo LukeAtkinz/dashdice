@@ -428,9 +428,8 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
         </div>
 
         {/* Content */}
-        <div className="w-[90vw] max-w-[1600px] flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide px-4" style={{
-          touchAction: 'pan-y',
-          WebkitOverflowScrolling: 'touch'
+        <div className="w-[90vw] max-w-[1600px] flex-1 overflow-hidden px-4" style={{
+          touchAction: 'pan-y'
         }}>
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

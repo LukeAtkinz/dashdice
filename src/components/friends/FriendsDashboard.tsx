@@ -161,9 +161,9 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
     }
     
     return {
-      background: isSelected ? tab.color : 'rgba(255, 255, 255, 0.1)',
+      background: 'transparent',
       boxShadow: isSelected 
-        ? "0 4px 15px rgba(255, 255, 255, 0.2)" 
+        ? "0 4px 15px rgba(255, 215, 0, 0.4)" 
         : "0 2px 8px rgba(0, 0, 0, 0.2)",
       minWidth: "140px",
       minHeight: "100px",
@@ -252,9 +252,8 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       </div>
 
       {/* Content */}
-      <div className="w-full max-w-[80rem] flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide px-4" style={{
-        touchAction: 'pan-y',
-        WebkitOverflowScrolling: 'touch'
+      <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4" style={{
+        touchAction: 'pan-y'
       }}>
         {activeTab === 'friends' && (
           <div className="space-y-6">

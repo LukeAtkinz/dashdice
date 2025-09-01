@@ -165,9 +165,9 @@ const ProfileSection: React.FC = () => {
     }
     
     return {
-      background: isSelected ? tab.color : 'rgba(255, 255, 255, 0.1)',
+      background: 'transparent',
       boxShadow: isSelected 
-        ? "0 4px 15px rgba(255, 255, 255, 0.2)" 
+        ? "0 4px 15px rgba(255, 215, 0, 0.4)" 
         : "0 2px 8px rgba(0, 0, 0, 0.2)",
       minWidth: "140px",
       minHeight: "100px",

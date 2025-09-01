@@ -6,6 +6,7 @@ import { FriendWithStatus } from '@/types/friends';
 import { useFriends } from '@/context/FriendsContext';
 import { useChat } from '@/context/ChatContext';
 import { useToast } from '@/context/ToastContext';
+import { useNavigation } from '@/context/NavigationContext';
 import { openFriendChatInUnified } from '@/components/chat/UnifiedChatWindow';
 import MiniGameModeSelector from './MiniGameModeSelector';
 import { useBackground } from '@/context/BackgroundContext';
@@ -222,9 +223,9 @@ export default function FriendCard({ friend, compact = false, showActions = true
     return null;
   }
 
-  const { removeFriend, sendGameInvitation, friendPresences } = useFriends();
+  const { sendGameInvitation, friendPresences } = useFriends();
+  const { setCurrentSection } = useNavigation();
   const { showToast } = useToast();
-  const [isRemoving, setIsRemoving] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
   const [isGameSelectorExpanded, setIsGameSelectorExpanded] = useState(false);
 
@@ -232,18 +233,11 @@ export default function FriendCard({ friend, compact = false, showActions = true
   const presence = friendPresences?.[friend.friendId];
   const presenceStatus = presence?.status || 'offline';
 
-  const handleRemoveFriend = async () => {
-    const displayName = friend.friendData?.displayName || 'this user';
-    if (window.confirm(`Are you sure you want to remove ${displayName} from your friends list?`)) {
-      setIsRemoving(true);
-      try {
-        await removeFriend(friend.friendId);
-      } catch (error) {
-        console.error('Error removing friend:', error);
-      } finally {
-        setIsRemoving(false);
-      }
-    }
+  const handleViewProfile = () => {
+    setCurrentSection('user-profile', { 
+      userId: friend.friendId, 
+      userName: friend.friendData?.displayName || 'Friend' 
+    });
   };
 
   const handleGameInvite = async (gameMode: string) => {
@@ -515,11 +509,10 @@ export default function FriendCard({ friend, compact = false, showActions = true
                   Chat
                 </button>
                 <button
-                  onClick={handleRemoveFriend}
-                  disabled={isRemoving}
-                  className="w-24 px-2 py-2 bg-purple-600/60 hover:bg-purple-700/60 disabled:bg-gray-600/60 disabled:cursor-not-allowed text-white text-xs rounded-xl font-montserrat transition-colors"
+                  onClick={handleViewProfile}
+                  className="w-24 px-2 py-2 bg-blue-600/60 hover:bg-blue-700/60 text-white text-xs rounded-xl font-audiowide transition-colors"
                 >
-                  {isRemoving ? 'Removing...' : 'Remove'}
+                  PROFILE
                 </button>
               </div>
             </div>
@@ -569,11 +562,10 @@ export default function FriendCard({ friend, compact = false, showActions = true
                     Chat
                   </button>
                   <button
-                    onClick={handleRemoveFriend}
-                    disabled={isRemoving}
-                    className="flex-1 px-4 py-3 bg-purple-600/60 hover:bg-purple-700/60 active:bg-purple-800/60 disabled:bg-gray-600/60 disabled:cursor-not-allowed text-white text-sm rounded-lg font-montserrat transition-colors touch-manipulation"
+                    onClick={handleViewProfile}
+                    className="flex-1 px-4 py-3 bg-blue-600/60 hover:bg-blue-700/60 active:bg-blue-800/60 text-white text-sm rounded-lg font-audiowide transition-colors touch-manipulation"
                   >
-                    {isRemoving ? 'Removing...' : 'Remove'}
+                    PROFILE
                   </button>
                 </div>
               </div>

@@ -57,6 +57,26 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const [error, setError] = useState<string | null>(null);
   const [showGameOverScreen, setShowGameOverScreen] = useState(false);
   
+  // Add body class for mobile scrolling control
+  useEffect(() => {
+    document.body.classList.add('match-active');
+    return () => {
+      document.body.classList.remove('match-active');
+    };
+  }, []);
+  
+  // Add game over body class when showing game over screen
+  useEffect(() => {
+    if (showGameOverScreen) {
+      document.body.classList.add('game-over-active');
+    } else {
+      document.body.classList.remove('game-over-active');
+    }
+    return () => {
+      document.body.classList.remove('game-over-active');
+    };
+  }, [showGameOverScreen]);
+  
   // Turn announcement state
   const [showTurnAnnouncement, setShowTurnAnnouncement] = useState(false);
   const [turnAnnouncementData, setTurnAnnouncementData] = useState<{
@@ -711,7 +731,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="fixed inset-0 z-40 flex items-center justify-center"
+          className="fixed inset-0 z-40 flex items-center justify-center game-over-container"
           style={{ 
             flexDirection: 'column',
             top: '60px', // Leave space for desktop navbar
@@ -742,7 +762,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className={`w-full h-full ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center gap-[1rem] p-2 md:p-4 justify-start md:justify-center overflow-hidden`} 
+        className={`w-full h-full match-container ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center gap-[1rem] p-2 md:p-4 justify-start md:justify-center overflow-hidden`} 
         style={{ 
           minHeight: '100vh', 
           maxHeight: '100vh',

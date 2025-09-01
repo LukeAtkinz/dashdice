@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-export type DashboardSection = 'dashboard' | 'waiting-room' | 'match' | 'inventory' | 'achievements' | 'friends' | 'profile' | 'settings' | 'ranked';
+export type DashboardSection = 'dashboard' | 'waiting-room' | 'match' | 'inventory' | 'achievements' | 'friends' | 'profile' | 'settings' | 'ranked' | 'user-profile';
 
 interface SectionParams {
   gameMode?: string;
@@ -10,6 +10,8 @@ interface SectionParams {
   matchId?: string; // Add matchId for match navigation
   roomId?: string; // Add roomId for waiting room navigation
   gameType?: 'quick' | 'ranked'; // Add gameType for match type identification
+  userId?: string; // Add userId for user profile viewing
+  userName?: string; // Add userName for user profile display
 }
 
 interface NavigationContextType {

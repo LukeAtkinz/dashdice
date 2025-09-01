@@ -11,6 +11,7 @@ import { Match } from '@/components/dashboard/Match';
 import { GameWaitingRoom } from '@/components/dashboard/GameWaitingRoom';
 import { InventorySection } from '@/components/dashboard/InventoryReference';
 import ProfileSection from '@/components/dashboard/ProfileSection';
+import UserProfileViewer from '@/components/profile/UserProfileViewer';
 import AchievementNotificationDisplay from '@/components/achievements/AchievementNotification';
 import AchievementsDashboard from '@/components/achievements/AchievementsDashboard';
 import FriendsDashboard from '@/components/friends/FriendsDashboard';
@@ -702,6 +703,12 @@ const DashboardContent: React.FC = () => {
                   )}
                   {currentSection === 'profile' && <ProfileSection />}
                   {currentSection === 'settings' && <ProfileSection />}
+                  {currentSection === 'user-profile' && sectionParams.userId && (
+                    <UserProfileViewer 
+                      userId={sectionParams.userId}
+                      onClose={() => setCurrentSection('friends')}
+                    />
+                  )}
                 </motion.div>
               </AnimatePresence>
             </div>

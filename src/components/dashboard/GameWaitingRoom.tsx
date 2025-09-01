@@ -98,6 +98,14 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const [searchingText, setSearchingText] = useState('Searching for opponents...');
   const [countdown, setCountdown] = useState<number | null>(null);
   const [opponentJoined, setOpponentJoined] = useState(false);
+  
+  // Add body class for mobile scrolling control
+  useEffect(() => {
+    document.body.classList.add('waiting-room-active');
+    return () => {
+      document.body.classList.remove('waiting-room-active');
+    };
+  }, []);
   const [vsCountdown, setVsCountdown] = useState<number | null>(null);
   const [isLeaving, setIsLeaving] = useState(false); // Add flag to prevent multiple leave operations
   const [isReady, setIsReady] = useState(false); // Track if current player is ready
@@ -1362,7 +1370,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   }
 
   return (
-    <div style={{ 
+    <div className="waiting-room-container" style={{ 
       width: '100%', 
       height: '100vh', 
       maxHeight: '100vh',
