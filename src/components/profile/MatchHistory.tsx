@@ -88,7 +88,16 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
           }}
           onClick={() => toggleExpanded(match.id)}
         >
-          <div className="p-4">
+          {/* Win/Loss Gradient Overlay */}
+          <div 
+            className={`absolute inset-0 pointer-events-none ${
+              match.result === 'won' 
+                ? 'bg-gradient-to-r from-green-600/20 via-green-600/10 to-transparent' 
+                : 'bg-gradient-to-r from-red-600/20 via-red-600/10 to-transparent'
+            }`}
+          ></div>
+          
+          <div className="relative z-10 p-4">
             <div className="flex items-center justify-between">
               {/* Match Info */}
               <div className="flex-1">

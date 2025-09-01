@@ -37,30 +37,56 @@ const buttonStyles = `
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
   }
   
-  /* Inventory-style navigation button hover effects */
-  .nav-button {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Tab Button Animations */
+  @keyframes borderLoad {
+    0% {
+      background: linear-gradient(90deg, 
+        #FFD700 0%, 
+        #FFD700 0%, 
+        transparent 0%, 
+        transparent 100%);
+    }
+    100% {
+      background: linear-gradient(90deg, 
+        #FFD700 0%, 
+        #FFD700 100%, 
+        transparent 100%, 
+        transparent 100%);
+    }
   }
-  .nav-button:hover {
-    animation: navPulse 0.6s ease-in-out;
-    box-shadow: 0 8px 25px rgba(255, 0, 128, 0.3);
-    transform: scale(1.05);
+  
+  .tab-button {
+    position: relative;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    background: transparent !important;
   }
-  .nav-button:active {
-    animation: navClick 0.2s ease-in-out;
-    transform: scale(0.95);
+  
+  .tab-button::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(90deg, transparent 0%, transparent 100%);
+    border-radius: inherit;
+    z-index: -1;
+    transition: all 0.3s ease;
   }
-  .nav-button.active {
-    box-shadow: 0 6px 20px rgba(255, 0, 128, 0.4);
+  
+  .tab-button:hover::before {
+    animation: borderLoad 0.8s ease-in-out forwards;
   }
-  @keyframes navPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+  
+  .tab-button.active {
+    border-color: #FFD700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    background: transparent !important;
   }
-  @keyframes navClick {
-    0% { transform: scale(1); }
-    50% { transform: scale(0.95); }
-    100% { transform: scale(1); }
+  
+  .tab-button.active::before {
+    background: linear-gradient(90deg, #FFD700 0%, #FFD700 100%);
   }
 `;
 
@@ -345,7 +371,7 @@ const ProfileSection: React.FC = () => {
                   gap: '10px',
                   border: 0,
                   borderRadius: '18px',
-                  background: activeTab === tab.id ? 'var(--ui-inventory-button-bg, var(--ui-button-bg))' : 'rgba(255, 255, 255, 0.1)',
+                  background: 'transparent',
                   cursor: 'pointer',
                 }}
               >
@@ -368,69 +394,127 @@ const ProfileSection: React.FC = () => {
           {/* Profile Tab Content */}
           {activeTab === 'profile' && (
             <div className="space-y-6">
-              {/* Account Stats */}
-              <div 
-                className="relative overflow-hidden rounded-2xl"
+              {/* Player Profile Card - Friends Style */}
+              <motion.div 
+                className="relative overflow-hidden touch-manipulation"
                 style={{
                   background: MatchBackgroundEquip?.file 
-                    ? `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${MatchBackgroundEquip.file})`
-                    : 'rgba(0, 0, 0, 0.6)',
+                    ? `url(${MatchBackgroundEquip.file})`
+                    : 'linear-gradient(135deg, #667eea, #764ba2)',
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat'
+                  borderRadius: '20px'
                 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
               >
-                {/* Match Background Info Banner */}
-                <div className="absolute top-4 right-4 bg-black/70 rounded-lg px-3 py-2 backdrop-blur-sm border border-gray-600">
-                  <div className="text-xs text-gray-300 font-montserrat">Match Background</div>
-                  <div className="text-sm font-bold text-white font-audiowide">
-                    {MatchBackgroundEquip?.name || 'Default'}
-                  </div>
-                </div>
+                {/* Dark overlay gradient for text readability */}
+                <div 
+                  className="absolute inset-0"
+                  style={{
+                    background: 'linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)',
+                    borderRadius: '20px',
+                    zIndex: 1
+                  }}
+                ></div>
 
-                <Card className="bg-transparent border-gray-600 text-white">
-                  <CardHeader>
-                    <CardTitle className="text-white font-audiowide">
-                      {user?.displayName || 'Player'}'s Statistics
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center">
+                <div className="relative z-10 p-6">
+                  {/* Profile Header */}
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="relative">
+                      <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-2xl font-bold font-audiowide">
+                          {user?.displayName?.charAt(0)?.toUpperCase() || '?'}
+                        </span>
+                      </div>
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-2 border-gray-800"></div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-white text-2xl font-semibold font-audiowide truncate">
+                        {user?.displayName || 'Player'}
+                      </h2>
+                      <p className="text-white/80 text-lg font-montserrat">Online</p>
+                      <p className="text-white/60 text-sm font-montserrat">
+                        Member since {user?.createdAt?.toLocaleDateString() || 'Unknown'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Statistics Grid - Friends Card Style */}
+                  <div className="bg-transparent backdrop-blur-[0.5px] border border-gray-700/50 rounded-xl p-6">
+                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Player Statistics</h3>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.1 }}
+                      >
                         <div className="text-2xl font-bold text-blue-400 font-audiowide">
                           {statsLoading ? '...' : (stats?.gamesPlayed || 0)}
                         </div>
                         <div className="text-sm text-gray-300 font-montserrat">Games Played</div>
-                      </div>
-                      <div className="text-center">
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2 }}
+                      >
                         <div className="text-2xl font-bold text-green-400 font-audiowide">
                           {statsLoading ? '...' : (stats?.matchWins || 0)}
                         </div>
                         <div className="text-sm text-gray-300 font-montserrat">Games Won</div>
-                      </div>
-                      <div className="text-center">
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.3 }}
+                      >
                         <div className="text-2xl font-bold text-purple-400 font-audiowide">
                           {statsLoading ? '...' : (stats?.itemsCollected || 0)}
                         </div>
                         <div className="text-sm text-gray-300 font-montserrat">Items Collected</div>
-                      </div>
-                      <div className="text-center">
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.4 }}
+                      >
                         <div className="text-2xl font-bold text-orange-400 font-audiowide">
                           {statsLoading ? '...' : (stats?.currentStreak || 0)}
                         </div>
                         <div className="text-sm text-gray-300 font-montserrat">Current Streak</div>
-                      </div>
+                      </motion.div>
                     </div>
                     
                     {/* Additional stats row */}
-                    <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-600">
-                      <div className="text-center">
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-600/50">
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.5 }}
+                      >
                         <div className="text-2xl font-bold text-yellow-400 font-audiowide">
                           {statsLoading ? '...' : (stats?.bestStreak || 0)}
                         </div>
                         <div className="text-sm text-gray-300 font-montserrat">Best Streak</div>
-                      </div>
-                      <div className="text-center">
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.6 }}
+                      >
                         <div className="text-2xl font-bold text-cyan-400 font-audiowide">
                           {statsLoading ? '...' : (
                             stats?.gamesPlayed 
@@ -439,207 +523,333 @@ const ProfileSection: React.FC = () => {
                           )}%
                         </div>
                         <div className="text-sm text-gray-300 font-montserrat">Win Rate</div>
-                      </div>
+                      </motion.div>
                     </div>
                     
                     {statsError && (
-                      <div className="mt-4 text-center text-red-400 text-sm font-montserrat">
+                      <div className="mt-4 text-center text-red-400 text-sm font-montserrat bg-red-900/20 p-3 rounded-lg border border-red-500/50">
                         {statsError}
                       </div>
                     )}
-                  </CardContent>
-                </Card>
-              </div>
+                  </div>
+                </div>
+              </motion.div>
 
-              {/* Match History Card - Enhanced */}
-              <Card className="bg-black bg-opacity-60 border-gray-600 text-white">
-                <CardHeader>
-                  <CardTitle className="text-white font-audiowide flex items-center gap-2">
-                    🎮 Recent Matches
-                    <span className="text-sm text-gray-400 font-montserrat ml-auto">
+              {/* Match History Card - Friends Style */}
+              <motion.div 
+                className="relative overflow-hidden rounded-[20px] bg-black/40 backdrop-blur-sm border border-gray-700/50"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-white text-xl font-audiowide uppercase flex items-center gap-3">
+                      Recent Matches
+                    </h3>
+                    <span className="text-sm text-gray-400 font-montserrat bg-black/30 px-3 py-1 rounded-lg border border-gray-600/50">
                       Last 10 games
                     </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <MatchHistory className="space-y-3" />
-                  
-                  {/* Quick Stats Summary */}
-                  <div className="mt-6 pt-4 border-t border-gray-600">
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      <div>
-                        <div className="text-lg font-bold text-green-400 font-audiowide">
-                          {statsLoading ? '...' : (stats?.matchWins || 0)}
-                        </div>
-                        <div className="text-xs text-gray-400 font-montserrat">Total Wins</div>
-                      </div>
-                      <div>
-                        <div className="text-lg font-bold text-blue-400 font-audiowide">
-                          {statsLoading ? '...' : (stats?.gamesPlayed || 0)}
-                        </div>
-                        <div className="text-xs text-gray-400 font-montserrat">Games Played</div>
-                      </div>
-                      <div>
-                        <div className="text-lg font-bold text-orange-400 font-audiowide">
-                          {statsLoading ? '...' : (stats?.currentStreak || 0)}
-                        </div>
-                        <div className="text-xs text-gray-400 font-montserrat">Current Streak</div>
-                      </div>
-                    </div>
                   </div>
-                </CardContent>
-              </Card>
+                  
+                  <div className="space-y-3">
+                    <MatchHistory className="space-y-3" />
+                  </div>
+                </div>
+              </motion.div>
             </div>
           )}
 
           {/* Settings Tab Content */}
           {activeTab === 'settings' && (
             <div className="space-y-6">
-              {/* Profile Information - Moved to Settings Tab */}
-              <Card className="bg-black bg-opacity-60 border-gray-600 text-white">
-                <CardHeader>
-                  <CardTitle className="text-white font-audiowide">Profile Information</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleUpdateProfile} className="space-y-4">
-                    <div className="flex items-center space-x-6 mb-6">
-                      <div className="relative">
-                        <ProfilePictureUpload 
-                          currentPhotoURL={user?.photoURL}
-                          onUploadComplete={(newPhotoURL) => {
-                            console.log('Profile picture updated:', newPhotoURL);
-                            // The user context will automatically update when the document changes
-                          }}
-                          className="enhanced-profile-upload"
+              {/* Profile Information - Friends Style */}
+              <motion.div 
+                className="relative overflow-hidden rounded-[20px]"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="p-6">
+                  <h3 className="text-white text-xl font-audiowide uppercase mb-6">
+                    Profile Information
+                  </h3>
+                  
+                  <div className="p-6">
+                    <form onSubmit={handleUpdateProfile} className="space-y-6">
+                      <div className="flex flex-col md:flex-row md:items-center md:space-x-6 space-y-4 md:space-y-0">
+                        <div className="relative">
+                          <ProfilePictureUpload 
+                            currentPhotoURL={user?.photoURL}
+                            onUploadComplete={(newPhotoURL) => {
+                              console.log('Profile picture updated:', newPhotoURL);
+                            }}
+                            className="enhanced-profile-upload"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-xl font-bold font-audiowide text-white mb-2">
+                            {user?.displayName || 'Unknown User'}
+                          </h3>
+                          <p className="text-gray-300 font-montserrat mb-1">
+                            Member since {user?.createdAt?.toLocaleDateString() || 'Unknown'}
+                          </p>
+                          <p className="text-sm text-gray-400 font-montserrat">{user?.email}</p>
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-sm font-medium text-white mb-3 font-montserrat">
+                            Display Name
+                          </label>
+                          <Input
+                            type="text"
+                            value={profileForm.values.displayName}
+                            onChange={(e) => profileForm.handleChange('displayName', e.target.value)}
+                            error={profileForm.errors.displayName}
+                            placeholder="Enter your display name"
+                            maxLength={12}
+                            helperText="2-12 characters, no inappropriate content"
+                            className="placeholder-white [&::placeholder]:text-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-white mb-3 font-montserrat">
+                            Email Address
+                          </label>
+                          <Input
+                            type="email"
+                            value={profileForm.values.email}
+                            onChange={(e) => profileForm.handleChange('email', e.target.value)}
+                            placeholder="Enter your email"
+                            disabled
+                            className="placeholder-white [&::placeholder]:text-white"
+                          />
+                          <p className="text-xs text-gray-400 mt-2 font-montserrat">
+                            Email cannot be changed at this time
+                          </p>
+                        </div>
+                      </div>
+
+                      {successMessage && (
+                        <motion.div 
+                          className="p-4 bg-green-900/30 border border-green-500/50 text-green-400 rounded-lg backdrop-blur-sm"
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          {successMessage}
+                        </motion.div>
+                      )}
+
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="flex-1"
+                        >
+                          <Button
+                            type="submit"
+                            disabled={profileForm.isSubmitting}
+                            className="w-full bg-blue-600/60 hover:bg-blue-700/60 border border-blue-500/50 font-audiowide"
+                          >
+                            {profileForm.isSubmitting ? 'Updating...' : 'Update Profile'}
+                          </Button>
+                        </motion.div>
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="flex-1"
+                        >
+                          <Button
+                            type="button"
+                            variant="danger"
+                            onClick={handleSignOut}
+                            className="w-full bg-red-600/60 hover:bg-red-700/60 border border-red-500/50 font-audiowide"
+                          >
+                            Sign Out
+                          </Button>
+                        </motion.div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* General Settings - Friends Style */}
+              <motion.div 
+                className="relative overflow-hidden rounded-[20px]"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
+                <div className="p-6">
+                  <h3 className="text-white text-xl font-audiowide uppercase mb-6">
+                    General Settings
+                  </h3>
+                  
+                  <div className="p-6 space-y-6">
+                    <motion.div 
+                      className="flex items-center justify-between p-4 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div>
+                        <div className="font-medium font-audiowide text-white text-lg">Notifications</div>
+                        <div className="text-sm text-gray-300 font-montserrat">Receive game alerts and updates</div>
+                      </div>
+                      <motion.button
+                        onClick={() => handleToggle('notifications')}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          settings.notifications ? 'bg-blue-600' : 'bg-gray-600'
+                        }`}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            settings.notifications ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                         />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-bold font-audiowide text-white mb-2">{user?.displayName || 'Unknown User'}</h3>
-                        <p className="text-gray-300 font-montserrat mb-1">Member since {user?.createdAt?.toLocaleDateString()}</p>
-                        <p className="text-sm text-gray-400 font-montserrat">{user?.email}</p>
-                      </div>
-                    </div>
+                      </motion.button>
+                    </motion.div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-white mb-2 font-montserrat">
-                        Display Name
-                      </label>
-                      <Input
-                        type="text"
-                        value={profileForm.values.displayName}
-                        onChange={(e) => profileForm.handleChange('displayName', e.target.value)}
-                        error={profileForm.errors.displayName}
-                        placeholder="Enter your display name"
-                        maxLength={12}
-                        helperText="2-12 characters, no inappropriate content"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-white mb-2 font-montserrat">
-                        Email Address
-                      </label>
-                      <Input
-                        type="email"
-                        value={profileForm.values.email}
-                        onChange={(e) => profileForm.handleChange('email', e.target.value)}
-                        placeholder="Enter your email"
-                        disabled
-                      />
-                      <p className="text-xs text-gray-400 mt-1 font-montserrat">
-                        Email cannot be changed at this time
-                      </p>
-                    </div>
-
-                    {successMessage && (
-                      <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded-md">
-                        {successMessage}
-                      </div>
-                    )}
-
-                    <div className="flex space-x-3">
-                      <Button
-                        type="submit"
-                        disabled={profileForm.isSubmitting}
-                      >
-                        {profileForm.isSubmitting ? 'Updating...' : 'Update Profile'}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="danger"
-                        onClick={handleSignOut}
-                      >
-                        Sign Out
-                      </Button>
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
-
-              {/* General Settings */}
-              <Card className="bg-black bg-opacity-60 border-gray-600 text-white">
-                <CardHeader>
-                  <CardTitle className="text-white font-audiowide">General</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium font-audiowide text-white">Notifications</div>
-                      <div className="text-sm text-gray-300 font-montserrat">Receive game alerts and updates</div>
-                    </div>
-                    <button
-                      onClick={() => handleToggle('notifications')}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        settings.notifications ? 'bg-blue-600' : 'bg-gray-200'
-                      }`}
+                    <motion.div 
+                      className="flex items-center justify-between p-4 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          settings.notifications ? 'translate-x-6' : 'translate-x-1'
+                      <div>
+                        <div className="font-medium font-audiowide text-white text-lg">Sound Effects</div>
+                        <div className="text-sm text-gray-300 font-montserrat">Enable game sound effects</div>
+                      </div>
+                      <motion.button
+                        onClick={() => handleToggle('soundEffects')}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          settings.soundEffects ? 'bg-blue-600' : 'bg-gray-600'
                         }`}
-                      />
-                    </button>
-                  </div>
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            settings.soundEffects ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </motion.button>
+                    </motion.div>
 
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium font-audiowide">Auto-Save</div>
-                      <div className="text-sm text-gray-300 font-montserrat">Automatically save game progress</div>
-                    </div>
-                    <button
-                      onClick={() => handleToggle('autoSave')}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        settings.autoSave ? 'bg-blue-600' : 'bg-gray-200'
-                      }`}
+                    <motion.div 
+                      className="flex items-center justify-between p-4 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          settings.autoSave ? 'translate-x-6' : 'translate-x-1'
+                      <div>
+                        <div className="font-medium font-audiowide text-white text-lg">Auto-Save</div>
+                        <div className="text-sm text-gray-300 font-montserrat">Automatically save game progress</div>
+                      </div>
+                      <motion.button
+                        onClick={() => handleToggle('autoSave')}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          settings.autoSave ? 'bg-blue-600' : 'bg-gray-600'
                         }`}
-                      />
-                    </button>
-                  </div>
-                </CardContent>
-              </Card>
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            settings.autoSave ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </motion.button>
+                    </motion.div>
 
-              {/* Action Buttons */}
-              <Card className="bg-black bg-opacity-60 border-gray-600 text-white">
-                <CardContent className="flex space-x-3">
-                  <Button
-                    onClick={handleSaveSettings}
-                    className="flex-1"
-                  >
-                    Save Settings
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={handleResetSettings}
-                    className="flex-1"
-                  >
-                    Reset to Defaults
-                  </Button>
-                </CardContent>
-              </Card>
+                    {/* Volume Controls */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <motion.div 
+                        className="p-4 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="font-medium font-audiowide text-white text-lg mb-3">Music Volume</div>
+                        <div className="space-y-2">
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={settings.musicVolume}
+                            onChange={(e) => handleSliderChange('musicVolume', parseInt(e.target.value))}
+                            className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+                          />
+                          <div className="text-sm text-gray-300 font-montserrat text-center">
+                            {settings.musicVolume}%
+                          </div>
+                        </div>
+                      </motion.div>
+
+                      <motion.div 
+                        className="p-4 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="font-medium font-audiowide text-white text-lg mb-3">SFX Volume</div>
+                        <div className="space-y-2">
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={settings.sfxVolume}
+                            onChange={(e) => handleSliderChange('sfxVolume', parseInt(e.target.value))}
+                            className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+                          />
+                          <div className="text-sm text-gray-300 font-montserrat text-center">
+                            {settings.sfxVolume}%
+                          </div>
+                        </div>
+                      </motion.div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Action Buttons - Friends Style */}
+              <motion.div 
+                className="relative overflow-hidden rounded-[20px] bg-black/40 backdrop-blur-sm border border-gray-700/50"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <div className="p-6">
+                  <div className="bg-transparent backdrop-blur-[0.5px] border border-gray-700/50 rounded-xl p-6">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="flex-1"
+                      >
+                        <Button
+                          onClick={handleSaveSettings}
+                          className="w-full bg-green-600/60 hover:bg-green-700/60 border border-green-500/50 font-audiowide text-white py-3"
+                        >
+                          💾 Save Settings
+                        </Button>
+                      </motion.div>
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="flex-1"
+                      >
+                        <Button
+                          variant="secondary"
+                          onClick={handleResetSettings}
+                          className="w-full bg-gray-600/60 hover:bg-gray-700/60 border border-gray-500/50 font-audiowide text-white py-3"
+                        >
+                          🔄 Reset to Defaults
+                        </Button>
+                      </motion.div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             </div>
           )}
         </div>

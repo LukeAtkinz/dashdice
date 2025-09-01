@@ -17,6 +17,27 @@
   display: none;
 }
 
+/* Apply scrollbar hiding to body and html elements on desktop */
+@media screen and (min-width: 769px) {
+  html {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  
+  html::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+  
+  body {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  
+  body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+}
+
 /* Ensure mobile scrolling works properly */
 @media (max-width: 767px) {
   .scrollbar-hide {

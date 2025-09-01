@@ -178,6 +178,13 @@ export function CompactProgressionDisplay({
   dashNumber: number;
 }) {
   const progressPercent = (winsInLevel / WINS_NEEDED_PER_LEVEL) * 100;
+  const winsNeeded = WINS_NEEDED_PER_LEVEL - winsInLevel;
+  const winRate = 0.0; // Default values for new user
+  const totalWins = 0;
+  const winStreak = 0;
+  const bestStreak = 0;
+  const gamesPlayed = 0;
+  
   const getLevelColor = (level: number) => {
     if (level <= 2) return 'from-gray-400 to-gray-600';
     if (level <= 4) return 'from-amber-400 to-amber-600';
@@ -186,16 +193,56 @@ export function CompactProgressionDisplay({
     return 'from-red-400 to-red-600';
   };
 
+  const getTierName = (level: number) => {
+    if (level <= 2) return 'Bronze Tier';
+    if (level <= 4) return 'Gold Tier';
+    if (level <= 6) return 'Sapphire Tier';
+    if (level <= 8) return 'Amethyst Tier';
+    return 'Diamond Tier';
+  };
+
   return (
-    <div className="bg-gray-800 rounded-lg p-3 text-white">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-semibold">Level {currentLevel}</span>
-        <span className="text-xs text-gray-400">Dash {dashNumber}</span>
+    <div className="bg-gray-800 rounded-lg p-4 text-white space-y-3">
+      {/* Header */}
+      <div className="text-center">
+        <div className="text-lg font-bold" style={{ fontFamily: 'Audiowide' }}>
+          Level {currentLevel}
+        </div>
+        <div className="text-sm text-gray-400">
+          {getTierName(currentLevel)}
+        </div>
+        <div className="text-sm font-semibold text-yellow-400">
+          Dash {dashNumber}
+        </div>
       </div>
-      
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="text-center">
+          <div className="text-gray-400">Wins</div>
+          <div className="font-bold">{totalWins}</div>
+        </div>
+        <div className="text-center">
+          <div className="text-gray-400">Win Rate</div>
+          <div className="font-bold">{winRate.toFixed(1)}%</div>
+        </div>
+        <div className="text-center">
+          <div className="text-gray-400">Win Streak</div>
+          <div className="font-bold">{winStreak}</div>
+        </div>
+        <div className="text-center">
+          <div className="text-gray-400">Best Streak</div>
+          <div className="font-bold">{bestStreak}</div>
+        </div>
+      </div>
+
+      {/* Progress Section */}
       {currentLevel < MAX_LEVEL && (
-        <>
-          <div className="w-full bg-gray-700 rounded-full h-2 mb-1">
+        <div className="space-y-2">
+          <div className="text-sm font-semibold">
+            Progress to Level {currentLevel + 1}
+          </div>
+          <div className="w-full bg-gray-700 rounded-full h-2">
             <motion.div
               className={`h-2 rounded-full bg-gradient-to-r ${getLevelColor(currentLevel + 1)}`}
               style={{ width: `${progressPercent}%` }}
@@ -204,11 +251,26 @@ export function CompactProgressionDisplay({
               transition={{ duration: 0.5 }}
             />
           </div>
-          <p className="text-xs text-gray-400">
-            {winsInLevel}/{WINS_NEEDED_PER_LEVEL} wins to Level {currentLevel + 1}
-          </p>
-        </>
+          <div className="text-xs text-gray-400">
+            {winsInLevel}/{WINS_NEEDED_PER_LEVEL} wins
+          </div>
+          <div className="text-xs text-gray-400">
+            {winsNeeded} more wins needed
+          </div>
+        </div>
       )}
+
+      {/* Additional Stats */}
+      <div className="space-y-1 text-xs text-gray-400">
+        <div>Games Played: <span className="text-white">{gamesPlayed}</span></div>
+        <div>Total Wins: <span className="text-white">{totalWins}</span></div>
+        <div>Current Dash: <span className="text-yellow-400">#{dashNumber}</span></div>
+      </div>
+
+      {/* Level Up Hint */}
+      <div className="text-xs text-blue-400 text-center">
+        💡 Level {currentLevel + 1}: Reach {WINS_NEEDED_PER_LEVEL} wins to advance to {getTierName(currentLevel + 1)}
+      </div>
       
       {currentLevel >= MAX_LEVEL && (
         <div className="flex items-center justify-center">

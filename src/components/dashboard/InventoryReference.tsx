@@ -98,9 +98,18 @@ export const InventorySection: React.FC = () => {
   }
 
   return (
-    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full">
+    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full md:overflow-auto md:scrollbar-hide overflow-hidden">
       {/* Custom scrollbar styles and navigation animations */}
       <style jsx global>{`
+        /* Hide scrollbars on desktop but allow scrolling */
+        .scrollbar-hide {
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE and Edge */
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, Opera */
+        }
+        
         .custom-scrollbar::-webkit-scrollbar {
           width: 8px;
         }
@@ -214,8 +223,9 @@ export const InventorySection: React.FC = () => {
 
       {/* Header */}
       <div className="text-center mb-8 flex-shrink-0">
-        <h1
-          className="text-5xl font-bold text-white mb-4"
+        {/* Desktop Title */}
+        <h1 
+          className="hidden md:block text-5xl font-bold text-white mb-4"
           style={{
             fontFamily: "Audiowide",
             textTransform: "uppercase",
@@ -224,14 +234,49 @@ export const InventorySection: React.FC = () => {
         >
           VAULT
         </h1>
-      </div>
-
-      {/* Navigation */}
+        
+        {/* Mobile Preview - Show instead of title when preview is active */}
+        <div className="block md:hidden mb-4">
+          {(activeTab === 'display' && selectedBackground) ? (
+            <div className="space-y-2">
+              <h1 
+                className="text-xl font-bold text-white"
+                style={{
+                  fontFamily: "Audiowide",
+                  textTransform: "uppercase",
+                  textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
+                }}
+              >
+                Dashboard Preview
+              </h1>
+              <p className="text-sm text-white/70" style={{ fontFamily: "Montserrat" }}>
+                {selectedBackground.name}
+              </p>
+            </div>
+          ) : (activeTab === 'match' && selectedBackground) ? (
+            <div className="space-y-2">
+              <h1 
+                className="text-xl font-bold text-white"
+                style={{
+                  fontFamily: "Audiowide",
+                  textTransform: "uppercase",
+                  textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
+                }}
+              >
+                Match Preview
+              </h1>
+              <p className="text-sm text-white/70" style={{ fontFamily: "Montserrat" }}>
+                {selectedBackground.name}
+              </p>
+            </div>
+          ) : null}
+        </div>
+      </div>      {/* Navigation */}
       <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8 flex-shrink-0">
         <div className="flex items-center justify-center gap-2 md:gap-4">
           <button
             onClick={() => handleTabChange('display')}
-            className={`nav-button ${activeTab === 'display' ? 'active' : ''} h-12 md:h-16 px-6 md:px-10`}
+            className={`tab-button nav-button ${activeTab === 'display' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] transition-all duration-300 h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px]`}
             style={{
               display: 'flex',
               width: 'fit-content',
@@ -244,18 +289,18 @@ export const InventorySection: React.FC = () => {
               cursor: 'pointer',
             }}
           >
-            <span className="text-base md:text-4xl" style={{ 
+            <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
               color: activeTab === 'display' ? 'var(--ui-inventory-button-text, var(--ui-button-text))' : '#FFF', 
               fontFamily: 'Audiowide', 
               fontWeight: 400, 
               textTransform: 'uppercase' 
             }}>
-              For Visuals
+              Vibin
             </span>
           </button>
           <button
             onClick={() => handleTabChange('match')}
-            className={`nav-button ${activeTab === 'match' ? 'active' : ''} h-12 md:h-16 px-6 md:px-10`}
+            className={`tab-button nav-button ${activeTab === 'match' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] transition-all duration-300 h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px]`}
             style={{
               display: 'flex',
               width: 'fit-content',
@@ -268,20 +313,25 @@ export const InventorySection: React.FC = () => {
               cursor: 'pointer',
             }}
           >
-            <span className="text-base md:text-4xl" style={{ 
+            <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
               color: activeTab === 'match' ? 'var(--ui-inventory-button-text, var(--ui-button-text))' : '#FFF', 
               fontFamily: 'Audiowide', 
               fontWeight: 400, 
               textTransform: 'uppercase' 
             }}>
-              For Flexin
+              Flexin
             </span>
           </button>
         </div>
       </div>
 
+      {/* Preview Components */}
+      {selectedBackground && (
+        <></>
+      )}
+
       {/* Content */}
-      <div className="w-full max-w-[80rem] flex-1 overflow-y-auto scrollbar-hide px-4">
+      <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4">
         <div className="flex h-full w-full md:w-auto pl-[0.5rem] md:pl-0" style={{ maxHeight: '410px', height: '410px', maxWidth: '1600px', gap: '20px' }} data-mobile-height="410px" data-desktop-height="615px">
           
           {/* Items List */}
@@ -293,7 +343,7 @@ export const InventorySection: React.FC = () => {
           >
             <div className="h-full flex flex-col">
               <div 
-                className="flex-1 overflow-y-auto custom-scrollbar relative" 
+                className="flex-1 overflow-y-auto scrollbar-hide relative" 
                 style={{ 
                   maskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)', 
                   WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)' 
@@ -494,23 +544,691 @@ export const InventorySection: React.FC = () => {
                     />
                   )}
                   <div className="relative z-10 flex flex-col items-center justify-center w-full" style={{ minHeight: '300px', padding: '40px 20px' }}>
-                    <h2 className="preview-title" style={{ 
-                      color: '#FFF', 
-                      fontFamily: 'Audiowide', 
-                      fontWeight: 400, 
-                      textTransform: 'uppercase', 
-                      textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-                    }}>
-                      {selectedBackground.name}
-                    </h2>
-                    <p className="preview-rarity" style={{ 
-                      color: 'rgba(255,255,255,0.9)', 
-                      fontFamily: 'Montserrat', 
-                      fontWeight: 400, 
-                      textShadow: '2px 2px 4px rgba(0,0,0,0.8)' 
-                    }}>
-                      {selectedBackground.rarity}
-                    </p>
+                    {activeTab === 'match' ? (
+                      /* Match Preview Content */
+                      <div className="flex items-center justify-between w-full max-w-xl">
+                        {/* Player 1 (You - Left Side) */}
+                        <div className="flex flex-col items-center">
+                          <h3 
+                            className="text-sm font-bold text-white mb-3"
+                            style={{ 
+                              fontFamily: 'Audiowide',
+                              textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+                            }}
+                          >
+                            You
+                          </h3>
+                          
+                          <div
+                            className="w-28 h-28 rounded-xl overflow-hidden border-2 border-white relative mb-3"
+                          >
+                            {/* Use the selected background for player */}
+                            {selectedBackground?.isVideo ? (
+                              <video
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                                className="absolute inset-0 w-full h-full object-cover"
+                              >
+                                <source src={selectedBackground.url} type="video/mp4" />
+                              </video>
+                            ) : (
+                              <div
+                                className="absolute inset-0"
+                                style={{
+                                  background: selectedBackground?.isGradient ? selectedBackground.url : `url('${selectedBackground?.url}')`,
+                                  backgroundSize: 'cover',
+                                  backgroundPosition: 'center'
+                                }}
+                              />
+                            )}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-white text-3xl font-bold" style={{ fontFamily: 'Audiowide', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>23</span>
+                            </div>
+                          </div>
+                          
+                          {/* Background Rarity Display */}
+                          <div 
+                            className="text-center"
+                            style={{
+                              display: 'flex',
+                              width: '90px',
+                              height: '28px',
+                              flexDirection: 'column',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              borderRadius: '8px',
+                              background: 'rgba(255, 255, 255, 0.09)',
+                              backdropFilter: 'blur(5.5px)'
+                            }}
+                          >
+                            <span style={{
+                              color: '#FFF',
+                              textAlign: 'center',
+                              fontFamily: 'Orbitron',
+                              fontSize: '11px',
+                              fontWeight: 500,
+                              lineHeight: '26px',
+                              textTransform: 'uppercase'
+                            }}>
+                              {selectedBackground?.rarity || 'COMMON'}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {/* Center Dice Area - Vertical Stack with Blurred Background */}
+                        <div className="flex flex-col items-center gap-3">
+                          {/* Dice 1 - Top */}
+                          <div 
+                            className="relative rounded-[20px] border border-white/20 overflow-hidden"
+                            style={{
+                              width: '60px',
+                              height: '60px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              background: 'rgba(255, 255, 255, 0.85)',
+                              backdropFilter: 'blur(12px)',
+                              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)'
+                            }}
+                          >
+                            {/* Blurred background layer */}
+                            <div 
+                              className="absolute inset-0 opacity-20"
+                              style={{
+                                background: selectedBackground?.isGradient ? selectedBackground.url : `url('${selectedBackground?.url}')`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                filter: 'blur(8px)'
+                              }}
+                            />
+                            <span style={{
+                              color: '#000',
+                              fontFamily: 'Orbitron, monospace',
+                              fontSize: '28px',
+                              fontWeight: 500,
+                              textTransform: 'uppercase',
+                              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                              position: 'relative',
+                              zIndex: 2
+                            }}>
+                              6
+                            </span>
+                          </div>
+                          
+                          {/* Turn Score - Middle */}
+                          <div className="bg-yellow-600/30 border border-yellow-500 rounded-lg px-3 py-1 backdrop-blur-sm text-center">
+                            <p className="text-xs text-yellow-300 mb-1" style={{ fontFamily: "Audiowide" }}>
+                              Turn Score
+                            </p>
+                            <p className="text-lg font-bold text-yellow-400" style={{ fontFamily: "Audiowide" }}>
+                              10
+                            </p>
+                          </div>
+                          
+                          {/* Dice 2 - Bottom */}
+                          <div 
+                            className="relative rounded-[20px] border border-white/20 overflow-hidden"
+                            style={{
+                              width: '60px',
+                              height: '60px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              background: 'rgba(255, 255, 255, 0.85)',
+                              backdropFilter: 'blur(12px)',
+                              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)'
+                            }}
+                          >
+                            {/* Blurred background layer */}
+                            <div 
+                              className="absolute inset-0 opacity-20"
+                              style={{
+                                background: selectedBackground?.isGradient ? selectedBackground.url : `url('${selectedBackground?.url}')`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                filter: 'blur(8px)'
+                              }}
+                            />
+                            <span style={{
+                              color: '#000',
+                              fontFamily: 'Orbitron, monospace',
+                              fontSize: '28px',
+                              fontWeight: 500,
+                              textTransform: 'uppercase',
+                              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                              position: 'relative',
+                              zIndex: 2
+                            }}>
+                              4
+                            </span>
+                          </div>
+                          
+                          {/* Action Buttons Preview */}
+                          <div className="flex gap-2 mt-2">
+                            <button
+                              className="px-3 py-1 rounded-md text-xs font-bold text-white"
+                              style={{ 
+                                fontFamily: "Audiowide",
+                                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.8) 0%, rgba(37, 99, 235, 0.8) 100%)',
+                                border: '1px solid rgba(59, 130, 246, 0.6)'
+                              }}
+                            >
+                              PLAY
+                            </button>
+                            <button
+                              className="px-3 py-1 rounded-md text-xs font-bold text-white"
+                              style={{ 
+                                fontFamily: "Audiowide",
+                                background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.8) 0%, rgba(22, 163, 74, 0.8) 100%)',
+                                border: '1px solid rgba(34, 197, 94, 0.6)'
+                              }}
+                            >
+                              ATTACK
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Player 2 (Opponent - Right Side) */}
+                        <div className="flex flex-col items-center">
+                          <h3 
+                            className="text-sm font-bold text-white mb-3"
+                            style={{ 
+                              fontFamily: 'Audiowide',
+                              textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+                            }}
+                          >
+                            Opponent
+                          </h3>
+                          
+                          <div
+                            className="w-28 h-28 rounded-xl overflow-hidden border-2 border-white relative mb-3"
+                          >
+                            {/* Always use Relax.png for opponent */}
+                            <img
+                              src="/backgrounds/Relax.png"
+                              alt="Relax Background"
+                              className="absolute inset-0 w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-white text-3xl font-bold" style={{ fontFamily: 'Audiowide', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>18</span>
+                            </div>
+                          </div>
+                          
+                          {/* Background Rarity Display */}
+                          <div 
+                            className="text-center"
+                            style={{
+                              display: 'flex',
+                              width: '90px',
+                              height: '28px',
+                              flexDirection: 'column',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              borderRadius: '8px',
+                              background: 'rgba(255, 255, 255, 0.09)',
+                              backdropFilter: 'blur(5.5px)'
+                            }}
+                          >
+                            <span style={{
+                              color: '#FFF',
+                              textAlign: 'center',
+                              fontFamily: 'Orbitron',
+                              fontSize: '11px',
+                              fontWeight: 500,
+                              lineHeight: '26px',
+                              textTransform: 'uppercase'
+                            }}>
+                              COMMON
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Dashboard Preview - Exact Dashboard Replica */
+                      <div 
+                        className="flex flex-col w-full overflow-hidden"
+                        style={{ 
+                          height: '300px',
+                          background: 'rgba(0, 0, 0, 0.1)',
+                          borderRadius: '12px',
+                          position: 'relative'
+                        }}
+                      >
+                        {/* Top Navigation Bar - Exact DashboardNavigation Replica */}
+                        <div className="flex-1 flex flex-row items-center justify-between bg-gradient-to-br from-[#192E39] to-[#99999900] rounded-[20px] px-[15px] py-[8px] mx-2 mt-2">
+                          {/* Left Navigation */}
+                          <div className="flex flex-row items-center justify-start gap-[8px]">
+                            {/* Logo Section */}
+                            <div className="flex flex-row items-center justify-start gap-[8px]">
+                              <div className="w-4 h-4 bg-gradient-to-br from-[#ffd700] to-[#ffed4e] rounded-full flex items-center justify-center text-xs">
+                                🎲
+                              </div>
+                              <div
+                                className="relative text-sm bg-gradient-to-br from-[#ffd700] to-[#ffed4e] bg-clip-text text-transparent cursor-pointer"
+                                style={{
+                                  fontFamily: "Audiowide",
+                                  fontWeight: 400,
+                                }}
+                              >
+                                DashDice
+                              </div>
+                            </div>
+
+                            {/* Navigation Items */}
+                            <div className="flex items-center gap-[8px]">
+                              <button
+                                className="flex items-center justify-center px-[8px] py-[4px] rounded-[8px] border-0"
+                                style={{
+                                  background: '#FF0080',
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    color: '#FFF',
+                                    fontFamily: 'Audiowide',
+                                    fontSize: '8px',
+                                    fontWeight: 400,
+                                    textTransform: 'uppercase',
+                                  }}
+                                >
+                                  DASHBOARD
+                                </span>
+                              </button>
+                              <button
+                                className="flex items-center justify-center px-[8px] py-[4px] rounded-[8px] border-0"
+                                style={{
+                                  background: 'rgba(255, 255, 255, 0.1)',
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    color: '#FFF',
+                                    fontFamily: 'Audiowide',
+                                    fontSize: '8px',
+                                    fontWeight: 400,
+                                    textTransform: 'uppercase',
+                                  }}
+                                >
+                                  VAULT
+                                </span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Right Navigation */}
+                          <div className="flex flex-row items-center justify-end gap-[8px]">
+                            <button
+                              className="flex items-center justify-center px-[8px] py-[4px] rounded-[8px] border-0"
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.1)',
+                              }}
+                            >
+                              <span
+                                style={{
+                                  color: '#FFF',
+                                  fontFamily: 'Audiowide',
+                                  fontSize: '8px',
+                                  fontWeight: 400,
+                                  textTransform: 'uppercase',
+                                }}
+                              >
+                                PROFILE
+                              </span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Skill Rating Display - Exact Replica */}
+                        <div className="flex justify-center py-2">
+                          <div className="bg-gray-900/80 backdrop-blur-sm rounded-xl px-3 py-2 border border-gray-700/50">
+                            <div className="flex items-center gap-2">
+                              <div className="text-white">
+                                <span className="text-xs font-medium opacity-80">Elo: </span>
+                                <span className="font-bold text-yellow-400 text-xs" style={{ fontFamily: 'Audiowide' }}>
+                                  1250
+                                </span>
+                              </div>
+                              <div className="h-3 w-px bg-gray-600"></div>
+                              <div className="text-white">
+                                <span className="text-xs font-medium opacity-80">Rank: </span>
+                                <span className="font-bold text-yellow-400 text-xs" style={{ fontFamily: 'Audiowide' }}>
+                                  Dash 5
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Game Mode Cards - Exact DashboardSectionNew Replica */}
+                        <div className="flex flex-wrap items-center justify-center gap-1 px-2 flex-1">
+                          {/* Quick Fire Card - Exact Replica */}
+                          <div 
+                            className="relative cursor-pointer flex items-center justify-start text-right"
+                            style={{
+                              height: '60px',
+                              width: '120px',
+                              borderRadius: '15px',
+                              background: selectedBackground?.isGradient ? selectedBackground.url : `url('${selectedBackground?.url}')`,
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center',
+                              overflow: 'hidden'
+                            }}
+                          >
+                            <div className="game-mode-text relative flex-1 flex flex-col items-end px-2 z-[2]">
+                              <h2
+                                className="m-0 text-white uppercase font-normal text-xs leading-tight"
+                                style={{
+                                  color: "#FFF",
+                                  fontFamily: "Audiowide",
+                                  fontStyle: "normal",
+                                  fontWeight: 400,
+                                  textTransform: "uppercase",
+                                  whiteSpace: "pre-line"
+                                }}
+                              >
+                                QUICK{'\n'}FIRE
+                              </h2>
+                              <div
+                                className="relative font-light text-xs leading-tight opacity-80"
+                                style={{
+                                  color: "#FFF",
+                                  fontFamily: "Montserrat",
+                                  fontStyle: "normal",
+                                  fontWeight: 300,
+                                  textTransform: "uppercase",
+                                  textAlign: "right",
+                                  fontSize: '6px'
+                                }}
+                              >
+                                more speed,{'\n'}more skill
+                              </div>
+                            </div>
+                            <img
+                              className="w-8 h-8 absolute object-contain z-[1] opacity-40"
+                              alt="quickfire"
+                              src="/Design Elements/Shield.webp"
+                              style={{
+                                top: '-8px',
+                                left: '-20px',
+                                transform: 'rotate(0deg)'
+                              }}
+                            />
+                          </div>
+
+                          {/* Classic Mode Card - Exact Replica */}
+                          <div 
+                            className="relative cursor-pointer flex items-center justify-start text-right"
+                            style={{
+                              height: '60px',
+                              width: '120px',
+                              borderRadius: '15px',
+                              background: selectedBackground?.isGradient ? selectedBackground.url : `url('${selectedBackground?.url}')`,
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center',
+                              overflow: 'hidden'
+                            }}
+                          >
+                            <div className="game-mode-text relative flex-1 flex flex-col items-end px-2 z-[2]">
+                              <h2
+                                className="m-0 text-white uppercase font-normal text-xs leading-tight"
+                                style={{
+                                  color: "#FFF",
+                                  fontFamily: "Audiowide",
+                                  fontStyle: "normal",
+                                  fontWeight: 400,
+                                  textTransform: "uppercase",
+                                  whiteSpace: "pre-line"
+                                }}
+                              >
+                                CLASSIC{'\n'}MODE
+                              </h2>
+                              <div
+                                className="relative font-light text-xs leading-tight opacity-80"
+                                style={{
+                                  color: "#FFF",
+                                  fontFamily: "Montserrat",
+                                  fontStyle: "normal",
+                                  fontWeight: 300,
+                                  textTransform: "uppercase",
+                                  textAlign: "right",
+                                  fontSize: '6px'
+                                }}
+                              >
+                                ONLY ONE{'\n'}WILL RISE
+                              </div>
+                            </div>
+                            <img
+                              className="w-8 h-8 absolute object-contain z-[1] opacity-40"
+                              alt="classic"
+                              src="/Design Elements/Crown Mode.webp"
+                              style={{
+                                top: '-8px',
+                                left: '-20px',
+                                transform: 'rotate(0deg)'
+                              }}
+                            />
+                          </div>
+
+                          {/* Zero Hour Card - Exact Replica */}
+                          <div 
+                            className="relative cursor-pointer flex items-center justify-start text-right"
+                            style={{
+                              height: '60px',
+                              width: '120px',
+                              borderRadius: '15px',
+                              background: selectedBackground?.isGradient ? selectedBackground.url : `url('${selectedBackground?.url}')`,
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center',
+                              overflow: 'hidden'
+                            }}
+                          >
+                            <div className="game-mode-text relative flex-1 flex flex-col items-end px-2 z-[2]">
+                              <h2
+                                className="m-0 text-white uppercase font-normal text-xs leading-tight"
+                                style={{
+                                  color: "#FFF",
+                                  fontFamily: "Audiowide",
+                                  fontStyle: "normal",
+                                  fontWeight: 400,
+                                  textTransform: "uppercase",
+                                  whiteSpace: "pre-line"
+                                }}
+                              >
+                                ZERO{'\n'}HOUR
+                              </h2>
+                              <div
+                                className="relative font-light text-xs leading-tight opacity-80"
+                                style={{
+                                  color: "#FFF",
+                                  fontFamily: "Montserrat",
+                                  fontStyle: "normal",
+                                  fontWeight: 300,
+                                  textTransform: "uppercase",
+                                  textAlign: "right",
+                                  fontSize: '6px'
+                                }}
+                              >
+                                countdown{'\n'}to victory
+                              </div>
+                            </div>
+                            <img
+                              className="w-8 h-8 absolute object-contain z-[1] opacity-40"
+                              alt="zerohour"
+                              src="/Design Elements/time out.webp"
+                              style={{
+                                top: '-8px',
+                                left: '-24px',
+                                transform: 'rotate(0deg)'
+                              }}
+                            />
+                          </div>
+
+                          {/* Last Line Card - Exact Replica */}
+                          <div 
+                            className="relative cursor-pointer flex items-center justify-start text-right"
+                            style={{
+                              height: '60px',
+                              width: '120px',
+                              borderRadius: '15px',
+                              background: selectedBackground?.isGradient ? selectedBackground.url : `url('${selectedBackground?.url}')`,
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center',
+                              overflow: 'hidden'
+                            }}
+                          >
+                            <div className="game-mode-text relative flex-1 flex flex-col items-end px-2 z-[2]">
+                              <h2
+                                className="m-0 text-white uppercase font-normal text-xs leading-tight"
+                                style={{
+                                  color: "#FFF",
+                                  fontFamily: "Audiowide",
+                                  fontStyle: "normal",
+                                  fontWeight: 400,
+                                  textTransform: "uppercase",
+                                  whiteSpace: "pre-line"
+                                }}
+                              >
+                                LAST{'\n'}LINE
+                              </h2>
+                              <div
+                                className="relative font-light text-xs leading-tight opacity-80"
+                                style={{
+                                  color: "#FFF",
+                                  fontFamily: "Montserrat",
+                                  fontStyle: "normal",
+                                  fontWeight: 300,
+                                  textTransform: "uppercase",
+                                  textAlign: "right",
+                                  fontSize: '6px'
+                                }}
+                              >
+                                SHIFT THE{'\n'}BALANCE
+                              </div>
+                            </div>
+                            <img
+                              className="w-8 h-8 absolute object-contain z-[1] opacity-40"
+                              alt="lastline"
+                              src="/Design Elements/skull.webp"
+                              style={{
+                                top: '-8px',
+                                left: '-24px',
+                                transform: 'rotate(0deg)'
+                              }}
+                            />
+                          </div>
+
+                          {/* True Grit Card - Disabled Exact Replica */}
+                          <div 
+                            className="relative opacity-50 flex items-center justify-start text-right"
+                            style={{
+                              height: '60px',
+                              width: '120px',
+                              borderRadius: '15px',
+                              background: selectedBackground?.isGradient ? selectedBackground.url : `url('${selectedBackground?.url}')`,
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center',
+                              overflow: 'hidden'
+                            }}
+                          >
+                            <div className="game-mode-text relative flex-1 flex flex-col items-end px-2 z-[2]">
+                              <h2
+                                className="m-0 text-white uppercase font-normal text-xs leading-tight"
+                                style={{
+                                  color: "#FFF",
+                                  fontFamily: "Audiowide",
+                                  fontStyle: "normal",
+                                  fontWeight: 400,
+                                  textTransform: "uppercase",
+                                  whiteSpace: "pre-line"
+                                }}
+                              >
+                                TRUE{'\n'}GRIT
+                              </h2>
+                              <div
+                                className="relative font-light text-xs leading-tight opacity-80"
+                                style={{
+                                  color: "#FFF",
+                                  fontFamily: "Montserrat",
+                                  fontStyle: "normal",
+                                  fontWeight: 300,
+                                  textTransform: "uppercase",
+                                  textAlign: "right",
+                                  fontSize: '6px'
+                                }}
+                              >
+                                no banking,{'\n'}no mercy
+                              </div>
+                            </div>
+                            <img
+                              className="w-8 h-8 absolute object-contain z-[1] opacity-20"
+                              alt="truegrit"
+                              src="/Design Elements/Castle.webp"
+                              style={{
+                                top: '-8px',
+                                left: '-24px',
+                                transform: 'rotate(0deg)'
+                              }}
+                            />
+                          </div>
+
+                          {/* Tag Team Card - Disabled Exact Replica */}
+                          <div 
+                            className="relative opacity-50 flex items-center justify-start text-right"
+                            style={{
+                              height: '60px',
+                              width: '120px',
+                              borderRadius: '15px',
+                              background: selectedBackground?.isGradient ? selectedBackground.url : `url('${selectedBackground?.url}')`,
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center',
+                              overflow: 'hidden'
+                            }}
+                          >
+                            <div className="game-mode-text relative flex-1 flex flex-col items-end px-2 z-[2]">
+                              <h2
+                                className="m-0 text-white uppercase font-normal text-xs leading-tight"
+                                style={{
+                                  color: "#FFF",
+                                  fontFamily: "Audiowide",
+                                  fontStyle: "normal",
+                                  fontWeight: 400,
+                                  textTransform: "uppercase",
+                                  whiteSpace: "pre-line"
+                                }}
+                              >
+                                TAG{'\n'}TEAM
+                              </h2>
+                              <div
+                                className="relative font-light text-xs leading-tight opacity-80"
+                                style={{
+                                  color: "#FFF",
+                                  fontFamily: "Montserrat",
+                                  fontStyle: "normal",
+                                  fontWeight: 300,
+                                  textTransform: "uppercase",
+                                  textAlign: "right",
+                                  fontSize: '6px'
+                                }}
+                              >
+                                rise or fall{'\n'}together
+                              </div>
+                            </div>
+                            <img
+                              className="w-8 h-8 absolute object-contain z-[1] opacity-20"
+                              alt="tagteam"
+                              src="/Design Elements/friends.webp"
+                              style={{
+                                top: '-12px',
+                                left: '-12px',
+                                transform: 'rotate(0deg)'
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (

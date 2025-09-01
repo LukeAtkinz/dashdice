@@ -59,7 +59,7 @@ export default function ParticipantList({
       </div>
 
       {/* Participant list */}
-      <div className="flex-1 overflow-y-auto p-2">
+      <div className="flex-1 overflow-y-auto scrollbar-hide p-2">
         {participants.length === 0 ? (
           <div className="text-center text-gray-400 text-sm mt-4">
             No participants

@@ -63,6 +63,7 @@ const buttonStyles = `
     position: relative;
     border: 2px solid transparent;
     transition: all 0.3s ease;
+    background: transparent !important;
   }
   
   .tab-button::before {
@@ -85,6 +86,7 @@ const buttonStyles = `
   .tab-button.active {
     border-color: #FFD700;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    background: transparent !important;
   }
   
   .tab-button.active::before {
@@ -188,20 +190,18 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
   const getNavButtonStyle = (tab: any, isSelected: boolean) => {
     if (DisplayBackgroundEquip?.name === 'On A Mission') {
       return {
-        background: isSelected 
-          ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.2) 100%)'
-          : 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)',
+        background: 'transparent',
         boxShadow: isSelected 
           ? '0 0 30px rgba(14, 165, 233, 0.6), inset 0 0 20px rgba(14, 165, 233, 0.2)'
           : '0 0 15px rgba(14, 165, 233, 0.3)',
-        border: isSelected ? '2px solid rgba(14, 165, 233, 0.8)' : '2px solid rgba(14, 165, 233, 0.4)',
+        border: 'transparent',
         backdropFilter: 'blur(8px)'
       };
     }
     return {
-      background: isSelected ? tab.color : 'rgba(255, 255, 255, 0.1)',
+      background: 'transparent',
       minHeight: "100px",
-      border: isSelected ? '2px solid #FFD700' : '2px solid transparent'
+      border: 'transparent'
     };
   };
 

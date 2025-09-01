@@ -54,6 +54,7 @@ const buttonStyles = `
     position: relative;
     border: 2px solid transparent;
     transition: all 0.3s ease;
+    background: transparent !important;
   }
   
   .tab-button::before {
@@ -76,6 +77,7 @@ const buttonStyles = `
   .tab-button.active {
     border-color: #FFD700;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    background: transparent !important;
   }
   
   .tab-button.active::before {
@@ -213,7 +215,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
               gap: '10px',
               borderRadius: '18px',
               border: 0,
-              background: activeTab === tab.id ? 'var(--ui-inventory-button-bg, var(--ui-button-bg))' : 'rgba(255, 255, 255, 0.1)',
+              background: 'transparent',
               cursor: 'pointer',
             }}
           >

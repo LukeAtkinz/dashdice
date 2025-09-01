@@ -58,27 +58,25 @@ export const InventorySection: React.FC = () => {
   const getNavButtonStyle = (category: any, isSelected: boolean) => {
     if (DisplayBackgroundEquip?.name === 'On A Mission') {
       return {
-        background: isSelected 
-          ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.2) 100%)'
-          : 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)',
+        background: 'transparent',
         boxShadow: isSelected 
           ? "0 4px 15px rgba(14, 165, 233, 0.4)" 
           : "0 2px 8px rgba(0, 0, 0, 0.2)",
         minWidth: "140px",
         minHeight: "100px",
-        border: isSelected ? '2px solid rgba(14, 165, 233, 0.6)' : '2px solid transparent',
+        border: 'transparent',
         backdropFilter: 'blur(6px)'
       };
     }
     
     return {
-      background: isSelected ? category.color : 'rgba(255, 255, 255, 0.1)',
+      background: 'transparent',
       boxShadow: isSelected 
         ? "0 4px 15px rgba(255, 255, 255, 0.2)" 
         : "0 2px 8px rgba(0, 0, 0, 0.2)",
       minWidth: "140px",
       minHeight: "100px",
-      border: isSelected ? '2px solid #FFD700' : '2px solid transparent'
+      border: 'transparent'
     };
   };
 
@@ -183,6 +181,10 @@ export const InventorySection: React.FC = () => {
           position: relative;
           border: 2px solid transparent;
           transition: all 0.3s ease;
+          background: transparent !important;
+          font-size: 0.875rem; /* Smaller text like friends */
+          padding: 0.5rem 1rem; /* Smaller padding */
+          min-height: 2.5rem; /* Smaller height */
         }
         
         .tab-button::before {
@@ -205,14 +207,24 @@ export const InventorySection: React.FC = () => {
         .tab-button.active {
           border-color: #FFD700;
           box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+          background: transparent !important;
         }
         
         .tab-button.active::before {
           background: linear-gradient(90deg, #FFD700 0%, #FFD700 100%);
         }
+        
+        /* Hide scrollbars on desktop but allow scrolling */
+        .scrollbar-hide {
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE and Edge */
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, Opera */
+        }
       `}</style>
       
-      <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full overflow-hidden">{/* Disabled scrolling on main container */}
+      <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full md:overflow-auto md:scrollbar-hide overflow-hidden">{/* Hide scrollbars on desktop, disable scrolling on mobile */}
       {/* Header */}
       <div className="text-center mb-8 flex-shrink-0">
         {/* Desktop Title */}
@@ -268,20 +280,15 @@ export const InventorySection: React.FC = () => {
           <motion.button
             key={category.key}
             onClick={() => setSelectedCategory(category.key)}
-            className={`tab-button flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] transition-all duration-300 h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px] ${selectedCategory === category.key ? 'active' : ''}`}
+            className={`tab-button flex flex-col items-center justify-center gap-2 p-2 md:p-3 rounded-[15px] transition-all duration-300 h-10 md:h-12 px-3 md:px-4 min-w-[100px] md:min-w-[120px] ${selectedCategory === category.key ? 'active' : ''}`}
             style={getNavButtonStyle(category, selectedCategory === category.key)}
-            whileHover={{ 
-              scale: 1.05,
-              boxShadow: "0 6px 20px rgba(255, 255, 255, 0.3)" 
-            }}
-            whileTap={{ scale: 0.95 }}
           >
-            <div className="text-lg md:text-xl mb-1">{category.icon}</div>
+            <div className="text-sm md:text-lg mb-1">{category.icon}</div>
             <span
               style={{
                 color: DisplayBackgroundEquip?.name === 'On A Mission' ? "#FFF" : "#FFF",
                 fontFamily: "Audiowide",
-                fontSize: "12px",
+                fontSize: "10px",
                 fontWeight: 400,
                 textTransform: "uppercase",
               }}
@@ -428,12 +435,7 @@ export const InventorySection: React.FC = () => {
       )}
 
       {/* Items Grid */}
-      <div className="w-full max-w-[80rem] flex flex-row items-start justify-center flex-wrap gap-[2rem] flex-1 overflow-y-auto px-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        <style jsx>{`
-          div::-webkit-scrollbar {
-            display: none;
-          }
-        `}</style>
+      <div className="w-full max-w-[80rem] flex flex-row items-start justify-center flex-wrap gap-[2rem] flex-1 overflow-y-auto scrollbar-hide px-4">
         {getCurrentItems().map((item) => (
           <motion.div
             key={item.id}
