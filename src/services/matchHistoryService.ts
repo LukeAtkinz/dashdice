@@ -130,6 +130,9 @@ export class MatchHistoryService {
               result = playerData.playerScore > opponentData.playerScore ? 'won' : 'lost';
             }
             
+            // Get game mode from multiple possible fields
+            const gameMode = data.gameData?.gameMode || data.gameData?.type || data.gameMode || 'classic';
+            
             const historyEntry: MatchHistoryEntry = {
               id: doc.id,
               playerUserId: userId,
@@ -138,8 +141,8 @@ export class MatchHistoryService {
               result: result,
               playerScore: playerData?.playerScore || 0,
               opponentScore: opponentData?.playerScore || 0,
-              gameMode: data.gameData?.gameMode || 'classic',
-              gameType: data.gameData?.type || 'classic',
+              gameMode: gameMode,
+              gameType: gameMode, // Use the same value for both fields for consistency
               background: playerData?.matchBackgroundEquipped?.name || playerData?.displayBackgroundEquipped?.name,
               backgroundFile: playerData?.matchBackgroundEquipped?.file || playerData?.displayBackgroundEquipped?.file,
               completedAt: data.completedAt || data.endedAt,

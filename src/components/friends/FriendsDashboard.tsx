@@ -88,17 +88,19 @@ const buttonStyles = `
   .nav-button {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .nav-button:hover {
-    animation: navPulse 0.6s ease-in-out;
-    box-shadow: 0 8px 25px rgba(255, 0, 128, 0.3);
-    transform: scale(1.05);
-  }
   .nav-button:active {
-    animation: navClick 0.2s ease-in-out;
     transform: scale(0.95);
   }
   .nav-button.active {
-    box-shadow: 0 6px 20px rgba(255, 0, 128, 0.4);
+    border-color: #FFD700;
+  }
+  
+  /* Tab button hover effects - keep text white */
+  .tab-button:hover span {
+    color: #FFF !important;
+  }
+  .tab-button.active:hover span {
+    color: #FFD700 !important;
   }
   @keyframes navPulse {
     0%, 100% { transform: scale(1); }
@@ -214,7 +216,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
               alignItems: 'center',
               gap: '10px',
               borderRadius: '18px',
-              border: 0,
+              border: activeTab === tab.id ? '2px solid #FFD700' : '2px solid transparent',
               background: 'transparent',
               cursor: 'pointer',
             }}
@@ -222,7 +224,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
             <div className="flex flex-col items-center gap-2">
               <div className="flex items-center gap-2">
                 <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
-                  color: activeTab === tab.id ? 'var(--ui-inventory-button-text, var(--ui-button-text))' : '#FFF', 
+                  color: activeTab === tab.id ? '#FFD700' : '#FFF', 
                   fontFamily: 'Audiowide', 
                   fontWeight: 400, 
                   textTransform: 'uppercase' 
@@ -250,7 +252,10 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       </div>
 
       {/* Content */}
-      <div className="w-full max-w-[80rem] flex-1 overflow-y-auto scrollbar-hide px-4">
+      <div className="w-full max-w-[80rem] flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide px-4" style={{
+        touchAction: 'pan-y',
+        WebkitOverflowScrolling: 'touch'
+      }}>
         {activeTab === 'friends' && (
           <div className="space-y-6">
             {/* Friends List */}

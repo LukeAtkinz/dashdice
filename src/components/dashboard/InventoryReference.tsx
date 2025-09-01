@@ -98,7 +98,7 @@ export const InventorySection: React.FC = () => {
   }
 
   return (
-    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full md:overflow-auto md:scrollbar-hide overflow-hidden">
+    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full overflow-hidden">
       {/* Custom scrollbar styles and navigation animations */}
       <style jsx global>{`
         /* Hide scrollbars on desktop but allow scrolling */
@@ -123,6 +123,14 @@ export const InventorySection: React.FC = () => {
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: linear-gradient(180deg, #FF2090 0%, #8219C7 100%);
+        }
+        
+        /* Tab button hover effects - keep text white */
+        .tab-button:hover span {
+          color: #FFF !important;
+        }
+        .tab-button.active:hover span {
+          color: #FFD700 !important;
         }
         
         /* Responsive height for vault containers */
@@ -182,17 +190,11 @@ export const InventorySection: React.FC = () => {
         .nav-button {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .nav-button:hover {
-          animation: navPulse 0.6s ease-in-out;
-          box-shadow: 0 8px 25px rgba(255, 0, 128, 0.3);
-          transform: scale(1.05);
-        }
         .nav-button:active {
-          animation: navClick 0.2s ease-in-out;
           transform: scale(0.95);
         }
         .nav-button.active {
-          box-shadow: 0 6px 20px rgba(255, 0, 128, 0.4);
+          border: 2px solid #FFD700;
         }
         @keyframes navPulse {
           0%, 100% { transform: scale(1); }
@@ -284,13 +286,13 @@ export const InventorySection: React.FC = () => {
               alignItems: 'center',
               gap: '10px',
               borderRadius: '18px',
-              border: 0,
-              background: activeTab === 'display' ? 'var(--ui-inventory-button-bg, var(--ui-button-bg))' : 'rgba(255, 255, 255, 0.1)',
+              border: activeTab === 'display' ? '2px solid #FFD700' : '2px solid transparent',
+              background: 'transparent',
               cursor: 'pointer',
             }}
           >
             <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
-              color: activeTab === 'display' ? 'var(--ui-inventory-button-text, var(--ui-button-text))' : '#FFF', 
+              color: activeTab === 'display' ? '#FFD700' : '#FFF', 
               fontFamily: 'Audiowide', 
               fontWeight: 400, 
               textTransform: 'uppercase' 
@@ -307,14 +309,14 @@ export const InventorySection: React.FC = () => {
               justifyContent: 'center',
               alignItems: 'center',
               gap: '10px',
-              border: 0,
+              border: activeTab === 'match' ? '2px solid #FFD700' : '2px solid transparent',
               borderRadius: '18px',
-              background: activeTab === 'match' ? 'var(--ui-inventory-button-bg, var(--ui-button-bg))' : 'rgba(255, 255, 255, 0.1)',
+              background: 'transparent',
               cursor: 'pointer',
             }}
           >
             <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
-              color: activeTab === 'match' ? 'var(--ui-inventory-button-text, var(--ui-button-text))' : '#FFF', 
+              color: activeTab === 'match' ? '#FFD700' : '#FFF', 
               fontFamily: 'Audiowide', 
               fontWeight: 400, 
               textTransform: 'uppercase' 
@@ -343,10 +345,12 @@ export const InventorySection: React.FC = () => {
           >
             <div className="h-full flex flex-col">
               <div 
-                className="flex-1 overflow-y-auto scrollbar-hide relative" 
+                className="flex-1 overflow-y-auto overflow-x-hidden relative scrollbar-hide" 
                 style={{ 
                   maskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)', 
-                  WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)' 
+                  WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)',
+                  touchAction: 'pan-y',
+                  WebkitOverflowScrolling: 'touch'
                 }}
               >
                 <div className="space-y-2.5">
@@ -902,7 +906,7 @@ export const InventorySection: React.FC = () => {
                         </div>
 
                         {/* Game Mode Cards - Exact DashboardSectionNew Replica */}
-                        <div className="flex flex-wrap items-center justify-center gap-1 px-2 flex-1">
+                        <div className="flex flex-wrap items-center justify-center gap-1 px-2 flex-1 overflow-y-auto max-h-64">
                           {/* Quick Fire Card - Exact Replica */}
                           <div 
                             className="relative cursor-pointer flex items-center justify-start text-right"

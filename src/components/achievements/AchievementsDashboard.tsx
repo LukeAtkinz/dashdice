@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAchievements } from '@/context/AchievementContext';
+import { useAuth } from '@/context/AuthContext';
 import AchievementCard from './AchievementCard';
 import { AchievementCategory } from '@/types/achievements';
+import { rankedAchievementService } from '@/services/rankedAchievementService';
+import { RankedStats } from '@/types/ranked';
 
 // CSS for custom button styling
 const buttonStyles = `
@@ -33,17 +36,11 @@ const buttonStyles = `
   .nav-button {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .nav-button:hover {
-    animation: navPulse 0.6s ease-in-out;
-    box-shadow: 0 8px 25px rgba(255, 0, 128, 0.3);
-    transform: scale(1.05);
-  }
   .nav-button:active {
-    animation: navClick 0.2s ease-in-out;
     transform: scale(0.95);
   }
   .nav-button.active {
-    box-shadow: 0 6px 20px rgba(255, 0, 128, 0.4);
+    border-color: #FFD700;
   }
   @keyframes navPulse {
     0%, 100% { transform: scale(1); }
@@ -65,24 +62,111 @@ export default function AchievementsDashboard() {
     isLoading 
   } = useAchievements();
   
+  const { user } = useAuth();
+  
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showCompleted, setShowCompleted] = useState<boolean>(true);
   const [showIncomplete, setShowIncomplete] = useState<boolean>(true);
+  const [rankedAchievements, setRankedAchievements] = useState<any[]>([]);
+  const [rankedLoading, setRankedLoading] = useState(false);
+
+  // Load ranked achievements
+  useEffect(() => {
+    if (user?.uid) {
+      loadRankedAchievements();
+    }
+  }, [user?.uid]);
+
+  const loadRankedAchievements = async () => {
+    try {
+      setRankedLoading(true);
+      // Mock ranked stats - in a real implementation, you'd load these from the user's profile
+      const mockRankedStats: RankedStats = {
+        currentSeason: {
+          dashNumber: 1,
+          level: 5,
+          winsInLevel: 3,
+          totalWins: 25,
+          totalLosses: 15,
+          winStreak: 2,
+          longestWinStreak: 8,
+          gamesPlayed: 40
+        },
+        allTime: {
+          totalDashes: 1,
+          maxLevelReached: 7,
+          totalRankedWins: 125,
+          totalRankedLosses: 75,
+          totalRankedGames: 200,
+          longestWinStreak: 8,
+          averageLevel: 5.2
+        }
+      };
+      
+      const rankedProgress = await rankedAchievementService.getAchievementProgress(
+        user!.uid, 
+        mockRankedStats, 
+        undefined
+      );
+      
+      // Convert ranked achievements to the same format as regular achievements
+      const convertedRankedAchievements = rankedProgress.map((item, index) => ({
+        id: `ranked_${item.achievement.id}`,
+        name: item.achievement.name,
+        description: item.achievement.description,
+        icon: item.achievement.icon,
+        category: 'ranked' as AchievementCategory,
+        points: 50, // Default points for ranked achievements
+        tier: item.achievement.tier,
+        unlocked: item.unlocked,
+        progress: item.progress,
+        requirements: {
+          type: 'count',
+          value: 100, // Default target value
+          description: item.achievement.description
+        }
+      }));
+      
+      setRankedAchievements(convertedRankedAchievements);
+    } catch (error) {
+      console.error('Error loading ranked achievements:', error);
+    } finally {
+      setRankedLoading(false);
+    }
+  };
 
   const categories = [
     { id: 'all', name: 'All', icon: '🏆' },
     { id: 'gameplay', name: 'Gameplay', icon: '🎲' },
     { id: 'social', name: 'Social', icon: '👥' },
     { id: 'progression', name: 'Progress', icon: '📈' },
+    { id: 'ranked', name: 'Ranked', icon: '⚔️' },
     { id: 'special', name: 'Special', icon: '⭐' },
     { id: 'seasonal', name: 'Seasonal', icon: '🎃' }
   ];
 
+  // Combine regular and ranked achievements
+  const combinedAchievements = [
+    ...allAchievements,
+    ...rankedAchievements
+  ];
+
   const filteredAchievements = selectedCategory === 'all' 
-    ? allAchievements 
-    : getAchievementsByCategory(selectedCategory as AchievementCategory);
+    ? combinedAchievements
+    : selectedCategory === 'ranked'
+      ? rankedAchievements
+      : getAchievementsByCategory(selectedCategory as AchievementCategory);
 
   const visibleAchievements = filteredAchievements.filter(achievement => {
+    // Handle ranked achievements (they have their unlocked status directly)
+    if (achievement.category === 'ranked') {
+      const isCompleted = achievement.unlocked || false;
+      if (isCompleted && !showCompleted) return false;
+      if (!isCompleted && !showIncomplete) return false;
+      return true;
+    }
+    
+    // Handle regular achievements
     const userProgress = userAchievements.find(ua => ua.achievementId === achievement.id);
     const isCompleted = userProgress?.isCompleted || false;
     
@@ -92,8 +176,11 @@ export default function AchievementsDashboard() {
     return true;
   });
 
-  const completedCount = userAchievements.filter(ua => ua.isCompleted).length;
-  const totalCount = allAchievements.length;
+  // Calculate totals including ranked achievements
+  const rankedCompletedCount = rankedAchievements.filter(ra => ra.unlocked).length;
+  const regularCompletedCount = userAchievements.filter(ua => ua.isCompleted).length;
+  const completedCount = regularCompletedCount + rankedCompletedCount;
+  const totalCount = allAchievements.length + rankedAchievements.length;
   const completionPercentage = getCompletionPercentage();
 
   if (isLoading) {
@@ -107,7 +194,7 @@ export default function AchievementsDashboard() {
   return (
     <>
       <style jsx>{buttonStyles}</style>
-      <div className="max-w-6xl mx-auto px-2 md:px-6 py-2 md:py-6">
+      <div className="w-[90vw] max-w-[1600px] mx-auto px-2 md:px-6 py-2 md:py-6">
       {/* Header Section */}
       <div className="w-full px-2 md:px-4 py-2 md:py-4 pb-[0.5rem] md:pb-[1rem]">
         <h1
@@ -195,12 +282,12 @@ export default function AchievementsDashboard() {
         </div>
       </div>
 
-      {/* Achievements Grid - 2 per row on desktop, 1 on mobile */}
+      {/* Achievements Grid - 1 per row on mobile, 3 on desktop */}
       <div className="px-2 md:px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          {visibleAchievements.map(achievement => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          {visibleAchievements.filter(achievement => achievement && achievement.id).map((achievement, index) => (
             <AchievementCard
-              key={achievement.id}
+              key={achievement.id || `achievement_${index}`}
               achievement={achievement}
               size="medium"
               showProgress={true}

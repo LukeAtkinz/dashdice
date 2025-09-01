@@ -59,26 +59,11 @@ export const DashboardNavigation: React.FC = () => {
         .nav-button {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .nav-button:hover {
-          animation: navPulse 0.6s ease-in-out;
-          box-shadow: 0 8px 25px rgba(255, 0, 128, 0.3);
-          transform: scale(1.05);
-        }
         .nav-button:active {
-          animation: navClick 0.2s ease-in-out;
           transform: scale(0.95);
         }
         .nav-button.active {
-          box-shadow: 0 6px 20px rgba(255, 0, 128, 0.4);
-        }
-        @keyframes navPulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-        }
-        @keyframes navClick {
-          0% { transform: scale(1); }
-          50% { transform: scale(0.95); }
-          100% { transform: scale(1); }
+          border-color: #FFD700;
         }
       `}</style>
 
@@ -116,12 +101,13 @@ export const DashboardNavigation: React.FC = () => {
                   onClick={() => setCurrentSection(item.id)}
                   className={`nav-button ${isActive ? 'active' : ''} flex items-center justify-center px-[20px] py-[10px] rounded-[15px] cursor-pointer border-0`}
                   style={{
-                    background: isActive ? '#FF0080' : 'rgba(255, 255, 255, 0.1)',
+                    background: 'transparent',
+                    border: isActive ? '2px solid #FFD700' : '2px solid transparent',
                   }}
                 >
                   <span
                     style={{
-                      color: '#FFF',
+                      color: isActive ? '#FFD700' : '#FFF',
                       fontFamily: 'Audiowide',
                       fontSize: '18px',
                       fontWeight: 400,
@@ -147,12 +133,13 @@ export const DashboardNavigation: React.FC = () => {
                 onClick={() => setCurrentSection(item.id)}
                 className={`nav-button ${isActive ? 'active' : ''} flex items-center justify-center px-[20px] py-[10px] rounded-[15px] cursor-pointer border-0`}
                 style={{
-                  background: isActive ? '#FF0080' : 'rgba(255, 255, 255, 0.1)',
+                  background: 'transparent',
+                  border: isActive ? '2px solid #FFD700' : '2px solid transparent',
                 }}
               >
                 <span
                   style={{
-                    color: '#FFF',
+                    color: isActive ? '#FFD700' : '#FFF',
                     fontFamily: 'Audiowide',
                     fontSize: '18px',
                     fontWeight: 400,
@@ -179,13 +166,14 @@ export const DashboardNavigation: React.FC = () => {
                 onClick={() => setCurrentSection(item.id)}
                 className={`nav-button ${isActive ? 'active' : ''} flex flex-col items-center justify-center p-3 rounded-[10px] cursor-pointer border-0`}
                 style={{
-                  background: isActive ? '#FF0080' : 'rgba(255, 255, 255, 0.1)',
+                  background: 'transparent',
+                  border: isActive ? '2px solid #FFD700' : '2px solid transparent',
                 }}
               >
                 <span className="text-lg mb-1">{item.icon}</span>
                 <span
                   style={{
-                    color: '#FFF',
+                    color: isActive ? '#FFD700' : '#FFF',
                     fontFamily: 'Audiowide',
                     fontSize: '12px',
                     fontWeight: 400,

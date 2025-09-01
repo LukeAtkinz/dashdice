@@ -202,17 +202,48 @@ html, body {
   }
   
   /* Allow scrolling within specific containers */
-  .overflow-auto, .overflow-y-auto, .custom-scrollbar {
+  .overflow-auto, .overflow-y-auto, .custom-scrollbar, main, [data-scrollable] {
     touch-action: pan-y; /* Allow vertical scrolling within these elements */
+    -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
+  }
+
+  /* Ensure main content areas can scroll properly on mobile */
+  main[data-scrollable] {
+    position: relative !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain; /* Prevent page bounce while allowing component scroll */
+    height: 0 !important; /* Force flex item to allow overflow */
+  }
+
+  /* Force scrolling on all dashboard components */
+  .overflow-y-auto {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+  }
+}
+
+/* Desktop scrolling fixes */
+@media screen and (min-width: 769px) {
+  html, body {
+    position: static;
+    overflow: visible;
+    touch-action: auto;
   }
   
-  /* Reset position for desktop */
-  @media screen and (min-width: 769px) {
-    html, body {
-      position: static;
-      overflow: visible;
-      touch-action: auto;
-    }
+  /* Ensure desktop scrolling works properly */
+  main[data-scrollable] {
+    position: relative !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: 0 !important; /* Force flex item to allow overflow */
+  }
+
+  /* Force scrolling on all dashboard components */
+  .overflow-y-auto {
+    overflow-y: auto !important;
   }
 }
 

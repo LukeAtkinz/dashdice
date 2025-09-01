@@ -25,7 +25,7 @@ export default function AchievementCard({
   const userProgress = getAchievementProgress(achievement.id);
   const isCompleted = userProgress?.isCompleted || false;
   const progress = userProgress?.progress || 0;
-  const target = achievement.requirements.value;
+  const target = achievement.requirements?.value || 1;
   const progressPercentage = Math.min((progress / target) * 100, 100);
 
   // Render icon - check if it's an image path or emoji
@@ -170,7 +170,7 @@ export default function AchievementCard({
             </div>
             
             {/* Points reward - only show if not a mini card */}
-            {!isMiniCard && (
+            {!isMiniCard && achievement.rewards?.points && (
               <div className={`text-yellow-400 ${size === 'small' ? 'text-xs' : 'text-sm'} font-montserrat`}>
                 +{achievement.rewards.points} pts
               </div>
@@ -199,7 +199,7 @@ export default function AchievementCard({
       )}
 
       {/* Points-only display for small cards without progress - but not for mini cards */}
-      {!showProgress && !isMiniCard && (
+      {!showProgress && !isMiniCard && achievement.rewards?.points && (
         <div className="mt-auto relative z-10">
           <div className="text-center">
             <div className={`text-yellow-400 ${size === 'small' ? 'text-xs' : 'text-sm'} font-montserrat font-bold`}>

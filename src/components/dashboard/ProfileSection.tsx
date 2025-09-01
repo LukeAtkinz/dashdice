@@ -75,10 +75,6 @@ const buttonStyles = `
     transition: all 0.3s ease;
   }
   
-  .tab-button:hover::before {
-    animation: borderLoad 0.8s ease-in-out forwards;
-  }
-  
   .tab-button.active {
     border-color: #FFD700;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
@@ -326,10 +322,6 @@ const ProfileSection: React.FC = () => {
           transition: all 0.3s ease;
         }
         
-        .tab-button:hover::before {
-          animation: borderLoad 0.8s ease-in-out forwards;
-        }
-        
         .tab-button.active {
           border-color: #FFD700;
           box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
@@ -338,9 +330,17 @@ const ProfileSection: React.FC = () => {
         .tab-button.active::before {
           background: linear-gradient(90deg, #FFD700 0%, #FFD700 100%);
         }
+        
+        /* Tab button hover effects - keep text white */
+        .tab-button:hover span {
+          color: #FFF !important;
+        }
+        .tab-button.active:hover span {
+          color: #FFD700 !important;
+        }
       `}</style>
       
-      <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full">
+      <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem]">
         {/* Header */}
         <div className="text-center mb-8 flex-shrink-0">
           <h1 
@@ -369,14 +369,14 @@ const ProfileSection: React.FC = () => {
                   justifyContent: 'center',
                   alignItems: 'center',
                   gap: '10px',
-                  border: 0,
+                  border: activeTab === tab.id ? '2px solid #FFD700' : '2px solid transparent',
                   borderRadius: '18px',
                   background: 'transparent',
                   cursor: 'pointer',
                 }}
               >
                 <span className="text-base md:text-lg" style={{ 
-                  color: activeTab === tab.id ? 'var(--ui-inventory-button-text, var(--ui-button-text))' : '#FFF', 
+                  color: activeTab === tab.id ? '#FFD700' : '#FFF', 
                   fontFamily: 'Audiowide', 
                   fontWeight: 400, 
                   textTransform: 'uppercase' 
@@ -413,7 +413,7 @@ const ProfileSection: React.FC = () => {
                 <div 
                   className="absolute inset-0"
                   style={{
-                    background: 'linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)',
+                    background: 'linear-gradient(to right, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%)',
                     borderRadius: '20px',
                     zIndex: 1
                   }}
@@ -442,12 +442,12 @@ const ProfileSection: React.FC = () => {
                   </div>
 
                   {/* Statistics Grid - Friends Card Style */}
-                  <div className="bg-transparent backdrop-blur-[0.5px] border border-gray-700/50 rounded-xl p-6">
+                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6">
                     <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Player Statistics</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                       <motion.div 
-                        className="text-center p-3 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.1 }}
@@ -459,7 +459,7 @@ const ProfileSection: React.FC = () => {
                       </motion.div>
                       
                       <motion.div 
-                        className="text-center p-3 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.2 }}
@@ -471,7 +471,7 @@ const ProfileSection: React.FC = () => {
                       </motion.div>
                       
                       <motion.div 
-                        className="text-center p-3 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.3 }}
@@ -483,7 +483,7 @@ const ProfileSection: React.FC = () => {
                       </motion.div>
                       
                       <motion.div 
-                        className="text-center p-3 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.4 }}
@@ -498,7 +498,7 @@ const ProfileSection: React.FC = () => {
                     {/* Additional stats row */}
                     <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-600/50">
                       <motion.div 
-                        className="text-center p-3 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.5 }}
@@ -510,7 +510,7 @@ const ProfileSection: React.FC = () => {
                       </motion.div>
                       
                       <motion.div 
-                        className="text-center p-3 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.6 }}
@@ -532,6 +532,202 @@ const ProfileSection: React.FC = () => {
                       </div>
                     )}
                   </div>
+                  
+                  {/* Ranked Statistics Section */}
+                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
+                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Ranked</h3>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.1 }}
+                      >
+                        <div className="text-2xl font-bold text-purple-400 font-audiowide">
+                          {statsLoading ? '...' : '1,250'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Rank Points</div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2 }}
+                      >
+                        <div className="text-2xl font-bold text-yellow-400 font-audiowide">
+                          {statsLoading ? '...' : 'Gold II'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Current Rank</div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.3 }}
+                      >
+                        <div className="text-2xl font-bold text-orange-400 font-audiowide">
+                          {statsLoading ? '...' : 'Platinum I'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Peak Rank</div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.4 }}
+                      >
+                        <div className="text-2xl font-bold text-blue-400 font-audiowide">
+                          {statsLoading ? '...' : '15'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Season Wins</div>
+                      </motion.div>
+                    </div>
+                  </div>
+                  
+                  {/* Cosmetic Statistics Section */}
+                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
+                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Cosmetic</h3>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.1 }}
+                      >
+                        <div className="text-2xl font-bold text-pink-400 font-audiowide">
+                          {statsLoading ? '...' : '12'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Backgrounds Owned</div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2 }}
+                      >
+                        <div className="text-2xl font-bold text-teal-400 font-audiowide">
+                          {statsLoading ? '...' : '25'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Total Items</div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.4 }}
+                      >
+                        <div className="text-2xl font-bold text-amber-400 font-audiowide">
+                          {statsLoading ? '...' : '3'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Rare Items</div>
+                      </motion.div>
+                    </div>
+                  </div>
+                  
+                  {/* Friends Statistics Section */}
+                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
+                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Friends</h3>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.1 }}
+                      >
+                        <div className="text-2xl font-bold text-green-400 font-audiowide">
+                          {statsLoading ? '...' : '23'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Friends</div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2 }}
+                      >
+                        <div className="text-2xl font-bold text-blue-400 font-audiowide">
+                          {statsLoading ? '...' : '147'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Friend Matches</div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.4 }}
+                      >
+                        <div className="text-2xl font-bold text-cyan-400 font-audiowide">
+                          {statsLoading ? '...' : '89%'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Friend Win Rate</div>
+                      </motion.div>
+                    </div>
+                  </div>
+                  
+                  {/* Tournament Statistics Section */}
+                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
+                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Tournament</h3>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.1 }}
+                      >
+                        <div className="text-2xl font-bold text-yellow-400 font-audiowide">
+                          {statsLoading ? '...' : '42'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Tournaments Played</div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2 }}
+                      >
+                        <div className="text-2xl font-bold text-orange-400 font-audiowide">
+                          {statsLoading ? '...' : '7'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Tournaments Won</div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.3 }}
+                      >
+                        <div className="text-2xl font-bold text-red-400 font-audiowide">
+                          {statsLoading ? '...' : '3rd'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Best Placement</div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.4 }}
+                      >
+                        <div className="text-2xl font-bold text-emerald-400 font-audiowide">
+                          {statsLoading ? '...' : '2,450'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Tournament Points</div>
+                      </motion.div>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
 
@@ -547,7 +743,7 @@ const ProfileSection: React.FC = () => {
                     <h3 className="text-white text-xl font-audiowide uppercase flex items-center gap-3">
                       Recent Matches
                     </h3>
-                    <span className="text-sm text-gray-400 font-montserrat bg-black/30 px-3 py-1 rounded-lg border border-gray-600/50">
+                    <span className="text-sm text-gray-400 font-montserrat bg-black/80 px-3 py-1 rounded-lg border border-gray-600/50">
                       Last 10 games
                     </span>
                   </div>
@@ -692,7 +888,7 @@ const ProfileSection: React.FC = () => {
                   
                   <div className="p-6 space-y-6">
                     <motion.div 
-                      className="flex items-center justify-between p-4 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                      className="flex items-center justify-between p-4 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                       whileHover={{ scale: 1.02, y: -2 }}
                       transition={{ duration: 0.2 }}
                     >
@@ -716,7 +912,7 @@ const ProfileSection: React.FC = () => {
                     </motion.div>
 
                     <motion.div 
-                      className="flex items-center justify-between p-4 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                      className="flex items-center justify-between p-4 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                       whileHover={{ scale: 1.02, y: -2 }}
                       transition={{ duration: 0.2 }}
                     >
@@ -740,7 +936,7 @@ const ProfileSection: React.FC = () => {
                     </motion.div>
 
                     <motion.div 
-                      className="flex items-center justify-between p-4 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                      className="flex items-center justify-between p-4 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                       whileHover={{ scale: 1.02, y: -2 }}
                       transition={{ duration: 0.2 }}
                     >
@@ -766,7 +962,7 @@ const ProfileSection: React.FC = () => {
                     {/* Volume Controls */}
                     <div className="grid md:grid-cols-2 gap-6">
                       <motion.div 
-                        className="p-4 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                        className="p-4 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                         whileHover={{ scale: 1.02, y: -2 }}
                         transition={{ duration: 0.2 }}
                       >
@@ -787,7 +983,7 @@ const ProfileSection: React.FC = () => {
                       </motion.div>
 
                       <motion.div 
-                        className="p-4 rounded-lg bg-black/30 backdrop-blur-sm border border-gray-600/50"
+                        className="p-4 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                         whileHover={{ scale: 1.02, y: -2 }}
                         transition={{ duration: 0.2 }}
                       >

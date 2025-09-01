@@ -169,8 +169,7 @@ export function Leaderboard({
           
           <div className="relative z-10 p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-bold flex items-center text-white font-audiowide">
-                <Trophy className="w-5 h-5 mr-2 text-yellow-500" />
+              <h3 className="text-lg font-bold text-white font-audiowide">
                 Leaderboard
               </h3>
               
@@ -319,23 +318,32 @@ export function Leaderboard({
   }
 
   return (
-    <div className="bg-gray-900 rounded-lg text-white">
-      {/* Header */}
-      <div className="p-6 border-b border-gray-700">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold flex items-center">
-            <Trophy className="w-6 h-6 mr-2 text-yellow-500" />
-            Leaderboard
-          </h2>
-          
-          {seasonInfo && (
-            <div className="text-right">
-              <SeasonProgressIndicator timeRemaining={timeRemaining} />
-            </div>
-          )}
-        </div>
+    <div className="relative overflow-hidden" style={{ borderRadius: '20px' }}>
+      {/* Dark gradient overlay similar to friends card */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          background: 'linear-gradient(135deg, rgba(30, 30, 50, 0.95) 0%, rgba(15, 15, 35, 0.9) 100%)',
+          borderRadius: '20px'
+        }}
+      />
+      
+      <div className="relative z-10 text-white">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-700/50">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-white font-audiowide">
+              Leaderboard
+            </h2>
+            
+            {seasonInfo && (
+              <div className="text-right">
+                <SeasonProgressIndicator timeRemaining={timeRemaining} />
+              </div>
+            )}
+          </div>
 
-        {/* Type selector */}
+          {/* Type selector */}
         <div className="flex space-x-2">
           <button
             onClick={() => setLeaderboardType('current')}
@@ -448,6 +456,7 @@ export function Leaderboard({
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 }

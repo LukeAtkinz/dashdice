@@ -57,12 +57,16 @@ export const SettingsSection: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h1 className="text-3xl font-orbitron font-bold text-black mb-2">
-          Settings
-        </h1>
-      </div>
+    <div className="w-full max-w-[80rem] flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide px-4" style={{
+      touchAction: 'pan-y',
+      WebkitOverflowScrolling: 'touch'
+    }}>
+      <div className="space-y-6">
+        <div className="text-center">
+          <h1 className="text-3xl font-orbitron font-bold text-black mb-2">
+            Settings
+          </h1>
+        </div>
 
       {/* General Settings */}
       <Card>
@@ -257,6 +261,7 @@ export const SettingsSection: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };

@@ -71,7 +71,7 @@ export default function AchievementsMini({ maxDisplay = 12 }: AchievementsMiniPr
           <div className="flex gap-4 animate-carousel">
             {/* Show all achievements (duplicate for seamless loop) */}
             {[...allAchievements.slice(0, Math.min(15, allAchievements.length)),
-              ...allAchievements.slice(0, Math.min(15, allAchievements.length))].map((achievement, index) => (
+              ...allAchievements.slice(0, Math.min(15, allAchievements.length))].filter(achievement => achievement && achievement.id).map((achievement, index) => (
               <div key={`${achievement.id}-${index}`} className="flex-shrink-0">
                 <AchievementCard
                   achievement={achievement}

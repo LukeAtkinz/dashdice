@@ -95,22 +95,24 @@ const buttonStyles = `
   
   /* Ranked-style navigation button hover effects */
   .nav-button {
-    background: rgba(255, 255, 255, 0.1);
+    background: transparent;
     border: 2px solid transparent;
     border-radius: 18px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .nav-button:hover {
-    animation: navPulse 0.6s ease-in-out;
-    box-shadow: 0 8px 25px rgba(255, 0, 128, 0.3);
-    transform: scale(1.05);
-  }
   .nav-button:active {
-    animation: navClick 0.2s ease-in-out;
     transform: scale(0.95);
   }
   .nav-button.active {
-    box-shadow: 0 6px 20px rgba(255, 0, 128, 0.4);
+    border-color: #FFD700;
+  }
+  
+  /* Tab button hover effects - keep text white */
+  .tab-button:hover span {
+    color: #FFF !important;
+  }
+  .tab-button.active:hover span {
+    color: #FFD700 !important;
   }
   @keyframes navPulse {
     0%, 100% { transform: scale(1); }
@@ -186,22 +188,11 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
     }
   ];
 
-  // Get background-specific styling for navigation buttons (matching Friends component)
+  // Get background-specific styling for navigation buttons (matching main navbar)
   const getNavButtonStyle = (tab: any, isSelected: boolean) => {
-    if (DisplayBackgroundEquip?.name === 'On A Mission') {
-      return {
-        background: 'transparent',
-        boxShadow: isSelected 
-          ? '0 0 30px rgba(14, 165, 233, 0.6), inset 0 0 20px rgba(14, 165, 233, 0.2)'
-          : '0 0 15px rgba(14, 165, 233, 0.3)',
-        border: 'transparent',
-        backdropFilter: 'blur(8px)'
-      };
-    }
     return {
       background: 'transparent',
-      minHeight: "100px",
-      border: 'transparent'
+      border: isSelected ? '2px solid #FFD700' : '2px solid transparent'
     };
   };
 
@@ -422,7 +413,7 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
               <div className="flex flex-col items-center gap-2">
                 <div className="flex items-center gap-2">
                   <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
-                    color: activeTab === tab.id ? 'var(--ui-inventory-button-text, var(--ui-button-text))' : '#FFF', 
+                    color: activeTab === tab.id ? '#FFD700' : '#FFF', 
                     fontFamily: 'Audiowide', 
                     fontWeight: 400, 
                     textTransform: 'uppercase' 
@@ -437,7 +428,10 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
         </div>
 
         {/* Content */}
-        <div className="w-full max-w-[80rem] flex-1 overflow-y-auto scrollbar-hide px-4">
+        <div className="w-[90vw] max-w-[1600px] flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide px-4" style={{
+          touchAction: 'pan-y',
+          WebkitOverflowScrolling: 'touch'
+        }}>
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Current progression */}
@@ -510,7 +504,43 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
           )}
 
           {activeTab === 'leaderboard' && (
-            <Leaderboard userId={userId} />
+            <div className="space-y-6">
+              {/* Leaderboard with Friends styling */}
+              <motion.div 
+                className="relative overflow-hidden"
+                style={{ borderRadius: '20px' }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                {/* Dark gradient overlay similar to friends card */}
+                <div 
+                  className="absolute inset-0"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(30, 30, 50, 0.95) 0%, rgba(15, 15, 35, 0.9) 100%)',
+                    borderRadius: '20px'
+                  }}
+                />
+                
+                <div className="relative z-10 p-6">
+                  <div className="mb-6">
+                    <h3 className="text-2xl font-bold text-white font-audiowide uppercase">
+                      Leaderboard
+                    </h3>
+                    <p className="text-gray-300 font-montserrat mt-2">
+                      Current season rankings and all-time champions
+                    </p>
+                  </div>
+                  
+                  <Leaderboard 
+                    userId={userId} 
+                    showUserRank={true}
+                    compactMode={false}
+                    limitCount={20}
+                  />
+                </div>
+              </motion.div>
+            </div>
           )}
 
           {/* Achievements tab removed */}
