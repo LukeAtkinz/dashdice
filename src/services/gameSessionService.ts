@@ -895,9 +895,17 @@ export class GameSessionService {
           throw new Error('Session not found');
         }
 
+        const sessionData = sessionDoc.data();
+        const startTime = sessionData?.createdAt?.toMillis?.() || sessionData?.startedAt?.toMillis?.();
+        const currentTime = Date.now();
+        
+        // Calculate duration in milliseconds
+        const duration = startTime ? currentTime - startTime : 0;
+
         const updateData: any = {
           status: 'completed',
           completedAt: serverTimestamp(),
+          duration: duration, // Duration in milliseconds
           updatedAt: serverTimestamp()
         };
 

@@ -60,38 +60,56 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
     }
   }, [userId]);
 
-  // Subscribe to outgoing friend requests
+  // Subscribe to outgoing friend requests - only if user is authenticated
   useEffect(() => {
     if (!user?.uid) {
       setOutgoingRequests([]);
       return;
     }
 
+    let unsubscribe: (() => void) | null = null;
+
     const subscribeToOutgoingRequests = async () => {
-      const { collection, query, where, onSnapshot } = await import('firebase/firestore');
-      const { db } = await import('@/services/firebase');
+      try {
+        const { collection, query, where, onSnapshot } = await import('firebase/firestore');
+        const { db } = await import('@/services/firebase');
 
-      const requestsQuery = query(
-        collection(db, 'friendRequests'),
-        where('fromUserId', '==', user.uid),
-        where('status', '==', 'pending')
-      );
+        const requestsQuery = query(
+          collection(db, 'friendRequests'),
+          where('fromUserId', '==', user.uid),
+          where('status', '==', 'pending')
+        );
 
-      const unsubscribe = onSnapshot(requestsQuery, (snapshot) => {
-        const requests = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setOutgoingRequests(requests);
-      });
-
-      return unsubscribe;
+        unsubscribe = onSnapshot(
+          requestsQuery, 
+          (snapshot) => {
+            const requests = snapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
+            setOutgoingRequests(requests);
+          },
+          (error) => {
+            console.error('Error subscribing to outgoing friend requests:', error);
+            // Handle permission errors gracefully
+            if (error.code === 'permission-denied') {
+              console.warn('Permission denied for friend requests. User may not be authenticated properly.');
+              setOutgoingRequests([]);
+            }
+          }
+        );
+      } catch (error) {
+        console.error('Error setting up friend request subscription:', error);
+        setOutgoingRequests([]);
+      }
     };
 
-    const unsubscribePromise = subscribeToOutgoingRequests();
+    subscribeToOutgoingRequests();
 
     return () => {
-      unsubscribePromise.then(unsubscribe => unsubscribe()).catch(console.error);
+      if (unsubscribe) {
+        unsubscribe();
+      }
     };
   }, [user?.uid]);
 
@@ -322,6 +340,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                   <motion.div
+                    key="games-played-stat"
                     className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -334,6 +353,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                   </motion.div>
 
                   <motion.div
+                    key="games-won-stat"
                     className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -346,6 +366,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                   </motion.div>
 
                   <motion.div
+                    key="items-collected-stat"
                     className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -364,6 +385,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                   </motion.div>
 
                   <motion.div
+                    key="current-streak-stat"
                     className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -376,6 +398,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                   </motion.div>
 
                   <motion.div
+                    key="best-streak-stat"
                     className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -388,6 +411,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                   </motion.div>
 
                   <motion.div
+                    key="win-rate-stat"
                     className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -605,6 +629,23 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-sm text-gray-300 font-montserrat">Friend Win Rate</div>
                   </motion.div>
                 </div>
+              </div>
+
+              {/* Recent Matches */}
+              <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
+                <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Recent Matches</h3>
+                {/* Only show matches for own profile since MatchHistory uses auth context */}
+                {isOwnProfile ? (
+                  <MatchHistory />
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-4xl mb-4">🔒</div>
+                    <p className="text-gray-400 font-montserrat">Match history is private</p>
+                    <p className="text-sm text-gray-500 font-montserrat mt-1">
+                      Only visible on your own profile
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>

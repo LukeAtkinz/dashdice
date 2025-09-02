@@ -125,8 +125,8 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
           transition={{ delay: index * 0.1 }}
           className="relative overflow-hidden rounded-lg border border-gray-600 cursor-pointer hover:border-gray-500 transition-colors"
           style={{
-            background: match.backgroundFile 
-              ? `linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url(${match.backgroundFile})`
+            background: match.opponentBackgroundFile 
+              ? `linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url(${match.opponentBackgroundFile})`
               : 'rgba(31, 41, 55, 0.8)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
@@ -280,13 +280,7 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
         </motion.div>
       ))}
       
-      {matches.length >= 10 && (
-        <div className="text-center py-2">
-          <p className="text-xs text-gray-500 font-montserrat">
-            Showing last 10 matches
-          </p>
-        </div>
-      )}
+
     </div>
   );
 };

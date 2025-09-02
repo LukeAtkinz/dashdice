@@ -22,6 +22,8 @@ export interface MatchHistoryEntry {
   gameType: string;
   background?: string;
   backgroundFile?: string;
+  opponentBackground?: string;
+  opponentBackgroundFile?: string;
   completedAt: Timestamp;
   duration?: number; // in milliseconds
   isFriendMatch?: boolean; // Whether this was a friend vs friend match
@@ -145,6 +147,8 @@ export class MatchHistoryService {
               gameType: gameMode, // Use the same value for both fields for consistency
               background: playerData?.matchBackgroundEquipped?.name || playerData?.displayBackgroundEquipped?.name,
               backgroundFile: playerData?.matchBackgroundEquipped?.file || playerData?.displayBackgroundEquipped?.file,
+              opponentBackground: opponentData?.matchBackgroundEquipped?.name || opponentData?.displayBackgroundEquipped?.name,
+              opponentBackgroundFile: opponentData?.matchBackgroundEquipped?.file || opponentData?.displayBackgroundEquipped?.file,
               completedAt: data.completedAt || data.endedAt,
               duration: data.duration,
               isFriendMatch: data.isFriendMatch || false,
