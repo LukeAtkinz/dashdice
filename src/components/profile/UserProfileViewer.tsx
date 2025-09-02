@@ -8,6 +8,7 @@ import { useNavigation } from '@/context/NavigationContext';
 import { useUserStats } from '@/hooks/useUserStats';
 import { useFriends } from '@/context/FriendsContext';
 import { useAuth } from '@/context/AuthContext';
+import { useBackground } from '@/context/BackgroundContext';
 import { MatchHistory } from '@/components/profile/MatchHistory';
 
 interface UserProfileViewerProps {
@@ -17,6 +18,7 @@ interface UserProfileViewerProps {
 
 export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, onClose }) => {
   const { user } = useAuth();
+  const { DisplayBackgroundEquip } = useBackground(); // For current user's background
   const { sendFriendRequest, removeFriend, friends, pendingRequests } = useFriends();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -284,15 +286,93 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
           <motion.div
             className="relative overflow-hidden touch-manipulation"
             style={{
-              background: (() => {
-                const bgEquipped = userProfile.inventory?.matchBackgroundEquipped;
-                if (bgEquipped && typeof bgEquipped === 'object' && 'file' in bgEquipped) {
-                  return `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${bgEquipped.file})`;
+              ...(() => {
+                // For viewing the current user's own profile, use the background context
+                if (isOwnProfile && DisplayBackgroundEquip) {
+                  if (DisplayBackgroundEquip.type === 'video') {
+                    // For videos, use a fallback gradient for CSS background
+                    return {
+                      background: 'linear-gradient(135deg, #667eea, #764ba2)'
+                    };
+                  }
+                  return {
+                    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("${DisplayBackgroundEquip.file}")`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  };
                 }
-                return 'linear-gradient(135deg, #667eea, #764ba2)';
+                
+                // For viewing other users' profiles, try both match and display backgrounds
+                const matchBg = userProfile.inventory?.matchBackgroundEquipped;
+                const displayBg = userProfile.inventory?.displayBackgroundEquipped;
+                const bgEquipped = matchBg || displayBg;
+                
+                if (bgEquipped) {
+                  // Handle background object with name, file, and type properties
+                  if (typeof bgEquipped === 'object' && bgEquipped.file) {
+                    // For video backgrounds, use a themed gradient
+                    if (bgEquipped.type === 'video') {
+                      // Use different gradients based on background name for video backgrounds
+                      switch (bgEquipped.name) {
+                        case 'New Day':
+                          return { background: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)' };
+                        case 'On A Mission':
+                          return { background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' };
+                        case 'Underwater':
+                          return { background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' };
+                        default:
+                          return { background: 'linear-gradient(135deg, #667eea, #764ba2)' };
+                      }
+                    }
+                    
+                    // For image backgrounds, use the file path with proper path fixing
+                    if (bgEquipped.type === 'image' || !bgEquipped.type) {
+                      let backgroundPath = bgEquipped.file;
+                      
+                      // Fix common background paths (same logic as FriendCard)
+                      if (backgroundPath === 'All For Glory.jpg' || backgroundPath === '/backgrounds/All For Glory.jpg') {
+                        backgroundPath = '/backgrounds/All For Glory.jpg';
+                      } else if (backgroundPath === 'Long Road Ahead.jpg' || backgroundPath === '/backgrounds/Long Road Ahead.jpg') {
+                        backgroundPath = '/backgrounds/Long Road Ahead.jpg';
+                      } else if (backgroundPath === 'Relax.png' || backgroundPath === '/backgrounds/Relax.png') {
+                        backgroundPath = '/backgrounds/Relax.png';
+                      } else if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
+                        // If it's a filename without path, prepend /backgrounds/
+                        backgroundPath = `/backgrounds/${backgroundPath}`;
+                      }
+                      
+                      return {
+                        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("${backgroundPath}")`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat'
+                      };
+                    }
+                  }
+                  
+                  // Handle string file path (legacy format)
+                  if (typeof bgEquipped === 'string') {
+                    let backgroundPath: string = bgEquipped;
+                    
+                    // Fix paths for legacy format
+                    if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
+                      backgroundPath = `/backgrounds/${backgroundPath}`;
+                    }
+                    
+                    return {
+                      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("${backgroundPath}")`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat'
+                    };
+                  }
+                }
+                
+                // Fallback gradient
+                return {
+                  background: 'linear-gradient(135deg, #667eea, #764ba2)'
+                };
               })(),
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
               borderRadius: '20px'
             }}
             initial={{ opacity: 0, y: 20 }}
@@ -629,23 +709,6 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-sm text-gray-300 font-montserrat">Friend Win Rate</div>
                   </motion.div>
                 </div>
-              </div>
-
-              {/* Recent Matches */}
-              <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
-                <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Recent Matches</h3>
-                {/* Only show matches for own profile since MatchHistory uses auth context */}
-                {isOwnProfile ? (
-                  <MatchHistory />
-                ) : (
-                  <div className="text-center py-8">
-                    <div className="text-4xl mb-4">🔒</div>
-                    <p className="text-gray-400 font-montserrat">Match history is private</p>
-                    <p className="text-sm text-gray-500 font-montserrat mt-1">
-                      Only visible on your own profile
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           </motion.div>
