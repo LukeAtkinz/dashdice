@@ -63,21 +63,34 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
     }
 
     setLoading(true);
-    const unsubscribe = MatchHistoryService.subscribeToMatchHistory(
-      user.uid,
-      (matchHistory) => {
-        console.log('🎮 MatchHistory: Received match data:', matchHistory.map(m => ({
-          id: m.id,
-          opponent: m.opponentDisplayName,
-          opponentBgFile: m.opponentBackgroundFile,
-          opponentBg: m.opponentBackground
-        })));
-        setMatches(matchHistory);
-        setLoading(false);
-      }
-    );
+    
+    try {
+      const unsubscribe = MatchHistoryService.subscribeToMatchHistory(
+        user.uid,
+        (matchHistory) => {
+          console.log('🎮 MatchHistory: Received match data:', matchHistory.map(m => ({
+            id: m.id,
+            opponent: m.opponentDisplayName,
+            opponentBgFile: m.opponentBackgroundFile,
+            opponentBg: m.opponentBackground
+          })));
+          setMatches(matchHistory);
+          setLoading(false);
+        }
+      );
 
-    return () => unsubscribe();
+      return () => {
+        try {
+          unsubscribe();
+        } catch (error) {
+          console.error('Error unsubscribing from match history:', error);
+        }
+      };
+    } catch (error) {
+      console.error('Error setting up match history subscription:', error);
+      setLoading(false);
+      setMatches([]);
+    }
   }, [user?.uid]);
 
   const toggleExpanded = (matchId: string) => {
@@ -151,9 +164,26 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
             className="absolute inset-0"
             style={{
               zIndex: 0,
-              background: match.opponentBackgroundFile && !match.opponentBackgroundFile.endsWith('.mp4')
-                ? `linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url(${match.opponentBackgroundFile})`
-                : 'rgba(31, 41, 55, 0.8)',
+              background: (() => {
+                if (match.opponentBackgroundFile) {
+                  // Handle video backgrounds - skip the background image for videos
+                  if (match.opponentBackgroundFile.endsWith('.mp4')) {
+                    return 'rgba(31, 41, 55, 0.8)';
+                  }
+                  // Handle image backgrounds with proper path fixing
+                  let backgroundPath = match.opponentBackgroundFile;
+                  
+                  // Fix common background paths (same logic as in other components)
+                  if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
+                    backgroundPath = `/backgrounds/${backgroundPath}`;
+                  }
+                  
+                  return `linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url("${backgroundPath}")`;
+                }
+                
+                // Fallback background
+                return 'rgba(31, 41, 55, 0.8)';
+              })(),
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat'

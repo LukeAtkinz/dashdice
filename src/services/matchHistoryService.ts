@@ -193,6 +193,12 @@ export class MatchHistoryService {
         callback(limitedMatches);
       }, (error) => {
         console.error('❌ MatchHistoryService: Error querying completedmatches:', error);
+        
+        // Handle permission errors gracefully
+        if (error?.code === 'permission-denied') {
+          console.warn('🔒 MatchHistoryService: Permission denied for completedmatches. User may not be properly authenticated.');
+        }
+        
         callback([]);
       });
     } catch (error) {
