@@ -47,6 +47,13 @@ export class MatchHistoryService {
     userId: string,
     callback: (matches: MatchHistoryEntry[]) => void
   ): Unsubscribe {
+    // Check if user is authenticated
+    if (!userId || userId.trim() === '') {
+      console.warn('⚠️ MatchHistoryService: No valid userId provided');
+      callback([]);
+      return () => {};
+    }
+
     try {
       console.log('🔄 MatchHistoryService: Subscribing to match history for user:', userId);
       

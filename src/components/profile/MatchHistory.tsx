@@ -58,10 +58,19 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
   // Subscribe to match history
   useEffect(() => {
     if (!user?.uid) {
+      console.log('🔒 MatchHistory: No authenticated user, skipping match history subscription');
       setLoading(false);
       return;
     }
 
+    // Additional auth check
+    if (typeof user.uid !== 'string' || user.uid.trim() === '') {
+      console.warn('⚠️ MatchHistory: Invalid user ID format');
+      setLoading(false);
+      return;
+    }
+
+    console.log('🔄 MatchHistoryService: Subscribing to match history for user:', user.uid);
     setLoading(true);
     
     try {
