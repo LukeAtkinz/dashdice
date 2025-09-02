@@ -11,6 +11,7 @@ import { openFriendChatInUnified } from '@/components/chat/UnifiedChatWindow';
 import MiniGameModeSelector from './MiniGameModeSelector';
 import { useBackground } from '@/context/BackgroundContext';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import { ProfilePicture } from '@/components/ui/ProfilePicture';
 
 // Game mode icon mapping
 const getGameModeIcon = (gameType: string): string => {
@@ -386,11 +387,12 @@ export default function FriendCard({ friend, compact = false, showActions = true
         
         <div className="relative z-10 flex items-center gap-3 p-3">
           <div className="relative">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold font-audiowide">
-                {friend.friendData?.displayName?.charAt(0)?.toUpperCase() || '?'}
-              </span>
-            </div>
+            <ProfilePicture
+              src={friend.friendData?.profilePicture}
+              alt={`${friend.friendData?.displayName || 'Friend'}'s profile picture`}
+              size="sm"
+              fallbackInitials={friend.friendData?.displayName?.charAt(0)?.toUpperCase() || friend.friendData?.userTag?.charAt(0)?.toUpperCase()}
+            />
             <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(presenceStatus)} rounded-full border-2 border-gray-800`}></div>
           </div>
           <div className="flex-1 min-w-0">
@@ -470,11 +472,12 @@ export default function FriendCard({ friend, compact = false, showActions = true
               {/* Profile section content for alignment */}
               <div className="flex items-center gap-3 flex-1">
                 <div className="relative">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-lg font-bold font-audiowide">
-                      {friend.friendData?.displayName?.charAt(0)?.toUpperCase() || '?'}
-                    </span>
-                  </div>
+                  <ProfilePicture
+                    src={friend.friendData?.profilePicture}
+                    alt={`${friend.friendData?.displayName || 'Friend'}'s profile picture`}
+                    size="md"
+                    fallbackInitials={friend.friendData?.displayName?.charAt(0)?.toUpperCase() || friend.friendData?.userTag?.charAt(0)?.toUpperCase()}
+                  />
                   <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(presenceStatus)} rounded-full border-2 border-gray-800`}></div>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -522,11 +525,12 @@ export default function FriendCard({ friend, compact = false, showActions = true
               {/* Profile section - Mobile */}
               <div className="flex items-center gap-3 mb-3">
                 <div className="relative">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-lg font-bold font-audiowide">
-                      {friend.friendData?.displayName?.charAt(0)?.toUpperCase() || '?'}
-                    </span>
-                  </div>
+                  <ProfilePicture
+                    src={friend.friendData?.profilePicture}
+                    alt={`${friend.friendData?.displayName || 'Friend'}'s profile picture`}
+                    size="md"
+                    fallbackInitials={friend.friendData?.displayName?.charAt(0)?.toUpperCase() || friend.friendData?.userTag?.charAt(0)?.toUpperCase()}
+                  />
                   <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(presenceStatus)} rounded-full border-2 border-gray-800`}></div>
                 </div>
                 <div className="flex-1 min-w-0">

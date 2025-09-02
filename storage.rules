@@ -5,7 +5,19 @@ service firebase.storage {
     // Profile pictures - users can upload and read their own profile pictures
     match /profile-pictures/{userId}/{fileName} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null 
+        && request.auth.uid == userId
+        && request.resource.size < 5 * 1024 * 1024  // 5MB limit
+        && request.resource.contentType.matches('image/.*');  // Only images
+    }
+    
+    // Temporary uploads for moderation (auto-deleted after processing)
+    match /temp-uploads/{userId}/{fileName} {
+      allow write: if request.auth != null 
+        && request.auth.uid == userId
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow read: if false; // No direct reads allowed
     }
     
     // Allow read access to background images for all authenticated users

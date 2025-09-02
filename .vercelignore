@@ -1,49 +1,81 @@
-# Large asset files that shouldn't be deployed
+# Large asset files that shouldn't be deployed (keep all Design Elements)
 Levels*/
 "Levels as building"/
 Reference/
-public/Design Elements/Achivements/Design/
-public/Design Elements/Achivements/PNG'S/
+ReadMes/
 
-# Large 3D model files
+# Keep all Design Elements images - commenting out exclusions
+# public/Design Elements/Achivements/
+# public/Design Elements/PNG'S/
+# public/Design Elements/Player Profiles/
+# public/Design Elements/Castle.webp
+# public/Design Elements/Crown Mode.webp
+# public/Design Elements/Delivery Man.webp
+# public/Design Elements/discount tag.webp
+# public/Design Elements/favicon-32x32_2.png
+# public/Design Elements/finance startup.webp
+# public/Design Elements/financial success.webp
+# public/Design Elements/Game Coins.webp
+# public/Design Elements/Game Duration.png.webp
+# public/Design Elements/Gem Bucket.webp
+# public/Design Elements/hand holding magnifying glass.webp
+# public/Design Elements/lost connection.webp
+# public/Design Elements/Remtach.webp
+# public/Design Elements/Satelite.png
+# public/Design Elements/Shield.webp
+# public/Design Elements/skull.webp
+# public/Design Elements/Sword.webp
+# public/Design Elements/time out.webp
+
+# All documentation and markdown files except README
+*.md
+!README.md
+
+# Development and debugging files
+scripts/
+debug-firebase.js
+EMERGENCY_CLEANUP.js
+*.log
+*.backup
+*.tmp
+*.temp
+
+# Cache and build artifacts
+.next/cache/
+.next/analyze/
+node_modules/.cache/
+.turbo/
+
+# Version control and IDE files
+.git/
+.gitignore
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Environment and config files (keep necessary ones)
+serviceAccountKey.json
+.env.example
+
+# Firebase backup files
+firebase-indexes-backup.json
+firestore.indexes.json.backup
+
+# Large binary files
+*.zip
+*.rar
+*.7z
+*.tar.gz
 *.blend
 *.fbx
 *.obj
 *.3ds
 *.max
 *.glb
+*.gltf
 
-# Development files
-*.zip
-*.rar
-*.7z
-
-# Documentation files
-*.md
-ReadMes/
-DEVELOPMENT_BEST_PRACTICES.md
-FIREBASE_BEST_PRACTICES.md
-FIREBASE_FIX_COMPLETE.md
-GAMEDEVELOPMENT.md
-IMPLEMENTATION_COMPLETE.md
-IMPLEMENTATION_SUMMARY.md
-INVENTORY_SYSTEM.md
-MATCH_SYSTEM.md
-MATCHMAKING_BUG_PREVENTION.md
-MATCHMAKING_REBUILD_README.md
-MATCHMAKING_SECURITY_README.md
-MATCHMAKING_STATUS.md
-PHASE_3_COMPLETE.md
-PLAYER_PROFILES_INVENTORY_SYSTEM.md
-PROJECT_OVERVIEW.md
-SECURITY_GUIDE.md
-TESTING_GUIDE.md
-WAITING_ROOM_SYSTEM.md
-*.md
-
-# Scripts
-scripts/
-EMERGENCY_CLEANUP.js
-
-# Service account key (for security)
-serviceAccountKey.json
+# Testing and coverage files
+coverage/
+.nyc_output/
+*.lcov

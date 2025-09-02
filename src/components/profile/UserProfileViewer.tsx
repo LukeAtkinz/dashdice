@@ -10,6 +10,7 @@ import { useFriends } from '@/context/FriendsContext';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { MatchHistory } from '@/components/profile/MatchHistory';
+import { ProfilePicture } from '@/components/ui/ProfilePicture';
 
 interface UserProfileViewerProps {
   userId: string;
@@ -429,11 +430,12 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
               {/* Profile Header */}
               <div className="flex items-center gap-4 mb-6">
                 <div className="relative">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-2xl font-bold font-audiowide">
-                      {userProfile.displayName?.charAt(0)?.toUpperCase() || '?'}
-                    </span>
-                  </div>
+                  <ProfilePicture
+                    src={userProfile.profilePicture}
+                    alt={`${userProfile.displayName || 'Player'}'s profile picture`}
+                    size="lg"
+                    fallbackInitials={userProfile.displayName?.charAt(0)?.toUpperCase() || userProfile.userTag?.charAt(0)?.toUpperCase()}
+                  />
                   <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-2 border-gray-800"></div>
                 </div>
 

@@ -13,6 +13,7 @@ export interface UserProfile {
   uid: string;
   email: string;
   displayName: string | null;
+  profilePicture: string | null;
   createdAt: any;
   lastLoginAt: any;
   userTag: string;
@@ -55,6 +56,7 @@ export class UserService {
           uid,
           email: userData.email,
           displayName: userData.displayName,
+          profilePicture: userData.profilePicture || userData.photoURL || null,
           createdAt: userData.createdAt,
           lastLoginAt: userData.lastLoginAt,
           userTag: userData.userTag || userData.email?.split('@')[0] || 'Anonymous',
@@ -343,6 +345,26 @@ export class UserService {
       console.log(`✅ Successfully updated ranked status to: ${status}`);
     } catch (error) {
       console.error('❌ Error updating ranked status:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update user's profile picture
+   */
+  static async updateProfilePicture(uid: string, profilePictureUrl: string): Promise<void> {
+    try {
+      console.log(`📸 Updating profile picture for ${uid}:`, profilePictureUrl);
+      
+      const userRef = doc(db, 'users', uid);
+      await updateDoc(userRef, {
+        profilePicture: profilePictureUrl,
+        updatedAt: new Date()
+      });
+      
+      console.log(`✅ Successfully updated profile picture`);
+    } catch (error) {
+      console.error('❌ Error updating profile picture:', error);
       throw error;
     }
   }

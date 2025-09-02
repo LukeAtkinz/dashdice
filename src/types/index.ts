@@ -9,6 +9,8 @@ export interface User {
   email: string;
   displayName?: string;
   photoURL?: string;
+  profilePicture?: string;
+  userTag?: string;
   createdAt: Date;
   lastLoginAt: Date;
   inventory: InventoryItem[] | {
