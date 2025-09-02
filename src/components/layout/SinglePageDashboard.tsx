@@ -289,13 +289,14 @@ const DashboardContent: React.FC = () => {
                     borderRadius: "18px",
                     background: currentSection === 'match' && !isGameOver 
                       ? "#666666" 
-                      : DisplayBackgroundEquip?.name === 'On A Mission'
-                      ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.2) 100%)'
-                      : DisplayBackgroundEquip?.name === 'Long Road Ahead'
-                      ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.8) 0%, rgba(76, 29, 149, 0.6) 25%, rgba(30, 27, 75, 0.4) 50%, rgba(30, 58, 138, 0.6) 75%, rgba(59, 130, 246, 0.4) 100%)'
-                      : "#FF0080",
+                      : "transparent",
                     border: "none",
-                    backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(6px)' : 'none'
+                    backdropFilter: currentSection === 'match' && !isGameOver 
+                      ? 'none' 
+                      : 'blur(2px)',
+                    boxShadow: currentSection === 'match' && !isGameOver 
+                      ? 'none' 
+                      : '0 4px 8px rgba(255, 215, 0, 0.3)'
                   }}
                 >
                   <img
@@ -342,13 +343,14 @@ const DashboardContent: React.FC = () => {
                     borderRadius: "18px",
                     background: currentSection === 'match' && !isGameOver 
                       ? "#666666" 
-                      : DisplayBackgroundEquip?.name === 'On A Mission'
-                      ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.8) 0%, rgba(22, 163, 74, 0.4) 50%, rgba(34, 197, 94, 0.2) 100%)'
-                      : DisplayBackgroundEquip?.name === 'Long Road Ahead'
-                      ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.8) 0%, rgba(22, 163, 74, 0.6) 25%, rgba(16, 185, 129, 0.4) 50%, rgba(5, 150, 105, 0.6) 75%, rgba(34, 197, 94, 0.4) 100%)'
-                      : "#22C55E",
+                      : "transparent",
                     border: "none",
-                    backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(6px)' : 'none'
+                    backdropFilter: currentSection === 'match' && !isGameOver 
+                      ? 'none' 
+                      : 'blur(2px)',
+                    boxShadow: currentSection === 'match' && !isGameOver 
+                      ? 'none' 
+                      : '0 4px 8px rgba(255, 215, 0, 0.3)'
                   }}
                 >
                   <div
@@ -375,12 +377,11 @@ const DashboardContent: React.FC = () => {
                   >
                     FRIENDS
                   </span>
-                  <div className="relative">
-                    <NotificationBadge 
-                      count={onlinePlayerCount} 
-                      className="absolute -top-2 -right-1"
-                    />
-                  </div>
+                  {/* Notification Badge positioned at top-right of button */}
+                  <NotificationBadge 
+                    count={onlinePlayerCount} 
+                    className="absolute -top-2 -right-2"
+                  />
                 </button>
 
                 {/* RANKED Button */}
@@ -403,13 +404,14 @@ const DashboardContent: React.FC = () => {
                     borderRadius: "18px",
                     background: currentSection === 'match' && !isGameOver 
                       ? "#666666" 
-                      : DisplayBackgroundEquip?.name === 'On A Mission'
-                      ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.8) 0%, rgba(255, 193, 7, 0.4) 50%, rgba(255, 215, 0, 0.2) 100%)'
-                      : DisplayBackgroundEquip?.name === 'Long Road Ahead'
-                      ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.8) 0%, rgba(255, 193, 7, 0.6) 25%, rgba(255, 235, 59, 0.4) 50%, rgba(255, 202, 40, 0.6) 75%, rgba(255, 215, 0, 0.4) 100%)'
-                      : "#FFD700",
+                      : "transparent",
                     border: "none",
-                    backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(6px)' : 'none'
+                    backdropFilter: currentSection === 'match' && !isGameOver 
+                      ? 'none' 
+                      : 'blur(2px)',
+                    boxShadow: currentSection === 'match' && !isGameOver 
+                      ? 'none' 
+                      : '0 4px 8px rgba(255, 215, 0, 0.3)'
                   }}
                 >
                   <div
@@ -549,13 +551,14 @@ const DashboardContent: React.FC = () => {
                   borderRadius: "18px",
                   background: currentSection === 'match' && !isGameOver 
                     ? "#666666" 
-                    : DisplayBackgroundEquip?.name === 'On A Mission'
-                    ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(14, 165, 233, 0.2) 100%)'
-                    : DisplayBackgroundEquip?.name === 'Long Road Ahead'
-                    ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.8) 0%, rgba(76, 29, 149, 0.6) 25%, rgba(30, 27, 75, 0.4) 50%, rgba(30, 58, 138, 0.6) 75%, rgba(59, 130, 246, 0.4) 100%)'
-                    : "#FF0080",
+                    : "transparent",
                   border: "none",
-                  backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(6px)' : 'none'
+                  backdropFilter: currentSection === 'match' && !isGameOver 
+                    ? 'none' 
+                    : 'blur(2px)',
+                  boxShadow: currentSection === 'match' && !isGameOver 
+                    ? 'none' 
+                    : '0 4px 8px rgba(255, 215, 0, 0.3)'
                 }}
               >
                 <img
