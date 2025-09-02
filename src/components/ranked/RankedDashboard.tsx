@@ -123,6 +123,21 @@ const buttonStyles = `
     50% { transform: scale(0.95); }
     100% { transform: scale(1); }
   }
+  
+  /* Disable hover effects for all ranked tabs */
+  .ranked-tab:hover::before {
+    animation: none !important;
+    background: transparent !important;
+  }
+  
+  .ranked-tab:hover {
+    transform: none !important;
+  }
+  
+  /* Remove gold background for ranked tabs */
+  .ranked-tab.active::before {
+    background: transparent !important;
+  }
 `;
 
 interface RankedDashboardProps {
@@ -398,6 +413,9 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
                 transition-all duration-300
                 h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px]
                 ${activeTab === tab.id ? 'active' : ''}
+                ${tab.id === 'leaderboard' ? 'leaderboard-tab' : ''}
+                ${tab.id === 'tournaments' ? 'tournaments-tab' : ''}
+                ranked-tab
               `}
               style={{
                 display: 'flex',
@@ -413,7 +431,7 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
               <div className="flex flex-col items-center gap-2">
                 <div className="flex items-center gap-2">
                   <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
-                    color: activeTab === tab.id ? '#FFD700' : '#FFF', 
+                    color: activeTab === tab.id ? '#FFF' : '#FFF', 
                     fontFamily: 'Audiowide', 
                     fontWeight: 400, 
                     textTransform: 'uppercase' 

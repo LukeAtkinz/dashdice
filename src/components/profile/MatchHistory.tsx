@@ -7,6 +7,43 @@ import { MatchHistoryService, MatchHistoryEntry } from '@/services/matchHistoryS
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
 
+// Game mode icon mapping
+const getGameModeIcon = (gameType: string): string => {
+  const iconMap: { [key: string]: string } = {
+    'classic': '/Design Elements/Crown Mode.webp',
+    'quickfire': '/Design Elements/Shield.webp',
+    'zero-hour': '/Design Elements/time out.webp',
+    'last-line': '/Design Elements/skull.webp',
+    'blitz': '/Design Elements/Shield.webp',
+    'puzzle': '/Design Elements/Crown Mode.webp',
+    'survival': '/Design Elements/skull.webp'
+  };
+  
+  return iconMap[gameType.toLowerCase()] || '/Design Elements/Crown Mode.webp';
+};
+
+// Match type icon mapping
+const getMatchTypeIcon = (matchType: string): string => {
+  const iconMap: { [key: string]: string } = {
+    'ranked': '/Design Elements/Player Profiles/Ranked.webp',
+    'rematch': '/Design Elements/Player Profiles/Remtach.webp',
+    'tournament': '/Design Elements/Player Profiles/Tourdement.webp',
+    'casual': '/Design Elements/Player Profiles/QuickMatch.webp',
+    'friends': '/Design Elements/friends.webp'
+  };
+  
+  return iconMap[matchType.toLowerCase()] || '/Design Elements/Player Profiles/QuickMatch.webp';
+};
+
+// Get match type display name
+const getMatchTypeDisplayName = (match: any): string => {
+  if (match.isFriendMatch) return 'Friends';
+  if (match.isRanked) return 'Ranked';
+  if (match.isTournament) return 'Tournament';
+  if (match.isRematch) return 'Rematch';
+  return 'Casual';
+};
+
 interface MatchHistoryProps {
   className?: string;
 }
@@ -138,7 +175,7 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
                         e.stopPropagation();
                         handleViewProfile(match.opponentUserId, match.opponentDisplayName);
                       }}
-                      className="ml-2 px-2 py-1 bg-blue-600/60 hover:bg-blue-700/60 text-white text-xs rounded font-audiowide transition-colors"
+                      className="ml-2 px-6 py-2 bg-blue-600/60 hover:bg-blue-700/60 text-white rounded-xl font-audiowide transition-colors"
                     >
                       PROFILE
                     </button>
@@ -183,51 +220,54 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
                   transition={{ duration: 0.3 }}
                   className="mt-4 pt-4 border-t border-gray-600 overflow-hidden"
                 >
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                     {/* Match Stats */}
                     <div className="flex flex-col items-center">
-                      <Clock className="w-4 h-4 text-blue-400 mb-1" />
-                      <div className="text-sm font-bold text-white font-audiowide">
+                      <img 
+                        src="/Design Elements/Player Profiles/Game Duration.webp" 
+                        alt="Duration" 
+                        className="w-12 h-12 mb-3" 
+                      />
+                      <div className="text-xl font-bold text-white font-audiowide mb-1">
                         {match.duration ? MatchHistoryService.formatDuration(match.duration) : '—'}
                       </div>
-                      <div className="text-xs text-gray-400 font-montserrat">Duration</div>
+                      <div className="text-sm text-gray-400 font-montserrat">Duration</div>
                     </div>
                     
                     <div className="flex flex-col items-center">
-                      <Trophy className="w-4 h-4 text-yellow-400 mb-1" />
-                      <div className="text-sm font-bold text-white font-audiowide">
+                      <img 
+                        src={getGameModeIcon(match.gameType)} 
+                        alt={match.gameType} 
+                        className="w-12 h-12 mb-3" 
+                      />
+                      <div className="text-xl font-bold text-white font-audiowide mb-1">
                         {match.gameType}
                       </div>
-                      <div className="text-xs text-gray-400 font-montserrat">Mode</div>
+                      <div className="text-sm text-gray-400 font-montserrat">Mode</div>
                     </div>
                     
                     <div className="flex flex-col items-center">
-                      <Target className="w-4 h-4 text-green-400 mb-1" />
-                      <div className="text-sm font-bold text-white font-audiowide">
+                      <img 
+                        src="/Design Elements/Player Profiles/Your Score.webp" 
+                        alt="Your Score" 
+                        className="w-12 h-12 mb-3" 
+                      />
+                      <div className="text-xl font-bold text-white font-audiowide mb-1">
                         {match.playerScore}
                       </div>
-                      <div className="text-xs text-gray-400 font-montserrat">Your Score</div>
+                      <div className="text-sm text-gray-400 font-montserrat">Your Score</div>
                     </div>
                     
                     <div className="flex flex-col items-center">
-                      <Users className="w-4 h-4 text-purple-400 mb-1" />
-                      <div className="text-sm font-bold text-white font-audiowide">
-                        {match.isFriendMatch ? 'Friend' : 'Public'}
+                      <img 
+                        src={getMatchTypeIcon(getMatchTypeDisplayName(match))} 
+                        alt="Match Type" 
+                        className="w-12 h-12 mb-3" 
+                      />
+                      <div className="text-xl font-bold text-white font-audiowide mb-1">
+                        {getMatchTypeDisplayName(match)}
                       </div>
-                      <div className="text-xs text-gray-400 font-montserrat">Match Type</div>
-                    </div>
-                  </div>
-                  
-                  {/* Additional match details if available */}
-                  <div className="mt-4 p-3 bg-black/30 rounded-lg">
-                    <div className="text-xs text-gray-300 font-montserrat mb-2">Match Summary:</div>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="text-gray-400">Result: <span className={`font-bold ${match.result === 'won' ? 'text-green-400' : 'text-red-400'}`}>{match.result.toUpperCase()}</span></div>
-                      <div className="text-gray-400">Mode: <span className="text-white">{MatchHistoryService.getGameModeDisplayName(match.gameType)}</span></div>
-                      {match.duration && (
-                        <div className="text-gray-400">Duration: <span className="text-white">{MatchHistoryService.formatDuration(match.duration)}</span></div>
-                      )}
-                      <div className="text-gray-400">Type: <span className="text-white">{match.isFriendMatch ? 'Friend Match' : 'Public Match'}</span></div>
+                      <div className="text-sm text-gray-400 font-montserrat">Match Type</div>
                     </div>
                   </div>
                 </motion.div>

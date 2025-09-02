@@ -432,19 +432,26 @@ export const DashboardSection: React.FC = () => {
                         cursor: 'pointer'
                       }}
                     >
-                      <span
-                        className="text-[18px] md:text-[24px] leading-[22px] md:leading-[28px] pointer-events-none"
-                        style={{
-                          color: '#E2E2E2',
-                          textAlign: 'center',
-                          fontFamily: 'Audiowide',
-                          fontStyle: 'normal',
-                          fontWeight: 400,
-                          textTransform: 'uppercase',
-                        }}
-                      >
-                        QUICK GAME
-                      </span>
+                      <div className="flex items-center gap-2 pointer-events-none">
+                        <img 
+                          src="/Design Elements/Player Profiles/Quick Match.webp" 
+                          alt="Quick Match" 
+                          className="w-6 h-6 md:w-8 md:h-8 object-contain"
+                        />
+                        <span
+                          className="text-[18px] md:text-[24px] leading-[22px] md:leading-[28px]"
+                          style={{
+                            color: '#E2E2E2',
+                            textAlign: 'center',
+                            fontFamily: 'Audiowide',
+                            fontStyle: 'normal',
+                            fontWeight: 400,
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          CASUAL
+                        </span>
+                      </div>
                     </button>
                     <button
                       onClick={(e) => {
@@ -474,19 +481,26 @@ export const DashboardSection: React.FC = () => {
                         cursor: 'pointer'
                       }}
                     >
-                      <span
-                        className="text-[18px] md:text-[24px] leading-[22px] md:leading-[28px] pointer-events-none"
-                        style={{
-                          color: '#E2E2E2',
-                          textAlign: 'center',
-                          fontFamily: 'Audiowide',
-                          fontStyle: 'normal',
-                          fontWeight: 400,
-                          textTransform: 'uppercase',
-                        }}
-                      >
-                        🏆 RANKED
-                      </span>
+                      <div className="flex items-center gap-2 pointer-events-none">
+                        <img 
+                          src="/Design Elements/Player Profiles/Ranked.webp" 
+                          alt="Ranked" 
+                          className="w-6 h-6 md:w-8 md:h-8 object-contain"
+                        />
+                        <span
+                          className="text-[18px] md:text-[24px] leading-[22px] md:leading-[28px]"
+                          style={{
+                            color: '#E2E2E2',
+                            textAlign: 'center',
+                            fontFamily: 'Audiowide',
+                            fontStyle: 'normal',
+                            fontWeight: 400,
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          RANKED
+                        </span>
+                      </div>
                     </button>
                   </>
                 ) : (

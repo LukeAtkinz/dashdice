@@ -299,7 +299,7 @@ const DashboardContent: React.FC = () => {
                   }}
                 >
                   <img
-                    src="/Design Elements/Gem Bucket.webp"
+                    src="/Design Elements/Player Profiles/Vault.webp"
                     alt="Vault"
                     style={{
                       width: "40px",
@@ -422,7 +422,7 @@ const DashboardContent: React.FC = () => {
                       justifyContent: "center"
                     }}
                   >
-                    🏆
+                    <img src="/Design Elements/Player Profiles/Ranked.webp" alt="Ranked" className="w-8 h-8" />
                   </div>
                   <span
                     style={{
@@ -752,7 +752,7 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'ranked' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <span className="text-2xl">🏆</span>
+                <img src="/Design Elements/Player Profiles/Ranked.webp" alt="Ranked" className="w-8 h-8" />
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>RANKED</span>
               </button>
               <button
@@ -761,7 +761,7 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'friends' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/friends.webp" alt="Friends" className="w-8 h-8" />
+                <img src="/Design Elements/friends.webp" alt="Friends" className="w-9 h-9" />
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
                 <NotificationBadge count={onlinePlayerCount} />
               </button>
@@ -771,7 +771,7 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'inventory' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/Gem Bucket.webp" alt="Vault" className="w-8 h-8" />
+                <img src="/Design Elements/Player Profiles/Vault.webp" alt="Vault" className="w-8 h-8" />
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>VAULT</span>
               </button>
               <button

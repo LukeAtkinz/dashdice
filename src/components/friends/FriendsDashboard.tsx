@@ -81,7 +81,7 @@ const buttonStyles = `
   }
   
   .tab-button.active::before {
-    background: linear-gradient(90deg, #FFD700 0%, #FFD700 100%);
+    background: transparent;
   }
   
   /* Legacy navigation button hover effects */
@@ -110,6 +110,18 @@ const buttonStyles = `
     0% { transform: scale(1); }
     50% { transform: scale(0.95); }
     100% { transform: scale(1); }
+  }
+  
+  /* Disable hover effects for friends tab and manage friends tab */
+  .friends-tab:hover::before,
+  .manage-friends-tab:hover::before {
+    animation: none !important;
+    background: transparent !important;
+  }
+  
+  .friends-tab:hover,
+  .manage-friends-tab:hover {
+    transform: none !important;
   }
 `;
 
@@ -208,6 +220,8 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
               transition-all duration-300
               h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px]
               ${activeTab === tab.id ? 'active' : ''}
+              ${tab.id === 'friends' ? 'friends-tab' : ''}
+              ${tab.id === 'manage' ? 'manage-friends-tab' : ''}
             `}
             style={{
               display: 'flex',
@@ -224,7 +238,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
             <div className="flex flex-col items-center gap-2">
               <div className="flex items-center gap-2">
                 <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
-                  color: activeTab === tab.id ? '#FFD700' : '#FFF', 
+                  color: activeTab === tab.id ? '#FFF' : '#FFF', 
                   fontFamily: 'Audiowide', 
                   fontWeight: 400, 
                   textTransform: 'uppercase' 

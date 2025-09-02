@@ -338,6 +338,21 @@ const ProfileSection: React.FC = () => {
         .tab-button.active:hover span {
           color: #FFD700 !important;
         }
+        
+        /* Disable hover effects for profile section tabs */
+        .profile-section-tab:hover::before {
+          animation: none !important;
+          background: transparent !important;
+        }
+        
+        .profile-section-tab:hover {
+          transform: none !important;
+        }
+        
+        /* Remove gold background for profile section tabs */
+        .profile-section-tab.active::before {
+          background: transparent !important;
+        }
       `}</style>
       
       <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem]">
@@ -362,7 +377,7 @@ const ProfileSection: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`tab-button nav-button ${activeTab === tab.id ? 'active' : ''} h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px]`}
+                className={`tab-button nav-button ${activeTab === tab.id ? 'active' : ''} h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px] ${tab.id === 'profile' ? 'profile-tab' : ''} ${tab.id === 'settings' ? 'settings-tab' : ''} profile-section-tab`}
                 style={{
                   display: 'flex',
                   width: 'fit-content',
@@ -376,7 +391,7 @@ const ProfileSection: React.FC = () => {
                 }}
               >
                 <span className="text-base md:text-lg" style={{ 
-                  color: activeTab === tab.id ? '#FFD700' : '#FFF', 
+                  color: activeTab === tab.id ? '#FFF' : '#FFF', 
                   fontFamily: 'Audiowide', 
                   fontWeight: 400, 
                   textTransform: 'uppercase' 
@@ -588,6 +603,61 @@ const ProfileSection: React.FC = () => {
                     </div>
                   </div>
                   
+                  {/* Tournament Statistics Section */}
+                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
+                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Tournament</h3>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.1 }}
+                      >
+                        <div className="text-2xl font-bold text-yellow-400 font-audiowide">
+                          {statsLoading ? '...' : '42'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Tournaments Played</div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2 }}
+                      >
+                        <div className="text-2xl font-bold text-orange-400 font-audiowide">
+                          {statsLoading ? '...' : '7'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Tournaments Won</div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.3 }}
+                      >
+                        <div className="text-2xl font-bold text-red-400 font-audiowide">
+                          {statsLoading ? '...' : '3rd'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Best Placement</div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.4 }}
+                      >
+                        <div className="text-2xl font-bold text-emerald-400 font-audiowide">
+                          {statsLoading ? '...' : '2,450'}
+                        </div>
+                        <div className="text-sm text-gray-300 font-montserrat">Tournament Points</div>
+                      </motion.div>
+                    </div>
+                  </div>
+                  
                   {/* Cosmetic Statistics Section */}
                   <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
                     <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Cosmetic</h3>
@@ -673,61 +743,6 @@ const ProfileSection: React.FC = () => {
                       </motion.div>
                     </div>
                   </div>
-                  
-                  {/* Tournament Statistics Section */}
-                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
-                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Tournament</h3>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <motion.div 
-                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.1 }}
-                      >
-                        <div className="text-2xl font-bold text-yellow-400 font-audiowide">
-                          {statsLoading ? '...' : '42'}
-                        </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Tournaments Played</div>
-                      </motion.div>
-                      
-                      <motion.div 
-                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.2 }}
-                      >
-                        <div className="text-2xl font-bold text-orange-400 font-audiowide">
-                          {statsLoading ? '...' : '7'}
-                        </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Tournaments Won</div>
-                      </motion.div>
-                      
-                      <motion.div 
-                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.3 }}
-                      >
-                        <div className="text-2xl font-bold text-red-400 font-audiowide">
-                          {statsLoading ? '...' : '3rd'}
-                        </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Best Placement</div>
-                      </motion.div>
-                      
-                      <motion.div 
-                        className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.4 }}
-                      >
-                        <div className="text-2xl font-bold text-emerald-400 font-audiowide">
-                          {statsLoading ? '...' : '2,450'}
-                        </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Tournament Points</div>
-                      </motion.div>
-                    </div>
-                  </div>
                 </div>
               </motion.div>
 
@@ -807,6 +822,7 @@ const ProfileSection: React.FC = () => {
                             placeholder="Enter your display name"
                             maxLength={12}
                             helperText="2-12 characters, no inappropriate content"
+                            textColor="#fbbf24"
                             className="placeholder-white [&::placeholder]:text-white"
                           />
                         </div>
@@ -821,6 +837,7 @@ const ProfileSection: React.FC = () => {
                             onChange={(e) => profileForm.handleChange('email', e.target.value)}
                             placeholder="Enter your email"
                             disabled
+                            textColor="#fbbf24"
                             className="placeholder-white [&::placeholder]:text-white"
                           />
                           <p className="text-xs text-gray-400 mt-2 font-montserrat">
@@ -876,7 +893,7 @@ const ProfileSection: React.FC = () => {
 
               {/* General Settings - Friends Style */}
               <motion.div 
-                className="relative overflow-hidden rounded-[20px]"
+                className="relative overflow-hidden rounded-[20px] bg-black/40 backdrop-blur-sm border border-gray-700/50"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
@@ -886,7 +903,7 @@ const ProfileSection: React.FC = () => {
                     General Settings
                   </h3>
                   
-                  <div className="p-6 space-y-6">
+                  <div className="bg-transparent backdrop-blur-[0.5px] border border-gray-700/50 rounded-xl p-6 space-y-6">
                     <motion.div 
                       className="flex items-center justify-between p-4 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                       whileHover={{ scale: 1.02, y: -2 }}

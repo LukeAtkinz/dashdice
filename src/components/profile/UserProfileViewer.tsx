@@ -17,16 +17,22 @@ interface UserProfileViewerProps {
 
 export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, onClose }) => {
   const { user } = useAuth();
-  const { sendFriendRequest, removeFriend, friends } = useFriends();
+  const { sendFriendRequest, removeFriend, friends, pendingRequests } = useFriends();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sendingRequest, setSendingRequest] = useState(false);
   const [removing, setRemoving] = useState(false);
+  const [outgoingRequests, setOutgoingRequests] = useState<any[]>([]);
 
   // Check if this user is already a friend
   const isAlreadyFriend = friends.some(friend => friend.friendId === userId);
   const isOwnProfile = user?.uid === userId;
+  
+  // Check if there's a pending outgoing friend request to this user
+  const hasPendingRequest = outgoingRequests.some(request => 
+    request.fromUserId === user?.uid && request.toUserId === userId && request.status === 'pending'
+  );
 
   // Load user profile data
   useEffect(() => {
@@ -54,18 +60,105 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
     }
   }, [userId]);
 
+  // Subscribe to outgoing friend requests
+  useEffect(() => {
+    if (!user?.uid) {
+      setOutgoingRequests([]);
+      return;
+    }
+
+    const subscribeToOutgoingRequests = async () => {
+      const { collection, query, where, onSnapshot } = await import('firebase/firestore');
+      const { db } = await import('@/services/firebase');
+
+      const requestsQuery = query(
+        collection(db, 'friendRequests'),
+        where('fromUserId', '==', user.uid),
+        where('status', '==', 'pending')
+      );
+
+      const unsubscribe = onSnapshot(requestsQuery, (snapshot) => {
+        const requests = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setOutgoingRequests(requests);
+      });
+
+      return unsubscribe;
+    };
+
+    const unsubscribePromise = subscribeToOutgoingRequests();
+
+    return () => {
+      unsubscribePromise.then(unsubscribe => unsubscribe()).catch(console.error);
+    };
+  }, [user?.uid]);
+
   const handleSendFriendRequest = async () => {
-    if (!userProfile || isAlreadyFriend || isOwnProfile) return;
+    if (!userProfile || isAlreadyFriend || isOwnProfile || hasPendingRequest) return;
 
     setSendingRequest(true);
     try {
-      await sendFriendRequest(userId);
-      // Show success message or handle success state
+      // Create friend request directly with userIds instead of using friend code
+      const result = await sendFriendRequestByUserId(userId);
+      if (result.success) {
+        // Show success or handle success state
+        console.log('Friend request sent successfully');
+      } else {
+        console.error('Failed to send friend request:', result.error);
+      }
     } catch (error) {
       console.error('Error sending friend request:', error);
-      // Show error message
     } finally {
       setSendingRequest(false);
+    }
+  };
+
+  // Helper function to send friend request by userId instead of friend code
+  const sendFriendRequestByUserId = async (targetUserId: string) => {
+    if (!user?.uid) {
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    try {
+      // Import the necessary Firebase functions locally to avoid dependency issues
+      const { collection, addDoc, serverTimestamp, Timestamp } = await import('firebase/firestore');
+      const { db } = await import('@/services/firebase');
+
+      // Check if trying to add self
+      if (targetUserId === user.uid) {
+        return { success: false, error: 'Cannot add yourself as a friend' };
+      }
+
+      // Check if already friends
+      const existingFriend = friends.find(friend => friend.friendId === targetUserId);
+      if (existingFriend) {
+        return { success: false, error: 'Already friends with this user' };
+      }
+
+      // Check if there's already a pending request
+      if (hasPendingRequest) {
+        return { success: false, error: 'Friend request already pending' };
+      }
+
+      // Create friend request
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30); // Expire in 30 days
+
+      await addDoc(collection(db, 'friendRequests'), {
+        fromUserId: user.uid,
+        toUserId: targetUserId,
+        status: 'pending',
+        message: '',
+        createdAt: serverTimestamp(),
+        expiresAt: Timestamp.fromDate(expiresAt)
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error sending friend request:', error);
+      return { success: false, error: 'Failed to send friend request' };
     }
   };
 
@@ -124,36 +217,45 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
         <div className="flex items-center gap-4">
           <button
             onClick={onClose}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-600/60 hover:bg-gray-700/60 text-white rounded-lg font-audiowide transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-600/60 hover:bg-gray-700/60 text-white rounded-xl font-audiowide transition-colors"
           >
             <ArrowLeft size={18} />
             Back
           </button>
-          <h1 className="text-3xl font-bold text-white font-audiowide">
-            {userProfile.displayName || 'Player'}'s Profile
-          </h1>
         </div>
         
-        {/* Add Friend Button */}
-        {!isOwnProfile && !isAlreadyFriend && (
-          <button
-            onClick={handleSendFriendRequest}
-            disabled={sendingRequest}
-            className="px-6 py-2 bg-green-600/60 hover:bg-green-700/60 disabled:bg-gray-600/60 disabled:cursor-not-allowed text-white rounded-lg font-audiowide transition-colors"
-          >
-            {sendingRequest ? 'Sending...' : 'Add Friend'}
-          </button>
-        )}
-        
-        {/* Remove Friend Button */}
-        {!isOwnProfile && isAlreadyFriend && (
-          <button
-            onClick={handleRemoveFriend}
-            disabled={removing}
-            className="px-6 py-2 bg-red-600/60 hover:bg-red-700/60 disabled:bg-gray-600/60 disabled:cursor-not-allowed text-white rounded-lg font-audiowide transition-colors"
-          >
-            {removing ? 'Removing...' : 'Remove Friend'}
-          </button>
+        {/* Friend Action Buttons */}
+        {!isOwnProfile && (
+          <div className="flex gap-3">
+            {!isAlreadyFriend && !hasPendingRequest && (
+              <button
+                onClick={handleSendFriendRequest}
+                disabled={sendingRequest}
+                className="px-6 py-2 bg-green-600/60 hover:bg-green-700/60 disabled:bg-gray-600/60 disabled:cursor-not-allowed text-white rounded-xl font-audiowide transition-colors"
+              >
+                {sendingRequest ? 'Sending...' : 'Add Friend'}
+              </button>
+            )}
+            
+            {hasPendingRequest && (
+              <button
+                disabled
+                className="px-6 py-2 bg-orange-600/60 text-white rounded-xl font-audiowide cursor-not-allowed"
+              >
+                Invite Sent
+              </button>
+            )}
+            
+            {isAlreadyFriend && (
+              <button
+                onClick={handleRemoveFriend}
+                disabled={removing}
+                className="px-6 py-2 bg-red-600/60 hover:bg-red-700/60 disabled:bg-gray-600/60 disabled:cursor-not-allowed text-white rounded-xl font-audiowide transition-colors"
+              >
+                {removing ? 'Removing...' : 'Remove Friend'}
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -164,9 +266,13 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
           <motion.div
             className="relative overflow-hidden touch-manipulation"
             style={{
-              background: (userProfile.inventory.matchBackgroundEquipped as any)?.file
-                ? `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${(userProfile.inventory.matchBackgroundEquipped as any).file})`
-                : 'linear-gradient(135deg, #667eea, #764ba2)',
+              background: (() => {
+                const bgEquipped = userProfile.inventory?.matchBackgroundEquipped;
+                if (bgEquipped && typeof bgEquipped === 'object' && 'file' in bgEquipped) {
+                  return `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${bgEquipped.file})`;
+                }
+                return 'linear-gradient(135deg, #667eea, #764ba2)';
+              })(),
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               borderRadius: '20px'
@@ -352,6 +458,61 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                 </div>
               </div>
 
+              {/* Tournament Statistics */}
+              <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
+                <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Tournament</h3>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <motion.div
+                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    <div className="text-2xl font-bold text-purple-400 font-audiowide">
+                      {(userProfile as any).tournamentStats?.tournamentsPlayed || 0}
+                    </div>
+                    <div className="text-sm text-gray-300 font-montserrat">Tournaments Played</div>
+                  </motion.div>
+
+                  <motion.div
+                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <div className="text-2xl font-bold text-yellow-400 font-audiowide">
+                      {(userProfile as any).tournamentStats?.tournamentsWon || 0}
+                    </div>
+                    <div className="text-sm text-gray-300 font-montserrat">Tournaments Won</div>
+                  </motion.div>
+
+                  <motion.div
+                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    <div className="text-2xl font-bold text-orange-400 font-audiowide">
+                      {(userProfile as any).tournamentStats?.bestPlacement || '--'}
+                    </div>
+                    <div className="text-sm text-gray-300 font-montserrat">Best Placement</div>
+                  </motion.div>
+
+                  <motion.div
+                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <div className="text-2xl font-bold text-emerald-400 font-audiowide">
+                      {(userProfile as any).tournamentStats?.tournamentPoints || 0}
+                    </div>
+                    <div className="text-sm text-gray-300 font-montserrat">Tournament Points</div>
+                  </motion.div>
+                </div>
+              </div>
+
               {/* Cosmetic Statistics */}
               <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
                 <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Cosmetic</h3>
@@ -442,61 +603,6 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                       {(userProfile as any).friendsStats?.friendWinRate || '--'}%
                     </div>
                     <div className="text-sm text-gray-300 font-montserrat">Friend Win Rate</div>
-                  </motion.div>
-                </div>
-              </div>
-
-              {/* Tournament Statistics */}
-              <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
-                <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Tournament</h3>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <motion.div
-                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.1 }}
-                  >
-                    <div className="text-2xl font-bold text-purple-400 font-audiowide">
-                      {(userProfile as any).tournamentStats?.tournamentsPlayed || 0}
-                    </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Tournaments Played</div>
-                  </motion.div>
-
-                  <motion.div
-                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    <div className="text-2xl font-bold text-yellow-400 font-audiowide">
-                      {(userProfile as any).tournamentStats?.tournamentsWon || 0}
-                    </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Tournaments Won</div>
-                  </motion.div>
-
-                  <motion.div
-                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <div className="text-2xl font-bold text-orange-400 font-audiowide">
-                      {(userProfile as any).tournamentStats?.bestPlacement || '--'}
-                    </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Best Placement</div>
-                  </motion.div>
-
-                  <motion.div
-                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    <div className="text-2xl font-bold text-emerald-400 font-audiowide">
-                      {(userProfile as any).tournamentStats?.tournamentPoints || 0}
-                    </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Tournament Points</div>
                   </motion.div>
                 </div>
               </div>

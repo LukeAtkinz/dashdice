@@ -2,6 +2,13 @@ import { doc, getDoc, updateDoc, setDoc, increment, collection, getDocs, writeBa
 import { db, auth } from './firebase';
 import { validateDisplayName, formatDisplayName } from '@/utils/contentModeration';
 
+// Background interface to match the structure used throughout the app
+interface Background {
+  name: string;
+  file: string;
+  type: 'image' | 'video' | 'gradient';
+}
+
 export interface UserProfile {
   uid: string;
   email: string;
@@ -11,8 +18,8 @@ export interface UserProfile {
   userTag: string;
   rankedStatus: 'Ranked - Active' | 'Ranked - Inactive' | 'Unranked';
   inventory: {
-    displayBackgroundEquipped: string;
-    matchBackgroundEquipped: string;
+    displayBackgroundEquipped: Background;
+    matchBackgroundEquipped: Background;
     ownedBackgrounds: string[];
   };
   stats: {

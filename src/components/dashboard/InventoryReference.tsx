@@ -292,7 +292,7 @@ export const InventorySection: React.FC = () => {
             }}
           >
             <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
-              color: activeTab === 'display' ? '#FFD700' : '#FFF', 
+              color: activeTab === 'display' ? '#FFF' : '#FFF', 
               fontFamily: 'Audiowide', 
               fontWeight: 400, 
               textTransform: 'uppercase' 
@@ -316,7 +316,7 @@ export const InventorySection: React.FC = () => {
             }}
           >
             <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
-              color: activeTab === 'match' ? '#FFD700' : '#FFF', 
+              color: activeTab === 'match' ? '#FFF' : '#FFF', 
               fontFamily: 'Audiowide', 
               fontWeight: 400, 
               textTransform: 'uppercase' 
