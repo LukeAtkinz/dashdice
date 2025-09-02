@@ -16,7 +16,7 @@ const inventoryCategories = [
 
 const mockItems = {
   dice: [
-    { id: 1, name: 'Golden Dice', preview: '🎯', rarity: 'legendary' },
+    { id: 1, name: 'Golden Dice', preview: '🎯', rarity: 'masterpiece' },
     { id: 2, name: 'Crystal Dice', preview: '💎', rarity: 'epic' },
     { id: 3, name: 'Fire Dice', preview: '🔥', rarity: 'rare' },
     { id: 4, name: 'Basic Dice', preview: '⚪', rarity: 'common' }
@@ -28,7 +28,7 @@ const mockItems = {
     { id: 4, name: 'Default', preview: '👤', rarity: 'common' }
   ],
   effects: [
-    { id: 1, name: 'Lightning', preview: '⚡', rarity: 'legendary' },
+    { id: 1, name: 'Lightning', preview: '⚡', rarity: 'masterpiece' },
     { id: 2, name: 'Sparkles', preview: '✨', rarity: 'epic' },
     { id: 3, name: 'Smoke', preview: '💨', rarity: 'rare' },
     { id: 4, name: 'Basic', preview: '○', rarity: 'common' }
@@ -39,7 +39,7 @@ const rarityColors = {
   common: '#8B8B8B',
   rare: '#4A90E2',
   epic: '#9B59B6',
-  legendary: '#F39C12'
+  masterpiece: '#F39C12'
 };
 
 export const InventorySection: React.FC = () => {
@@ -114,7 +114,7 @@ export const InventorySection: React.FC = () => {
     id: index + 1,
     name: bg.name,
     preview: bg.file,
-    rarity: index === 0 ? 'epic' : index === 1 ? 'rare' : index === 2 ? 'common' : 'legendary',
+    rarity: index === 0 ? 'epic' : index === 1 ? 'rare' : index === 2 ? 'common' : 'masterpiece',
     background: bg
   }));
 

@@ -17,7 +17,10 @@ export const metadata: Metadata = {
   title: "Dashdice",
   description: "Play dice games with friends online",
   icons: {
-    icon: "/Design Elements/favicon-32x32_2.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/Design Elements/favicon-32x32_2.png", sizes: "32x32", type: "image/png" }
+    ],
   },
 };
 

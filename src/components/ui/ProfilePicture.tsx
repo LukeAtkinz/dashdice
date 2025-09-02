@@ -20,6 +20,15 @@ export const ProfilePicture: React.FC<ProfilePictureProps> = ({
   fallbackInitials,
   onClick
 }) => {
+  const [imageError, setImageError] = React.useState(false);
+  const [imageLoaded, setImageLoaded] = React.useState(false);
+
+  // Reset error state when src changes
+  React.useEffect(() => {
+    setImageError(false);
+    setImageLoaded(false);
+  }, [src]);
+
   const sizeClasses = {
     xs: 'w-6 h-6',
     sm: 'w-8 h-8',
@@ -57,23 +66,42 @@ export const ProfilePicture: React.FC<ProfilePictureProps> = ({
     ${className}
   `.trim();
 
-  // If we have a valid image source, show it
-  if (src && src.trim() !== '') {
+  // Show fallback if no src, error loading, or empty src
+  const shouldShowFallback = !src || src.trim() === '' || imageError;
+
+  if (!shouldShowFallback) {
     return (
-      <img
-        src={src}
-        alt={alt}
-        className={baseClasses}
-        onClick={onClick}
-        onError={(e) => {
-          // Hide the image if it fails to load and show fallback
-          (e.target as HTMLImageElement).style.display = 'none';
-          const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
-          if (fallback) {
-            fallback.style.display = 'flex';
-          }
-        }}
-      />
+      <div className="relative">
+        <img
+          src={src}
+          alt={alt}
+          className={baseClasses}
+          onClick={onClick}
+          onLoad={() => setImageLoaded(true)}
+          onError={() => {
+            console.log('ProfilePicture: Failed to load image:', src);
+            setImageError(true);
+          }}
+          style={{ display: imageError ? 'none' : 'block' }}
+        />
+        {!imageLoaded && !imageError && (
+          <div
+            className={`
+              ${sizeClasses[size]}
+              rounded-full
+              bg-gradient-to-br from-gray-700 to-gray-800
+              border-2 border-gray-600
+              flex items-center justify-center
+              absolute inset-0
+              ${onClick ? 'cursor-pointer hover:border-gray-500 transition-colors' : ''}
+            `}
+          >
+            <div className="animate-pulse">
+              <User className={`${iconSizeClasses[size]} text-gray-400`} />
+            </div>
+          </div>
+        )}
+      </div>
     );
   }
 

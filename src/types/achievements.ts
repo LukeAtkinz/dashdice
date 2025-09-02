@@ -2,7 +2,7 @@
 import { Timestamp } from 'firebase/firestore';
 
 // Achievement difficulty levels
-export type AchievementDifficulty = 'common' | 'rare' | 'epic' | 'legendary' | 'mythic';
+export type AchievementDifficulty = 'common' | 'rare' | 'epic' | 'masterpiece' | 'mythic';
 
 // Achievement categories
 export type AchievementCategory = 'gameplay' | 'social' | 'progression' | 'special' | 'seasonal';

@@ -39,7 +39,7 @@ export interface InventoryItem {
   name: string;
   description?: string;
   imageUrl: string;
-  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  rarity: 'common' | 'rare' | 'epic' | 'masterpiece';
   acquiredAt: Date;
   equipped?: boolean;
 }

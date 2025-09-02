@@ -6,11 +6,13 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { ProfilePictureUpload } from '@/components/ui/ProfilePictureUpload';
+import { ProfilePicture } from '@/components/ui/ProfilePicture';
 import { MatchHistory } from '@/components/profile/MatchHistory';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { useUserStats } from '@/hooks/useUserStats';
+import { FriendStatsService, FriendStats } from '@/services/friendStatsService';
 import { validateDisplayName } from '@/utils/contentModeration';
 
 // CSS for custom button styling
@@ -132,6 +134,8 @@ const ProfileSection: React.FC = () => {
   const { stats, loading: statsLoading, error: statsError } = useUserStats();
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'profile' | 'settings'>('profile');
+  const [friendStats, setFriendStats] = useState<FriendStats | null>(null);
+  const [friendStatsLoading, setFriendStatsLoading] = useState(false);
   
   // Navigation tabs for profile/settings
   const tabs = [
@@ -183,6 +187,25 @@ const ProfileSection: React.FC = () => {
       setActiveTab('profile');
     }
   }, [currentSection]);
+
+  // Fetch friend statistics
+  useEffect(() => {
+    const fetchFriendStats = async () => {
+      if (!user?.uid) return;
+      
+      setFriendStatsLoading(true);
+      try {
+        const stats = await FriendStatsService.getFriendStats(user.uid);
+        setFriendStats(stats);
+      } catch (error) {
+        console.error('Error fetching friend stats:', error);
+      } finally {
+        setFriendStatsLoading(false);
+      }
+    };
+
+    fetchFriendStats();
+  }, [user?.uid]);
   
   const profileForm = useForm({
     displayName: user?.displayName || '',
@@ -216,7 +239,7 @@ const ProfileSection: React.FC = () => {
 
         // Update profile
         await updateUserProfile({ displayName: values.displayName });
-        setSuccessMessage('Profile updated successfully!');
+        setSuccessMessage('Updated Profile!');
       } else {
         setSuccessMessage('No changes to save.');
       }
@@ -438,11 +461,12 @@ const ProfileSection: React.FC = () => {
                   {/* Profile Header */}
                   <div className="flex items-center gap-4 mb-6">
                     <div className="relative">
-                      <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-2xl font-bold font-audiowide">
-                          {user?.displayName?.charAt(0)?.toUpperCase() || '?'}
-                        </span>
-                      </div>
+                      <ProfilePicture
+                        src={user?.profilePicture || user?.photoURL}
+                        alt={`${user?.displayName || 'Player'}'s profile picture`}
+                        size="lg"
+                        fallbackInitials={user?.displayName?.charAt(0)?.toUpperCase() || '?'}
+                      />
                       <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-2 border-gray-800"></div>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -470,7 +494,10 @@ const ProfileSection: React.FC = () => {
                         <div className="text-2xl font-bold text-blue-400 font-audiowide">
                           {statsLoading ? '...' : (stats?.gamesPlayed || 0)}
                         </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Games Played</div>
+                        <div className="text-sm text-gray-300 font-montserrat">
+                          <span className="md:hidden">Games</span>
+                          <span className="hidden md:inline">Games Played</span>
+                        </div>
                       </motion.div>
                       
                       <motion.div 
@@ -482,7 +509,10 @@ const ProfileSection: React.FC = () => {
                         <div className="text-2xl font-bold text-green-400 font-audiowide">
                           {statsLoading ? '...' : (stats?.matchWins || 0)}
                         </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Games Won</div>
+                        <div className="text-sm text-gray-300 font-montserrat">
+                          <span className="md:hidden">Won</span>
+                          <span className="hidden md:inline">Games Won</span>
+                        </div>
                       </motion.div>
                       
                       <motion.div 
@@ -492,9 +522,26 @@ const ProfileSection: React.FC = () => {
                         transition={{ delay: 0.3 }}
                       >
                         <div className="text-2xl font-bold text-purple-400 font-audiowide">
-                          {statsLoading ? '...' : (stats?.itemsCollected || 0)}
+                          {statsLoading ? '...' : (() => {
+                            // Count backgrounds owned from user's inventory - handle both old and new formats
+                            const inventory = user?.inventory;
+                            if (Array.isArray(inventory)) {
+                              // Legacy array format
+                              return inventory.length;
+                            } else if (inventory && 'ownedBackgrounds' in inventory) {
+                              // New object format with ownedBackgrounds array
+                              return inventory.ownedBackgrounds?.length || 0;
+                            } else if (user?.ownedBackgrounds) {
+                              // Legacy direct property format
+                              return user.ownedBackgrounds.length;
+                            }
+                            return 0;
+                          })()}
                         </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Items Collected</div>
+                        <div className="text-sm text-gray-300 font-montserrat">
+                          <span className="md:hidden">Items</span>
+                          <span className="hidden md:inline">Items Collected</span>
+                        </div>
                       </motion.div>
                       
                       <motion.div 
@@ -506,7 +553,10 @@ const ProfileSection: React.FC = () => {
                         <div className="text-2xl font-bold text-orange-400 font-audiowide">
                           {statsLoading ? '...' : (stats?.currentStreak || 0)}
                         </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Current Streak</div>
+                        <div className="text-sm text-gray-300 font-montserrat">
+                          <span className="md:hidden">Streak</span>
+                          <span className="hidden md:inline">Current Streak</span>
+                        </div>
                       </motion.div>
                     </div>
                     
@@ -559,10 +609,13 @@ const ProfileSection: React.FC = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.1 }}
                       >
-                        <div className="text-2xl font-bold text-purple-400 font-audiowide">
-                          {statsLoading ? '...' : '1,250'}
+                        <div className="text-lg font-bold text-purple-400 font-audiowide">
+                          Coming Soon
                         </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Rank Points</div>
+                        <div className="text-sm text-gray-300 font-montserrat">
+                          <span className="md:hidden">Points</span>
+                          <span className="hidden md:inline">Rank Points</span>
+                        </div>
                       </motion.div>
                       
                       <motion.div 
@@ -571,10 +624,13 @@ const ProfileSection: React.FC = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.2 }}
                       >
-                        <div className="text-2xl font-bold text-yellow-400 font-audiowide">
-                          {statsLoading ? '...' : 'Gold II'}
+                        <div className="text-lg font-bold text-yellow-400 font-audiowide">
+                          Coming Soon
                         </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Current Rank</div>
+                        <div className="text-sm text-gray-300 font-montserrat">
+                          <span className="md:hidden">Rank</span>
+                          <span className="hidden md:inline">Current Rank</span>
+                        </div>
                       </motion.div>
                       
                       <motion.div 
@@ -583,8 +639,8 @@ const ProfileSection: React.FC = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.3 }}
                       >
-                        <div className="text-2xl font-bold text-orange-400 font-audiowide">
-                          {statsLoading ? '...' : 'Platinum I'}
+                        <div className="text-lg font-bold text-orange-400 font-audiowide">
+                          Coming Soon
                         </div>
                         <div className="text-sm text-gray-300 font-montserrat">Peak Rank</div>
                       </motion.div>
@@ -595,10 +651,13 @@ const ProfileSection: React.FC = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.4 }}
                       >
-                        <div className="text-2xl font-bold text-blue-400 font-audiowide">
-                          {statsLoading ? '...' : '15'}
+                        <div className="text-lg font-bold text-blue-400 font-audiowide">
+                          Coming Soon
                         </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Season Wins</div>
+                        <div className="text-sm text-gray-300 font-montserrat">
+                          <span className="md:hidden">Wins</span>
+                          <span className="hidden md:inline">Season Wins</span>
+                        </div>
                       </motion.div>
                     </div>
                   </div>
@@ -614,10 +673,13 @@ const ProfileSection: React.FC = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.1 }}
                       >
-                        <div className="text-2xl font-bold text-yellow-400 font-audiowide">
-                          {statsLoading ? '...' : '42'}
+                        <div className="text-lg font-bold text-yellow-400 font-audiowide">
+                          Coming Soon
                         </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Tournaments Played</div>
+                        <div className="text-sm text-gray-300 font-montserrat">
+                          <span className="md:hidden">Played</span>
+                          <span className="hidden md:inline">Tournaments Played</span>
+                        </div>
                       </motion.div>
                       
                       <motion.div 
@@ -626,10 +688,13 @@ const ProfileSection: React.FC = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.2 }}
                       >
-                        <div className="text-2xl font-bold text-orange-400 font-audiowide">
-                          {statsLoading ? '...' : '7'}
+                        <div className="text-lg font-bold text-orange-400 font-audiowide">
+                          Coming Soon
                         </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Tournaments Won</div>
+                        <div className="text-sm text-gray-300 font-montserrat">
+                          <span className="md:hidden">Won</span>
+                          <span className="hidden md:inline">Tournaments Won</span>
+                        </div>
                       </motion.div>
                       
                       <motion.div 
@@ -638,10 +703,13 @@ const ProfileSection: React.FC = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.3 }}
                       >
-                        <div className="text-2xl font-bold text-red-400 font-audiowide">
-                          {statsLoading ? '...' : '3rd'}
+                        <div className="text-lg font-bold text-red-400 font-audiowide">
+                          Coming Soon
                         </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Best Placement</div>
+                        <div className="text-sm text-gray-300 font-montserrat">
+                          <span className="md:hidden">Best</span>
+                          <span className="hidden md:inline">Best Placement</span>
+                        </div>
                       </motion.div>
                       
                       <motion.div 
@@ -650,10 +718,13 @@ const ProfileSection: React.FC = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.4 }}
                       >
-                        <div className="text-2xl font-bold text-emerald-400 font-audiowide">
-                          {statsLoading ? '...' : '2,450'}
+                        <div className="text-lg font-bold text-emerald-400 font-audiowide">
+                          Coming Soon
                         </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Tournament Points</div>
+                        <div className="text-sm text-gray-300 font-montserrat">
+                          <span className="md:hidden">Points</span>
+                          <span className="hidden md:inline">Tournament Points</span>
+                        </div>
                       </motion.div>
                     </div>
                   </div>
@@ -670,9 +741,26 @@ const ProfileSection: React.FC = () => {
                         transition={{ delay: 0.1 }}
                       >
                         <div className="text-2xl font-bold text-pink-400 font-audiowide">
-                          {statsLoading ? '...' : '12'}
+                          {statsLoading ? '...' : (() => {
+                            // Count backgrounds owned from user's inventory - handle both old and new formats
+                            const inventory = user?.inventory;
+                            if (Array.isArray(inventory)) {
+                              // Legacy array format
+                              return inventory.length;
+                            } else if (inventory && 'ownedBackgrounds' in inventory) {
+                              // New object format with ownedBackgrounds array
+                              return inventory.ownedBackgrounds?.length || 0;
+                            } else if (user?.ownedBackgrounds) {
+                              // Legacy direct property format
+                              return user.ownedBackgrounds.length;
+                            }
+                            return 0;
+                          })()}
                         </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Backgrounds Owned</div>
+                        <div className="text-sm text-gray-300 font-montserrat">
+                          <span className="md:hidden">Backgrounds</span>
+                          <span className="hidden md:inline">Backgrounds Owned</span>
+                        </div>
                       </motion.div>
                       
                       <motion.div 
@@ -682,9 +770,28 @@ const ProfileSection: React.FC = () => {
                         transition={{ delay: 0.2 }}
                       >
                         <div className="text-2xl font-bold text-teal-400 font-audiowide">
-                          {statsLoading ? '...' : '25'}
+                          {statsLoading ? '...' : (() => {
+                            // Count total items in user's inventory - handle both old and new formats
+                            const inventory = user?.inventory;
+                            if (Array.isArray(inventory)) {
+                              // Legacy array format
+                              return inventory.length;
+                            } else if (inventory && 'ownedBackgrounds' in inventory) {
+                              // New object format - count all inventory items
+                              const backgroundCount = inventory.ownedBackgrounds?.length || 0;
+                              // Add other inventory types when implemented (dice, avatars, effects)
+                              return backgroundCount;
+                            } else if (user?.ownedBackgrounds) {
+                              // Legacy direct property format
+                              return user.ownedBackgrounds.length;
+                            }
+                            return 0;
+                          })()}
                         </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Total Items</div>
+                        <div className="text-sm text-gray-300 font-montserrat">
+                          <span className="md:hidden">Items</span>
+                          <span className="hidden md:inline">Total Items</span>
+                        </div>
                       </motion.div>
                       
                       <motion.div 
@@ -694,9 +801,28 @@ const ProfileSection: React.FC = () => {
                         transition={{ delay: 0.4 }}
                       >
                         <div className="text-2xl font-bold text-amber-400 font-audiowide">
-                          {statsLoading ? '...' : '3'}
+                          {statsLoading ? '...' : (() => {
+                            // Count masterpiece items in user's inventory - handle both old and new formats
+                            // For now, we'll count video backgrounds as masterpieces
+                            const inventory = user?.inventory;
+                            if (Array.isArray(inventory)) {
+                              // Legacy array format - can't determine rarity
+                              return 0;
+                            } else if (inventory && 'ownedBackgrounds' in inventory) {
+                              // New object format - count video backgrounds as masterpieces
+                              const ownedBackgrounds = inventory.ownedBackgrounds || [];
+                              const videoBackgrounds = ['New Day', 'On A Mission', 'Underwater'];
+                              return ownedBackgrounds.filter(bg => videoBackgrounds.includes(bg)).length;
+                            } else if (user?.ownedBackgrounds) {
+                              // Legacy direct property format - count video backgrounds
+                              const ownedBackgrounds = user.ownedBackgrounds || [];
+                              const videoBackgrounds = ['New Day', 'On A Mission', 'Underwater'];
+                              return ownedBackgrounds.filter(bg => videoBackgrounds.includes(bg)).length;
+                            }
+                            return 0;
+                          })()}
                         </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Rare Items</div>
+                        <div className="text-sm text-gray-300 font-montserrat">Masterpieces</div>
                       </motion.div>
                     </div>
                   </div>
@@ -713,7 +839,7 @@ const ProfileSection: React.FC = () => {
                         transition={{ delay: 0.1 }}
                       >
                         <div className="text-2xl font-bold text-green-400 font-audiowide">
-                          {statsLoading ? '...' : '23'}
+                          {friendStatsLoading ? '...' : (friendStats?.totalFriends || 0)}
                         </div>
                         <div className="text-sm text-gray-300 font-montserrat">Friends</div>
                       </motion.div>
@@ -725,9 +851,12 @@ const ProfileSection: React.FC = () => {
                         transition={{ delay: 0.2 }}
                       >
                         <div className="text-2xl font-bold text-blue-400 font-audiowide">
-                          {statsLoading ? '...' : '147'}
+                          {friendStatsLoading ? '...' : (friendStats?.friendMatches || 0)}
                         </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Friend Matches</div>
+                        <div className="text-sm text-gray-300 font-montserrat">
+                          <span className="md:hidden">Matches</span>
+                          <span className="hidden md:inline">Friend Matches</span>
+                        </div>
                       </motion.div>
                       
                       <motion.div 
@@ -737,9 +866,12 @@ const ProfileSection: React.FC = () => {
                         transition={{ delay: 0.4 }}
                       >
                         <div className="text-2xl font-bold text-cyan-400 font-audiowide">
-                          {statsLoading ? '...' : '89%'}
+                          {friendStatsLoading ? '...' : `${friendStats?.friendWinRate || 0}%`}
                         </div>
-                        <div className="text-sm text-gray-300 font-montserrat">Friend Win Rate</div>
+                        <div className="text-sm text-gray-300 font-montserrat">
+                          <span className="md:hidden">Win Rate</span>
+                          <span className="hidden md:inline">Friend Win Rate</span>
+                        </div>
                       </motion.div>
                     </div>
                   </div>
@@ -755,10 +887,10 @@ const ProfileSection: React.FC = () => {
               >
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-white text-xl font-audiowide uppercase flex items-center gap-3">
+                    <h3 className="text-white text-xl font-audiowide uppercase flex items-center gap-3 md:flex-1 text-center md:text-left">
                       Recent Matches
                     </h3>
-                    <span className="text-sm text-gray-400 font-montserrat bg-black/80 px-3 py-1 rounded-lg border border-gray-600/50">
+                    <span className="hidden md:inline-block text-sm text-gray-400 font-montserrat bg-black/80 px-3 py-1 rounded-lg border border-gray-600/50">
                       Last 10 games
                     </span>
                   </div>
@@ -791,9 +923,10 @@ const ProfileSection: React.FC = () => {
                       <div className="flex flex-col md:flex-row md:items-center md:space-x-6 space-y-4 md:space-y-0">
                         <div className="relative">
                           <ProfilePictureUpload 
-                            currentPhotoURL={user?.photoURL}
+                            currentPhotoURL={user?.profilePicture || user?.photoURL}
                             onUploadComplete={(newPhotoURL) => {
                               console.log('Profile picture updated:', newPhotoURL);
+                              // The profile picture will update automatically via real-time subscriptions
                             }}
                             className="enhanced-profile-upload"
                           />
@@ -821,9 +954,9 @@ const ProfileSection: React.FC = () => {
                             error={profileForm.errors.displayName}
                             placeholder="Enter your display name"
                             maxLength={12}
-                            helperText="2-12 characters, no inappropriate content"
-                            textColor="#fbbf24"
-                            className="placeholder-white [&::placeholder]:text-white"
+                            textColor="#ffffff"
+                            className="placeholder-white [&::placeholder]:text-white bg-[#121212] border-gray-600 focus:border-blue-400"
+                            style={{ backgroundColor: '#121212' }}
                           />
                         </div>
 
@@ -837,12 +970,10 @@ const ProfileSection: React.FC = () => {
                             onChange={(e) => profileForm.handleChange('email', e.target.value)}
                             placeholder="Enter your email"
                             disabled
-                            textColor="#fbbf24"
-                            className="placeholder-white [&::placeholder]:text-white"
+                            textColor="#ffffff"
+                            className="placeholder-white [&::placeholder]:text-white bg-[#121212] border-gray-600"
+                            style={{ backgroundColor: '#121212' }}
                           />
-                          <p className="text-xs text-gray-400 mt-2 font-montserrat">
-                            Email cannot be changed at this time
-                          </p>
                         </div>
                       </div>
 
@@ -891,9 +1022,9 @@ const ProfileSection: React.FC = () => {
                 </div>
               </motion.div>
 
-              {/* General Settings - Friends Style */}
+              {/* General Settings - Hidden */}
               <motion.div 
-                className="relative overflow-hidden rounded-[20px] bg-black/40 backdrop-blur-sm border border-gray-700/50"
+                className="hidden relative overflow-hidden rounded-[20px] bg-black/40 backdrop-blur-sm border border-gray-700/50"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
@@ -1024,9 +1155,9 @@ const ProfileSection: React.FC = () => {
                 </div>
               </motion.div>
 
-              {/* Action Buttons - Friends Style */}
+              {/* Action Buttons - Hidden */}
               <motion.div 
-                className="relative overflow-hidden rounded-[20px] bg-black/40 backdrop-blur-sm border border-gray-700/50"
+                className="hidden relative overflow-hidden rounded-[20px] bg-black/40 backdrop-blur-sm border border-gray-700/50"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}

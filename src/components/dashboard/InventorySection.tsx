@@ -29,7 +29,7 @@ export const InventorySection: React.FC = () => {
         name: 'Golden Dice',
         description: 'A rare golden dice that brings luck',
         imageUrl: '/placeholder-item.svg',
-        rarity: 'legendary' as const,
+        rarity: 'masterpiece' as const,
         acquiredAt: new Date(),
         equipped: false
       },

@@ -131,6 +131,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           email: userData.email,
           displayName: userData.displayName,
           photoURL: userData.photoURL,
+          profilePicture: userData.profilePicture,
           friendCode: friendCode,
           createdAt: userData.createdAt?.toDate() || new Date(),
           lastLoginAt: userData.lastLoginAt?.toDate() || new Date(),

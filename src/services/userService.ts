@@ -14,6 +14,7 @@ export interface UserProfile {
   email: string;
   displayName: string | null;
   profilePicture: string | null;
+  photoURL?: string | null; // For backward compatibility
   createdAt: any;
   lastLoginAt: any;
   userTag: string;

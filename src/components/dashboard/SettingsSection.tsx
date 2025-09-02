@@ -68,8 +68,8 @@ export const SettingsSection: React.FC = () => {
           </h1>
         </div>
 
-      {/* General Settings */}
-      <Card>
+      {/* General Settings - Hidden */}
+      <Card className="hidden">
         <CardHeader>
           <CardTitle>General</CardTitle>
         </CardHeader>
@@ -225,8 +225,8 @@ export const SettingsSection: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Action Buttons */}
-      <Card>
+      {/* Action Buttons - Hidden */}
+      <Card className="hidden">
         <CardContent className="p-4">
           <div className="flex space-x-3">
             <Button onClick={handleSaveSettings} className="flex-1">

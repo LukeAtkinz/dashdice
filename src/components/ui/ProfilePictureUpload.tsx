@@ -2,11 +2,12 @@
 
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Upload, User, X, Check, Image } from 'lucide-react';
+import { Camera, Upload, User, X, Check, Image, Move } from 'lucide-react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, updateDoc } from 'firebase/firestore';
 import { storage, db } from '@/services/firebase';
 import { useAuth } from '@/context/AuthContext';
+import { ProfilePicturePositioner, ImagePositioning } from '@/components/profile/ProfilePicturePositioner';
 
 interface ProfilePictureUploadProps {
   currentPhotoURL?: string;
@@ -24,8 +25,16 @@ export const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showPositioner, setShowPositioner] = useState(false);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(currentPhotoURL || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
+
+  // Update currentImageUrl when currentPhotoURL prop changes
+  React.useEffect(() => {
+    setCurrentImageUrl(currentPhotoURL || null);
+  }, [currentPhotoURL]);
 
   const isValidImageFile = (file: File): boolean => {
     const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -84,18 +93,40 @@ export const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       return;
     }
 
-    // Create preview
-    const objectUrl = URL.createObjectURL(file);
-    setPreviewImage(objectUrl);
+    try {
+      // Resize image for better performance
+      const resizedFile = await resizeImage(file);
+      
+      // Create preview URL and store file for positioning
+      const objectUrl = URL.createObjectURL(resizedFile);
+      setPreviewImage(objectUrl);
+      setSelectedFile(resizedFile);
+      setShowPositioner(true);
+    } catch (error) {
+      console.error('Error processing image:', error);
+      alert('Failed to process image. Please try again.');
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const cancelPreview = () => {
+    setPreviewImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const uploadImage = async (file: File, positioning?: ImagePositioning) => {
+    if (!user) return;
     
     setIsUploading(true);
     setUploadProgress(0);
     setUploadSuccess(false);
 
     try {
-      // Resize image for better performance
-      const resizedFile = await resizeImage(file);
-      
       // Upload to Firebase Storage
       const storageRef = ref(storage, `profile-pictures/${user.uid}/${Date.now()}`);
       
@@ -107,7 +138,7 @@ export const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         });
       }, 200);
       
-      const snapshot = await uploadBytes(storageRef, resizedFile);
+      const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
       
       clearInterval(progressInterval);
@@ -116,15 +147,20 @@ export const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       // Update user document in Firestore
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, {
-        photoURL: downloadURL,
+        profilePicture: downloadURL,
+        photoURL: downloadURL, // Keep for backward compatibility
         updatedAt: new Date()
       });
 
+      // Update local state immediately for instant UI update
+      setCurrentImageUrl(downloadURL);
+      
       // Show success state
       setUploadSuccess(true);
       setTimeout(() => {
         setUploadSuccess(false);
         setPreviewImage(null);
+        setSelectedFile(null);
       }, 2000);
 
       // Callback to parent component
@@ -144,14 +180,27 @@ export const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
     }
   };
 
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
+  const handlePositioningSave = (positioning: ImagePositioning) => {
+    if (selectedFile) {
+      uploadImage(selectedFile, positioning);
+    }
+    setShowPositioner(false);
   };
 
-  const cancelPreview = () => {
+  const handlePositioningCancel = () => {
+    setShowPositioner(false);
     setPreviewImage(null);
+    setSelectedFile(null);
+    // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  const handleMoveExisting = () => {
+    if (currentImageUrl || currentPhotoURL) {
+      setPreviewImage(currentImageUrl || currentPhotoURL || '');
+      setShowPositioner(true);
     }
   };
 
@@ -177,9 +226,9 @@ export const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-gray-300 bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg">
           {/* Profile Image */}
           <div className="w-full h-full relative">
-            {previewImage || currentPhotoURL ? (
+            {previewImage || currentImageUrl || currentPhotoURL ? (
               <motion.img
-                src={previewImage || currentPhotoURL}
+                src={previewImage || currentImageUrl || currentPhotoURL}
                 alt="Profile"
                 className="w-full h-full object-cover"
                 initial={{ opacity: 0 }}
@@ -274,22 +323,44 @@ export const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
             </motion.button>
           )}
         </AnimatePresence>
+        
+        {/* Move/Position Button for existing images */}
+        <AnimatePresence>
+          {!isUploading && !uploadSuccess && !previewImage && (currentImageUrl || currentPhotoURL) && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleMoveExisting}
+              className="absolute -bottom-2 -left-2 w-10 h-10 bg-purple-500 hover:bg-purple-600 rounded-full flex items-center justify-center shadow-lg border-3 border-white transition-colors"
+            >
+              <Move className="w-5 h-5 text-white" />
+            </motion.button>
+          )}
+        </AnimatePresence>
       </motion.div>
       
+      {/* Profile Picture Positioning Modal */}
+      <AnimatePresence>
+        {showPositioner && previewImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+          >
+            <ProfilePicturePositioner
+              imageUrl={previewImage}
+              onSave={handlePositioningSave}
+              onCancel={handlePositioningCancel}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
       {/* Upload Instructions */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="mt-4 text-center"
-      >
-        <p className="text-sm text-gray-600 font-medium mb-1">
-          Click camera icon to upload
-        </p>
-        <p className="text-xs text-gray-500">
-          JPEG, PNG, WebP • Max 5MB
-        </p>
-      </motion.div>
     </div>
   );
 };

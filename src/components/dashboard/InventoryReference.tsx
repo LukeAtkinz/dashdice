@@ -28,7 +28,7 @@ export const InventorySection: React.FC = () => {
     videoUrl: bg.type === 'video' ? bg.file : null,
     isVideo: bg.type === 'video',
     isGradient: false,
-    rarity: index === 0 ? 'Epic' : index === 1 ? 'Rare' : index === 2 ? 'Common' : 'Legendary',
+    rarity: index === 0 ? 'Epic' : index === 1 ? 'Rare' : index === 2 ? 'Common' : 'Masterpiece',
     background: bg
   }));
 

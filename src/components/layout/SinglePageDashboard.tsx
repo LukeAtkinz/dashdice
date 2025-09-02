@@ -667,16 +667,17 @@ const DashboardContent: React.FC = () => {
         ) : (
           // Regular content with constraints
           <main 
-            className="flex-1 w-full flex items-start justify-center overflow-y-auto overflow-x-hidden pb-[6rem] md:pb-0 scrollbar-hide" 
+            className="flex-1 w-full flex items-start justify-center overflow-y-auto overflow-x-hidden scrollbar-hide" 
             data-scrollable="true"
             style={{ 
               height: 0, // Force flex item to shrink and allow overflow
-              paddingBottom: 'max(4rem, env(safe-area-inset-bottom) + 4rem)', 
+              paddingBottom: 'max(6rem, env(safe-area-inset-bottom) + 6rem)', // Account for bottom nav
+              paddingTop: '0', // Ensure content starts at top
               touchAction: 'pan-y',
               WebkitOverflowScrolling: 'touch' // Smooth scrolling on iOS
             }}
           >
-            <div className="w-full max-w-[100rem] flex flex-col items-center justify-start gap-[2rem] py-[2rem] px-[1rem] md:px-[2rem] pr-[1rem] md:pr-[2rem]" style={{
+            <div className="w-full max-w-[100rem] flex flex-col items-center justify-start gap-[2rem] pt-[1rem] md:pt-[2rem] px-[1rem] md:px-[2rem] pb-0" style={{
               minHeight: 'min-content',
               flex: 'none'
             }}>
@@ -741,6 +742,25 @@ const DashboardContent: React.FC = () => {
               borderRadius: '0'
             }}>
               <button
+                onClick={() => handleSectionChange('profile')}
+                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
+                  currentSection === 'profile' ? 'bg-white/20' : 'hover:bg-white/10'
+                }`}
+              >
+                <img src="/Design Elements/Delivery Man.webp" alt="Profile" className="w-8 h-8" />
+                <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PROFILE</span>
+              </button>
+              <button
+                onClick={() => handleSectionChange('friends')}
+                className={`relative flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
+                  currentSection === 'friends' ? 'bg-white/20' : 'hover:bg-white/10'
+                }`}
+              >
+                <img src="/Design Elements/friends.webp" alt="Friends" className="w-9 h-9" />
+                <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
+                <NotificationBadge count={onlinePlayerCount} />
+              </button>
+              <button
                 onClick={() => handleSectionChange('dashboard')}
                 className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
                   currentSection === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/10'
@@ -759,16 +779,6 @@ const DashboardContent: React.FC = () => {
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>RANKED</span>
               </button>
               <button
-                onClick={() => handleSectionChange('friends')}
-                className={`relative flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
-                  currentSection === 'friends' ? 'bg-white/20' : 'hover:bg-white/10'
-                }`}
-              >
-                <img src="/Design Elements/friends.webp" alt="Friends" className="w-9 h-9" />
-                <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
-                <NotificationBadge count={onlinePlayerCount} />
-              </button>
-              <button
                 onClick={() => handleSectionChange('inventory')}
                 className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
                   currentSection === 'inventory' ? 'bg-white/20' : 'hover:bg-white/10'
@@ -776,15 +786,6 @@ const DashboardContent: React.FC = () => {
               >
                 <img src="/Design Elements/Player Profiles/Vault.webp" alt="Vault" className="w-8 h-8" />
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>VAULT</span>
-              </button>
-              <button
-                onClick={() => handleSectionChange('settings')}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
-                  currentSection === 'settings' ? 'bg-white/20' : 'hover:bg-white/10'
-                }`}
-              >
-                <img src="/Design Elements/Delivery Man.webp" alt="Profile" className="w-8 h-8" />
-                <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PROFILE</span>
               </button>
             </div>
           </footer>

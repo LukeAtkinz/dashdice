@@ -162,7 +162,7 @@ class AchievementDefinitionsService {
         description: 'Win 50 matches',
         category: 'progression',
         type: 'counter',
-        difficulty: 'legendary',
+        difficulty: 'masterpiece',
         requirements: {
           metric: 'match_wins',
           operator: 'greater_than_equal',
@@ -289,7 +289,7 @@ class AchievementDefinitionsService {
         description: 'Play at least one game every hour for 24 hours',
         category: 'special',
         type: 'time_based',
-        difficulty: 'legendary',
+        difficulty: 'masterpiece',
         requirements: {
           metric: 'hourly_game_streak',
           operator: 'greater_than_equal',
@@ -599,7 +599,7 @@ class AchievementDefinitionsService {
         description: 'Roll 1,2,3,4,5,6 in order',
         category: 'special',
         type: 'conditional',
-        difficulty: 'legendary',
+        difficulty: 'masterpiece',
         requirements: {
           metric: 'sequential_1_to_6',
           operator: 'greater_than_equal',
@@ -802,7 +802,7 @@ class AchievementDefinitionsService {
         description: 'Roll double 6 five times in a game',
         category: 'special',
         type: 'conditional',
-        difficulty: 'legendary',
+        difficulty: 'masterpiece',
         requirements: {
           metric: 'five_double_sixes_game',
           operator: 'greater_than_equal',
@@ -1090,7 +1090,7 @@ class AchievementDefinitionsService {
         description: 'Reach a 15 win streak',
         category: 'progression',
         type: 'streak',
-        difficulty: 'legendary',
+        difficulty: 'masterpiece',
         requirements: {
           metric: 'win_streak',
           operator: 'streak',
@@ -1510,7 +1510,7 @@ class AchievementDefinitionsService {
         description: 'Roll 50 ones AND 50 sixes',
         category: 'gameplay',
         type: 'conditional',
-        difficulty: 'legendary',
+        difficulty: 'masterpiece',
         requirements: {
           metric: 'custom',
           operator: 'custom',

@@ -388,7 +388,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
         <div className="relative z-10 flex items-center gap-3 p-3">
           <div className="relative">
             <ProfilePicture
-              src={friend.friendData?.profilePicture}
+              src={friend.friendData?.profilePicture || friend.friendData?.photoURL}
               alt={`${friend.friendData?.displayName || 'Friend'}'s profile picture`}
               size="sm"
               fallbackInitials={friend.friendData?.displayName?.charAt(0)?.toUpperCase() || friend.friendData?.userTag?.charAt(0)?.toUpperCase()}
@@ -473,7 +473,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
               <div className="flex items-center gap-3 flex-1">
                 <div className="relative">
                   <ProfilePicture
-                    src={friend.friendData?.profilePicture}
+                    src={friend.friendData?.profilePicture || friend.friendData?.photoURL}
                     alt={`${friend.friendData?.displayName || 'Friend'}'s profile picture`}
                     size="md"
                     fallbackInitials={friend.friendData?.displayName?.charAt(0)?.toUpperCase() || friend.friendData?.userTag?.charAt(0)?.toUpperCase()}
@@ -493,27 +493,75 @@ export default function FriendCard({ friend, compact = false, showActions = true
                 <motion.button
                   onClick={() => setIsGameSelectorExpanded(!isGameSelectorExpanded)}
                   disabled={presenceStatus === 'offline' || isInviting}
-                  whileHover={presenceStatus !== 'offline' && !isInviting ? { scale: 1.02 } : {}}
-                  whileTap={presenceStatus !== 'offline' && !isInviting ? { scale: 0.98 } : {}}
-                  className={`
-                    w-24 flex items-center justify-center p-2 rounded-xl
-                    bg-blue-600/60 hover:bg-blue-700/60 text-white font-semibold text-xs
-                    transition-colors duration-200
-                    ${(presenceStatus === 'offline' || isInviting) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                  `}
-                  style={{ fontFamily: 'Audiowide' }}
+                  whileHover={presenceStatus !== 'offline' && !isInviting ? { scale: 1.05 } : {}}
+                  whileTap={presenceStatus !== 'offline' && !isInviting ? { scale: 0.95 } : {}}
+                  className="transition-all duration-300"
+                  style={{ 
+                    display: 'flex', 
+                    width: 'fit-content', 
+                    height: '40px', 
+                    padding: '4px 16px', 
+                    justifyContent: 'center', 
+                    alignItems: 'center', 
+                    gap: '10px', 
+                    borderRadius: '18px', 
+                    background: (presenceStatus === 'offline' || isInviting) ? 'rgba(255, 0, 128, 0.5)' : '#FF0080', 
+                    border: 'none', 
+                    cursor: (presenceStatus === 'offline' || isInviting) ? 'not-allowed' : 'pointer',
+                    fontFamily: 'Audiowide',
+                    color: '#FFF',
+                    fontSize: '12px',
+                    fontWeight: 400,
+                    textTransform: 'uppercase'
+                  }}
                 >
                   {isGameSelectorExpanded ? 'SELECT' : 'INVITE'}
                 </motion.button>
                 <button
                   onClick={handleOpenChat}
-                  className="w-24 px-2 py-2 bg-green-600/60 hover:bg-green-700/60 text-white text-xs rounded-xl font-montserrat transition-colors"
+                  className="transition-all duration-300 hover:scale-105"
+                  style={{ 
+                    display: 'flex', 
+                    width: 'fit-content', 
+                    height: '40px', 
+                    padding: '4px 16px', 
+                    justifyContent: 'center', 
+                    alignItems: 'center', 
+                    gap: '10px', 
+                    borderRadius: '18px', 
+                    background: '#FF0080', 
+                    border: 'none', 
+                    cursor: 'pointer',
+                    fontFamily: 'Audiowide',
+                    color: '#FFF',
+                    fontSize: '12px',
+                    fontWeight: 400,
+                    textTransform: 'uppercase'
+                  }}
                 >
-                  Chat
+                  CHAT
                 </button>
                 <button
                   onClick={handleViewProfile}
-                  className="w-24 px-2 py-2 bg-blue-600/60 hover:bg-blue-700/60 text-white text-xs rounded-xl font-audiowide transition-colors"
+                  className="transition-all duration-300 hover:scale-105"
+                  style={{ 
+                    display: 'flex', 
+                    width: 'fit-content', 
+                    height: '40px', 
+                    padding: '4px 16px', 
+                    justifyContent: 'center', 
+                    alignItems: 'center', 
+                    gap: '10px', 
+                    borderRadius: '18px', 
+                    background: '#FF0080', 
+                    border: 'none', 
+                    cursor: 'pointer',
+                    fontFamily: 'Audiowide',
+                    color: '#FFF',
+                    fontSize: '12px',
+                    fontWeight: 400,
+                    textTransform: 'uppercase'
+                  }}
                 >
                   PROFILE
                 </button>
@@ -526,7 +574,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
               <div className="flex items-center gap-3 mb-3">
                 <div className="relative">
                   <ProfilePicture
-                    src={friend.friendData?.profilePicture}
+                    src={friend.friendData?.profilePicture || friend.friendData?.photoURL}
                     alt={`${friend.friendData?.displayName || 'Friend'}'s profile picture`}
                     size="md"
                     fallbackInitials={friend.friendData?.displayName?.charAt(0)?.toUpperCase() || friend.friendData?.userTag?.charAt(0)?.toUpperCase()}
@@ -546,28 +594,76 @@ export default function FriendCard({ friend, compact = false, showActions = true
                 <motion.button
                   onClick={() => setIsGameSelectorExpanded(!isGameSelectorExpanded)}
                   disabled={presenceStatus === 'offline' || isInviting}
-                  whileHover={presenceStatus !== 'offline' && !isInviting ? { scale: 1.02 } : {}}
-                  whileTap={presenceStatus !== 'offline' && !isInviting ? { scale: 0.98 } : {}}
-                  className={`
-                    w-full flex items-center justify-center p-3 rounded-xl
-                    bg-blue-600/60 hover:bg-blue-700/60 text-white font-semibold
-                    transition-colors duration-200
-                    ${(presenceStatus === 'offline' || isInviting) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                  `}
-                  style={{ fontFamily: 'Audiowide' }}
+                  whileHover={presenceStatus !== 'offline' && !isInviting ? { scale: 1.05 } : {}}
+                  whileTap={presenceStatus !== 'offline' && !isInviting ? { scale: 0.95 } : {}}
+                  className="w-full transition-all duration-300"
+                  style={{ 
+                    display: 'flex', 
+                    width: '100%', 
+                    height: '48px', 
+                    padding: '4px 30px', 
+                    justifyContent: 'center', 
+                    alignItems: 'center', 
+                    gap: '10px', 
+                    borderRadius: '18px', 
+                    background: (presenceStatus === 'offline' || isInviting) ? 'rgba(255, 0, 128, 0.5)' : '#FF0080', 
+                    border: 'none', 
+                    cursor: (presenceStatus === 'offline' || isInviting) ? 'not-allowed' : 'pointer',
+                    fontFamily: 'Audiowide',
+                    color: '#FFF',
+                    fontSize: '14px',
+                    fontWeight: 400,
+                    textTransform: 'uppercase'
+                  }}
                 >
                   {isGameSelectorExpanded ? 'SELECT GAME MODE' : 'INVITE TO GAME'}
                 </motion.button>
                 <div className="flex gap-2">
                   <button
                     onClick={handleOpenChat}
-                    className="flex-1 px-4 py-3 bg-green-600/60 hover:bg-green-700/60 active:bg-green-800/60 text-white text-sm rounded-lg font-montserrat transition-colors touch-manipulation"
+                    className="flex-1 transition-all duration-300 hover:scale-105 touch-manipulation"
+                    style={{ 
+                      display: 'flex', 
+                      width: 'fit-content', 
+                      height: '48px', 
+                      padding: '4px 20px', 
+                      justifyContent: 'center', 
+                      alignItems: 'center', 
+                      gap: '10px', 
+                      borderRadius: '18px', 
+                      background: '#FF0080', 
+                      border: 'none', 
+                      cursor: 'pointer',
+                      fontFamily: 'Audiowide',
+                      color: '#FFF',
+                      fontSize: '14px',
+                      fontWeight: 400,
+                      textTransform: 'uppercase'
+                    }}
                   >
-                    Chat
+                    CHAT
                   </button>
                   <button
                     onClick={handleViewProfile}
-                    className="flex-1 px-4 py-3 bg-blue-600/60 hover:bg-blue-700/60 active:bg-blue-800/60 text-white text-sm rounded-lg font-audiowide transition-colors touch-manipulation"
+                    className="flex-1 transition-all duration-300 hover:scale-105 touch-manipulation"
+                    style={{ 
+                      display: 'flex', 
+                      width: 'fit-content', 
+                      height: '48px', 
+                      padding: '4px 20px', 
+                      justifyContent: 'center', 
+                      alignItems: 'center', 
+                      gap: '10px', 
+                      borderRadius: '18px', 
+                      background: '#FF0080', 
+                      border: 'none', 
+                      cursor: 'pointer',
+                      fontFamily: 'Audiowide',
+                      color: '#FFF',
+                      fontSize: '14px',
+                      fontWeight: 400,
+                      textTransform: 'uppercase'
+                    }}
                   >
                     PROFILE
                   </button>

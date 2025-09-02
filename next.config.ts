@@ -18,6 +18,15 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', 'react-icons', 'framer-motion'],
   },
+  // Turbopack configuration (stable as of Next.js 15)
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
+      },
+    },
+  },
   poweredByHeader: false,
   compress: true,
   output: 'standalone',
@@ -25,43 +34,46 @@ const nextConfig: NextConfig = {
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 31536000,
   },
-  webpack: (config, { dev, isServer }) => {
-    // Optimize bundle size for production
-    if (!dev && !isServer) {
-      config.optimization.splitChunks = {
-        ...config.optimization.splitChunks,
-        cacheGroups: {
-          ...config.optimization.splitChunks.cacheGroups,
-          firebase: {
-            name: 'firebase',
-            test: /[\\/]node_modules[\\/](firebase|@firebase)[\\/]/,
-            chunks: 'all',
-            priority: 20,
+  // Only apply webpack config when not using Turbopack
+  ...(!process.env.TURBOPACK && {
+    webpack: (config, { dev, isServer }) => {
+      // Optimize bundle size for production
+      if (!dev && !isServer) {
+        config.optimization.splitChunks = {
+          ...config.optimization.splitChunks,
+          cacheGroups: {
+            ...config.optimization.splitChunks.cacheGroups,
+            firebase: {
+              name: 'firebase',
+              test: /[\\/]node_modules[\\/](firebase|@firebase)[\\/]/,
+              chunks: 'all',
+              priority: 20,
+            },
+            vendor: {
+              name: 'vendor',
+              test: /[\\/]node_modules[\\/]/,
+              chunks: 'all',
+              priority: 10,
+            },
           },
-          vendor: {
-            name: 'vendor',
-            test: /[\\/]node_modules[\\/]/,
-            chunks: 'all',
-            priority: 10,
-          },
-        },
+        };
+      }
+      
+      // Ignore large files during build
+      config.watchOptions = {
+        ...config.watchOptions,
+        ignored: [
+          '**/node_modules',
+          '**/.git',
+          '**/public/Design Elements/**',
+          '**/ReadMes/**',
+          '**/Reference/**',
+        ],
       };
-    }
-    
-    // Ignore large files during build
-    config.watchOptions = {
-      ...config.watchOptions,
-      ignored: [
-        '**/node_modules',
-        '**/.git',
-        '**/public/Design Elements/**',
-        '**/ReadMes/**',
-        '**/Reference/**',
-      ],
-    };
-    
-    return config;
-  },
+      
+      return config;
+    },
+  }),
 };
 
 export default withBundleAnalyzer(nextConfig);

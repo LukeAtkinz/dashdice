@@ -2,10 +2,11 @@
 
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, X, CheckCircle, AlertTriangle, Loader } from 'lucide-react';
+import { Upload, X, CheckCircle, AlertTriangle, Loader, Move } from 'lucide-react';
 import { ImageModerationService, ModerationResult } from '@/services/imageModerationService';
 import { UserService } from '@/services/userService';
 import { useAuth } from '@/context/AuthContext';
+import { ProfilePicturePositioner, ImagePositioning } from './ProfilePicturePositioner';
 
 interface ProfilePictureUploadProps {
   currentImageUrl?: string;
@@ -28,6 +29,9 @@ export const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [moderationDetails, setModerationDetails] = useState<ModerationResult | null>(null);
+  const [showPositioner, setShowPositioner] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePositioning, setImagePositioning] = useState<ImagePositioning>({ x: 0, y: 0, scale: 1, rotation: 0 });
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -48,11 +52,10 @@ export const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreviewUrl(e.target?.result as string);
+      setSelectedFile(file);
+      setShowPositioner(true);
     };
     reader.readAsDataURL(file);
-
-    // Start upload process
-    handleUpload(file);
   };
 
   const handleUpload = async (file: File) => {
@@ -123,6 +126,26 @@ export const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       if (onUploadError) {
         onUploadError(error instanceof Error ? error.message : 'Upload failed');
       }
+    }
+  };
+
+  const handlePositioningSave = (positioning: ImagePositioning) => {
+    setImagePositioning(positioning);
+    setShowPositioner(false);
+    
+    if (selectedFile) {
+      handleUpload(selectedFile);
+    }
+  };
+
+  const handlePositioningCancel = () => {
+    setShowPositioner(false);
+    setPreviewUrl(null);
+    setSelectedFile(null);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -205,11 +228,23 @@ export const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
               )}
             </div>
           ) : currentImageUrl ? (
-            <img
-              src={currentImageUrl}
-              alt="Current profile"
-              className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-gray-600"
-            />
+            <div className="relative">
+              <img
+                src={currentImageUrl}
+                alt="Current profile"
+                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-gray-600"
+              />
+              <button
+                onClick={() => {
+                  setPreviewUrl(currentImageUrl);
+                  setShowPositioner(true);
+                }}
+                className="absolute top-0 right-1/2 translate-x-16 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-1 transition-colors"
+                title="Adjust position"
+              >
+                <Move className="w-4 h-4" />
+              </button>
+            </div>
           ) : (
             <div className="w-32 h-32 mx-auto rounded-full bg-gray-700 border-4 border-gray-600 flex items-center justify-center">
               <Upload className="w-8 h-8 text-gray-400" />
@@ -321,6 +356,16 @@ export const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
           <li>• Rejected images can be appealed through support</li>
         </ul>
       </div>
+
+      {/* Profile Picture Positioner Modal */}
+      {showPositioner && previewUrl && (
+        <ProfilePicturePositioner
+          imageUrl={previewUrl}
+          onSave={handlePositioningSave}
+          onCancel={handlePositioningCancel}
+          initialPosition={imagePositioning}
+        />
+      )}
     </div>
   );
 };

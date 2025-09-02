@@ -89,7 +89,7 @@ export default function AchievementCard({
         return `${baseClasses} bg-gradient-to-br from-transparent to-blue-600/70 md:to-blue-600/30 hover:to-blue-500/80 md:hover:to-blue-500/40`;
       case 'epic':
         return `${baseClasses} bg-gradient-to-br from-transparent to-purple-600/70 md:to-purple-600/30 hover:to-purple-500/80 md:hover:to-purple-500/40`;
-      case 'legendary':
+      case 'masterpiece':
         return `${baseClasses} bg-gradient-to-br from-transparent to-orange-600/70 md:to-orange-600/30 hover:to-orange-500/80 md:hover:to-orange-500/40`;
       case 'mythic':
         return `${baseClasses} bg-gradient-to-br from-transparent to-red-600/70 md:to-red-600/30 hover:to-red-500/80 md:hover:to-red-500/40`;

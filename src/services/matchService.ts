@@ -17,6 +17,7 @@ import { MatchData, GamePhase, RollPhase, TurnDeciderChoice } from '@/types/matc
 import { UserService } from './userService';
 import { CompletedMatchService } from './completedMatchService';
 import { GameModeService } from './gameModeService';
+import { FriendStatsService } from './friendStatsService';
 import AchievementTrackingService from './achievementTrackingService';
 
 export class MatchService {
@@ -44,6 +45,9 @@ export class MatchService {
       ];
       await Promise.all(gamePlayedPromises);
       
+      // Check if this is a friend match for additional friend stats tracking
+      const isFriendMatch = await this.arePlayersFriends(hostId, opponentId);
+      
       // Update win/loss stats
       if (winnerId === hostId) {
         // Host wins, opponent loses
@@ -51,6 +55,12 @@ export class MatchService {
           UserService.updateMatchWin(hostId),
           UserService.updateMatchLoss(opponentId)
         ]);
+        
+        // Update friend stats if this was a friend match
+        if (isFriendMatch) {
+          await FriendStatsService.updateFriendMatchStats(hostId, opponentId);
+        }
+        
         console.log('🏆 MatchService: Host wins - stats updated');
       } else if (winnerId === opponentId) {
         // Opponent wins, host loses
@@ -58,6 +68,12 @@ export class MatchService {
           UserService.updateMatchWin(opponentId),
           UserService.updateMatchLoss(hostId)
         ]);
+        
+        // Update friend stats if this was a friend match
+        if (isFriendMatch) {
+          await FriendStatsService.updateFriendMatchStats(opponentId, hostId);
+        }
+        
         console.log('🏆 MatchService: Opponent wins - stats updated');
       }
       

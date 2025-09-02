@@ -37,30 +37,91 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
     request.fromUserId === user?.uid && request.toUserId === userId && request.status === 'pending'
   );
 
-  // Load user profile data
+  // Load user profile data with real-time updates
   useEffect(() => {
-    const loadUserProfile = async () => {
+    if (!userId) {
+      setUserProfile(null);
+      setLoading(false);
+      return;
+    }
+
+    let unsubscribe: (() => void) | null = null;
+
+    const setupProfileSubscription = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        const profile = await UserService.getUserProfile(userId);
-        if (profile) {
-          setUserProfile(profile);
-        } else {
-          setError('User profile not found');
-        }
+        // Import Firebase dependencies
+        const { doc, onSnapshot } = await import('firebase/firestore');
+        const { db } = await import('@/services/firebase');
+
+        const userRef = doc(db, 'users', userId);
+        
+        unsubscribe = onSnapshot(
+          userRef,
+          (docSnapshot) => {
+            if (docSnapshot.exists()) {
+              const userData = docSnapshot.data();
+              
+              // Process the data using the same logic as UserService
+              const profile: UserProfile = {
+                uid: userData.uid || userId,
+                email: userData.email || '',
+                displayName: userData.displayName || null,
+                profilePicture: userData.profilePicture || null,
+                photoURL: userData.photoURL || null,
+                createdAt: userData.createdAt,
+                lastLoginAt: userData.lastLoginAt,
+                userTag: userData.userTag || userData.email?.split('@')[0] || 'Anonymous',
+                rankedStatus: userData.rankedStatus || 'Ranked - Active',
+                inventory: {
+                  displayBackgroundEquipped: userData.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+                  matchBackgroundEquipped: userData.inventory?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+                  ownedBackgrounds: userData.inventory?.ownedBackgrounds || userData.ownedBackgrounds || ['Relax']
+                },
+                stats: {
+                  bestStreak: userData.stats?.bestStreak || 0,
+                  currentStreak: userData.stats?.currentStreak || 0,
+                  gamesPlayed: userData.stats?.gamesPlayed || 0,
+                  matchWins: userData.stats?.matchWins || 0
+                },
+                settings: {
+                  notificationsEnabled: userData.settings?.notificationsEnabled ?? true,
+                  soundEnabled: userData.settings?.soundEnabled ?? true,
+                  theme: userData.settings?.theme || 'auto'
+                },
+                updatedAt: userData.updatedAt
+              };
+              
+              setUserProfile(profile);
+              setError(null);
+            } else {
+              setError('User profile not found');
+              setUserProfile(null);
+            }
+            setLoading(false);
+          },
+          (err) => {
+            console.error('Error loading user profile:', err);
+            setError('Failed to load user profile');
+            setLoading(false);
+          }
+        );
       } catch (err) {
-        console.error('Error loading user profile:', err);
+        console.error('Error setting up profile subscription:', err);
         setError('Failed to load user profile');
-      } finally {
         setLoading(false);
       }
     };
 
-    if (userId) {
-      loadUserProfile();
-    }
+    setupProfileSubscription();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, [userId]);
 
   // Subscribe to outgoing friend requests - only if user is authenticated
@@ -222,7 +283,25 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
           </p>
           <button
             onClick={onClose}
-            className="px-6 py-3 bg-blue-600/60 hover:bg-blue-700/60 text-white rounded-lg font-audiowide transition-colors"
+            className="transition-all duration-300 hover:scale-105"
+            style={{ 
+              display: 'flex', 
+              width: 'fit-content', 
+              height: '48px', 
+              padding: '4px 30px', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              gap: '10px', 
+              borderRadius: '18px', 
+              background: '#FF0080', 
+              border: 'none', 
+              cursor: 'pointer',
+              fontFamily: 'Audiowide',
+              color: '#FFF',
+              fontSize: '14px',
+              fontWeight: 400,
+              textTransform: 'uppercase'
+            }}
           >
             Go Back
           </button>
@@ -238,7 +317,25 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
         <div className="flex items-center gap-4">
           <button
             onClick={onClose}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-600/60 hover:bg-gray-700/60 text-white rounded-xl font-audiowide transition-colors"
+            className="flex items-center gap-2 transition-all duration-300 hover:scale-105"
+            style={{ 
+              display: 'flex', 
+              width: 'fit-content', 
+              height: '40px', 
+              padding: '4px 20px', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              gap: '10px', 
+              borderRadius: '18px', 
+              background: '#FF0080', 
+              border: 'none', 
+              cursor: 'pointer',
+              fontFamily: 'Audiowide',
+              color: '#FFF',
+              fontSize: '12px',
+              fontWeight: 400,
+              textTransform: 'uppercase'
+            }}
           >
             <ArrowLeft size={18} />
             Back
@@ -252,7 +349,25 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
               <button
                 onClick={handleSendFriendRequest}
                 disabled={sendingRequest}
-                className="px-6 py-2 bg-green-600/60 hover:bg-green-700/60 disabled:bg-gray-600/60 disabled:cursor-not-allowed text-white rounded-xl font-audiowide transition-colors"
+                className="transition-all duration-300 hover:scale-105"
+                style={{ 
+                  display: 'flex', 
+                  width: 'fit-content', 
+                  height: '40px', 
+                  padding: '4px 24px', 
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  gap: '10px', 
+                  borderRadius: '18px', 
+                  background: sendingRequest ? 'rgba(255, 0, 128, 0.5)' : '#FF0080', 
+                  border: 'none', 
+                  cursor: sendingRequest ? 'not-allowed' : 'pointer',
+                  fontFamily: 'Audiowide',
+                  color: '#FFF',
+                  fontSize: '12px',
+                  fontWeight: 400,
+                  textTransform: 'uppercase'
+                }}
               >
                 {sendingRequest ? 'Sending...' : 'Add Friend'}
               </button>
@@ -261,7 +376,24 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
             {hasPendingRequest && (
               <button
                 disabled
-                className="px-6 py-2 bg-orange-600/60 text-white rounded-xl font-audiowide cursor-not-allowed"
+                style={{ 
+                  display: 'flex', 
+                  width: 'fit-content', 
+                  height: '40px', 
+                  padding: '4px 24px', 
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  gap: '10px', 
+                  borderRadius: '18px', 
+                  background: '#FF8000', 
+                  border: 'none', 
+                  cursor: 'not-allowed',
+                  fontFamily: 'Audiowide',
+                  color: '#FFF',
+                  fontSize: '12px',
+                  fontWeight: 400,
+                  textTransform: 'uppercase'
+                }}
               >
                 Invite Sent
               </button>
@@ -271,7 +403,25 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
               <button
                 onClick={handleRemoveFriend}
                 disabled={removing}
-                className="px-6 py-2 bg-red-600/60 hover:bg-red-700/60 disabled:bg-gray-600/60 disabled:cursor-not-allowed text-white rounded-xl font-audiowide transition-colors"
+                className="transition-all duration-300 hover:scale-105"
+                style={{ 
+                  display: 'flex', 
+                  width: 'fit-content', 
+                  height: '40px', 
+                  padding: '4px 24px', 
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  gap: '10px', 
+                  borderRadius: '18px', 
+                  background: removing ? 'rgba(255, 0, 128, 0.5)' : '#FF0080', 
+                  border: 'none', 
+                  cursor: removing ? 'not-allowed' : 'pointer',
+                  fontFamily: 'Audiowide',
+                  color: '#FFF',
+                  fontSize: '12px',
+                  fontWeight: 400,
+                  textTransform: 'uppercase'
+                }}
               >
                 {removing ? 'Removing...' : 'Remove Friend'}
               </button>
@@ -431,7 +581,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
               <div className="flex items-center gap-4 mb-6">
                 <div className="relative">
                   <ProfilePicture
-                    src={userProfile.profilePicture}
+                    src={userProfile.profilePicture || userProfile.photoURL}
                     alt={`${userProfile.displayName || 'Player'}'s profile picture`}
                     size="lg"
                     fallbackInitials={userProfile.displayName?.charAt(0)?.toUpperCase() || userProfile.userTag?.charAt(0)?.toUpperCase()}
@@ -467,7 +617,10 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-2xl font-bold text-blue-400 font-audiowide">
                       {userProfile.stats?.gamesPlayed || 0}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Games Played</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Games</span>
+                      <span className="hidden md:inline">Games Played</span>
+                    </div>
                   </motion.div>
 
                   <motion.div
@@ -480,7 +633,10 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-2xl font-bold text-green-400 font-audiowide">
                       {userProfile.stats?.matchWins || 0}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Games Won</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Won</span>
+                      <span className="hidden md:inline">Games Won</span>
+                    </div>
                   </motion.div>
 
                   <motion.div
@@ -492,14 +648,17 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                   >
                     <div className="text-2xl font-bold text-purple-400 font-audiowide">
                       {(() => {
-                        // Calculate items collected from inventory
+                        // Calculate items collected from inventory - handle both old and new formats
                         const inventory = userProfile.inventory || {};
-                        const ownedBackgrounds = inventory.ownedBackgrounds || [];
+                        const ownedBackgrounds = inventory.ownedBackgrounds || (userProfile as any).ownedBackgrounds || [];
                         const inventoryItems = (userProfile as any).inventoryItems || [];
                         return ownedBackgrounds.length + inventoryItems.length;
                       })()}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Items Collected</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Items</span>
+                      <span className="hidden md:inline">Items Collected</span>
+                    </div>
                   </motion.div>
 
                   <motion.div
@@ -512,7 +671,10 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-2xl font-bold text-orange-400 font-audiowide">
                       {userProfile.stats?.currentStreak || 0}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Current Streak</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Streak</span>
+                      <span className="hidden md:inline">Current Streak</span>
+                    </div>
                   </motion.div>
 
                   <motion.div
@@ -525,7 +687,10 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-2xl font-bold text-yellow-400 font-audiowide">
                       {userProfile.stats?.bestStreak || 0}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Best Streak</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Best</span>
+                      <span className="hidden md:inline">Best Streak</span>
+                    </div>
                   </motion.div>
 
                   <motion.div
@@ -540,7 +705,10 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                         ? Math.round(((userProfile.stats.matchWins || 0) / userProfile.stats.gamesPlayed) * 100)
                         : 0}%
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Win Rate</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Rate</span>
+                      <span className="hidden md:inline">Win Rate</span>
+                    </div>
                   </motion.div>
                 </div>
               </div>
@@ -559,7 +727,10 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-2xl font-bold text-yellow-400 font-audiowide">
                       {(userProfile as any).rankedStats?.rankPoints || '--'}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Rank Points</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Points</span>
+                      <span className="hidden md:inline">Rank Points</span>
+                    </div>
                   </motion.div>
 
                   <motion.div
@@ -571,7 +742,10 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-2xl font-bold text-amber-400 font-audiowide">
                       {(userProfile as any).rankedStats?.currentRank || '--'}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Current Rank</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Rank</span>
+                      <span className="hidden md:inline">Current Rank</span>
+                    </div>
                   </motion.div>
 
                   <motion.div
@@ -583,7 +757,10 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-2xl font-bold text-purple-400 font-audiowide">
                       {(userProfile as any).rankedStats?.peakRank || '--'}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Peak Rank</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Peak</span>
+                      <span className="hidden md:inline">Peak Rank</span>
+                    </div>
                   </motion.div>
 
                   <motion.div
@@ -595,7 +772,10 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-2xl font-bold text-green-400 font-audiowide">
                       {(userProfile as any).rankedStats?.seasonWins || 0}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Season Wins</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Wins</span>
+                      <span className="hidden md:inline">Season Wins</span>
+                    </div>
                   </motion.div>
                 </div>
               </div>
@@ -614,7 +794,10 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-2xl font-bold text-purple-400 font-audiowide">
                       {(userProfile as any).tournamentStats?.tournamentsPlayed || 0}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Tournaments Played</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Played</span>
+                      <span className="hidden md:inline">Tournaments Played</span>
+                    </div>
                   </motion.div>
 
                   <motion.div
@@ -626,7 +809,10 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-2xl font-bold text-yellow-400 font-audiowide">
                       {(userProfile as any).tournamentStats?.tournamentsWon || 0}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Tournaments Won</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Won</span>
+                      <span className="hidden md:inline">Tournaments Won</span>
+                    </div>
                   </motion.div>
 
                   <motion.div
@@ -638,7 +824,10 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-2xl font-bold text-orange-400 font-audiowide">
                       {(userProfile as any).tournamentStats?.bestPlacement || '--'}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Best Placement</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Best</span>
+                      <span className="hidden md:inline">Best Placement</span>
+                    </div>
                   </motion.div>
 
                   <motion.div
@@ -650,7 +839,10 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-2xl font-bold text-emerald-400 font-audiowide">
                       {(userProfile as any).tournamentStats?.tournamentPoints || 0}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Tournament Points</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Points</span>
+                      <span className="hidden md:inline">Tournament Points</span>
+                    </div>
                   </motion.div>
                 </div>
               </div>
@@ -667,9 +859,12 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     transition={{ delay: 0.1 }}
                   >
                     <div className="text-2xl font-bold text-pink-400 font-audiowide">
-                      {userProfile.inventory?.ownedBackgrounds?.length || 0}
+                      {(userProfile.inventory?.ownedBackgrounds || (userProfile as any).ownedBackgrounds || []).length}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Backgrounds Owned</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Backgrounds</span>
+                      <span className="hidden md:inline">Backgrounds Owned</span>
+                    </div>
                   </motion.div>
 
                   <motion.div
@@ -680,12 +875,15 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                   >
                     <div className="text-2xl font-bold text-indigo-400 font-audiowide">
                       {(() => {
-                        const ownedBackgrounds = userProfile.inventory?.ownedBackgrounds?.length || 0;
+                        const ownedBackgrounds = (userProfile.inventory?.ownedBackgrounds || (userProfile as any).ownedBackgrounds || []).length;
                         const inventoryItems = (userProfile as any).inventoryItems?.length || 0;
                         return ownedBackgrounds + inventoryItems;
                       })()}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Total Items</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Items</span>
+                      <span className="hidden md:inline">Total Items</span>
+                    </div>
                   </motion.div>
 
                   <motion.div
@@ -696,12 +894,25 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                   >
                     <div className="text-2xl font-bold text-orange-400 font-audiowide">
                       {(() => {
-                        // Count rare items (this would need to be calculated based on item rarity)
-                        const inventoryItems = (userProfile as any).inventoryItems || [];
-                        return inventoryItems.filter((item: any) => item.rarity === 'rare' || item.rarity === 'epic' || item.rarity === 'legendary').length || 0;
+                        // Count masterpiece items in user's inventory - handle both old and new formats
+                        // For now, we'll count video backgrounds as masterpieces
+                        const inventory = userProfile.inventory;
+                        const ownedBackgrounds = inventory?.ownedBackgrounds || (userProfile as any).ownedBackgrounds || [];
+                        
+                        if (Array.isArray(ownedBackgrounds)) {
+                          // Count video backgrounds as masterpieces
+                          const videoBackgrounds = ['New Day', 'On A Mission', 'Underwater'];
+                          return ownedBackgrounds.filter((bg: string) => videoBackgrounds.includes(bg)).length;
+                        } else {
+                          // Legacy array format - can't determine rarity
+                          return 0;
+                        }
                       })()}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Rare Items</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Master</span>
+                      <span className="hidden md:inline">Masterpieces</span>
+                    </div>
                   </motion.div>
                 </div>
               </div>
@@ -720,7 +931,10 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-2xl font-bold text-blue-400 font-audiowide">
                       {(userProfile as any).friendsStats?.totalFriends || '--'}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Friends</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Friends</span>
+                      <span className="hidden md:inline">Friends</span>
+                    </div>
                   </motion.div>
 
                   <motion.div
@@ -732,7 +946,10 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-2xl font-bold text-green-400 font-audiowide">
                       {(userProfile as any).friendsStats?.friendMatches || '--'}
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Friend Matches</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Matches</span>
+                      <span className="hidden md:inline">Friend Matches</span>
+                    </div>
                   </motion.div>
 
                   <motion.div
@@ -744,7 +961,10 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-2xl font-bold text-cyan-400 font-audiowide">
                       {(userProfile as any).friendsStats?.friendWinRate || '--'}%
                     </div>
-                    <div className="text-sm text-gray-300 font-montserrat">Friend Win Rate</div>
+                    <div className="text-sm text-gray-300 font-montserrat">
+                      <span className="md:hidden">Win Rate</span>
+                      <span className="hidden md:inline">Friend Win Rate</span>
+                    </div>
                   </motion.div>
                 </div>
               </div>

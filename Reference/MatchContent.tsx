@@ -2,10 +2,48 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useAuth } from '@/context/AuthContext';
-import { useBackground } from '@/context/BackgroundContext';
-import { MatchService, MatchData } from '@/services/match';
-import { useDashboardNavigation } from '@/context/DashboardNavigationContext';
+// Reference file - imports commented out for standalone use
+// import { useAuth } from '@/context/AuthContext';
+// import { useBackground } from '@/context/BackgroundContext';  
+// import { MatchService, MatchData } from '@/services/matchService';
+// import { useDashboardNavigation } from '@/context/DashboardNavigationContext';
+
+// Mock types for standalone reference file
+interface MatchData {
+  id: string;
+  players: any[];
+  currentTurn?: number;
+  gameState?: string;
+  [key: string]: any;
+}
+
+// Mock hooks for standalone reference file
+const useAuth = () => ({ user: { uid: 'mock-user', displayName: 'Mock User' } });
+const useBackground = () => ({ displayBackground: 'default-bg' });
+const useDashboardNavigation = () => ({ navigateToSection: (section: string) => console.log('Navigate to:', section) });
+
+// Mock MatchService for standalone reference file
+const MatchService = {
+  subscribeToMatch: (matchId: string, callback: (data: MatchData | null) => void) => {
+    // Mock subscription - return empty unsubscribe function
+    return () => {};
+  },
+  rollDice: async (matchId: string, playerId: string) => {
+    console.log('Mock dice roll for:', matchId, playerId);
+  },
+  endTurn: async (matchId: string, playerId: string) => {
+    console.log('Mock end turn for:', matchId, playerId);
+  },
+  forfeitMatch: async (matchId: string, playerId: string) => {
+    console.log('Mock forfeit for:', matchId, playerId);
+  },
+  bankScore: async (matchId: string, playerId: string) => {
+    console.log('Mock bank score for:', matchId, playerId);
+  },
+  makeTurnDeciderChoice: async (matchId: string, playerId: string, choice: string) => {
+    console.log('Mock turn decider choice for:', matchId, playerId, choice);
+  }
+};
 
 export function MatchContent() {
   const { user } = useAuth();
@@ -909,7 +947,7 @@ export function MatchContent() {
 
     // Create multiple reel numbers for visual depth
     const createReelNumbers = () => {
-      const numbers = [];
+      const numbers: number[] = [];
       for (let i = 0; i < 8; i++) {
         numbers.push(Math.floor(Math.random() * 6) + 1);
       }
@@ -1253,7 +1291,7 @@ export function MatchContent() {
                     const backgroundId = currentPlayerData.playerMatchBackgroundEquipped;
                     // Determine rarity based on background type
                     if (backgroundId === 'New Day' || backgroundId === 'On A Mission' || backgroundId === 'Underwater') {
-                      return 'LEGENDARY';
+                      return 'MASTERPIECE';
                     } else if (backgroundId === 'All For Glory' || backgroundId === 'Long Road Ahead') {
                       return 'EPIC';
                     } else if (backgroundId === 'Relax') {
@@ -1816,7 +1854,7 @@ export function MatchContent() {
                       const backgroundId = opponentPlayerData.playerMatchBackgroundEquipped;
                       // Determine rarity based on background type
                       if (backgroundId === 'New Day' || backgroundId === 'On A Mission' || backgroundId === 'Underwater') {
-                        return 'LEGENDARY';
+                        return 'MASTERPIECE';
                       } else if (backgroundId === 'All For Glory' || backgroundId === 'Long Road Ahead') {
                         return 'EPIC';
                       } else if (backgroundId === 'Relax') {

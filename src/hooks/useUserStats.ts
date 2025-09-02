@@ -38,9 +38,10 @@ export const useUserStats = (): UseUserStatsReturn => {
         if (docSnapshot.exists()) {
           const userData = docSnapshot.data();
           
-          // Calculate items collected from inventory
+          // Calculate items collected from inventory - handle both old and new formats
           const inventory = userData.inventory || {};
-          const ownedBackgrounds = inventory.ownedBackgrounds || [];
+          // Check both new format (inventory.ownedBackgrounds) and legacy format (userData.ownedBackgrounds)
+          const ownedBackgrounds = inventory.ownedBackgrounds || userData.ownedBackgrounds || [];
           const inventoryItems = userData.inventoryItems || [];
           const itemsCollected = ownedBackgrounds.length + inventoryItems.length;
           

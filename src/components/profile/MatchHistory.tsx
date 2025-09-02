@@ -241,9 +241,28 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
                         e.stopPropagation();
                         handleViewProfile(match.opponentUserId, match.opponentDisplayName);
                       }}
-                      className="ml-2 px-6 py-2 bg-blue-600/60 hover:bg-blue-700/60 text-white rounded-xl font-audiowide transition-colors"
+                      className="hidden md:flex ml-2 md:ml-3 transition-all duration-300 hover:scale-105"
+                      style={{ 
+                        width: 'fit-content', 
+                        height: '32px', 
+                        padding: '4px 16px', 
+                        justifyContent: 'center', 
+                        alignItems: 'center', 
+                        gap: '10px', 
+                        borderRadius: '18px', 
+                        background: '#FF0080', 
+                        border: 'none', 
+                        cursor: 'pointer',
+                        fontFamily: 'Audiowide',
+                        color: '#FFF',
+                        fontSize: '10px',
+                        fontWeight: 400,
+                        textTransform: 'uppercase'
+                      }}
                     >
-                      PROFILE
+                      <span className="relative z-10 text-xs md:text-sm">
+                        PROFILE
+                      </span>
                     </button>
                   )}
                 </div>
@@ -336,6 +355,39 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
                       <div className="text-sm text-gray-400 font-montserrat">Match Type</div>
                     </div>
                   </div>
+                  
+                  {/* Mobile Profile Button - Centered below stats */}
+                  {match.opponentUserId && match.opponentUserId !== 'unknown' && (
+                    <div className="md:hidden flex justify-center mt-6 pt-4 border-t border-gray-700/50">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewProfile(match.opponentUserId, match.opponentDisplayName);
+                        }}
+                        className="transition-all duration-300 hover:scale-105"
+                        style={{ 
+                          display: 'flex', 
+                          width: 'fit-content', 
+                          height: '48px', 
+                          padding: '4px 30px', 
+                          justifyContent: 'center', 
+                          alignItems: 'center', 
+                          gap: '10px', 
+                          borderRadius: '18px', 
+                          background: '#FF0080', 
+                          border: 'none', 
+                          cursor: 'pointer',
+                          fontFamily: 'Audiowide',
+                          color: '#FFF',
+                          fontSize: '14px',
+                          fontWeight: 400,
+                          textTransform: 'uppercase'
+                        }}
+                      >
+                        <span className="relative z-10">VIEW PROFILE</span>
+                      </button>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
