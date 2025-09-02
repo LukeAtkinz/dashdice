@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useInventory } from '@/context/InventoryContext';
 import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
+import { MobileBackgroundPreview } from '@/components/ui/MobileBackgroundPreview';
 
 const inventoryCategories = [
   { key: 'backgrounds', name: 'Backgrounds', icon: '🖼️', color: 'linear-gradient(135deg, #667eea, #764ba2)' },
@@ -301,137 +302,20 @@ export const InventorySection: React.FC = () => {
 
       {/* Match UI Preview - Only show for backgrounds and when preview is active */}
       {selectedCategory === 'backgrounds' && previewBackground && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="w-full max-w-[50rem] mb-6 p-2 md:p-4 rounded-[15px] md:rounded-[20px] bg-black/30 backdrop-blur-md border border-white/20"
-        >
-          <div className="text-center mb-2 md:mb-4 hidden md:block">
-            <h3 className="text-xl font-bold text-white/90" style={{ fontFamily: "Audiowide" }}>
-              Match Preview: {previewBackground.name}
-            </h3>
-          </div>
-          
-          {/* Mini Match UI - Mobile optimized */}
-          <div 
-            className="relative w-full h-[120px] md:h-[200px] rounded-[10px] md:rounded-[15px] overflow-hidden border border-white/30 md:border-2"
-            style={{
-              backgroundImage: previewBackground.preview.includes('.') 
-                ? `url(${previewBackground.preview})`
-                : 'none',
-              backgroundColor: !previewBackground.preview.includes('.') 
-                ? previewBackground.preview 
-                : 'transparent',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          >
-            {/* Overlay game elements - Mobile optimized */}
-            <div className="absolute inset-0 bg-black/20">
-              {/* Player areas */}
-              <div className="absolute top-1 md:top-4 left-1 md:left-4 bg-black/50 rounded p-1 md:p-2 backdrop-blur-sm">
-                <div className="text-white text-xs md:text-sm font-bold">You</div>
-                <div className="text-white/70 text-xs">HP: 100</div>
-              </div>
-              <div className="absolute top-1 md:top-4 right-1 md:right-4 bg-black/50 rounded p-1 md:p-2 backdrop-blur-sm">
-                <div className="text-white text-xs md:text-sm font-bold">Opponent</div>
-                <div className="text-white/70 text-xs">HP: 100</div>
-              </div>
-              
-              {/* Dice area */}
-              <div className="absolute bottom-1 md:bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 rounded p-1 md:p-3 backdrop-blur-sm">
-                <div className="flex gap-1 md:gap-2">
-                  <div className="w-4 md:w-8 h-4 md:h-8 bg-white/20 rounded border border-white/40 md:border-2 flex items-center justify-center text-white font-bold text-xs md:text-base">🎲</div>
-                  <div className="w-4 md:w-8 h-4 md:h-8 bg-white/20 rounded border border-white/40 md:border-2 flex items-center justify-center text-white font-bold text-xs md:text-base">🎲</div>
-                </div>
-              </div>
-              
-              {/* Action button */}
-              <div className="absolute bottom-1 md:bottom-4 right-1 md:right-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded px-2 md:px-4 py-1 md:py-2">
-                <span className="text-white font-bold text-xs md:text-sm">ROLL</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="text-center mt-1 md:mt-3">
-            <button
-              onClick={() => setPreviewBackground(null)}
-              className="px-2 md:px-4 py-1 md:py-2 bg-white/20 rounded text-white/80 hover:bg-white/30 transition-all text-xs md:text-sm"
-            >
-              Close
-            </button>
-          </div>
-        </motion.div>
+        <MobileBackgroundPreview
+          background={previewBackground}
+          type="match"
+          onClose={() => setPreviewBackground(null)}
+        />
       )}
 
       {/* Dashboard Preview - Only show for backgrounds and when display preview is active */}
       {selectedCategory === 'backgrounds' && previewDisplayBackground && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="w-full max-w-[50rem] mb-6 p-2 md:p-4 rounded-[15px] md:rounded-[20px] bg-black/30 backdrop-blur-md border border-white/20"
-        >
-          <div className="text-center mb-2 md:mb-4 hidden md:block">
-            <h3 className="text-xl font-bold text-white/90" style={{ fontFamily: "Audiowide" }}>
-              Dashboard Preview: {previewDisplayBackground.name}
-            </h3>
-          </div>
-          
-          {/* Mini Dashboard UI - Mobile optimized */}
-          <div 
-            className="relative w-full h-[120px] md:h-[200px] rounded-[10px] md:rounded-[15px] overflow-hidden border border-white/30 md:border-2"
-            style={{
-              backgroundImage: previewDisplayBackground.preview.includes('.') 
-                ? `url(${previewDisplayBackground.preview})`
-                : 'none',
-              backgroundColor: !previewDisplayBackground.preview.includes('.') 
-                ? previewDisplayBackground.preview 
-                : 'transparent',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          >
-            {/* Overlay dashboard elements - Mobile optimized */}
-            <div className="absolute inset-0 bg-black/20">
-              {/* Navigation bar */}
-              <div className="absolute top-1 md:top-4 left-1 md:left-4 right-1 md:right-4 bg-black/50 rounded p-1 md:p-2 backdrop-blur-sm">
-                <div className="flex justify-between items-center">
-                  <div className="text-white text-xs md:text-sm font-bold">DashDice</div>
-                  <div className="text-white/70 text-xs">Profile</div>
-                </div>
-              </div>
-              
-              {/* Main dashboard cards */}
-              <div className="absolute bottom-1 md:bottom-4 left-1 md:left-4 right-1 md:right-4 grid grid-cols-3 gap-1 md:gap-2">
-                <div className="bg-black/50 rounded p-1 md:p-2 backdrop-blur-sm">
-                  <div className="text-white text-xs font-bold">Inventory</div>
-                </div>
-                <div className="bg-black/50 rounded p-1 md:p-2 backdrop-blur-sm">
-                  <div className="text-white text-xs font-bold">Friends</div>
-                </div>
-                <div className="bg-black/50 rounded p-1 md:p-2 backdrop-blur-sm">
-                  <div className="text-white text-xs font-bold">Ranked</div>
-                </div>
-              </div>
-              
-              {/* Center action */}
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-blue-500 to-purple-600 rounded px-2 md:px-4 py-1 md:py-2">
-                <span className="text-white font-bold text-xs md:text-sm">PLAY</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="text-center mt-1 md:mt-3">
-            <button
-              onClick={() => setPreviewDisplayBackground(null)}
-              className="px-2 md:px-4 py-1 md:py-2 bg-white/20 rounded text-white/80 hover:bg-white/30 transition-all text-xs md:text-sm"
-            >
-              Close
-            </button>
-          </div>
-        </motion.div>
+        <MobileBackgroundPreview
+          background={previewDisplayBackground}
+          type="dashboard"
+          onClose={() => setPreviewDisplayBackground(null)}
+        />
       )}
 
       {/* Items Grid */}
