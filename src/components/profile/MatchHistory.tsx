@@ -66,6 +66,12 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
     const unsubscribe = MatchHistoryService.subscribeToMatchHistory(
       user.uid,
       (matchHistory) => {
+        console.log('🎮 MatchHistory: Received match data:', matchHistory.map(m => ({
+          id: m.id,
+          opponent: m.opponentDisplayName,
+          opponentBgFile: m.opponentBackgroundFile,
+          opponentBg: m.opponentBackground
+        })));
         setMatches(matchHistory);
         setLoading(false);
       }
@@ -124,16 +130,36 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
           className="relative overflow-hidden rounded-lg border border-gray-600 cursor-pointer hover:border-gray-500 transition-colors"
-          style={{
-            background: match.opponentBackgroundFile 
-              ? `linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url(${match.opponentBackgroundFile})`
-              : 'rgba(31, 41, 55, 0.8)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
           onClick={() => toggleExpanded(match.id)}
         >
+          {/* Video Background Support */}
+          {match.opponentBackgroundFile && match.opponentBackgroundFile.endsWith('.mp4') ? (
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ zIndex: 0 }}
+            >
+              <source src={match.opponentBackgroundFile} type="video/mp4" />
+            </video>
+          ) : null}
+
+          {/* Background Image or Fallback */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              zIndex: 0,
+              background: match.opponentBackgroundFile && !match.opponentBackgroundFile.endsWith('.mp4')
+                ? `linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url(${match.opponentBackgroundFile})`
+                : 'rgba(31, 41, 55, 0.8)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          />
+
           {/* Win/Loss Gradient Overlay */}
           <div 
             className={`absolute inset-0 pointer-events-none ${
@@ -141,9 +167,10 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
                 ? 'bg-gradient-to-r from-green-600/20 via-green-600/10 to-transparent' 
                 : 'bg-gradient-to-r from-red-600/20 via-red-600/10 to-transparent'
             }`}
+            style={{ zIndex: 1 }}
           ></div>
           
-          <div className="relative z-10 p-4">
+          <div className="relative p-4" style={{ zIndex: 2 }}>
             <div className="flex items-center justify-between">
               {/* Match Info */}
               <div className="flex-1">

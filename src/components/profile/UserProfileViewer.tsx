@@ -286,58 +286,116 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
           <motion.div
             className="relative overflow-hidden touch-manipulation"
             style={{
-              ...(() => {
-                // For viewing the current user's own profile, use the background context
-                if (isOwnProfile && DisplayBackgroundEquip) {
-                  if (DisplayBackgroundEquip.type === 'video') {
-                    // For videos, use a fallback gradient for CSS background
+              borderRadius: '20px'
+            }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            {/* Video Background for current user or other users */}
+            {(() => {
+              // For viewing the current user's own profile, use the background context
+              if (isOwnProfile && DisplayBackgroundEquip?.type === 'video') {
+                return (
+                  <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover"
+                    style={{ zIndex: 0 }}
+                  >
+                    <source src={DisplayBackgroundEquip.file} type="video/mp4" />
+                  </video>
+                );
+              }
+              
+              // For viewing other users' profiles, check their video backgrounds
+              const matchBg = userProfile.inventory?.matchBackgroundEquipped;
+              const displayBg = userProfile.inventory?.displayBackgroundEquipped;
+              const bgEquipped = matchBg || displayBg;
+              
+              if (bgEquipped && typeof bgEquipped === 'object' && bgEquipped.type === 'video' && bgEquipped.file) {
+                return (
+                  <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover"
+                    style={{ zIndex: 0 }}
+                  >
+                    <source src={bgEquipped.file} type="video/mp4" />
+                  </video>
+                );
+              }
+              
+              return null;
+            })()}
+
+            {/* Background Image or Gradient Fallback */}
+            <div
+              className="absolute inset-0 w-full h-full"
+              style={{
+                zIndex: 0,
+                ...(() => {
+                  // For viewing the current user's own profile, use the background context
+                  if (isOwnProfile && DisplayBackgroundEquip) {
+                    if (DisplayBackgroundEquip.type === 'video') {
+                      // Video is handled above, just add overlay
+                      return {};
+                    }
                     return {
-                      background: 'linear-gradient(135deg, #667eea, #764ba2)'
+                      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("${DisplayBackgroundEquip.file}")`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center'
                     };
                   }
-                  return {
-                    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("${DisplayBackgroundEquip.file}")`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
-                  };
-                }
-                
-                // For viewing other users' profiles, try both match and display backgrounds
-                const matchBg = userProfile.inventory?.matchBackgroundEquipped;
-                const displayBg = userProfile.inventory?.displayBackgroundEquipped;
-                const bgEquipped = matchBg || displayBg;
-                
-                if (bgEquipped) {
-                  // Handle background object with name, file, and type properties
-                  if (typeof bgEquipped === 'object' && bgEquipped.file) {
-                    // For video backgrounds, use a themed gradient
-                    if (bgEquipped.type === 'video') {
-                      // Use different gradients based on background name for video backgrounds
-                      switch (bgEquipped.name) {
-                        case 'New Day':
-                          return { background: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)' };
-                        case 'On A Mission':
-                          return { background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' };
-                        case 'Underwater':
-                          return { background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' };
-                        default:
-                          return { background: 'linear-gradient(135deg, #667eea, #764ba2)' };
+                  
+                  // For viewing other users' profiles, try both match and display backgrounds
+                  const matchBg = userProfile.inventory?.matchBackgroundEquipped;
+                  const displayBg = userProfile.inventory?.displayBackgroundEquipped;
+                  const bgEquipped = matchBg || displayBg;
+                  
+                  if (bgEquipped) {
+                    // Handle background object with name, file, and type properties
+                    if (typeof bgEquipped === 'object' && bgEquipped.file) {
+                      // For video backgrounds, they're handled above, no background needed
+                      if (bgEquipped.type === 'video') {
+                        return {};
+                      }
+                      
+                      // For image backgrounds, use the file path with proper path fixing
+                      if (bgEquipped.type === 'image' || !bgEquipped.type) {
+                        let backgroundPath = bgEquipped.file;
+                        
+                        // Fix common background paths (same logic as FriendCard)
+                        if (backgroundPath === 'All For Glory.jpg' || backgroundPath === '/backgrounds/All For Glory.jpg') {
+                          backgroundPath = '/backgrounds/All For Glory.jpg';
+                        } else if (backgroundPath === 'Long Road Ahead.jpg' || backgroundPath === '/backgrounds/Long Road Ahead.jpg') {
+                          backgroundPath = '/backgrounds/Long Road Ahead.jpg';
+                        } else if (backgroundPath === 'Relax.png' || backgroundPath === '/backgrounds/Relax.png') {
+                          backgroundPath = '/backgrounds/Relax.png';
+                        } else if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
+                          // If it's a filename without path, prepend /backgrounds/
+                          backgroundPath = `/backgrounds/${backgroundPath}`;
+                        }
+                        
+                        return {
+                          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("${backgroundPath}")`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          backgroundRepeat: 'no-repeat'
+                        };
                       }
                     }
                     
-                    // For image backgrounds, use the file path with proper path fixing
-                    if (bgEquipped.type === 'image' || !bgEquipped.type) {
-                      let backgroundPath = bgEquipped.file;
+                    // Handle string file path (legacy format)
+                    if (typeof bgEquipped === 'string') {
+                      let backgroundPath: string = bgEquipped;
                       
-                      // Fix common background paths (same logic as FriendCard)
-                      if (backgroundPath === 'All For Glory.jpg' || backgroundPath === '/backgrounds/All For Glory.jpg') {
-                        backgroundPath = '/backgrounds/All For Glory.jpg';
-                      } else if (backgroundPath === 'Long Road Ahead.jpg' || backgroundPath === '/backgrounds/Long Road Ahead.jpg') {
-                        backgroundPath = '/backgrounds/Long Road Ahead.jpg';
-                      } else if (backgroundPath === 'Relax.png' || backgroundPath === '/backgrounds/Relax.png') {
-                        backgroundPath = '/backgrounds/Relax.png';
-                      } else if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
-                        // If it's a filename without path, prepend /backgrounds/
+                      // Fix paths for legacy format
+                      if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
                         backgroundPath = `/backgrounds/${backgroundPath}`;
                       }
                       
@@ -350,35 +408,13 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     }
                   }
                   
-                  // Handle string file path (legacy format)
-                  if (typeof bgEquipped === 'string') {
-                    let backgroundPath: string = bgEquipped;
-                    
-                    // Fix paths for legacy format
-                    if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
-                      backgroundPath = `/backgrounds/${backgroundPath}`;
-                    }
-                    
-                    return {
-                      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("${backgroundPath}")`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      backgroundRepeat: 'no-repeat'
-                    };
-                  }
-                }
-                
-                // Fallback gradient
-                return {
-                  background: 'linear-gradient(135deg, #667eea, #764ba2)'
-                };
-              })(),
-              borderRadius: '20px'
-            }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+                  // Fallback gradient
+                  return {
+                    background: 'linear-gradient(135deg, #667eea, #764ba2)'
+                  };
+                })()
+              }}
+            />
             {/* Dark overlay gradient for text readability */}
             <div
               className="absolute inset-0"

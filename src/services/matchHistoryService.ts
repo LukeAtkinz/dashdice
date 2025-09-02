@@ -160,6 +160,22 @@ export class MatchHistoryService {
               }
             };
             
+            // Debug logging for background data
+            console.log('🎨 MatchHistoryService: Background debug for match', doc.id, {
+              playerData: {
+                matchBg: playerData?.matchBackgroundEquipped,
+                displayBg: playerData?.displayBackgroundEquipped
+              },
+              opponentData: {
+                matchBg: opponentData?.matchBackgroundEquipped,
+                displayBg: opponentData?.displayBackgroundEquipped
+              },
+              resultingEntry: {
+                backgroundFile: historyEntry.backgroundFile,
+                opponentBackgroundFile: historyEntry.opponentBackgroundFile
+              }
+            });
+            
             matches.push(historyEntry);
           }
         });
