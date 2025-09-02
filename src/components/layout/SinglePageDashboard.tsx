@@ -363,7 +363,7 @@ const DashboardContent: React.FC = () => {
                       justifyContent: "center"
                     }}
                   >
-                    <img src="/Design Elements/friends.webp" alt="Friends" className="w-8 h-8" />
+                    <img src="/Design Elements/friends.webp" alt="Friends" className="w-10 h-10" />
                   </div>
                   <span
                     style={{

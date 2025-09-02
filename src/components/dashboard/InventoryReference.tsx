@@ -5,9 +5,12 @@ import { motion } from 'framer-motion';
 import { useInventory } from '@/context/InventoryContext';
 import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
+import { useAuth } from '@/context/AuthContext';
+import { MatchPreview } from '@/components/ui/MatchPreview';
 
 export const InventorySection: React.FC = () => {
   const { setCurrentSection } = useNavigation();
+  const { user } = useAuth();
   const { 
     availableBackgrounds, 
     DisplayBackgroundEquip, 
@@ -19,6 +22,37 @@ export const InventorySection: React.FC = () => {
   const [activeTab, setActiveTab] = useState('display'); // 'display' or 'match'
   const [selectedBackground, setSelectedBackground] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+
+  // Disable body scrolling when component mounts
+  useEffect(() => {
+    // Store the current scroll position
+    const scrollY = window.scrollY;
+    
+    // Disable scrolling on body and html for both mobile and desktop
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    document.documentElement.style.overflow = 'hidden';
+    
+    // Prevent touch scrolling on mobile
+    const preventScroll = (e: TouchEvent) => {
+      e.preventDefault();
+    };
+    
+    document.addEventListener('touchmove', preventScroll, { passive: false });
+    
+    // Re-enable scrolling when component unmounts
+    return () => {
+      document.body.style.overflow = 'unset';
+      document.body.style.position = 'unset';
+      document.body.style.top = 'unset';
+      document.body.style.width = 'unset';
+      document.documentElement.style.overflow = 'unset';
+      window.scrollTo(0, scrollY);
+      document.removeEventListener('touchmove', preventScroll);
+    };
+  }, []);
 
   // Convert backgrounds to inventory format matching reference
   const ownedDisplayBackgrounds = availableBackgrounds.map((bg, index) => ({
@@ -98,7 +132,7 @@ export const InventorySection: React.FC = () => {
   }
 
   return (
-    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full overflow-hidden">
+    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] overflow-hidden fixed inset-0 pt-20 md:pt-24" style={{ height: 'calc(100vh - 5rem)', top: '5rem' }}>
       {/* Custom scrollbar styles and navigation animations */}
       <style jsx global>{`
         /* Hide scrollbars on desktop but allow scrolling */
@@ -372,7 +406,7 @@ export const InventorySection: React.FC = () => {
                     >
                       {background.isVideo && background.videoUrl && (
                         <video 
-                          key={background.videoUrl} // Force re-render when video changes
+                          key={`video-${background.id}-${background.videoUrl}`} // Force re-render when video changes
                           autoPlay 
                           loop 
                           muted 
@@ -522,7 +556,7 @@ export const InventorySection: React.FC = () => {
                 >
                   {selectedBackground.isVideo && selectedBackground.videoUrl ? (
                     <video 
-                      key={selectedBackground.videoUrl} // Force re-render when video changes
+                      key={`display-video-${selectedBackground.id}-${selectedBackground.videoUrl}`} // Force re-render when video changes
                       autoPlay 
                       loop 
                       muted 
@@ -549,246 +583,19 @@ export const InventorySection: React.FC = () => {
                   )}
                   <div className="relative z-10 flex flex-col items-center justify-center w-full" style={{ minHeight: '300px', padding: '40px 20px' }}>
                     {activeTab === 'match' ? (
-                      /* Match Preview Content */
-                      <div className="flex items-center justify-between w-full max-w-xl">
-                        {/* Player 1 (You - Left Side) */}
-                        <div className="flex flex-col items-center">
-                          <h3 
-                            className="text-sm font-bold text-white mb-3"
-                            style={{ 
-                              fontFamily: 'Audiowide',
-                              textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-                            }}
-                          >
-                            You
-                          </h3>
-                          
-                          <div
-                            className="w-28 h-28 rounded-xl overflow-hidden border-2 border-white relative mb-3"
-                          >
-                            {/* Use the selected background for player */}
-                            {selectedBackground?.isVideo ? (
-                              <video
-                                autoPlay
-                                loop
-                                muted
-                                playsInline
-                                className="absolute inset-0 w-full h-full object-cover"
-                              >
-                                <source src={selectedBackground.url} type="video/mp4" />
-                              </video>
-                            ) : (
-                              <div
-                                className="absolute inset-0"
-                                style={{
-                                  background: selectedBackground?.isGradient ? selectedBackground.url : `url('${selectedBackground?.url}')`,
-                                  backgroundSize: 'cover',
-                                  backgroundPosition: 'center'
-                                }}
-                              />
-                            )}
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-white text-3xl font-bold" style={{ fontFamily: 'Audiowide', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>23</span>
-                            </div>
-                          </div>
-                          
-                          {/* Background Rarity Display */}
-                          <div 
-                            className="text-center"
-                            style={{
-                              display: 'flex',
-                              width: '90px',
-                              height: '28px',
-                              flexDirection: 'column',
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              borderRadius: '8px',
-                              background: 'rgba(255, 255, 255, 0.09)',
-                              backdropFilter: 'blur(5.5px)'
-                            }}
-                          >
-                            <span style={{
-                              color: '#FFF',
-                              textAlign: 'center',
-                              fontFamily: 'Orbitron',
-                              fontSize: '11px',
-                              fontWeight: 500,
-                              lineHeight: '26px',
-                              textTransform: 'uppercase'
-                            }}>
-                              {selectedBackground?.rarity || 'COMMON'}
-                            </span>
-                          </div>
-                        </div>
-                        
-                        {/* Center Dice Area - Vertical Stack with Blurred Background */}
-                        <div className="flex flex-col items-center gap-3">
-                          {/* Dice 1 - Top */}
-                          <div 
-                            className="relative rounded-[20px] border border-white/20 overflow-hidden"
-                            style={{
-                              width: '60px',
-                              height: '60px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              background: 'rgba(255, 255, 255, 0.85)',
-                              backdropFilter: 'blur(12px)',
-                              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)'
-                            }}
-                          >
-                            {/* Blurred background layer */}
-                            <div 
-                              className="absolute inset-0 opacity-20"
-                              style={{
-                                background: selectedBackground?.isGradient ? selectedBackground.url : `url('${selectedBackground?.url}')`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                                filter: 'blur(8px)'
-                              }}
-                            />
-                            <span style={{
-                              color: '#000',
-                              fontFamily: 'Orbitron, monospace',
-                              fontSize: '28px',
-                              fontWeight: 500,
-                              textTransform: 'uppercase',
-                              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-                              position: 'relative',
-                              zIndex: 2
-                            }}>
-                              6
-                            </span>
-                          </div>
-                          
-                          {/* Turn Score - Middle */}
-                          <div className="bg-yellow-600/30 border border-yellow-500 rounded-lg px-3 py-1 backdrop-blur-sm text-center">
-                            <p className="text-xs text-yellow-300 mb-1" style={{ fontFamily: "Audiowide" }}>
-                              Turn Score
-                            </p>
-                            <p className="text-lg font-bold text-yellow-400" style={{ fontFamily: "Audiowide" }}>
-                              10
-                            </p>
-                          </div>
-                          
-                          {/* Dice 2 - Bottom */}
-                          <div 
-                            className="relative rounded-[20px] border border-white/20 overflow-hidden"
-                            style={{
-                              width: '60px',
-                              height: '60px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              background: 'rgba(255, 255, 255, 0.85)',
-                              backdropFilter: 'blur(12px)',
-                              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)'
-                            }}
-                          >
-                            {/* Blurred background layer */}
-                            <div 
-                              className="absolute inset-0 opacity-20"
-                              style={{
-                                background: selectedBackground?.isGradient ? selectedBackground.url : `url('${selectedBackground?.url}')`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                                filter: 'blur(8px)'
-                              }}
-                            />
-                            <span style={{
-                              color: '#000',
-                              fontFamily: 'Orbitron, monospace',
-                              fontSize: '28px',
-                              fontWeight: 500,
-                              textTransform: 'uppercase',
-                              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-                              position: 'relative',
-                              zIndex: 2
-                            }}>
-                              4
-                            </span>
-                          </div>
-                          
-                          {/* Action Buttons Preview */}
-                          <div className="flex gap-2 mt-2">
-                            <button
-                              className="px-3 py-1 rounded-md text-xs font-bold text-white"
-                              style={{ 
-                                fontFamily: "Audiowide",
-                                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.8) 0%, rgba(37, 99, 235, 0.8) 100%)',
-                                border: '1px solid rgba(59, 130, 246, 0.6)'
-                              }}
-                            >
-                              PLAY
-                            </button>
-                            <button
-                              className="px-3 py-1 rounded-md text-xs font-bold text-white"
-                              style={{ 
-                                fontFamily: "Audiowide",
-                                background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.8) 0%, rgba(22, 163, 74, 0.8) 100%)',
-                                border: '1px solid rgba(34, 197, 94, 0.6)'
-                              }}
-                            >
-                              ATTACK
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Player 2 (Opponent - Right Side) */}
-                        <div className="flex flex-col items-center">
-                          <h3 
-                            className="text-sm font-bold text-white mb-3"
-                            style={{ 
-                              fontFamily: 'Audiowide',
-                              textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-                            }}
-                          >
-                            Opponent
-                          </h3>
-                          
-                          <div
-                            className="w-28 h-28 rounded-xl overflow-hidden border-2 border-white relative mb-3"
-                          >
-                            {/* Always use Relax.png for opponent */}
-                            <img
-                              src="/backgrounds/Relax.png"
-                              alt="Relax Background"
-                              className="absolute inset-0 w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-white text-3xl font-bold" style={{ fontFamily: 'Audiowide', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>18</span>
-                            </div>
-                          </div>
-                          
-                          {/* Background Rarity Display */}
-                          <div 
-                            className="text-center"
-                            style={{
-                              display: 'flex',
-                              width: '90px',
-                              height: '28px',
-                              flexDirection: 'column',
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              borderRadius: '8px',
-                              background: 'rgba(255, 255, 255, 0.09)',
-                              backdropFilter: 'blur(5.5px)'
-                            }}
-                          >
-                            <span style={{
-                              color: '#FFF',
-                              textAlign: 'center',
-                              fontFamily: 'Orbitron',
-                              fontSize: '11px',
-                              fontWeight: 500,
-                              lineHeight: '26px',
-                              textTransform: 'uppercase'
-                            }}>
-                              COMMON
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                      /* Use MatchPreview Component */
+                      <MatchPreview 
+                        background={selectedBackground ? {
+                          name: selectedBackground.name,
+                          preview: selectedBackground.url,
+                          type: selectedBackground.isVideo ? 'video' : 'image'
+                        } : { name: '', preview: '', type: 'image' }}
+                        size="medium"
+                        username={user?.displayName || 'Player'}
+                        DisplayBackgroundEquip={DisplayBackgroundEquip}
+                        MatchBackgroundEquip={MatchBackgroundEquip}
+                        className="w-full max-w-none h-auto"
+                      />
                     ) : (
                       /* Dashboard Preview - Exact Dashboard Replica */
                       <div 

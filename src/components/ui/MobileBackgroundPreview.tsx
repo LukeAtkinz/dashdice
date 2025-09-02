@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { MatchPreview } from './MatchPreview';
+import { useBackground } from '@/context/BackgroundContext';
 
 interface MobileBackgroundPreviewProps {
   background: {
@@ -11,18 +12,25 @@ interface MobileBackgroundPreviewProps {
   };
   type: 'match' | 'dashboard';
   onClose: () => void;
+  username?: string;
 }
 
 export const MobileBackgroundPreview: React.FC<MobileBackgroundPreviewProps> = ({
   background,
   type,
-  onClose
+  onClose,
+  username
 }) => {
+  const { DisplayBackgroundEquip, MatchBackgroundEquip } = useBackground();
+  
   const renderMatchPreview = () => (
     <MatchPreview 
       background={background}
       size="medium"
       className="border-white/30"
+      username={username}
+      DisplayBackgroundEquip={DisplayBackgroundEquip}
+      MatchBackgroundEquip={MatchBackgroundEquip}
     />
   );
 
