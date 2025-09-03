@@ -22,6 +22,8 @@ interface MatchPreviewProps {
     file: string;
     type: 'image' | 'video';
   } | null;
+  showFriendCard?: boolean;
+  isDesktop?: boolean;
 }
 
 export const MatchPreview: React.FC<MatchPreviewProps> = ({
@@ -30,7 +32,9 @@ export const MatchPreview: React.FC<MatchPreviewProps> = ({
   size = 'medium',
   username = 'Player',
   DisplayBackgroundEquip = null,
-  MatchBackgroundEquip = null
+  MatchBackgroundEquip = null,
+  showFriendCard = true,
+  isDesktop = false
 }) => {
   // Size configurations
   const sizeConfig = {
@@ -96,7 +100,7 @@ export const MatchPreview: React.FC<MatchPreviewProps> = ({
   };
   
   return (
-    <div className="space-y-4">
+    <div className={isDesktop ? "space-y-4" : ""}>
       {/* Match Preview */}
       <div 
         className={`relative ${config.container} rounded-[15px] overflow-hidden border-2 ${className}`}
@@ -281,63 +285,65 @@ export const MatchPreview: React.FC<MatchPreviewProps> = ({
         </div>
       </div>
       
-      {/* Friend Card Preview */}
-      <div className="mt-4">
-        <div 
-          className="relative w-full h-[80px] rounded-[15px] overflow-hidden border border-white/30"
-          style={getBackgroundStyle(MatchBackgroundEquip || { preview: '#3533CD' })}
-        >
-          {/* Dark overlay for text readability */}
+      {/* Friend Card Preview - Only show if enabled and not desktop */}
+      {showFriendCard && !isDesktop && (
+        <div className="mt-4">
           <div 
-            className="absolute inset-0"
-            style={{
-              background: 'linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)',
-              borderRadius: '15px',
-              zIndex: 1
-            }}
-          ></div>
-          
-          <div className="relative z-10 p-4 flex items-center gap-3 h-full">
-            {/* Profile Picture */}
-            <div className="relative">
-              <div className="w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center text-black font-bold">
-                {username.charAt(0).toUpperCase()}
+            className="relative w-full h-[80px] rounded-[15px] overflow-hidden border border-white/30"
+            style={getBackgroundStyle(MatchBackgroundEquip || { preview: '#3533CD' })}
+          >
+            {/* Dark overlay for text readability */}
+            <div 
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)',
+                borderRadius: '15px',
+                zIndex: 1
+              }}
+            ></div>
+            
+            <div className="relative z-10 p-4 flex items-center gap-3 h-full">
+              {/* Profile Picture */}
+              <div className="relative">
+                <div className="w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center text-black font-bold">
+                  {username.charAt(0).toUpperCase()}
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-gray-800"></div>
               </div>
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-gray-800"></div>
-            </div>
-            
-            {/* Friend Info */}
-            <div className="flex-1 min-w-0">
-              <h3 className="text-white font-semibold font-audiowide truncate text-sm">
-                {username}
-              </h3>
-              <p className="text-white/80 text-xs font-montserrat">Online</p>
-            </div>
-            
-            {/* Actions */}
-            <div className="flex gap-2">
-              <button
-                className="px-3 py-1 rounded-lg text-xs font-bold text-white bg-pink-600 hover:bg-pink-700"
-                style={{ 
-                  fontFamily: 'Audiowide',
-                  textTransform: 'uppercase'
-                }}
-              >
-                INVITE
-              </button>
-              <button
-                className="px-3 py-1 rounded-lg text-xs font-bold text-white bg-pink-600 hover:bg-pink-700"
-                style={{ 
-                  fontFamily: 'Audiowide',
-                  textTransform: 'uppercase'
-                }}
-              >
-                CHAT
-              </button>
+              
+              {/* Friend Info */}
+              <div className="flex-1 min-w-0">
+                <h3 className="text-white font-semibold font-audiowide truncate text-sm">
+                  {username}
+                </h3>
+                <p className="text-white/80 text-xs font-montserrat">Online</p>
+              </div>
+              
+              {/* Actions */}
+              <div className="flex gap-2">
+                <button
+                  className="px-3 py-1 rounded-lg text-xs font-bold text-white bg-pink-600 hover:bg-pink-700"
+                  style={{ 
+                    fontFamily: 'Audiowide',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  INVITE
+                </button>
+                <button
+                  className="px-3 py-1 rounded-lg text-xs font-bold text-white bg-pink-600 hover:bg-pink-700"
+                  style={{ 
+                    fontFamily: 'Audiowide',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  CHAT
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -7,6 +7,7 @@ import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { useAuth } from '@/context/AuthContext';
 import { MatchPreview } from '@/components/ui/MatchPreview';
+import { FriendCardPreview } from '@/components/ui/FriendCardPreview';
 
 export const InventorySection: React.FC = () => {
   const { setCurrentSection } = useNavigation();
@@ -22,6 +23,19 @@ export const InventorySection: React.FC = () => {
   const [activeTab, setActiveTab] = useState('display'); // 'display' or 'match'
   const [selectedBackground, setSelectedBackground] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  // Detect screen size
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsDesktop(window.innerWidth >= 768); // md breakpoint
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   // Disable body scrolling when component mounts
   useEffect(() => {
@@ -379,12 +393,17 @@ export const InventorySection: React.FC = () => {
           >
             <div className="h-full flex flex-col">
               <div 
-                className="flex-1 overflow-y-auto overflow-x-hidden relative scrollbar-hide" 
+                className="flex-1 overflow-y-auto overflow-x-hidden relative" 
                 style={{ 
                   maskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)', 
                   WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)',
                   touchAction: 'pan-y',
-                  WebkitOverflowScrolling: 'touch'
+                  WebkitOverflowScrolling: 'touch',
+                  overscrollBehavior: 'contain',
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                  transform: 'translateZ(0)', // Forces hardware acceleration
+                  willChange: 'scroll-position' // Optimizes for scrolling
                 }}
               >
                 <div className="space-y-2.5">
@@ -595,6 +614,8 @@ export const InventorySection: React.FC = () => {
                         DisplayBackgroundEquip={DisplayBackgroundEquip}
                         MatchBackgroundEquip={MatchBackgroundEquip}
                         className="w-full max-w-none h-auto"
+                        showFriendCard={true}
+                        isDesktop={isDesktop}
                       />
                     ) : (
                       /* Dashboard Preview - Exact Dashboard Replica */
@@ -1066,6 +1087,17 @@ export const InventorySection: React.FC = () => {
               )}
             </div>
           </div>
+          
+          {/* Desktop Friend Card Preview - Separate Container */}
+          {isDesktop && activeTab === 'match' && (
+            <div className="w-full mt-4">
+              <FriendCardPreview 
+                username={user?.displayName || 'Player'}
+                MatchBackgroundEquip={MatchBackgroundEquip}
+                className="w-full"
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
