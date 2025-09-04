@@ -54,11 +54,12 @@ const DashboardContent: React.FC = () => {
     };
   };
   
-  console.log('🏠 SinglePageDashboard: Component rendered with:', {
-    currentSection,
-    sectionParams,
-    timestamp: new Date().toISOString()
-  });
+  // Removed console log to prevent infinite re-renders
+  // console.log('🏠 SinglePageDashboard: Component rendered with:', {
+  //   currentSection,
+  //   sectionParams,
+  //   timestamp: new Date().toISOString()
+  // });
   
   // Handle browser refresh functionality
   useBrowserRefresh();
@@ -593,17 +594,6 @@ const DashboardContent: React.FC = () => {
         {(currentSection === 'match' || currentSection === 'waiting-room') ? (
           // Full-screen centered layout for match, waiting-room, and winner screens
           <main className="flex-1 w-full h-full min-h-0 overflow-hidden flex items-center justify-center">
-            {(() => {
-              console.log('🏠 SinglePageDashboard: Rendering centered section with:', {
-                currentSection,
-                sectionParams,
-                gameMode: sectionParams.gameMode,
-                matchId: sectionParams.matchId,
-                roomId: sectionParams.matchId || "dev-room-123",
-                timestamp: new Date().toISOString()
-              });
-              return null;
-            })()}
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentSection}
@@ -622,29 +612,11 @@ const DashboardContent: React.FC = () => {
                 )}
                 {currentSection === 'waiting-room' && (
                   <GameWaitingRoom 
-                    gameMode={(() => {
-                      console.log('🐛 DEBUG: SinglePageDashboard gameMode logic:', {
-                        'sectionParams.gameMode': sectionParams.gameMode,
-                        'fallback': 'classic',
-                        'result': sectionParams.gameMode || 'classic',
-                        'fullSectionParams': sectionParams
-                      });
-                      return sectionParams.gameMode || 'classic';
-                    })()}
+                    gameMode={sectionParams.gameMode || 'classic'}
                     actionType={sectionParams.actionType || 'live'}
-                    gameType={(() => {
-                      // Use gameType from sectionParams if available, otherwise default to quick
-                      const gameType = sectionParams.gameType || 'quick';
-                      console.log('🎯 DEBUG: Determining gameType for waiting room:', {
-                        actionType: sectionParams.actionType,
-                        roomId: sectionParams.roomId,
-                        gameMode: sectionParams.gameMode,
-                        gameType: gameType,
-                        sectionParams: sectionParams
-                      });
-                      return gameType as GameType;
-                    })()}
+                    gameType={(sectionParams.gameType || 'quick') as GameType}
                     roomId={sectionParams.roomId}
+                    isOptimistic={sectionParams.isOptimistic || false}
                     onBack={async () => {
                       // Debug logging
                       console.log('🐛 DEBUG: GameWaitingRoom onBack - sectionParams:', sectionParams);

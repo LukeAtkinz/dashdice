@@ -12,6 +12,7 @@ interface SectionParams {
   gameType?: 'quick' | 'ranked'; // Add gameType for match type identification
   userId?: string; // Add userId for user profile viewing
   userName?: string; // Add userName for user profile display
+  isOptimistic?: boolean; // Add flag for optimistic UI state
 }
 
 interface NavigationContextType {

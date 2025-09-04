@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { UserService } from '@/services/userService';
@@ -11,6 +11,7 @@ import { collection, addDoc, doc, onSnapshot, updateDoc, deleteDoc, query, where
 import { GameType } from '@/types/ranked';
 import { RankedMatchmakingService } from '@/services/rankedMatchmakingService';
 import { NewMatchmakingService } from '@/services/newMatchmakingService';
+import { OptimisticMatchmakingService } from '@/services/optimisticMatchmakingService';
 
 interface GameWaitingRoomProps {
   gameMode: string;
@@ -18,6 +19,7 @@ interface GameWaitingRoomProps {
   gameType?: GameType; // Add gameType support
   onBack: () => void;
   roomId?: string; // Optional roomId for existing rooms
+  isOptimistic?: boolean; // Add flag for optimistic UI
 }
 
 interface WaitingRoomEntry {
@@ -72,7 +74,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   actionType,
   gameType = 'quick', // Default to quick game
   onBack,
-  roomId
+  roomId,
+  isOptimistic = false // Default to non-optimistic
 }) => {
   const { user } = useAuth();
   const { DisplayBackgroundEquip, MatchBackgroundEquip } = useBackground();
@@ -197,29 +200,26 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   };
 
   // Current game mode configuration - use waiting room data if available, fallback to prop
-  const currentGameMode = (() => {
+  const currentGameMode = useMemo(() => {
     // PRIORITY: Use the gameMode prop over waitingRoomEntry for friend invitations
     // This ensures the correct game mode is used when accepting friend invitations
     const actualGameMode = gameMode || waitingRoomEntry?.gameMode;
     const config = gameModeConfig[actualGameMode as keyof typeof gameModeConfig] || gameModeConfig.classic;
     
-    console.log('🎯 GameWaitingRoom: Game mode resolution:', {
-      propGameMode: gameMode,
-      waitingRoomGameMode: waitingRoomEntry?.gameMode,
-      resolvedGameMode: actualGameMode,
-      configUsed: config.name,
-      waitingRoomId: waitingRoomEntry?.id,
-      roomIdProp: roomId,
-      isFriendInvitation: waitingRoomEntry?.friendInvitation
-    });
+    // Only log on actual changes, not every render
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🎯 GameWaitingRoom: Game mode resolved:', {
+        propGameMode: gameMode,
+        waitingRoomGameMode: waitingRoomEntry?.gameMode,
+        resolvedGameMode: actualGameMode,
+        configUsed: config.name
+      });
+    }
     
     return config;
-  })();
+  }, [gameMode, waitingRoomEntry?.gameMode]);
   
-  // Debug: Log the selected game mode configuration
-  console.log('🎯 GameWaitingRoom: gameMode received:', gameMode);
-  console.log('🎯 GameWaitingRoom: currentGameMode selected:', currentGameMode);
-  console.log('🎯 GameWaitingRoom: All available configs:', Object.keys(gameModeConfig));
+  // Game mode logging moved to useMemo to prevent infinite renders
 
   // Get user data from profile
   const getUserData = async () => {
@@ -282,6 +282,35 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     }
   }, [actionType]);
 
+  // Monitor optimistic room status changes for real-time updates
+  useEffect(() => {
+    if (!isOptimistic || !roomId || !OptimisticMatchmakingService.isOptimisticRoom(roomId)) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const optimisticRoom = OptimisticMatchmakingService.getOptimisticRoom(roomId);
+      if (optimisticRoom) {
+        // Update search text based on current optimistic room status
+        setSearchingText(optimisticRoom.searchText);
+        
+        // Log status changes for debugging
+        console.log(`🔄 GameWaitingRoom: Optimistic room status: ${optimisticRoom.status} - ${optimisticRoom.searchText}`);
+        
+        // Check if we have a real room ID and should transition
+        if (optimisticRoom.realRoomId && optimisticRoom.status === 'transitioning') {
+          console.log(`🔄 GameWaitingRoom: Real room ready, transitioning to ${optimisticRoom.realRoomId}`);
+          
+          // The parent component (DashboardSection) will handle the navigation update
+          // We just need to update our local state to show the transition
+          setSearchingText('Connected! Loading match...');
+        }
+      }
+    }, 500); // Check every 500ms for smooth updates
+
+    return () => clearInterval(interval);
+  }, [isOptimistic, roomId]);
+
   // Create waiting room entry when component mounts
   useEffect(() => {
     const handleMatchmaking = async () => {
@@ -292,6 +321,35 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         if (!user?.uid) {
           setError('You must be signed in to create a game');
           return;
+        }
+
+        // STEP 1: Handle optimistic rooms first
+        if (isOptimistic && roomId && OptimisticMatchmakingService.isOptimisticRoom(roomId)) {
+          console.log('✨ GameWaitingRoom: Loading optimistic room data for:', roomId);
+          
+          const optimisticRoom = OptimisticMatchmakingService.getOptimisticRoom(roomId);
+          
+          if (optimisticRoom) {
+            // Create waiting room entry from optimistic data
+            const optimisticWaitingRoomEntry: WaitingRoomEntry = {
+              id: optimisticRoom.id,
+              gameMode: optimisticRoom.gameMode,
+              gameType: optimisticRoom.gameType,
+              playersRequired: 2,
+              hostData: optimisticRoom.playerData,
+              createdAt: new Date(),
+              rankedGame: optimisticRoom.gameType === 'ranked'
+            };
+            
+            setWaitingRoomEntry(optimisticWaitingRoomEntry);
+            setSearchingText(optimisticRoom.searchText);
+            setIsLoading(false);
+            
+            console.log('✅ GameWaitingRoom: Optimistic room loaded successfully');
+            return; // Don't proceed with normal room loading
+          } else {
+            console.warn('⚠️ GameWaitingRoom: Optimistic room data not found, falling back to normal loading');
+          }
         }
 
         const userData = await getUserData();
@@ -310,7 +368,39 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         if (roomId) {
           console.log('🎯 GameWaitingRoom: Using existing room ID:', roomId);
           
-          // Set up listener for the existing room
+          // STEP 3: Bridge Entry System - Check for immediate room data availability
+          const bridgeRoomData = OptimisticMatchmakingService.getBridgeRoomData(roomId);
+          if (bridgeRoomData) {
+            console.log('🌉 GameWaitingRoom: Using bridge room data for immediate access');
+            
+            // Set room data immediately from bridge to prevent race conditions
+            setWaitingRoomEntry(bridgeRoomData as WaitingRoomEntry);
+            setError(''); // Clear any previous errors
+            
+            // Update ready state for current user if needed
+            if (bridgeRoomData.friendInvitation && bridgeRoomData.readyPlayers && user?.uid) {
+              setIsReady(bridgeRoomData.readyPlayers.includes(user.uid));
+              
+              // Check if both players are ready
+              if (bridgeRoomData.hostData && bridgeRoomData.opponentData && bridgeRoomData.readyPlayers.length === 2) {
+                startVsCountdown();
+              }
+            }
+            
+            // Check for opponent
+            if (bridgeRoomData.opponentData && !opponentJoined) {
+              console.log('🎯 GameWaitingRoom: Opponent detected in bridge data');
+              setOpponentJoined(true);
+              
+              // Only auto-start countdown for non-friend invitations
+              if (!bridgeRoomData.friendInvitation && vsCountdown === null) {
+                console.log('🚀 GameWaitingRoom: Starting countdown for matched players');
+                startVsCountdown();
+              }
+            }
+          }
+          
+          // Set up listener for the existing room (this will override bridge data with real-time updates)
           const unsubscribe = onSnapshot(
             doc(db, 'waitingroom', roomId), 
             (doc) => {
@@ -319,6 +409,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 console.log('🔄 GameWaitingRoom: Received room update for existing room', data);
                 setWaitingRoomEntry({ ...data, id: doc.id });
                 setError(''); // Clear any previous errors
+                
+                // Clear bridge data now that we have real-time data
+                OptimisticMatchmakingService.clearBridgeRoomData(roomId);
                 
                 // Update ready state for current user
                 if (data.friendInvitation && data.readyPlayers && user?.uid) {
@@ -350,7 +443,22 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   }
                 }
               } else {
-                console.log('🔄 GameWaitingRoom: Room no longer exists in waitingroom (likely moved to matches)');
+                console.log('🔄 GameWaitingRoom: Room no longer exists in waitingroom (likely moved to matches or in gameSessions)');
+                
+                // STEP 3: Bridge Entry System - Check if room data still exists in bridge before showing error
+                const bridgeRoomData = OptimisticMatchmakingService.getBridgeRoomData(roomId);
+                if (bridgeRoomData) {
+                  console.log('🌉 GameWaitingRoom: Room not in waitingroom but found in bridge, using bridge data');
+                  
+                  // Use bridge data since the room might be in gameSessions instead of waitingroom
+                  setWaitingRoomEntry(bridgeRoomData as WaitingRoomEntry);
+                  setError(''); // Clear any previous errors
+                  setIsLoading(false);
+                  
+                  console.log('✅ GameWaitingRoom: Successfully using bridge data instead of database lookup');
+                  return; // Don't proceed with match checking - bridge data is sufficient
+                }
+                
                 // For friend invitations, immediately check if room was moved to matches
                 console.log('🔍 GameWaitingRoom: Room not found, checking for existing matches...');
                 
@@ -431,8 +539,35 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       return;
                     }
                     
-                    // If no matches found, show error
+                    // If no matches found, implement enhanced error prevention
                     console.log('❌ GameWaitingRoom: No existing matches found for room');
+                    
+                    // STEP 3: Enhanced Error Prevention - Final check before showing error
+                    const finalBridgeCheck = OptimisticMatchmakingService.getBridgeRoomData(roomId);
+                    if (finalBridgeCheck) {
+                      console.log('🌉 GameWaitingRoom: Final bridge check found room data, using it');
+                      setWaitingRoomEntry(finalBridgeCheck as WaitingRoomEntry);
+                      setError(''); // Clear any previous errors
+                      return;
+                    }
+                    
+                    // Check if this is an optimistic room that might still be creating
+                    if (OptimisticMatchmakingService.isOptimisticRoom(roomId)) {
+                      const optimisticRoom = OptimisticMatchmakingService.getOptimisticRoom(roomId);
+                      if (optimisticRoom && (optimisticRoom.status === 'creating' || optimisticRoom.status === 'searching')) {
+                        console.log('🔄 GameWaitingRoom: Optimistic room still creating, waiting...');
+                        setError(''); // Clear errors
+                        setSearchingText('Still creating room...');
+                        
+                        // Wait longer for room creation
+                        setTimeout(() => {
+                          console.log('🔄 GameWaitingRoom: Retrying after optimistic room creation delay');
+                        }, 2000);
+                        return;
+                      }
+                    }
+                    
+                    // Show error only as last resort
                     setError('Game room no longer exists');
                     setTimeout(() => onBack(), 2000);
                     
@@ -448,6 +583,21 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             },
             (error) => {
               console.error('❌ GameWaitingRoom: Error listening to room:', error);
+              
+              // STEP 3: Bridge Entry System - Check bridge before showing connection error
+              const bridgeRoomData = OptimisticMatchmakingService.getBridgeRoomData(roomId);
+              if (bridgeRoomData) {
+                console.log('🌉 GameWaitingRoom: Connection error but bridge data available, using it');
+                setWaitingRoomEntry(bridgeRoomData as WaitingRoomEntry);
+                setError(''); // Clear any previous errors
+                
+                // Try to reconnect after using bridge data
+                setTimeout(() => {
+                  console.log('🔄 GameWaitingRoom: Attempting to reconnect after bridge fallback');
+                }, 1000);
+                return;
+              }
+              
               setError('Connection error - please try again');
             }
           );
@@ -1232,27 +1382,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const renderPlayerBackground = () => {
     const background = waitingRoomEntry?.hostData?.matchBackgroundEquipped;
     
-    console.log('🎨 GameWaitingRoom: renderPlayerBackground called', {
-      background,
-      backgroundType: typeof background,
-      backgroundKeys: background && typeof background === 'object' ? Object.keys(background) : [],
-      backgroundName: background?.name,
-      backgroundFile: background?.file,
-      backgroundType_prop: background?.type,
-      hasWaitingRoomEntry: !!waitingRoomEntry,
-      hostData: waitingRoomEntry?.hostData,
-      fullWaitingRoomEntry: waitingRoomEntry
-    });
-    
     // Validate background object structure
     if (!background || typeof background !== 'object') {
-      console.log('GameWaitingRoom: No valid background object, using default');
       return null;
     }
     
     // Handle complete background object
     if (background.type === 'video' && background.file) {
-      console.log('GameWaitingRoom: Rendering video background:', background.file);
       return (
         <video
           autoPlay
@@ -1293,19 +1429,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const getBackgroundStyle = () => {
     const background = waitingRoomEntry?.hostData?.matchBackgroundEquipped;
     
-    console.log('🎨 GameWaitingRoom: getBackgroundStyle called', {
-      background,
-      backgroundType: typeof background,
-      backgroundKeys: background && typeof background === 'object' ? Object.keys(background) : [],
-      backgroundName: background?.name,
-      backgroundFile: background?.file,
-      backgroundType_prop: background?.type,
-      fullHostData: waitingRoomEntry?.hostData
-    });
-    
     // Validate background object structure
     if (!background) {
-      console.log('GameWaitingRoom: No background - returning default style');
       return { background: '#332A63' };
     }
     
@@ -1318,7 +1443,6 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     // Handle complete background object
     if (typeof background === 'object' && background.type && background.file) {
       if (background.type === 'video') {
-        console.log('GameWaitingRoom: Video background - returning empty style');
         return {};
       } else if (background.type === 'image') {
         const style = { 

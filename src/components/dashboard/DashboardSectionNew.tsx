@@ -9,6 +9,7 @@ import { MatchmakingService } from '@/services/matchmakingService';
 import { UserService } from '@/services/userService';
 import { RankedMatchmakingService } from '@/services/rankedMatchmakingService';
 import { NewMatchmakingService } from '@/services/newMatchmakingService';
+import { OptimisticMatchmakingService } from '@/services/optimisticMatchmakingService';
 import { userDataCache } from '@/services/userDataCache';
 import AchievementsMini from '@/components/achievements/AchievementsMini';
 import { CompactLeaderboard } from '@/components/ranked/Leaderboard';
@@ -195,70 +196,54 @@ export const DashboardSection: React.FC = () => {
           playerStats: userProfile.stats
         };
 
-        if (action === 'ranked') {
-          // Use cached ranked data if available for faster validation
-          let eligibility, rankedStats;
-          
-          if (cachedData && cachedData.rankedEligibility && cachedData.rankedStats) {
-            eligibility = cachedData.rankedEligibility;
-            rankedStats = cachedData.rankedStats;
-          } else {
-            [eligibility, rankedStats] = await Promise.all([
-              RankedMatchmakingService.validateRankedEligibility(user.uid),
-              RankedMatchmakingService.getUserRankedStats(user.uid)
-            ]);
-          }
-          
-          if (!eligibility.valid) {
-            alert(`❌ ${eligibility.reason}`);
-            setIsExiting(false);
-            return;
-          }
-
-          if (!rankedStats) {
-            alert('❌ Unable to initialize ranked stats. Please try again.');
-            setIsExiting(false);
-            return;
-          }
-
-          console.log('🏆 Starting ranked match...');
-          const result = await MatchmakingService.findOrCreateRoom(gameMode, hostData, 'ranked');
-          
-          if (result) {
-            // Navigate to waiting room for ranked match
-            // Use the proxy room ID (result.id) for GameWaitingRoom compatibility
-            const roomId = result.id;
-            setCurrentSection('waiting-room', { 
-              gameMode, 
-              actionType: 'live',
-              roomId: roomId,
-              gameType: 'ranked'
-            });
-          } else {
-            alert('❌ Failed to create/join ranked match. Please try again.');
-            setIsExiting(false);
-          }
-          return;
-        }
-
-        // Search for existing room or create new one (for Quick Games)
-        const { id: roomId, isNewRoom, hasOpponent } = await MatchmakingService.findOrCreateRoom(gameMode, hostData);
+        // STEP 2: Optimistic UI with Background Room Creation
+        console.log('✨ Creating optimistic room with background real room creation...');
         
-        console.log(`${isNewRoom ? 'Created' : 'Joined'} room:`, roomId);
+        // Determine game type
+        const gameType = action === 'ranked' ? 'ranked' : 'quick';
         
-        if (hasOpponent) {
-          console.log('Opponent found! Starting 5-second countdown...');
-        }
+        // Create optimistic room with real user data and background room creation
+        const optimisticRoom = await OptimisticMatchmakingService.createOptimisticRoom(
+          gameMode,
+          gameType,
+          user.uid,
+          userProfile,
+          {
+            onRealRoomCreated: (realRoomId: string) => {
+              console.log(`🎯 Real room created: ${realRoomId}, seamlessly transitioning...`);
+              
+              // Update navigation to use real room ID without user noticing
+              setCurrentSection('waiting-room', {
+                gameMode,
+                actionType: action as 'live' | 'custom',
+                roomId: realRoomId,
+                gameType,
+                isOptimistic: false // Now using real room
+              });
+            },
+            onStatusUpdate: (status, searchText) => {
+              console.log(`📊 Status update: ${status} - ${searchText}`);
+              // Status updates will be handled by the GameWaitingRoom component
+            },
+            onError: (error: string) => {
+              console.error(`❌ Optimistic matchmaking error: ${error}`);
+              setIsExiting(false);
+              alert(`Failed to create game room: ${error}`);
+            }
+          }
+        );
         
-        // Navigate to waiting room section
-        setTimeout(() => {
-          setCurrentSection('waiting-room', { 
-            gameMode, 
-            actionType: action as 'live' | 'custom',
-            roomId: roomId,
-            gameType: 'quick'
-          });
-        }, 600);
+        // Navigate to waiting room IMMEDIATELY with optimistic data
+        setCurrentSection('waiting-room', {
+          gameMode,
+          actionType: action as 'live' | 'custom',
+          roomId: optimisticRoom.id,
+          gameType,
+          isOptimistic: true
+        });
+        
+        console.log(`🚀 Immediately navigated to waiting room with optimistic room: ${optimisticRoom.id}`);
+        console.log(`🔧 Background real room creation started for seamless transition`);
 
       } catch (error) {
         console.error('Error in matchmaking:', error);

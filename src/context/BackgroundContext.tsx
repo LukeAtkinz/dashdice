@@ -214,28 +214,26 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
         const userData = doc.data();
         const inventory = userData.inventory || [];
         
-        console.log('BackgroundContext: User data updated', {
-          inventoryDisplayBg: userData.inventory?.displayBackgroundEquipped,
-          inventoryMatchBg: userData.inventory?.matchBackgroundEquipped,
-          inventoryLength: userData.inventory?.length || 0
-        });
+        // Reduced logging to prevent console spam
+        if (process.env.NODE_ENV === 'development') {
+          console.log('BackgroundContext: User inventory updated', {
+            hasDisplayBg: !!userData.inventory?.displayBackgroundEquipped,
+            hasMatchBg: !!userData.inventory?.matchBackgroundEquipped,
+            inventoryLength: userData.inventory?.length || 0
+          });
+        }
         
         // Handle display background from inventory
         const displayBgData = userData.inventory?.displayBackgroundEquipped;
         if (displayBgData) {
-          console.log('🔍 Processing display background data:', displayBgData);
-          
           // If it's already a complete background object, use it directly
           if (typeof displayBgData === 'object' && displayBgData.name && displayBgData.file && displayBgData.type) {
-            console.log('✅ Display background is complete object:', displayBgData);
             setDisplayBackgroundEquipState(displayBgData);
           } else if (typeof displayBgData === 'string') {
             // Legacy support: if it's a string, try to find the background
-            console.log('⚠️ Display background is legacy string, converting:', displayBgData);
             const displayBackground = findBackgroundByName(displayBgData);
             setDisplayBackgroundEquipState(displayBackground);
           } else {
-            console.log('❌ Invalid display background data format:', displayBgData);
             setDisplayBackgroundEquipState(null);
           }
         } else {
@@ -245,19 +243,14 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
         // Handle match background from inventory
         const matchBgData = userData.inventory?.matchBackgroundEquipped;
         if (matchBgData) {
-          console.log('🔍 Processing match background data:', matchBgData);
-          
           // If it's already a complete background object, use it directly
           if (typeof matchBgData === 'object' && matchBgData.name && matchBgData.file && matchBgData.type) {
-            console.log('✅ Match background is complete object:', matchBgData);
             setMatchBackgroundEquipState(matchBgData);
           } else if (typeof matchBgData === 'string') {
             // Legacy support: if it's a string, try to find the background
-            console.log('⚠️ Match background is legacy string, converting:', matchBgData);
             const matchBackground = findBackgroundByName(matchBgData);
             setMatchBackgroundEquipState(matchBackground);
           } else {
-            console.log('❌ Invalid match background data format:', matchBgData);
             setMatchBackgroundEquipState(null);
           }
         } else {
