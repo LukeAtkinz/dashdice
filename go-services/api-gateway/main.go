@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 	
@@ -221,6 +222,7 @@ func (s *APIGatewayServer) setupRoutes() {
 			{
 				matches.GET("/", s.handleListMatches)
 				matches.POST("/", s.handleCreateMatch)
+				matches.POST("/rematch", s.handleCreateRematch)
 				matches.GET("/:id", s.handleGetMatch)
 				matches.PUT("/:id", s.handleUpdateMatch)
 				matches.DELETE("/:id", s.handleDeleteMatch)
@@ -589,6 +591,168 @@ func (s *APIGatewayServer) handleCreateMatch(c *gin.Context) {
 		"success": true,
 		"match":   match,
 	})
+}
+
+func (s *APIGatewayServer) handleCreateRematch(c *gin.Context) {
+	var rematchRequest struct {
+		GameMode              string `json:"game_mode" binding:"required"`
+		GameType              string `json:"game_type"`
+		RequesterUserId       string `json:"requester_user_id" binding:"required"`
+		RequesterDisplayName  string `json:"requester_display_name" binding:"required"`
+		OpponentUserId        string `json:"opponent_user_id" binding:"required"`
+		OpponentDisplayName   string `json:"opponent_display_name" binding:"required"`
+		OriginalMatchId       string `json:"original_match_id"`
+	}
+
+	if err := c.ShouldBindJSON(&rematchRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request body",
+			"code":  "INVALID_REQUEST_BODY",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Validate game mode (support common game modes)
+	validModes := []string{"classic", "zero hour", "zerohour", "last line", "lastline", "blitz", "quickfire"}
+	validMode := false
+	for _, mode := range validModes {
+		if strings.ToLower(rematchRequest.GameMode) == mode {
+			validMode = true
+			break
+		}
+	}
+
+	if !validMode {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid game mode",
+			"code":  "INVALID_GAME_MODE",
+			"valid_modes": validModes,
+		})
+		return
+	}
+
+	// Helper functions for proper game mode initialization
+	getRoundObjective := func(gameMode string) int {
+		switch strings.ToLower(gameMode) {
+		case "quickfire":
+			return 50
+		case "classic":
+			return 100
+		case "zero hour", "zerohour":
+			return 0
+		case "last line", "lastline", "last-line":
+			return 0   // Last Line targets 0 (opponent elimination)
+		case "true grit", "truegrit", "true-grit":
+			return 100
+		default:
+			return 100
+		}
+	}
+
+	getStartingScore := func(gameMode string) int {
+		switch strings.ToLower(gameMode) {
+		case "quickfire":
+			return 0
+		case "classic":
+			return 0
+		case "zero hour", "zerohour":
+			return 100
+		case "last line", "lastline", "last-line":
+			return 50  // Last Line starts at 50 (tug-of-war)
+		case "true grit", "truegrit", "true-grit":
+			return 0
+		default:
+			return 0
+		}
+	}
+
+	// Create rematch waiting room
+	waitingRoomId := fmt.Sprintf("rematch_%s_%s_%d", rematchRequest.RequesterUserId, rematchRequest.OpponentUserId, time.Now().Unix())
+	
+	// Create the waiting room data structure compatible with Firebase
+	waitingRoom := gin.H{
+		"id":              waitingRoomId,
+		"gameMode":        rematchRequest.GameMode,
+		"gameType":        "Private Rematch",
+		"playersRequired": 0, // Both players already confirmed
+		"createdAt":       time.Now().Unix(),
+		"expiresAt":       time.Now().Add(20 * time.Minute).Unix(),
+		"hostData": gin.H{
+			"playerDisplayName": rematchRequest.RequesterDisplayName,
+			"playerId":          rematchRequest.RequesterUserId,
+			"displayBackgroundEquipped": gin.H{
+				"name": "Relax",
+				"file": "/backgrounds/Relax.png",
+				"type": "image",
+			},
+			"matchBackgroundEquipped": gin.H{
+				"name": "Relax", 
+				"file": "/backgrounds/Relax.png",
+				"type": "image",
+			},
+			"playerStats": gin.H{
+				"bestStreak":    0,
+				"currentStreak": 0,
+				"gamesPlayed":   0,
+				"matchWins":     0,
+			},
+		},
+		"opponentData": gin.H{
+			"playerDisplayName": rematchRequest.OpponentDisplayName,
+			"playerId":          rematchRequest.OpponentUserId,
+			"displayBackgroundEquipped": gin.H{
+				"name": "Relax",
+				"file": "/backgrounds/Relax.png", 
+				"type": "image",
+			},
+			"matchBackgroundEquipped": gin.H{
+				"name": "Relax",
+				"file": "/backgrounds/Relax.png",
+				"type": "image", 
+			},
+			"playerStats": gin.H{
+				"bestStreak":    0,
+				"currentStreak": 0,
+				"gamesPlayed":   0,
+				"matchWins":     0,
+			},
+		},
+		"gameData": gin.H{
+			"type":           "dice",
+			"settings":       gin.H{},
+			"roundObjective": getRoundObjective(rematchRequest.GameMode),
+			"startingScore":  getStartingScore(rematchRequest.GameMode),
+		},
+	}
+
+	s.logger.Info("Rematch waiting room created", 
+		zap.String("waiting_room_id", waitingRoomId),
+		zap.String("game_mode", rematchRequest.GameMode),
+		zap.String("requester", rematchRequest.RequesterUserId),
+		zap.String("opponent", rematchRequest.OpponentUserId))
+
+	// Save waiting room to Firebase for compatibility with frontend
+	ctx := context.Background()
+	_, err := s.db.GetFirestore().Collection("waitingroom").Doc(waitingRoomId).Set(ctx, waitingRoom)
+	if err != nil {
+		s.logger.Error("Failed to save waiting room to Firebase", 
+			zap.Error(err),
+			zap.String("waiting_room_id", waitingRoomId))
+		
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to save waiting room",
+			"code":  "FIREBASE_SAVE_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"success":        true,
+		"waiting_room":   waitingRoom,
+		"waiting_room_id": waitingRoomId,
+	})
+}
 }
 
 func (s *APIGatewayServer) handleGetMatch(c *gin.Context) {

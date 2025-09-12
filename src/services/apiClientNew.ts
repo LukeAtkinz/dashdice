@@ -190,14 +190,39 @@ export class DashDiceAPI {
       
       if (!response.ok) {
         console.error(`❌ API Error: ${response.status}`, data);
-        throw new Error(data.error || data.message || `HTTP ${response.status}`);
+        
+        // Return properly formatted error response
+        return {
+          success: false,
+          error: data.error || data.message || `HTTP ${response.status}`,
+          code: response.status.toString(),
+          data: data
+        };
       }
 
       console.log(`✅ API Response: ${response.status}`, data);
-      return data;
+      
+      // ✅ FIX: Wrap successful Go backend responses with success flag
+      // Check if response already has success property (for backwards compatibility)
+      if (data.hasOwnProperty('success')) {
+        return data;
+      }
+      
+      // Wrap raw Go backend response in ApiResponse format
+      return {
+        success: true,
+        data: data,
+        message: data.message || 'Request successful'
+      };
     } catch (error) {
       console.error('❌ API Request Error:', error);
-      throw error;
+      
+      // Return properly formatted error response
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        code: 'NETWORK_ERROR'
+      };
     }
   }
 

@@ -380,7 +380,52 @@ export class GameInvitationService {
       // Default background
       const defaultBackground = { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
 
-      // Create waiting room with both players ready
+      // Helper functions for proper game mode initialization
+      const getRoundObjective = (gameMode: string): number => {
+        switch (gameMode.toLowerCase()) {
+          case 'quickfire':
+            return 50;
+          case 'classic':
+            return 100;
+          case 'zero hour':
+          case 'zerohour':
+            return 0;
+          case 'last line':
+          case 'lastline':
+          case 'last-line':
+            return 0;   // Last Line targets 0 (opponent elimination)
+          case 'true grit':
+          case 'truegrit':
+          case 'true-grit':
+            return 100;
+          default:
+            return 100;
+        }
+      };
+
+      const getStartingScore = (gameMode: string): number => {
+        switch (gameMode.toLowerCase()) {
+          case 'quickfire':
+            return 0;
+          case 'classic':
+            return 0;
+          case 'zero hour':
+          case 'zerohour':
+            return 100;
+          case 'last line':
+          case 'lastline':
+          case 'last-line':
+            return 50;  // Last Line starts at 50 (tug-of-war)
+          case 'true grit':
+          case 'truegrit':
+          case 'true-grit':
+            return 0;
+          default:
+            return 0;
+        }
+      };
+
+      // Create waiting room with both players ready and proper game mode initialization
       const waitingRoomData = {
         gameMode: invitation.gameType,
         gameType: 'Friend Invitation',
@@ -389,6 +434,14 @@ export class GameInvitationService {
         readyPlayers: [invitation.fromUserId, invitation.toUserId], // Both auto-ready
         createdAt: serverTimestamp(),
         expiresAt: new Date(Date.now() + (20 * 60 * 1000)), // 20 minute expiry
+        
+        // Game initialization data for proper mode setup
+        gameData: {
+          type: 'dice',
+          settings: {},
+          roundObjective: getRoundObjective(invitation.gameType),
+          startingScore: getStartingScore(invitation.gameType)
+        },
         
         // Host player data (inviter)
         hostData: {

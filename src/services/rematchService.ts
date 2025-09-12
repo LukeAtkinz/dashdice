@@ -14,7 +14,7 @@ import {
   Unsubscribe
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { MatchmakingService } from './matchmakingService';
+import { GoBackendService } from './goBackendService';
 
 export interface RematchRoom {
   id: string;
@@ -104,15 +104,16 @@ export class RematchService {
         throw new Error('Rematch has expired');
       }
       
-      // Create a new waiting room for the rematch
+      // Create a new waiting room for the rematch using Go services
       // We'll use the same game settings as the original match
-      const newMatchId = await MatchmakingService.createRematchWaitingRoom(
+      const newMatchId = await GoBackendService.createRematchWaitingRoom(
         rematchData.requesterUserId,
         rematchData.requesterDisplayName,
         rematchData.opponentUserId,
         rematchData.opponentDisplayName,
         rematchData.gameMode,
-        rematchData.gameType
+        rematchData.gameType,
+        rematchData.originalMatchId
       );
       
       // Update rematch room status with new match ID

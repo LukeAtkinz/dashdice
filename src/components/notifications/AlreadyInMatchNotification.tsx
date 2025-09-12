@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import { useNavigation } from '@/context/NavigationContext';
 import { GoBackendAdapter } from '@/services/goBackendAdapter';
 
@@ -21,7 +22,7 @@ export const AlreadyInMatchNotification: React.FC<AlreadyInMatchNotificationProp
 }) => {
   const { setCurrentSection } = useNavigation();
 
-  const handleJoinMatch = () => {
+  const handleRejoinMatch = () => {
     console.log(`🎮 Rejoining ${gameMode} match: ${currentGame}`);
     
     if (onJoin) {
@@ -34,19 +35,25 @@ export const AlreadyInMatchNotification: React.FC<AlreadyInMatchNotificationProp
     onClose();
   };
 
-  const handleLeaveMatch = async () => {
-    console.log(`🏃‍♂️ Force leaving ${gameMode} match: ${currentGame}`);
+  const handleAbandonMatch = async () => {
+    console.log(`🏃‍♂️ Abandoning ${gameMode} match: ${currentGame}`);
     
     try {
+      // First update stats - abandoning counts as a loss
+      const { UserService } = await import('@/services/userService');
+      await UserService.updateMatchLoss(userId);
+      console.log('✅ Updated user stats with loss for abandonment');
+      
+      // Then leave the match
       const result = await GoBackendAdapter.forceLeaveMatch(userId);
       
       if (result.success) {
-        console.log('✅ Successfully left match');
+        console.log('✅ Successfully abandoned match');
       } else {
-        console.error('❌ Failed to leave match:', result.message);
+        console.error('❌ Failed to abandon match:', result.message);
       }
     } catch (error) {
-      console.error('❌ Error leaving match:', error);
+      console.error('❌ Error abandoning match:', error);
     }
     
     onClose();
@@ -55,46 +62,63 @@ export const AlreadyInMatchNotification: React.FC<AlreadyInMatchNotificationProp
   const gameModeName = gameMode.charAt(0).toUpperCase() + gameMode.slice(1);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full mx-4 border border-gray-600">
-        <div className="text-center">
-          <div className="mb-4">
-            <div className="text-4xl mb-2">⚠️</div>
-            <h3 className="text-xl font-bold text-white mb-2">
-              Already in Match
-            </h3>
-            <p className="text-gray-300 text-sm">
-              You are already in a <span className="font-semibold text-blue-400">{gameModeName}</span> match
+    <motion.div
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: -100, opacity: 0 }}
+      transition={{ type: "spring", damping: 20, stiffness: 300 }}
+      className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4"
+    >
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 shadow-lg">
+        <div className="flex items-start space-x-3">
+          {/* Info Icon */}
+          <div className="flex-shrink-0">
+            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+              <span className="text-blue-600 dark:text-blue-400 text-lg">⚠️</span>
+            </div>
+          </div>
+          
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+                Active Match Found
+              </h3>
+            </div>
+            
+            <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
+              You are already in a <span className="font-semibold">{gameModeName}</span> match. What would you like to do?
+            </p>
+            
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={handleRejoinMatch}
+                className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white text-sm font-medium rounded transition-colors duration-200"
+              >
+                Rejoin
+              </button>
+              <button
+                onClick={handleAbandonMatch}
+                className="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white text-sm font-medium rounded transition-colors duration-200"
+              >
+                Abandon
+              </button>
+            </div>
+            
+            <button
+              onClick={onClose}
+              className="w-full mt-2 px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded transition-colors duration-200"
+            >
+              Cancel
+            </button>
+            
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 text-center">
+              Abandoning will count as a loss and reset your streak
             </p>
           </div>
-
-          <div className="flex space-x-3">
-            <button
-              onClick={handleJoinMatch}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
-            >
-              JOIN
-            </button>
-            <button
-              onClick={handleLeaveMatch}
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
-            >
-              LEAVE
-            </button>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="mt-3 w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded transition-colors duration-200"
-          >
-            Cancel
-          </button>
-
-          <p className="text-xs text-gray-400 mt-3">
-            Leaving will count as a loss and reset your streak
-          </p>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };

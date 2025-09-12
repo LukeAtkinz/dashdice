@@ -381,7 +381,7 @@ export class MatchmakingService {
       case 'zero-hour':
       case 'zerohour': return 0;  // Zero Hour starts at 100, targets 0
       case 'last-line':
-      case 'lastline': return 100; // Highest roll comparison
+      case 'lastline': return 0; // Last Line targets 0 (opponent elimination)
       case 'true-grit':
       case 'truegrit': return 100; // Highest single turn
       default: return 100;
@@ -398,7 +398,7 @@ export class MatchmakingService {
       case 'zero-hour':
       case 'zerohour': return 100;  // Zero Hour starts at 100
       case 'last-line':
-      case 'lastline': return 0;   // Last Line starts at 0
+      case 'lastline': return 50;  // Last Line starts at 50 (tug-of-war)
       case 'true-grit':
       case 'truegrit': return 0;   // True Grit starts at 0
       default: return 0;

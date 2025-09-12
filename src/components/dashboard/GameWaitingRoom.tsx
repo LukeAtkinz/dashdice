@@ -12,6 +12,7 @@ import { GameType } from '@/types/ranked';
 import { RankedMatchmakingService } from '@/services/rankedMatchmakingService';
 import { NewMatchmakingService } from '@/services/newMatchmakingService';
 import { OptimisticMatchmakingService } from '@/services/optimisticMatchmakingService';
+import MatchAbandonmentNotification from '@/components/notifications/MatchAbandonmentNotification';
 
 interface GameWaitingRoomProps {
   gameMode: string;
@@ -114,6 +115,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const [isReady, setIsReady] = useState(false); // Track if current player is ready
   const [isMarkingReady, setIsMarkingReady] = useState(false); // Track ready button state
   const [isScrolled, setIsScrolled] = useState(false); // Track scroll position for mobile button animation
+  const [goBackendOpponentData, setGoBackendOpponentData] = useState<any>(null); // Store opponent data from Go backend
+  
+  // Abandonment notification state
+  const [showAbandonmentNotification, setShowAbandonmentNotification] = useState(false);
+  const [abandonmentTimer, setAbandonmentTimer] = useState<NodeJS.Timeout | null>(null);
+  const [opponentLastSeen, setOpponentLastSeen] = useState<Date | null>(null);
 
   // Waiting room cleanup functionality
   const { leaveWaitingRoom } = useWaitingRoomCleanup(waitingRoomEntry?.id || roomId);
@@ -262,6 +269,22 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     return fallbackData;
   };
 
+  // Helper function to get opponent data from multiple sources
+  const getOpponentData = () => {
+    // Priority 1: Waiting room entry opponent data (Firebase)
+    if (waitingRoomEntry?.opponentData) {
+      return waitingRoomEntry.opponentData;
+    }
+    
+    // Priority 2: Go backend opponent data (stored during polling)
+    if (goBackendOpponentData) {
+      return goBackendOpponentData;
+    }
+    
+    // Priority 3: No opponent data available
+    return null;
+  };
+
   // Animated searching text
   useEffect(() => {
     if (actionType === 'live') {
@@ -310,6 +333,205 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
     return () => clearInterval(interval);
   }, [isOptimistic, roomId]);
+
+  // 🎯 NEW: Go Backend Match Status Polling
+  useEffect(() => {
+    // Check if this is a Go backend room by looking at bridge data
+    if (!roomId) return;
+    
+    const bridgeData = OptimisticMatchmakingService.getBridgeRoomData(roomId);
+    if (!bridgeData?.isGoBackendRoom) {
+      return;
+    }
+
+    console.log('🔄 GameWaitingRoom: Starting Go backend match status polling for:', roomId);
+
+    const pollInterval = setInterval(async () => {
+      try {
+        // Import DashDiceAPI to check match status
+        const { default: DashDiceAPI } = await import('@/services/apiClientNew');
+        
+        // Get specific match details
+        const response = await DashDiceAPI.listMatches({ 
+          status: 'ready',
+          limit: 10 
+        });
+
+        if (response.success && response.data?.matches) {
+          // Look for our match by ID - Go backend returns different format than TypeScript Match interface
+          const ourMatch = response.data.matches.find((match: any) => match.matchId === roomId) as any;
+          
+          // Handle Go backend's "ready" status (not in TypeScript Match interface)
+          if (ourMatch && ourMatch.status === 'ready' && ourMatch.players?.length >= 2) {
+            console.log('🎉 GameWaitingRoom: Go backend match is ready!', ourMatch);
+            
+            // Clear polling
+            clearInterval(pollInterval);
+            
+            // Start countdown and transition to match
+            setSearchingText('Match found! Starting game...');
+            setOpponentJoined(true);
+            
+            // 🔥 CREATE FIREBASE MATCH for compatibility with existing Match component
+            try {
+              const bridgeData = OptimisticMatchmakingService.getBridgeRoomData(roomId);
+              const userProfile = await UserService.getUserProfile(user!.uid);
+              
+              // Get opponent player data (second player in Go backend match)
+              const opponentPlayerId = ourMatch.players.find((p: string) => p !== user!.uid);
+              const opponentProfile = opponentPlayerId ? await UserService.getUserProfile(opponentPlayerId) : null;
+              
+              if (opponentProfile && bridgeData && userProfile) {
+                console.log('🔄 GameWaitingRoom: Creating Firebase match from Go backend match');
+                
+                // 🎯 STORE OPPONENT DATA for immediate UI display
+                const opponentDisplayData = {
+                  playerId: opponentPlayerId,
+                  playerDisplayName: opponentProfile.displayName || 'Player 2',
+                  playerStats: opponentProfile.stats || {},
+                  displayBackgroundEquipped: opponentProfile.inventory?.displayBackgroundEquipped,
+                  matchBackgroundEquipped: opponentProfile.inventory?.matchBackgroundEquipped,
+                };
+                setGoBackendOpponentData(opponentDisplayData);
+                console.log('🎮 GameWaitingRoom: Stored Go backend opponent data:', opponentDisplayData);
+                
+                // 🎯 FIXED: Use proper game mode initialization with inline logic
+                const actualGameMode = ourMatch.gameMode || gameMode;
+                
+                // Get round objective based on game mode
+                const getRoundObjective = (mode: string): number => {
+                  switch (mode.toLowerCase()) {
+                    case 'quickfire': return 50;
+                    case 'classic': return 100;
+                    case 'zero-hour':
+                    case 'zerohour': return 0;    // Zero Hour targets 0
+                    case 'last-line':
+                    case 'lastline': return 0;   // Last Line targets 0 (opponent elimination)
+                    case 'true-grit':
+                    case 'truegrit': return 100;  // Highest single turn
+                    default: return 100;
+                  }
+                };
+
+                const getStartingScore = (mode: string): number => {
+                  switch (mode.toLowerCase()) {
+                    case 'quickfire': return 0;
+                    case 'classic': return 0;
+                    case 'zero-hour':
+                    case 'zerohour': return 100;  // Zero Hour starts at 100
+                    case 'last-line':
+                    case 'lastline': return 50;  // Last Line starts at 50 (tug-of-war)
+                    case 'true-grit':
+                    case 'truegrit': return 0;   // True Grit starts at 0
+                    default: return 0;
+                  }
+                };
+                
+                const roundObjective = getRoundObjective(actualGameMode);
+                const startingScore = getStartingScore(actualGameMode);
+                
+                console.log('🎮 GameWaitingRoom: Using proper game mode settings:', {
+                  gameMode: actualGameMode,
+                  roundObjective,
+                  startingScore
+                });
+                
+                const matchData = {
+                  originalRoomId: roomId,
+                  gameMode: actualGameMode,
+                  gameType: bridgeData.gameType || 'quick',
+                  status: 'active',
+                  createdAt: serverTimestamp(),
+                  startedAt: serverTimestamp(),
+                  authorizedPlayers: [user!.uid, opponentPlayerId],
+                  
+                  hostData: {
+                    playerId: user!.uid,
+                    playerDisplayName: userProfile.displayName || 'Player 1',
+                    playerStats: userProfile.stats || {},
+                    displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped,
+                    matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped,
+                    playerScore: startingScore, // Use proper starting score
+                    turnActive: false, // Will be set by turn decider
+                  },
+                  
+                  opponentData: {
+                    playerId: opponentPlayerId,
+                    playerDisplayName: opponentProfile.displayName || 'Player 2',
+                    playerStats: opponentProfile.stats || {},
+                    displayBackgroundEquipped: opponentProfile.inventory?.displayBackgroundEquipped,
+                    matchBackgroundEquipped: opponentProfile.inventory?.matchBackgroundEquipped,
+                    playerScore: startingScore, // Use proper starting score
+                    turnActive: false, // Will be set by turn decider
+                  },
+                  
+                  gameData: {
+                    type: actualGameMode,
+                    gamePhase: 'turnDecider',
+                    turnDecider: 1, // Host decides
+                    chooserPlayerIndex: 1, // Host chooses first (required for TurnDeciderPhase)
+                    turnScore: 0,
+                    diceOne: 0,
+                    diceTwo: 0,
+                    roundObjective: roundObjective, // Use proper objective
+                    startingScore: startingScore, // Use proper starting score
+                    isRolling: false
+                  }
+                };
+                
+                // Create Firebase match document with same ID as Go backend match
+                await import('firebase/firestore').then(({ doc, setDoc }) => {
+                  return setDoc(doc(db, 'matches', roomId), matchData);
+                });
+                
+                console.log('✅ GameWaitingRoom: Firebase match created successfully');
+                
+                // 🎯 UPDATE WAITING ROOM ENTRY with opponent data for immediate UI display
+                if (waitingRoomEntry) {
+                  const updatedWaitingRoom = {
+                    ...waitingRoomEntry,
+                    opponentData: {
+                      playerId: opponentPlayerId,
+                      playerDisplayName: opponentProfile.displayName || 'Player 2',
+                      playerStats: opponentProfile.stats || {},
+                      displayBackgroundEquipped: opponentProfile.inventory?.displayBackgroundEquipped,
+                      matchBackgroundEquipped: opponentProfile.inventory?.matchBackgroundEquipped,
+                    }
+                  };
+                  setWaitingRoomEntry(updatedWaitingRoom);
+                  console.log('🎮 GameWaitingRoom: Updated waiting room with opponent data');
+                }
+              }
+            } catch (error) {
+              console.error('❌ GameWaitingRoom: Failed to create Firebase match:', error);
+              // Continue anyway - the Go backend match still exists
+            }
+            
+            // Start vs countdown
+            setTimeout(() => {
+              console.log('🚀 GameWaitingRoom: Transitioning to match from Go backend');
+              setCurrentSection('match', {
+                gameMode: ourMatch.gameMode || gameMode, // Go backend uses 'gameMode'
+                matchId: roomId,
+                roomId: roomId
+              });
+            }, 3000); // 3 second countdown
+            
+            return;
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ GameWaitingRoom: Go backend polling error:', error);
+        // Don't clear interval on error, keep polling
+      }
+    }, 2000); // Poll every 2 seconds
+
+    // Cleanup polling on unmount
+    return () => {
+      console.log('🛑 GameWaitingRoom: Stopping Go backend polling');
+      clearInterval(pollInterval);
+    };
+  }, [roomId, gameMode, setCurrentSection]);
 
   // Create waiting room entry when component mounts
   useEffect(() => {
@@ -803,6 +1025,47 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     };
   }, [user, gameMode, actionType, roomId || '']);
 
+  // Abandonment detection - monitor when opponent leaves
+  useEffect(() => {
+    if (!waitingRoomEntry || !opponentJoined) return;
+
+    // Update last seen time when opponent is present
+    if (waitingRoomEntry.opponentData || goBackendOpponentData) {
+      setOpponentLastSeen(new Date());
+      
+      // Clear any existing abandonment notification if opponent is back
+      if (showAbandonmentNotification) {
+        setShowAbandonmentNotification(false);
+        setAbandonmentTimer(null);
+      }
+      return;
+    }
+
+    // Opponent data is missing - start abandonment timer if not already started
+    if (!abandonmentTimer && opponentLastSeen) {
+      const checkInterval = setInterval(() => {
+        const now = new Date();
+        const timeSinceLastSeen = now.getTime() - (opponentLastSeen?.getTime() || 0);
+        
+        // Show notification after 15 seconds
+        if (timeSinceLastSeen >= 15000) {
+          setShowAbandonmentNotification(true);
+          setAbandonmentTimer(null);
+          clearInterval(checkInterval);
+        }
+      }, 1000);
+      
+      setAbandonmentTimer(checkInterval);
+    }
+
+    return () => {
+      if (abandonmentTimer) {
+        clearInterval(abandonmentTimer);
+        setAbandonmentTimer(null);
+      }
+    };
+  }, [waitingRoomEntry, goBackendOpponentData, opponentJoined, opponentLastSeen, abandonmentTimer, showAbandonmentNotification]);
+
   // Function to start 5-second countdown for VS section
   const startVsCountdown = () => {
     console.log('🕐 Starting VS countdown...');
@@ -1091,7 +1354,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           case 'zero-hour':
           case 'zerohour': return 0;    // Zero Hour targets 0
           case 'last-line':
-          case 'lastline': return 100;  // Highest roll comparison
+          case 'lastline': return 0;   // Last Line targets 0 (opponent elimination)
           case 'true-grit':
           case 'truegrit': return 100;  // Highest single turn
           default: return 100;
@@ -1105,7 +1368,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           case 'zero-hour':
           case 'zerohour': return 100;  // Zero Hour starts at 100
           case 'last-line':
-          case 'lastline': return 0;   // Last Line starts at 0
+          case 'lastline': return 50;  // Last Line starts at 50 (tug-of-war)
           case 'true-grit':
           case 'truegrit': return 0;   // True Grit starts at 0
           default: return 0;
@@ -1299,10 +1562,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             type: 'dice',
             roundObjective: 100,
             turnDecider: 1,
+            chooserPlayerIndex: 1, // Host chooses first (required for TurnDeciderPhase)
+            turnScore: 0,
             diceOne: 0,
             diceTwo: 0,
             status: 'active',
-            gamePhase: 'turnDecider' as const
+            gamePhase: 'turnDecider' as const,
+            isRolling: false
           }
         };
         
@@ -1376,6 +1642,48 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       console.log('🔙 GameWaitingRoom: Calling onBack to return to dashboard');
       onBack();
     }
+  };
+
+  // Handle claiming victory when opponent abandons
+  const handleClaimVictory = async () => {
+    if (!user?.uid || !waitingRoomEntry) return;
+    
+    try {
+      console.log('🏆 Claiming victory due to opponent abandonment');
+      
+      // Update current user's stats (win)
+      await UserService.updateMatchWin(user.uid);
+      console.log('✅ Updated claiming player stats with victory');
+      
+      // Update opponent's stats (loss) if we have their ID
+      const opponentId = waitingRoomEntry.hostData?.playerId === user.uid 
+        ? waitingRoomEntry.opponentData?.playerId 
+        : waitingRoomEntry.hostData?.playerId;
+        
+      if (opponentId) {
+        await UserService.updateMatchLoss(opponentId);
+        console.log('✅ Updated opponent stats with loss');
+      }
+      
+      // Clean up waiting room
+      if (waitingRoomEntry.id) {
+        await deleteDoc(doc(db, 'waitingroom', waitingRoomEntry.id));
+        console.log('✅ Cleaned up waiting room');
+      }
+      
+      setShowAbandonmentNotification(false);
+      onBack();
+    } catch (error) {
+      console.error('❌ Error claiming victory:', error);
+    }
+  };
+
+  // Handle waiting for opponent to return
+  const handleWaitForOpponent = () => {
+    console.log('⏰ Continuing to wait for opponent');
+    setShowAbandonmentNotification(false);
+    // Reset the abandonment detection timer
+    setOpponentLastSeen(new Date());
   };
 
   // Render background based on equipped match background
@@ -1506,6 +1814,15 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       background: 'transparent',
       overflow: 'hidden'
     }}>
+      {/* Match Abandonment Notification */}
+      {showAbandonmentNotification && (
+        <MatchAbandonmentNotification
+          onClaim={handleClaimVictory}
+          onWait={handleWaitForOpponent}
+          opponentName={getOpponentData()?.playerDisplayName}
+        />
+      )}
+      
       {/* CSS Styles for animations */}
       <style jsx>{`
         @keyframes subtleGlow {
@@ -2022,7 +2339,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
                       textTransform: 'uppercase' 
                     }}>
-                      {waitingRoomEntry.opponentData?.playerStats?.matchWins || 0}
+                      {getOpponentData()?.playerStats?.matchWins || 0}
                     </div>
                     <div style={{ 
                       color: '#E2E2E2', 
@@ -2066,7 +2383,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
                       textTransform: 'uppercase' 
                     }}>
-                      {waitingRoomEntry.opponentData?.playerStats?.gamesPlayed || 0}
+                      {getOpponentData()?.playerStats?.gamesPlayed || 0}
                     </div>
                     <div style={{ 
                       color: '#E2E2E2', 
@@ -2110,7 +2427,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
                       textTransform: 'uppercase' 
                     }}>
-                      {waitingRoomEntry.opponentData?.playerStats?.bestStreak || 0}
+                      {getOpponentData()?.playerStats?.bestStreak || 0}
                     </div>
                     <div style={{ 
                       color: '#E2E2E2', 
@@ -2154,7 +2471,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
                       textTransform: 'uppercase' 
                     }}>
-                      {waitingRoomEntry.opponentData?.playerStats?.currentStreak || 0}
+                      {getOpponentData()?.playerStats?.currentStreak || 0}
                     </div>
                     <div style={{ 
                       color: '#E2E2E2', 
@@ -2186,13 +2503,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   borderRadius: '15px',
                   position: 'relative',
                   overflow: 'hidden',
-                  background: waitingRoomEntry.opponentData?.matchBackgroundEquipped?.type !== 'video' && waitingRoomEntry.opponentData?.matchBackgroundEquipped?.file 
-                    ? `url('${waitingRoomEntry.opponentData.matchBackgroundEquipped.file}') center/cover no-repeat` 
+                  background: getOpponentData()?.matchBackgroundEquipped?.type !== 'video' && getOpponentData()?.matchBackgroundEquipped?.file 
+                    ? `url('${getOpponentData()?.matchBackgroundEquipped?.file}') center/cover no-repeat` 
                     : '#332A63'
                 }}
               >
                 {/* Render opponent video background if it's a video */}
-                {waitingRoomEntry.opponentData?.matchBackgroundEquipped?.type === 'video' && (
+                {getOpponentData()?.matchBackgroundEquipped?.type === 'video' && (
                   <video
                     autoPlay
                     loop
@@ -2212,7 +2529,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       zIndex: 0
                     }}
                   >
-                    <source src={waitingRoomEntry.opponentData?.matchBackgroundEquipped?.file} type="video/mp4" />
+                    <source src={getOpponentData()?.matchBackgroundEquipped?.file} type="video/mp4" />
                   </video>
                 )}
                 
@@ -2245,7 +2562,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     zIndex: 2
                   }}
                 >
-                  {waitingRoomEntry.opponentData?.playerDisplayName || 'Unknown Player'}
+                  {getOpponentData()?.playerDisplayName || 'Unknown Player'}
                 </div>
               </div>
             </div>

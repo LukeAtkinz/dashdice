@@ -158,14 +158,12 @@ export class GoBackendAdapter {
         }
       });
 
-      if (queueResponse.success && queueResponse.data?.position !== undefined) {
-        return {
-          success: true,
-          roomId: `queue_${gameMode}_${userId}`
-        };
-      }
+      console.log('🔗 Queue response:', queueResponse);
 
-      // If no immediate match, create a match
+      // Continue to match creation regardless of queue status
+      // The queue join is just for position tracking, not blocking
+
+      // Create a match
       const matchResponse = await this.apiClient.createMatch({
         game_mode: gameMode,
         max_players: 2,
@@ -176,7 +174,43 @@ export class GoBackendAdapter {
         }
       });
 
-      if (matchResponse.success && matchResponse.data?.match) {
+      console.log('🔍 Raw match response from API:', matchResponse);
+
+      // Handle different Go backend response formats with type flexibility
+      let matchId = null;
+      if (matchResponse.success) {
+        console.log('✅ Match response has success flag');
+        // Use any type to access flexible response properties
+        const responseData = matchResponse as any;
+        
+        console.log('🔍 Response data structure:', responseData.data);
+        
+        // Format 1: {data: {match: {id: "..."}}} (from match-service)
+        if (responseData.data?.match?.id) {
+          matchId = responseData.data.match.id;
+          console.log('📋 Found matchId in data.match.id:', matchId);
+        }
+        // Format 2: {data: {matchId: "..."}} (from current deployed backend)
+        else if (responseData.data?.matchId) {
+          matchId = responseData.data.matchId;
+          console.log('📋 Found matchId in data.matchId:', matchId);
+        }
+        // Format 3: Direct response {matchId: "..."} (fallback)
+        else if (responseData.matchId) {
+          matchId = responseData.matchId;
+          console.log('📋 Found matchId in root:', matchId);
+        } else {
+          console.log('❌ No matchId found in any expected location');
+          console.log('🔍 Full response data:', JSON.stringify(responseData, null, 2));
+        }
+      } else {
+        console.log('❌ Match response does not have success flag');
+        console.log('🔍 Full response:', JSON.stringify(matchResponse, null, 2));
+      }
+
+      if (matchId) {
+        console.log(`✅ Go backend match created with ID: ${matchId}`);
+        
         // Set up bridge data for the waiting room component
         const { OptimisticMatchmakingService } = await import('./optimisticMatchmakingService');
         
@@ -205,18 +239,22 @@ export class GoBackendAdapter {
           createdAt: new Date()
         };
         
-        OptimisticMatchmakingService.setBridgeRoomData(matchResponse.data.match.id, bridgeRoomData);
+        OptimisticMatchmakingService.setBridgeRoomData(matchId, bridgeRoomData);
         
         return {
           success: true,
-          roomId: matchResponse.data.match.id,
-          sessionId: matchResponse.data.match.id,
+          roomId: matchId,
+          sessionId: matchId,
           isNewRoom: true,
           hasOpponent: false
         };
       }
 
-      throw new Error('Failed to create match');
+      // If match creation failed, return error
+      return {
+        success: false,
+        error: 'Failed to create match - no match data returned'
+      };
     } catch (error) {
       console.error('Go backend match creation failed, using Firebase fallback:', error);
       const { NewMatchmakingService } = await import('./newMatchmakingService');

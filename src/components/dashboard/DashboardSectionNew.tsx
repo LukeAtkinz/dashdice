@@ -208,79 +208,38 @@ export const DashboardSection: React.FC = () => {
           playerStats: userProfile.stats
         };
 
-        // STEP 2: Try Go Backend first, with Optimistic UI fallback
-        console.log('✨ Attempting Go backend matchmaking with Firebase fallback...');
+        // STEP 2: Go Backend ONLY (no fallback for debugging)
+        console.log('🚀 Attempting Go backend match creation (NO FALLBACK)...');
         
         // Determine game type
         const gameType = action === 'ranked' ? 'ranked' : 'quick';
         
-        // Try Go backend first
-        try {
-          console.log('🚀 Attempting Go backend match creation...');
-          const matchResult = await GoBackendAdapter.findOrCreateMatch(
-            gameMode,
-            gameType as 'quick' | 'ranked',
-            user.uid,
-            userProfile
-          );
-          
-          if (matchResult.success && matchResult.roomId) {
-            console.log('✅ Go backend match created successfully!');
-            setCurrentSection('waiting-room', {
-              gameMode,
-              actionType: action as 'live' | 'custom',
-              roomId: matchResult.roomId,
-              isOptimistic: false // This is a real Go backend room
-            });
-            return;
-          }
-        } catch (goError) {
-          console.log('Go backend failed, using Firebase optimistic fallback:', goError);
-        }
-
-        // Fallback to Firebase optimistic approach if Go backend fails
-        console.log('🔄 Using Firebase optimistic room creation as fallback...');
-        const optimisticRoom = await OptimisticMatchmakingService.createOptimisticRoom(
+        const matchResult = await GoBackendAdapter.findOrCreateMatch(
           gameMode,
-          gameType,
+          gameType as 'quick' | 'ranked',
           user.uid,
-          userProfile,
-          {
-            onRealRoomCreated: (realRoomId: string) => {
-              console.log(`🎯 Firebase room created: ${realRoomId}, seamlessly transitioning...`);
-              
-              // Update navigation to use real room ID without user noticing
-              setCurrentSection('waiting-room', {
-                gameMode,
-                actionType: action as 'live' | 'custom',
-                roomId: realRoomId,
-                gameType,
-                isOptimistic: false // Now using real room
-              });
-            },
-            onStatusUpdate: (status, searchText) => {
-              console.log(`📊 Status update: ${status} - ${searchText}`);
-              // Status updates will be handled by the GameWaitingRoom component
-            },
-            onError: (error: string) => {
-              console.error(`❌ Optimistic matchmaking error: ${error}`);
-              setIsExiting(false);
-              alert(`Failed to create game room: ${error}`);
-            }
-          }
+          userProfile
         );
         
-        // Navigate to waiting room IMMEDIATELY with optimistic data
-        setCurrentSection('waiting-room', {
-          gameMode,
-          actionType: action as 'live' | 'custom',
-          roomId: optimisticRoom.id,
-          gameType,
-          isOptimistic: true
-        });
+        console.log('🔍 Go backend full response:', matchResult);
         
-        console.log(`🚀 Immediately navigated to waiting room with optimistic room: ${optimisticRoom.id}`);
-        console.log(`🔧 Background real room creation started for seamless transition`);
+        if (matchResult.success && matchResult.roomId) {
+          console.log('✅ Go backend match created successfully!');
+          setCurrentSection('waiting-room', {
+            gameMode,
+            actionType: action as 'live' | 'custom',
+            roomId: matchResult.roomId,
+            isOptimistic: false // This is a real Go backend room
+          });
+          return;
+        } else {
+          console.error('❌ Go backend failed:', matchResult);
+          alert(`Go backend failed: ${matchResult.error || 'Unknown error'}`);
+          setIsExiting(false);
+          return;
+        }
+        
+        console.log(`🚀 Match creation process completed`);
 
       } catch (error) {
         console.error('Error in matchmaking:', error);
