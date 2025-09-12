@@ -1,0 +1,14 @@
+# Simple Presence Service Dockerfile
+FROM golang:1.21-alpine AS builder
+
+WORKDIR /app
+COPY . .
+RUN go mod tidy && go mod download
+RUN cd presence-service && go build -o ../presence-service-bin .
+
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=builder /app/presence-service-bin ./presence-service
+EXPOSE 8080
+CMD ["./presence-service"]

@@ -1,0 +1,34 @@
+{
+  "version": 2,
+  "name": "dashdice-api",
+  "builds": [
+    {
+      "src": "api-gateway/main.go",
+      "use": "@vercel/go"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/health",
+      "dest": "/api-gateway/main.go"
+    },
+    {
+      "src": "/api/v1/(.*)",
+      "dest": "/api-gateway/main.go"
+    },
+    {
+      "src": "/ws",
+      "dest": "/api-gateway/main.go"
+    }
+  ],
+  "env": {
+    "ENVIRONMENT": "production",
+    "LOG_LEVEL": "info",
+    "PORT": "8080"
+  },
+  "functions": {
+    "api-gateway/main.go": {
+      "maxDuration": 30
+    }
+  }
+}

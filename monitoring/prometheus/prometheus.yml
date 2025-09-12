@@ -1,0 +1,231 @@
+# Prometheus Configuration for DashDice Monitoring
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'dashdice-production'
+    environment: 'production'
+
+rule_files:
+  - "rules/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # System monitoring
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '([^:]+):[0-9]+'
+        replacement: '${1}'
+
+  # Container monitoring
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 30s
+    metrics_path: '/metrics'
+
+  # Redis monitoring
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '([^:]+):[0-9]+'
+        replacement: 'redis-${1}'
+
+  # PostgreSQL monitoring
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '([^:]+):[0-9]+'
+        replacement: 'postgres-${1}'
+
+  # DashDice Microservices monitoring
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['api-gateway:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    relabel_configs:
+      - target_label: service
+        replacement: 'api-gateway'
+
+  - job_name: 'match-service'
+    static_configs:
+      - targets: ['match-service:8081']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    relabel_configs:
+      - target_label: service
+        replacement: 'match-service'
+
+  - job_name: 'queue-service'
+    static_configs:
+      - targets: ['queue-service:8082']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    relabel_configs:
+      - target_label: service
+        replacement: 'queue-service'
+
+  - job_name: 'presence-service'
+    static_configs:
+      - targets: ['presence-service:8083']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    relabel_configs:
+      - target_label: service
+        replacement: 'presence-service'
+
+  - job_name: 'notification-service'
+    static_configs:
+      - targets: ['notification-service:8084']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    relabel_configs:
+      - target_label: service
+        replacement: 'notification-service'
+
+  # WebSocket server monitoring
+  - job_name: 'websocket-server'
+    static_configs:
+      - targets: ['websocket-server:8085']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    relabel_configs:
+      - target_label: service
+        replacement: 'websocket-server'
+
+  # Application performance monitoring
+  - job_name: 'app-metrics'
+    static_configs:
+      - targets: ['api-gateway:8080', 'match-service:8081', 'queue-service:8082']
+    metrics_path: '/app-metrics'
+    scrape_interval: 30s
+    honor_labels: true
+
+  # Business metrics
+  - job_name: 'business-metrics'
+    static_configs:
+      - targets: ['api-gateway:8080']
+    metrics_path: '/business-metrics'
+    scrape_interval: 60s
+    honor_labels: true
+
+  # External services monitoring
+  - job_name: 'firebase-metrics'
+    static_configs:
+      - targets: ['api-gateway:8080']
+    metrics_path: '/firebase-metrics'
+    scrape_interval: 60s
+    honor_labels: true
+
+  # Load balancer monitoring (if using HAProxy)
+  - job_name: 'haproxy'
+    static_configs:
+      - targets: ['load-balancer:8404']
+    metrics_path: '/stats?stats;csv'
+    scrape_interval: 30s
+
+  # Custom application metrics
+  - job_name: 'custom-metrics'
+    file_sd_configs:
+      - files:
+        - 'targets/custom-*.json'
+    relabel_configs:
+      - source_labels: [__meta_consul_node]
+        target_label: instance
+
+# Recording rules for performance optimization
+recording_rules:
+  - name: dashdice.rules
+    rules:
+      # Request rate (per second)
+      - record: dashdice:http_requests_per_second
+        expr: rate(http_requests_total[5m])
+
+      # Error rate
+      - record: dashdice:http_error_rate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])
+
+      # Response time quantiles
+      - record: dashdice:http_request_duration_p95
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+
+      - record: dashdice:http_request_duration_p99
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))
+
+      # Matchmaking metrics
+      - record: dashdice:matches_created_per_minute
+        expr: rate(matches_created_total[1m]) * 60
+
+      - record: dashdice:queue_wait_time_average
+        expr: avg(queue_wait_time_seconds)
+
+      - record: dashdice:active_players_count
+        expr: sum(active_players_gauge)
+
+      # System resource utilization
+      - record: dashdice:cpu_usage_percent
+        expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+
+      - record: dashdice:memory_usage_percent
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
+
+      # Database performance
+      - record: dashdice:redis_ops_per_second
+        expr: rate(redis_commands_processed_total[5m])
+
+      - record: dashdice:postgres_connections_active
+        expr: pg_stat_database_numbackends
+
+      # WebSocket connections
+      - record: dashdice:websocket_connections_active
+        expr: sum(websocket_connections_gauge)
+
+      # Business KPIs
+      - record: dashdice:daily_active_users
+        expr: increase(unique_users_total[24h])
+
+      - record: dashdice:match_success_rate
+        expr: rate(matches_completed_total[5m]) / rate(matches_created_total[5m])
+
+storage:
+  tsdb:
+    retention_time: 30d
+    retention_size: 50GB
+
+# Global configuration for all scrape jobs
+global:
+  scrape_timeout: 10s
+  evaluation_interval: 30s
+
+# Remote write configuration for long-term storage (optional)
+# remote_write:
+#   - url: "https://prometheus-remote-storage.example.com/receive"
+#     basic_auth:
+#       username: "dashdice"
+#       password: "secure_password"

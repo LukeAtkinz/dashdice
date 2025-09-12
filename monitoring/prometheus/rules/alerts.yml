@@ -1,0 +1,343 @@
+# Prometheus Alert Rules for DashDice Monitoring
+# Comprehensive alerting for system, application, and business metrics
+
+groups:
+  # System-level alerts
+  - name: system.rules
+    rules:
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: dashdice:cpu_usage_percent > 85
+        for: 5m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+
+      # Critical CPU usage
+      - alert: CriticalCPUUsage
+        expr: dashdice:cpu_usage_percent > 95
+        for: 2m
+        labels:
+          severity: critical
+          category: system
+        annotations:
+          summary: "Critical CPU usage detected"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: dashdice:memory_usage_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value }}% on {{ $labels.instance }}"
+
+      # Critical memory usage
+      - alert: CriticalMemoryUsage
+        expr: dashdice:memory_usage_percent > 95
+        for: 2m
+        labels:
+          severity: critical
+          category: system
+        annotations:
+          summary: "Critical memory usage detected"
+          description: "Memory usage is {{ $value }}% on {{ $labels.instance }}"
+
+      # Disk space warning
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 20
+        for: 5m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is {{ $value }}% full on {{ $labels.instance }} ({{ $labels.mountpoint }})"
+
+      # Critical disk space
+      - alert: CriticalDiskSpace
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 10
+        for: 2m
+        labels:
+          severity: critical
+          category: system
+        annotations:
+          summary: "Critical disk space"
+          description: "Disk space is {{ $value }}% full on {{ $labels.instance }} ({{ $labels.mountpoint }})"
+
+  # Application-level alerts
+  - name: application.rules
+    rules:
+      # Service down
+      - alert: ServiceDown
+        expr: up{job=~"api-gateway|match-service|queue-service|presence-service|notification-service|websocket-server"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: application
+        annotations:
+          summary: "Service is down"
+          description: "{{ $labels.service }} service is down on {{ $labels.instance }}"
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: dashdice:http_error_rate > 0.05
+        for: 3m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.service }}"
+
+      # Critical error rate
+      - alert: CriticalErrorRate
+        expr: dashdice:http_error_rate > 0.15
+        for: 1m
+        labels:
+          severity: critical
+          category: application
+        annotations:
+          summary: "Critical error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.service }}"
+
+      # High response time
+      - alert: HighResponseTime
+        expr: dashdice:http_request_duration_p95 > 2
+        for: 5m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s for {{ $labels.service }}"
+
+      # Critical response time
+      - alert: CriticalResponseTime
+        expr: dashdice:http_request_duration_p99 > 5
+        for: 2m
+        labels:
+          severity: critical
+          category: application
+        annotations:
+          summary: "Critical response time detected"
+          description: "99th percentile response time is {{ $value }}s for {{ $labels.service }}"
+
+      # Low request rate (possible service issue)
+      - alert: LowRequestRate
+        expr: dashdice:http_requests_per_second < 0.1
+        for: 5m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "Low request rate detected"
+          description: "Request rate is {{ $value }}/sec for {{ $labels.service }}"
+
+  # Database alerts
+  - name: database.rules
+    rules:
+      # Redis connection issues
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: application
+        annotations:
+          summary: "Redis is down"
+          description: "Redis instance {{ $labels.instance }} is unreachable"
+
+      # High Redis CPU usage
+      - alert: RedisHighCPU
+        expr: redis_used_cpu_sys > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "Redis high CPU usage"
+          description: "Redis CPU usage is {{ $value }}% on {{ $labels.instance }}"
+
+      # Redis memory usage
+      - alert: RedisHighMemory
+        expr: (redis_used_memory_bytes / redis_maxmemory_bytes) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "Redis high memory usage"
+          description: "Redis memory usage is {{ $value }}% on {{ $labels.instance }}"
+
+      # PostgreSQL connection issues
+      - alert: PostgreSQLDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: application
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL instance {{ $labels.instance }} is unreachable"
+
+      # High number of PostgreSQL connections
+      - alert: PostgreSQLHighConnections
+        expr: dashdice:postgres_connections_active > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "High PostgreSQL connections"
+          description: "PostgreSQL has {{ $value }} active connections on {{ $labels.instance }}"
+
+  # WebSocket-specific alerts
+  - name: websocket.rules
+    rules:
+      # WebSocket server down
+      - alert: WebSocketServerDown
+        expr: up{job="websocket-server"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: application
+        annotations:
+          summary: "WebSocket server is down"
+          description: "WebSocket server on {{ $labels.instance }} is unreachable"
+
+      # High WebSocket connection count
+      - alert: HighWebSocketConnections
+        expr: dashdice:websocket_connections_active > 1000
+        for: 5m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "High WebSocket connections"
+          description: "{{ $value }} WebSocket connections are active"
+
+      # WebSocket connection rate too high
+      - alert: HighWebSocketConnectionRate
+        expr: rate(websocket_connections_total[5m]) > 50
+        for: 3m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "High WebSocket connection rate"
+          description: "WebSocket connections are being created at {{ $value }}/sec"
+
+  # Business metrics alerts
+  - name: business.rules
+    rules:
+      # Low match creation rate
+      - alert: LowMatchCreationRate
+        expr: dashdice:matches_created_per_minute < 5
+        for: 10m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Low match creation rate"
+          description: "Only {{ $value }} matches created per minute in the last 10 minutes"
+
+      # High queue wait time
+      - alert: HighQueueWaitTime
+        expr: dashdice:queue_wait_time_average > 300
+        for: 5m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "High average queue wait time"
+          description: "Average queue wait time is {{ $value }}s"
+
+      # Critical queue wait time
+      - alert: CriticalQueueWaitTime
+        expr: dashdice:queue_wait_time_average > 600
+        for: 2m
+        labels:
+          severity: critical
+          category: business
+        annotations:
+          summary: "Critical queue wait time"
+          description: "Average queue wait time is {{ $value }}s"
+
+      # Low match success rate
+      - alert: LowMatchSuccessRate
+        expr: dashdice:match_success_rate < 0.9
+        for: 10m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Low match success rate"
+          description: "Match success rate is {{ $value | humanizePercentage }}"
+
+      # Very low daily active users
+      - alert: LowDailyActiveUsers
+        expr: dashdice:daily_active_users < 100
+        for: 1h
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Low daily active users"
+          description: "Only {{ $value }} daily active users"
+
+  # Security alerts
+  - name: security.rules
+    rules:
+      # High rate of authentication failures
+      - alert: HighAuthFailureRate
+        expr: rate(auth_failures_total[5m]) > 10
+        for: 3m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "High authentication failure rate"
+          description: "{{ $value }} authentication failures per second"
+
+      # Suspicious API access pattern
+      - alert: SuspiciousAPIAccess
+        expr: rate(http_requests_total{status="403"}[5m]) > 5
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "Suspicious API access pattern"
+          description: "High rate of 403 responses: {{ $value }}/sec from {{ $labels.instance }}"
+
+  # Infrastructure alerts
+  - name: infrastructure.rules
+    rules:
+      # Container restart rate
+      - alert: HighContainerRestartRate
+        expr: rate(container_start_time_seconds[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High container restart rate"
+          description: "Container {{ $labels.name }} is restarting frequently"
+
+      # Load balancer backend down
+      - alert: LoadBalancerBackendDown
+        expr: haproxy_server_status == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Load balancer backend is down"
+          description: "Backend {{ $labels.proxy }}/{{ $labels.server }} is down"

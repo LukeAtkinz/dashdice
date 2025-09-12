@@ -1,0 +1,120 @@
+{
+  "name": "dashdice-matchmaking",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint --fix",
+    "lint:check": "next lint",
+    "type-check": "tsc --noEmit",
+    
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "jest --config jest.config.js",
+    "test:integration": "jest --config jest.integration.config.js",
+    "test:e2e": "playwright test",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    
+    "docker:build": "docker build -t dashdice-frontend .",
+    "docker:run": "docker run -p 3000:3000 dashdice-frontend",
+    
+    "services:start": "cd go-services && docker-compose up -d",
+    "services:stop": "cd go-services && docker-compose down",
+    "services:logs": "cd go-services && docker-compose logs -f",
+    "services:build": "cd go-services && docker-compose build",
+    
+    "health:check": "powershell -File integration-check-simple.ps1",
+    "websocket:test": "powershell -File test-websocket.ps1",
+    "load:test": "powershell -File advanced-load-testing.ps1",
+    
+    "deploy:staging": "vercel --env .env.staging",
+    "deploy:production": "vercel --prod",
+    "deploy:preview": "vercel",
+    
+    "db:migrate": "cd go-services && docker-compose exec postgres psql -U dashdice -d dashdice -f /migrations/latest.sql",
+    "db:seed": "cd go-services && docker-compose exec postgres psql -U dashdice -d dashdice -f /seeds/test-data.sql",
+    "db:reset": "cd go-services && docker-compose exec postgres dropdb dashdice && createdb dashdice",
+    
+    "monitoring:start": "cd go-services && docker-compose up -d prometheus grafana jaeger",
+    "monitoring:dashboard": "open http://localhost:3001",
+    
+    "clean": "rm -rf .next && rm -rf node_modules && rm -rf coverage",
+    "clean:docker": "docker system prune -f && docker volume prune -f",
+    
+    "security:audit": "npm audit && snyk test",
+    "security:fix": "npm audit fix && snyk wizard",
+    
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    
+    "postinstall": "prisma generate || true",
+    "prepare": "husky install || true"
+  },
+  "dependencies": {
+    "next": "14.0.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "ws": "^8.15.0",
+    "@types/ws": "^8.5.10",
+    "redis": "^4.6.0",
+    "firebase-admin": "^11.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "@types/jsonwebtoken": "^9.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "20.8.0",
+    "@types/react": "18.2.0",
+    "@types/react-dom": "18.2.0",
+    "typescript": "5.2.0",
+    "eslint": "8.51.0",
+    "eslint-config-next": "14.0.0",
+    "prettier": "^3.0.3",
+    "husky": "^8.0.3",
+    "lint-staged": "^14.0.1",
+    
+    "jest": "^29.7.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/jest-dom": "^6.1.4",
+    "jest-environment-jsdom": "^29.7.0",
+    
+    "@playwright/test": "^1.39.0",
+    
+    "snyk": "^1.1244.0",
+    "cross-env": "^7.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/dashdice.git"
+  },
+  "keywords": [
+    "nextjs",
+    "matchmaking",
+    "websocket",
+    "firebase",
+    "redis",
+    "microservices"
+  ],
+  "author": "DashDice Team",
+  "license": "MIT",
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "src/**/*.{json,css,md}": [
+      "prettier --write"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "npm run type-check && npm run test:unit"
+    }
+  }
+}

@@ -24,8 +24,8 @@ export interface PlayerHeartbeat {
 export class PlayerHeartbeatService {
   private static heartbeatInterval: NodeJS.Timeout | null = null;
   private static heartbeatFrequency = 15000; // 15 seconds (enhanced from 30)
-  private static inactivityThreshold = 45000; // 45 seconds (3 missed heartbeats at 15s intervals)
-  private static cleanupFrequency = 60000; // 1 minute cleanup cycles (more frequent)
+  private static inactivityThreshold = 90000; // 90 seconds (6 missed heartbeats - less aggressive)
+  private static cleanupFrequency = 300000; // 5 minutes cleanup cycles (much less frequent)
   private static listeners: Map<string, () => void> = new Map();
   
   // Enhanced status tracking
@@ -280,12 +280,13 @@ export class PlayerHeartbeatService {
     try {
       const cutoffTime = new Date(Date.now() - this.inactivityThreshold);
       
-      // Clean up local tracking first
+      // Clean up local tracking first - but only for truly inactive users
       const currentTime = Date.now();
       const inactiveLocalUsers: string[] = [];
       
       for (const [userId, lastHeartbeat] of this.lastHeartbeatTimes.entries()) {
-        if (currentTime - lastHeartbeat > this.inactivityThreshold) {
+        // More generous threshold for local cleanup
+        if (currentTime - lastHeartbeat > (this.inactivityThreshold * 2)) {
           inactiveLocalUsers.push(userId);
           this.activeUsers.delete(userId);
           this.lastHeartbeatTimes.delete(userId);
@@ -293,14 +294,15 @@ export class PlayerHeartbeatService {
       }
       
       if (inactiveLocalUsers.length > 0) {
-        console.log(`🧹 Locally cleaned up ${inactiveLocalUsers.length} inactive users: ${inactiveLocalUsers.join(', ')}`);
+        console.log(`🧹 Locally cleaned up ${inactiveLocalUsers.length} truly inactive users: ${inactiveLocalUsers.join(', ')}`);
       }
-      
-      // Query database for inactive players
+
+      // Query database for inactive players - use more generous threshold
+      const dbCutoffTime = new Date(Date.now() - (this.inactivityThreshold * 2));
       const q = query(
         collection(db, 'users'),
         where('isOnline', '==', true),
-        where('heartbeatTimestamp', '<', Timestamp.fromDate(cutoffTime))
+        where('heartbeatTimestamp', '<', Timestamp.fromDate(dbCutoffTime))
       );
 
       const querySnapshot = await getDocs(q);

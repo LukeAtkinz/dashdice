@@ -19,9 +19,12 @@ export class WaitingRoomService {
 
   /**
    * Search for existing waiting rooms for a specific game mode
+   * Now includes aggressive cleanup of stale rooms
    */
   static async findAvailableRooms(gameMode: string): Promise<WaitingRoom[]> {
     try {
+      console.log('🔍 WaitingRoomService: Searching for available rooms for', gameMode);
+      
       const roomsRef = collection(db, this.COLLECTION_NAME);
       const q = query(
         roomsRef,
@@ -32,22 +35,38 @@ export class WaitingRoomService {
 
       const querySnapshot = await getDocs(q);
       const rooms: WaitingRoom[] = [];
+      const now = new Date();
+      const staleThreshold = 3 * 60 * 1000; // 3 minutes
 
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        rooms.push({
-          id: doc.id,
-          gameMode: data.gameMode,
-          status: data.status,
-          createdAt: data.createdAt?.toDate() || new Date(),
-          updatedAt: data.updatedAt?.toDate() || new Date(),
-          maxPlayers: data.maxPlayers || 2,
-          currentPlayers: data.currentPlayers || 0,
-          gameData: data.gameData || { type: gameMode, settings: {} },
-          hostData: data.hostData,
-          players: data.players || []
-        });
-      });
+      // Process rooms and clean up stale ones
+      for (const docSnapshot of querySnapshot.docs) {
+        const data = docSnapshot.data();
+        const createdAt = data.createdAt?.toDate() || new Date(0);
+        const isStale = (now.getTime() - createdAt.getTime()) > staleThreshold;
+
+        if (isStale) {
+          console.log(`🧹 WaitingRoomService: Cleaning up stale room ${docSnapshot.id} (age: ${Math.round((now.getTime() - createdAt.getTime()) / 1000)}s)`);
+          try {
+            await deleteDoc(docSnapshot.ref);
+          } catch (error) {
+            console.error('Error deleting stale room:', error);
+          }
+        } else {
+          // Room is fresh, add it to available rooms
+          rooms.push({
+            id: docSnapshot.id,
+            gameMode: data.gameMode,
+            status: data.status,
+            createdAt: createdAt,
+            updatedAt: data.updatedAt?.toDate() || new Date(),
+            maxPlayers: data.maxPlayers || 2,
+            currentPlayers: data.currentPlayers || 0,
+            gameData: data.gameData || { type: gameMode, settings: {} },
+            hostData: data.hostData,
+            players: data.players || []
+          });
+        }
+      }
 
       return rooms;
     } catch (error) {

@@ -8,8 +8,9 @@ import { useBackground } from '@/context/BackgroundContext';
 import { MatchmakingService } from '@/services/matchmakingService';
 import { UserService } from '@/services/userService';
 import { RankedMatchmakingService } from '@/services/rankedMatchmakingService';
-import { NewMatchmakingService } from '@/services/newMatchmakingService';
+import { GoBackendAdapter } from '@/services/goBackendAdapter';
 import { OptimisticMatchmakingService } from '@/services/optimisticMatchmakingService';
+import { MatchmakingCleanupService } from '@/services/matchmakingCleanupService';
 import { userDataCache } from '@/services/userDataCache';
 import AchievementsMini from '@/components/achievements/AchievementsMini';
 import { CompactLeaderboard } from '@/components/ranked/Leaderboard';
@@ -96,13 +97,24 @@ export const DashboardSection: React.FC = () => {
   const [currentMatchInfo, setCurrentMatchInfo] = useState<{ gameMode: string; currentGame: string } | null>(null);
   const [skillRating, setSkillRating] = useState<{ level: number; dashNumber: number } | null>(null);
 
-  // Preload user data for faster matchmaking
+  // Preload user data for faster matchmaking and start cleanup service
   useEffect(() => {
+    console.log('🚀 Preloading user data for faster matchmaking...');
+    
     if (user?.uid) {
       userDataCache.preloadUserData(user.uid).catch(error => {
         console.warn('Failed to preload user data:', error);
       });
     }
+
+    // Start the aggressive matchmaking cleanup service
+    MatchmakingCleanupService.startCleanupService();
+    console.log('✅ User data preloaded and cached');
+
+    // Cleanup function to stop the service when component unmounts
+    return () => {
+      MatchmakingCleanupService.stopCleanupService();
+    };
   }, [user?.uid]);
 
   // Fetch user's skill rating
@@ -159,9 +171,9 @@ export const DashboardSection: React.FC = () => {
       setIsExiting(true);
       
       try {
-        // First, check if user is already in a match
+        // First, check if user is already in a match using Go backend (with Firebase fallback)
         console.log('🔍 Checking if user is already in a match...');
-        const matchStatus = await NewMatchmakingService.checkUserInMatch(user.uid);
+        const matchStatus = await GoBackendAdapter.checkUserInMatch(user.uid);
         
         if (matchStatus.inMatch) {
           console.log('⚠️ User is already in a match:', matchStatus);
@@ -196,13 +208,38 @@ export const DashboardSection: React.FC = () => {
           playerStats: userProfile.stats
         };
 
-        // STEP 2: Optimistic UI with Background Room Creation
-        console.log('✨ Creating optimistic room with background real room creation...');
+        // STEP 2: Try Go Backend first, with Optimistic UI fallback
+        console.log('✨ Attempting Go backend matchmaking with Firebase fallback...');
         
         // Determine game type
         const gameType = action === 'ranked' ? 'ranked' : 'quick';
         
-        // Create optimistic room with real user data and background room creation
+        // Try Go backend first
+        try {
+          console.log('🚀 Attempting Go backend match creation...');
+          const matchResult = await GoBackendAdapter.findOrCreateMatch(
+            gameMode,
+            gameType as 'quick' | 'ranked',
+            user.uid,
+            userProfile
+          );
+          
+          if (matchResult.success && matchResult.roomId) {
+            console.log('✅ Go backend match created successfully!');
+            setCurrentSection('waiting-room', {
+              gameMode,
+              actionType: action as 'live' | 'custom',
+              roomId: matchResult.roomId,
+              isOptimistic: false // This is a real Go backend room
+            });
+            return;
+          }
+        } catch (goError) {
+          console.log('Go backend failed, using Firebase optimistic fallback:', goError);
+        }
+
+        // Fallback to Firebase optimistic approach if Go backend fails
+        console.log('🔄 Using Firebase optimistic room creation as fallback...');
         const optimisticRoom = await OptimisticMatchmakingService.createOptimisticRoom(
           gameMode,
           gameType,
@@ -210,7 +247,7 @@ export const DashboardSection: React.FC = () => {
           userProfile,
           {
             onRealRoomCreated: (realRoomId: string) => {
-              console.log(`🎯 Real room created: ${realRoomId}, seamlessly transitioning...`);
+              console.log(`🎯 Firebase room created: ${realRoomId}, seamlessly transitioning...`);
               
               // Update navigation to use real room ID without user noticing
               setCurrentSection('waiting-room', {

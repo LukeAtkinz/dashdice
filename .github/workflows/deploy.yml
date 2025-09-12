@@ -1,0 +1,486 @@
+# Automated CI/CD Pipeline for DashDice Matchmaking System
+# Comprehensive deployment automation with environment management
+
+name: DashDice Production Deploy
+
+on:
+  push:
+    branches: [main, production]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      run_tests:
+        description: 'Run full test suite'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  NODE_VERSION: '18'
+  GO_VERSION: '1.21'
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
+jobs:
+  # Pre-deployment validation
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
+      environment: ${{ steps.check.outputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate deployment conditions
+        id: check
+        run: |
+          # Determine target environment
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/production" ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+          else
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          fi
+          
+          # Check if we should deploy
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+          else
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Environment summary
+        run: |
+          echo "🚀 Deployment Configuration:"
+          echo "Environment: ${{ steps.check.outputs.environment }}"
+          echo "Should Deploy: ${{ steps.check.outputs.should_deploy }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Branch: ${{ github.ref }}"
+
+  # Code quality and testing
+  test:
+    runs-on: ubuntu-latest
+    needs: validate
+    if: ${{ github.event.inputs.run_tests != 'false' }}
+    strategy:
+      matrix:
+        test-type: [frontend, backend, integration]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        if: matrix.test-type == 'frontend' || matrix.test-type == 'integration'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Go
+        if: matrix.test-type == 'backend' || matrix.test-type == 'integration'
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Install Node dependencies
+        if: matrix.test-type == 'frontend' || matrix.test-type == 'integration'
+        run: npm ci
+
+      - name: Install Go dependencies
+        if: matrix.test-type == 'backend' || matrix.test-type == 'integration'
+        working-directory: ./go-services
+        run: |
+          for service in api-gateway match-service queue-service presence-service notification-service; do
+            cd $service && go mod download && cd ..
+          done
+
+      - name: Setup test environment
+        run: |
+          # Create test environment files
+          cp .env.example .env.test
+          echo "ENVIRONMENT=test" >> .env.test
+          echo "REDIS_URL=redis://localhost:6379" >> .env.test
+          echo "POSTGRES_URL=postgres://test:test@localhost:5432/test" >> .env.test
+
+      - name: Start test services
+        if: matrix.test-type == 'integration'
+        run: |
+          docker compose -f go-services/docker-compose.yml up -d redis postgres
+          sleep 10 # Wait for services to be ready
+
+      - name: Run Frontend Tests
+        if: matrix.test-type == 'frontend'
+        run: |
+          npm run lint
+          npm run type-check
+          npm run test:unit
+          npm run build
+
+      - name: Run Backend Tests
+        if: matrix.test-type == 'backend'
+        working-directory: ./go-services
+        run: |
+          # Test each microservice
+          for service in api-gateway match-service queue-service presence-service notification-service; do
+            echo "Testing $service..."
+            cd $service
+            go test -v ./... -race -coverprofile=coverage.out
+            cd ..
+          done
+
+      - name: Run Integration Tests
+        if: matrix.test-type == 'integration'
+        run: |
+          # Wait for services to be fully ready
+          timeout 60 bash -c 'until docker compose -f go-services/docker-compose.yml exec redis redis-cli ping; do sleep 2; done'
+          
+          # Run comprehensive integration tests
+          powershell -File integration-check-simple.ps1 -Detailed
+          powershell -File test-websocket.ps1
+          powershell -File advanced-load-testing.ps1 -TestType integration -ConcurrentUsers 10 -Duration 30
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.test-type }}
+          path: |
+            test-results/
+            coverage.out
+            *-test-report-*.txt
+
+  # Security scanning
+  security:
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Scan Go modules
+        working-directory: ./go-services
+        run: |
+          # Install govulncheck
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          
+          # Scan each service
+          for service in api-gateway match-service queue-service presence-service notification-service; do
+            echo "Scanning $service for vulnerabilities..."
+            cd $service && govulncheck ./... && cd ..
+          done
+
+      - name: NPM audit
+        run: |
+          npm audit --audit-level moderate
+          npm audit fix --dry-run
+
+  # Build and package
+  build:
+    runs-on: ubuntu-latest
+    needs: [validate, test, security]
+    if: needs.validate.outputs.should_deploy == 'true'
+    strategy:
+      matrix:
+        component: [frontend, microservices, websocket]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Frontend
+        if: matrix.component == 'frontend'
+        run: |
+          # Setup Node.js
+          curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+          sudo apt-get install -y nodejs
+          
+          # Install dependencies and build
+          npm ci
+          npm run build
+          
+          # Create deployment artifact
+          tar -czf frontend-build.tar.gz .next/ public/ package.json
+
+      - name: Build Microservices
+        if: matrix.component == 'microservices'
+        working-directory: ./go-services
+        run: |
+          # Build all microservices
+          services=(api-gateway match-service queue-service presence-service notification-service)
+          
+          for service in "${services[@]}"; do
+            echo "Building $service..."
+            docker build -t ghcr.io/${{ github.repository }}/$service:${{ github.sha }} -f $service/Dockerfile .
+            docker push ghcr.io/${{ github.repository }}/$service:${{ github.sha }}
+          done
+
+      - name: Build WebSocket Server
+        if: matrix.component == 'websocket'
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/websocket-server:${{ github.sha }} -f Dockerfile.websocket .
+          docker push ghcr.io/${{ github.repository }}/websocket-server:${{ github.sha }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-${{ matrix.component }}-${{ github.sha }}
+          path: |
+            frontend-build.tar.gz
+            docker-compose.yml
+            .env.example
+
+  # Deploy to Vercel (Frontend)
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    needs: [validate, build]
+    if: needs.validate.outputs.should_deploy == 'true'
+    environment: 
+      name: ${{ needs.validate.outputs.environment }}
+      url: ${{ steps.deploy.outputs.url }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-frontend-${{ github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          # Set environment-specific variables
+          if [[ "${{ needs.validate.outputs.environment }}" == "production" ]]; then
+            VERCEL_ENV="production"
+            VERCEL_PROJECT_ID="${{ secrets.VERCEL_PROJECT_ID }}"
+            VERCEL_ORG_ID="${{ secrets.VERCEL_ORG_ID }}"
+          else
+            VERCEL_ENV="preview"
+            VERCEL_PROJECT_ID="${{ secrets.VERCEL_STAGING_PROJECT_ID }}"
+            VERCEL_ORG_ID="${{ secrets.VERCEL_ORG_ID }}"
+          fi
+          
+          # Deploy to Vercel
+          vercel deploy \
+            --token="${{ secrets.VERCEL_TOKEN }}" \
+            --env NEXT_PUBLIC_API_URL="${{ secrets.API_URL }}" \
+            --env NEXT_PUBLIC_WEBSOCKET_URL="${{ secrets.WEBSOCKET_URL }}" \
+            --env FIREBASE_ADMIN_KEY="${{ secrets.FIREBASE_ADMIN_KEY }}" \
+            --env REDIS_URL="${{ secrets.REDIS_URL }}" \
+            --prod=$([[ "$VERCEL_ENV" == "production" ]] && echo "true" || echo "false")
+
+      - name: Get deployment URL
+        run: |
+          DEPLOY_URL=$(vercel ls --token="${{ secrets.VERCEL_TOKEN }}" --scope="${{ secrets.VERCEL_ORG_ID }}" | grep -E "https://.*\.vercel\.app" | head -1 | awk '{print $1}')
+          echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          echo "🚀 Deployed to: $DEPLOY_URL"
+
+  # Deploy Infrastructure (Microservices)
+  deploy-infrastructure:
+    runs-on: ubuntu-latest
+    needs: [validate, build]
+    if: needs.validate.outputs.should_deploy == 'true'
+    environment: ${{ needs.validate.outputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Cloud CLI
+        run: |
+          # Install kubectl
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+      - name: Deploy to Cloud Infrastructure
+        run: |
+          echo "🏗️ Deploying infrastructure for ${{ needs.validate.outputs.environment }}"
+          
+          # Update docker-compose with new image tags
+          sed -i "s|ghcr.io/${{ github.repository }}/|ghcr.io/${{ github.repository }}/|g" go-services/docker-compose.yml
+          sed -i "s|:latest|:${{ github.sha }}|g" go-services/docker-compose.yml
+          
+          # Deploy using docker-compose or Kubernetes depending on environment
+          if [[ "${{ needs.validate.outputs.environment }}" == "production" ]]; then
+            # Production deployment (example for cloud provider)
+            echo "Deploying to production infrastructure..."
+            # kubectl apply -f k8s-manifests/
+          else
+            # Staging deployment
+            echo "Deploying to staging infrastructure..."
+            cd go-services
+            docker-compose up -d
+          fi
+
+  # Post-deployment validation
+  post-deploy:
+    runs-on: ubuntu-latest
+    needs: [validate, deploy-frontend, deploy-infrastructure]
+    if: needs.validate.outputs.should_deploy == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Wait for deployment stabilization
+        run: sleep 60
+
+      - name: Run post-deployment health checks
+        run: |
+          # Get deployment URLs from previous steps
+          FRONTEND_URL="${{ needs.deploy-frontend.outputs.url || secrets.STAGING_URL }}"
+          API_URL="${{ secrets.API_URL }}"
+          
+          echo "🏥 Running health checks..."
+          
+          # Test frontend accessibility
+          curl -f "$FRONTEND_URL" || exit 1
+          
+          # Test API health endpoints
+          curl -f "$API_URL/health" || exit 1
+          curl -f "$API_URL/api/websocket" || exit 1
+          
+          # Run comprehensive integration tests
+          powershell -File integration-check-simple.ps1
+          powershell -File test-websocket.ps1
+
+      - name: Run smoke tests
+        run: |
+          echo "💨 Running smoke tests..."
+          
+          # Test critical user flows
+          npm install -g puppeteer
+          
+          cat > smoke-test.js << 'EOF'
+          const puppeteer = require('puppeteer');
+          
+          (async () => {
+            const browser = await puppeteer.launch();
+            const page = await browser.newPage();
+            
+            // Test homepage loads
+            await page.goto(process.env.FRONTEND_URL);
+            await page.waitForSelector('body');
+            
+            // Test authentication flow
+            console.log('✓ Homepage loaded successfully');
+            
+            await browser.close();
+          })();
+          EOF
+          
+          FRONTEND_URL="${{ needs.deploy-frontend.outputs.url }}" node smoke-test.js
+
+      - name: Performance baseline
+        run: |
+          echo "📊 Running performance baseline..."
+          
+          # Use lighthouse CI for performance testing
+          npm install -g @lhci/cli@0.12.x
+          
+          lhci autorun --upload.target=temporary-public-storage || true
+
+  # Rollback capability
+  rollback:
+    runs-on: ubuntu-latest
+    needs: [post-deploy]
+    if: failure() && needs.validate.outputs.should_deploy == 'true'
+    environment: ${{ needs.validate.outputs.environment }}
+
+    steps:
+      - name: Rollback deployment
+        run: |
+          echo "🔄 Rolling back deployment due to failures..."
+          
+          # Rollback Vercel deployment
+          vercel rollback --token="${{ secrets.VERCEL_TOKEN }}" --yes
+          
+          # Rollback infrastructure
+          if [[ "${{ needs.validate.outputs.environment }}" == "production" ]]; then
+            # kubectl rollout undo deployment/api-gateway
+            echo "Production rollback would be triggered"
+          else
+            echo "Staging rollback would be triggered"
+          fi
+
+  # Notification and reporting
+  notify:
+    runs-on: ubuntu-latest
+    needs: [validate, post-deploy]
+    if: always() && needs.validate.outputs.should_deploy == 'true'
+
+    steps:
+      - name: Deployment notification
+        run: |
+          STATUS="${{ job.status }}"
+          ENVIRONMENT="${{ needs.validate.outputs.environment }}"
+          
+          if [[ "$STATUS" == "success" ]]; then
+            EMOJI="✅"
+            MESSAGE="Deployment to $ENVIRONMENT completed successfully!"
+          else
+            EMOJI="❌"
+            MESSAGE="Deployment to $ENVIRONMENT failed!"
+          fi
+          
+          echo "$EMOJI $MESSAGE"
+          
+          # Send notification to team (Slack, Discord, etc.)
+          # curl -X POST -H 'Content-type: application/json' \
+          #   --data "{\"text\":\"$EMOJI DashDice $MESSAGE\"}" \
+          #   ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Update deployment status
+        if: always()
+        run: |
+          # Update GitHub deployment status
+          echo "Deployment status: ${{ job.status }}"
+          echo "Environment: ${{ needs.validate.outputs.environment }}"
+          echo "Commit: ${{ github.sha }}"

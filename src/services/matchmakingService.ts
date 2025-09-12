@@ -42,10 +42,12 @@ export class MatchmakingService {
   }
   
   /**
-   * Search for existing open rooms (Legacy method)
+   * Search for existing open rooms with aggressive cleanup
    */
   static async findOpenRoom(gameMode: string) {
     try {
+      console.log('🔍 MatchmakingService: Searching for open rooms in', gameMode);
+      
       const q = query(
         collection(db, 'waitingroom'),
         where('gameMode', '==', gameMode),
@@ -54,12 +56,37 @@ export class MatchmakingService {
       );
 
       const querySnapshot = await getDocs(q);
+      const now = new Date();
+      const staleThreshold = 2 * 60 * 1000; // 2 minutes for more aggressive cleanup
       
-      if (!querySnapshot.empty) {
-        const doc = querySnapshot.docs[0];
-        return { id: doc.id, data: doc.data() };
+      // First pass: clean up stale rooms
+      const validRooms = [];
+      for (const docSnapshot of querySnapshot.docs) {
+        const data = docSnapshot.data();
+        const createdAt = data.createdAt?.toDate() || new Date(0);
+        const isStale = (now.getTime() - createdAt.getTime()) > staleThreshold;
+
+        if (isStale) {
+          console.log(`🧹 MatchmakingService: Cleaning up stale room ${docSnapshot.id} (age: ${Math.round((now.getTime() - createdAt.getTime()) / 1000)}s)`);
+          try {
+            await deleteDoc(docSnapshot.ref);
+          } catch (error) {
+            console.error('Error deleting stale room:', error);
+          }
+        } else {
+          validRooms.push({ id: docSnapshot.id, data: data, createdAt: createdAt });
+        }
       }
       
+      if (validRooms.length > 0) {
+        // Return the oldest valid room to ensure fair matching
+        validRooms.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+        const selectedRoom = validRooms[0];
+        console.log(`✅ MatchmakingService: Found valid room ${selectedRoom.id} (age: ${Math.round((now.getTime() - selectedRoom.createdAt.getTime()) / 1000)}s)`);
+        return { id: selectedRoom.id, data: selectedRoom.data };
+      }
+      
+      console.log('📭 MatchmakingService: No valid rooms found, will create new room');
       return null;
     } catch (error) {
       console.error('Error finding open room:', error);
@@ -111,10 +138,12 @@ export class MatchmakingService {
   }
 
   /**
-   * Legacy implementation as fallback
+   * Legacy implementation with aggressive matching and cleanup
    */
   private static async findOrCreateRoomLegacy(gameMode: string, hostData: any, gameType: 'quick' | 'ranked' = 'quick') {
     try {
+      console.log('🎯 MatchmakingService (Legacy): Starting aggressive matchmaking for', gameMode);
+      
       // Validate hostData to prevent undefined values
       if (!hostData || !hostData.playerId) {
         throw new Error('Invalid hostData: playerId is required');
@@ -127,28 +156,62 @@ export class MatchmakingService {
         ...hostData
       };
 
-      // Try to find an existing room first
+      // AGGRESSIVE: Try to find an existing room first (with cleanup built in)
       const existingRoom = await this.findOpenRoom(gameMode);
       
       if (existingRoom) {
-        return {
-          id: existingRoom.id,
-          isNewRoom: false,
-          hasOpponent: true
-        };
+        console.log('✅ MatchmakingService: Found existing room, attempting to join', existingRoom.id);
+        
+        // Immediately try to join the existing room
+        try {
+          await this.addOpponentToRoom(existingRoom.id, {
+            playerDisplayName: validatedHostData.displayName,
+            playerId: validatedHostData.playerId,
+            displayBackgroundEquipped: hostData.displayBackgroundEquipped || 'Relax',
+            matchBackgroundEquipped: hostData.matchBackgroundEquipped || 'Relax',
+            playerStats: hostData.playerStats || {
+              bestStreak: 0,
+              currentStreak: 0,
+              gamesPlayed: 0,
+              matchWins: 0
+            }
+          });
+          
+          console.log('🎉 MatchmakingService: Successfully joined existing room!');
+          return {
+            id: existingRoom.id,
+            isNewRoom: false,
+            hasOpponent: true
+          };
+        } catch (joinError) {
+          console.error('❌ Failed to join existing room:', joinError);
+          // Continue to create new room if joining fails
+        }
       }
 
-      // Create new room if none found
+      console.log('🆕 MatchmakingService: Creating new room (no suitable rooms found)');
+      
+      // Create new room if none found or joining failed
       const roomData = {
         gameMode: gameMode,
         gameType: 'Open Server',
         rankedGame: gameType === 'ranked', // Add ranked game flag
         competitiveType: gameType, // Track if this is 'quick' or 'ranked'
-        host: validatedHostData.displayName,
-        hostUserId: validatedHostData.playerId,
-        playersRequired: 1,
-        players: [validatedHostData.playerId],
+        hostData: {
+          playerDisplayName: validatedHostData.displayName,
+          playerId: validatedHostData.playerId,
+          displayBackgroundEquipped: hostData.displayBackgroundEquipped || 'Relax',
+          matchBackgroundEquipped: hostData.matchBackgroundEquipped || 'Relax',
+          playerStats: hostData.playerStats || {
+            bestStreak: 0,
+            currentStreak: 0,
+            gamesPlayed: 0,
+            matchWins: 0
+          }
+        },
+        playersRequired: 1, // Looking for 1 more player
         createdAt: serverTimestamp(),
+        expiresAt: new Date(Date.now() + (3 * 60 * 1000)), // Expire in 3 minutes
         status: 'waiting'
       };
 
@@ -161,6 +224,7 @@ export class MatchmakingService {
       });
 
       const roomRef = await addDoc(collection(db, 'waitingroom'), roomData);
+      console.log('✅ MatchmakingService: Created new room', roomRef.id);
       
       return {
         id: roomRef.id,

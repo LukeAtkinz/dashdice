@@ -4,7 +4,7 @@ import { TournamentService } from './tournamentService';
 import { UserService } from './userService';
 import { RematchService } from './rematchService';
 import { GameInvitationService } from './gameInvitationService';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
 // Matchmaking request interface
@@ -433,7 +433,7 @@ export class MatchmakingOrchestrator {
       throw new Error('Game mode is required');
     }
     
-    // Check if player already has active sessions (query directly for user sessions)
+    // Check if player already has active sessions and clean up old ones
     const activeSessionsQuery = query(
       collection(db, 'gameSessions'),
       where('hostData.playerId', '==', request.hostData.playerId),
@@ -441,8 +441,48 @@ export class MatchmakingOrchestrator {
     );
     
     const activeSnapshot = await getDocs(activeSessionsQuery);
-    if (activeSnapshot.docs.length > 0 && request.sessionType !== 'friend') {
-      throw new Error('Player already has an active matchmaking session');
+    
+    if (activeSnapshot.docs.length > 0) {
+      // Clean up old sessions that are more than 5 minutes old
+      const now = new Date();
+      const cleanedSessions = [];
+      
+      for (const sessionDoc of activeSnapshot.docs) {
+        const sessionData = sessionDoc.data();
+        const createdAt = sessionData.createdAt?.toDate();
+        
+        // If session is older than 5 minutes or has no timestamp, clean it up
+        if (!createdAt || (now.getTime() - createdAt.getTime()) > (5 * 60 * 1000)) {
+          await deleteDoc(sessionDoc.ref);
+          cleanedSessions.push(sessionDoc.id);
+          console.log(`🧹 Cleaned up stale session: ${sessionDoc.id}`);
+        }
+      }
+      
+      // If we still have active sessions after cleanup and it's not a friend game, throw error
+      const remainingActiveQuery = query(
+        collection(db, 'gameSessions'),
+        where('hostData.playerId', '==', request.hostData.playerId),
+        where('status', 'in', ['waiting', 'matched', 'active'])
+      );
+      
+      const remainingSnapshot = await getDocs(remainingActiveQuery);
+      if (remainingSnapshot.docs.length > 0 && request.sessionType !== 'friend') {
+        // Only throw error if sessions are recent (less than 5 minutes old)
+        const recentSessions = remainingSnapshot.docs.filter(doc => {
+          const sessionData = doc.data();
+          const createdAt = sessionData.createdAt?.toDate();
+          return createdAt && (now.getTime() - createdAt.getTime()) <= (5 * 60 * 1000);
+        });
+        
+        if (recentSessions.length > 0) {
+          throw new Error('Player already has an active matchmaking session');
+        }
+      }
+      
+      if (cleanedSessions.length > 0) {
+        console.log(`🧹 Cleaned up ${cleanedSessions.length} stale matchmaking sessions`);
+      }
     }
     
     // Session type specific validation

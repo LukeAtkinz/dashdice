@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useNavigation } from '@/context/NavigationContext';
-import { NewMatchmakingService } from '@/services/newMatchmakingService';
+import { GoBackendAdapter } from '@/services/goBackendAdapter';
 
 interface AlreadyInMatchNotificationProps {
   gameMode: string;
@@ -38,12 +38,12 @@ export const AlreadyInMatchNotification: React.FC<AlreadyInMatchNotificationProp
     console.log(`🏃‍♂️ Force leaving ${gameMode} match: ${currentGame}`);
     
     try {
-      const result = await NewMatchmakingService.forceLeaveMatch(userId);
+      const result = await GoBackendAdapter.forceLeaveMatch(userId);
       
       if (result.success) {
         console.log('✅ Successfully left match');
       } else {
-        console.error('❌ Failed to leave match:', result.error);
+        console.error('❌ Failed to leave match:', result.message);
       }
     } catch (error) {
       console.error('❌ Error leaving match:', error);

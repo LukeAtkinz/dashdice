@@ -1,0 +1,254 @@
+version: '3.8'
+
+services:
+  # Nginx reverse proxy with SSL
+  nginx:
+    image: nginx:alpine
+    container_name: dashdice-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+    depends_on:
+      - api-gateway
+    networks:
+      - dashdice-network
+
+  # Certbot for SSL certificates
+  certbot:
+    image: certbot/certbot
+    container_name: dashdice-certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - ./nginx/webroot:/var/www/html
+    command: certonly --webroot --webroot-path=/var/www/html --email your-email@example.com --agree-tos --no-eff-email --force-renewal -d api.dashdice.gg
+
+  # Redis for caching and real-time operations
+  redis:
+    image: redis:7-alpine
+    container_name: dashdice-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"  # Only bind to localhost in production
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dashdice-network
+
+  # PostgreSQL for analytics and game statistics
+  postgres:
+    image: postgres:15-alpine
+    container_name: dashdice-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:5432:5432"  # Only bind to localhost in production
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dashdice-network
+
+  # API Gateway Service
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: dashdice-api-gateway
+    restart: unless-stopped
+    env_file: .env.production
+    ports:
+      - "127.0.0.1:8080:8080"  # Only bind to localhost, nginx will proxy
+    environment:
+      - PORT=8080
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - MATCH_SERVICE_URL=http://match-service:8081
+      - QUEUE_SERVICE_URL=http://queue-service:8082
+      - PRESENCE_SERVICE_URL=http://presence-service:8083
+      - NOTIFICATION_SERVICE_URL=http://notification-service:8084
+      - FIREBASE_CREDENTIALS_PATH=/app/serviceAccountKey.json
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
+    depends_on:
+      - redis
+      - postgres
+      - match-service
+      - queue-service
+      - presence-service
+      - notification-service
+    networks:
+      - dashdice-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Match Service
+  match-service:
+    build:
+      context: .
+      dockerfile: match-service/Dockerfile
+    container_name: dashdice-match-service
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8081:8081"
+    environment:
+      - PORT=8081
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - POSTGRES_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - FIREBASE_CREDENTIALS_PATH=/app/serviceAccountKey.json
+      - PRESENCE_SERVICE_URL=http://presence-service:8083
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - dashdice-network
+
+  # Queue Service
+  queue-service:
+    build:
+      context: .
+      dockerfile: queue-service/Dockerfile
+    container_name: dashdice-queue-service
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8082:8082"
+    environment:
+      - PORT=8082
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - POSTGRES_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - FIREBASE_CREDENTIALS_PATH=/app/serviceAccountKey.json
+      - MATCH_SERVICE_URL=http://match-service:8081
+      - PRESENCE_SERVICE_URL=http://presence-service:8083
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - dashdice-network
+
+  # Presence Service
+  presence-service:
+    build:
+      context: .
+      dockerfile: presence-service/Dockerfile
+    container_name: dashdice-presence-service
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8083:8083"
+    environment:
+      - PORT=8083
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - FIREBASE_CREDENTIALS_PATH=/app/serviceAccountKey.json
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
+    depends_on:
+      - redis
+    networks:
+      - dashdice-network
+
+  # Notification Service
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    container_name: dashdice-notification-service
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8084:8084"
+    environment:
+      - PORT=8084
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - FIREBASE_CREDENTIALS_PATH=/app/serviceAccountKey.json
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
+    depends_on:
+      - redis
+    networks:
+      - dashdice-network
+
+  # WebSocket Service
+  websocket-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.websocket
+    container_name: dashdice-websocket
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8085:8080"
+    environment:
+      - PORT=8080
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - redis
+    networks:
+      - dashdice-network
+
+networks:
+  dashdice-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  postgres-data:
+  certbot-etc:
+  certbot-var:

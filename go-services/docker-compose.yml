@@ -1,0 +1,325 @@
+version: '3.8'
+
+services:
+  # Redis for caching and real-time operations
+  redis:
+    image: redis:7-alpine
+    container_name: dashdice-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dashdice-network
+
+  # PostgreSQL for analytics and game statistics
+  postgres:
+    image: postgres:15-alpine
+    container_name: dashdice-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dashdice
+      POSTGRES_USER: dashdice
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dashdice123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dashdice"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dashdice-network
+
+  # API Gateway Service
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: dashdice-api-gateway
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - ENVIRONMENT=development
+      - LOG_LEVEL=info
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MATCH_SERVICE_URL=http://match-service:8081
+      - QUEUE_SERVICE_URL=http://queue-service:8082
+      - PRESENCE_SERVICE_URL=http://presence-service:8083
+      - NOTIFICATION_SERVICE_URL=http://notification-service:8084
+      - FIREBASE_CREDENTIALS_PATH=/app/serviceAccountKey.json
+      - JWT_SECRET=${JWT_SECRET:-development-jwt-secret-key-change-for-production}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-development-jwt-secret-key-change-for-production}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=${POSTGRES_USER:-dashdice}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-dashdice}
+    volumes:
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
+    depends_on:
+      - redis
+      - match-service
+      - queue-service
+      - presence-service
+      - notification-service
+    networks:
+      - dashdice-network
+
+  # Match Service
+  match-service:
+    build:
+      context: .
+      dockerfile: match-service/Dockerfile
+    container_name: dashdice-match-service
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - ENVIRONMENT=development
+      - LOG_LEVEL=info
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_URL=postgres://dashdice:${POSTGRES_PASSWORD:-dashdice123}@postgres:5432/dashdice
+      - FIREBASE_CREDENTIALS_PATH=/app/serviceAccountKey.json
+      - PRESENCE_SERVICE_URL=http://presence-service:8083
+      - JWT_SECRET=${JWT_SECRET:-development-jwt-secret-key-change-for-production}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-development-jwt-secret-key-change-for-production}
+    volumes:
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - dashdice-network
+
+  # Queue Service
+  queue-service:
+    build:
+      context: .
+      dockerfile: queue-service/Dockerfile
+    container_name: dashdice-queue-service
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=8082
+      - ENVIRONMENT=development
+      - LOG_LEVEL=info
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_URL=postgres://dashdice:${POSTGRES_PASSWORD:-dashdice123}@postgres:5432/dashdice
+      - FIREBASE_CREDENTIALS_PATH=/app/serviceAccountKey.json
+      - MATCH_SERVICE_URL=http://match-service:8081
+      - PRESENCE_SERVICE_URL=http://presence-service:8083
+      - JWT_SECRET=${JWT_SECRET:-development-jwt-secret-key-change-for-production}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-development-jwt-secret-key-change-for-production}
+    volumes:
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - dashdice-network
+
+  # Presence Service
+  presence-service:
+    build:
+      context: .
+      dockerfile: presence-service/Dockerfile
+    container_name: dashdice-presence-service
+    restart: unless-stopped
+    ports:
+      - "8083:8083"
+    environment:
+      - PORT=8083
+      - ENVIRONMENT=development
+      - LOG_LEVEL=info
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_URL=postgres://dashdice:${POSTGRES_PASSWORD:-dashdice123}@postgres:5432/dashdice
+      - FIREBASE_CREDENTIALS_PATH=/app/serviceAccountKey.json
+      - JWT_SECRET=${JWT_SECRET:-development-jwt-secret-key-change-for-production}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-development-jwt-secret-key-change-for-production}
+    volumes:
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - dashdice-network
+
+  # Notification Service
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    container_name: dashdice-notification-service
+    restart: unless-stopped
+    ports:
+      - "8084:8084"
+    environment:
+      - PORT=8084
+      - ENVIRONMENT=development
+      - LOG_LEVEL=info
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_URL=postgres://dashdice:${POSTGRES_PASSWORD:-dashdice123}@postgres:5432/dashdice
+      - FIREBASE_CREDENTIALS_PATH=/app/serviceAccountKey.json
+      - FCM_SERVER_KEY=${FCM_SERVER_KEY}
+      - APNS_KEY_ID=${APNS_KEY_ID}
+      - APNS_TEAM_ID=${APNS_TEAM_ID}
+      - APNS_BUNDLE_ID=${APNS_BUNDLE_ID}
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
+      - JWT_SECRET=${JWT_SECRET:-development-jwt-secret-key-change-for-production}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-development-jwt-secret-key-change-for-production}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+    volumes:
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - dashdice-network
+
+  # Monitoring with Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: dashdice-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - dashdice-network
+
+  # Grafana for monitoring dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: dashdice-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin123}
+      - GF_INSTALL_PLUGINS=redis-datasource,postgres-datasource
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+    networks:
+      - dashdice-network
+
+  # Jaeger for distributed tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: dashdice-jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    volumes:
+      - jaeger-data:/tmp
+    networks:
+      - dashdice-network
+
+  # Redis Insight for Redis monitoring
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    container_name: dashdice-redis-insight
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    depends_on:
+      - redis
+    networks:
+      - dashdice-network
+
+  # WebSocket Server for real-time communication
+  websocket-server:
+    build:
+      context: ..
+      dockerfile: Dockerfile.websocket
+    container_name: dashdice-websocket-server
+    restart: unless-stopped
+    ports:
+      - "8090:8090"
+    environment:
+      - WS_PORT=8090
+      - NODE_ENV=development
+    depends_on:
+      - redis
+    networks:
+      - dashdice-network
+
+  # Load balancer (HAProxy)
+  load-balancer:
+    image: haproxy:2.8-alpine
+    container_name: dashdice-load-balancer
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "8404:8404"  # HAProxy stats
+    volumes:
+      - ./load-balancer/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      - api-gateway
+    networks:
+      - dashdice-network
+
+networks:
+  dashdice-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  redis-data:
+    driver: local
+  postgres-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  jaeger-data:
+    driver: local
+
+# Development override
+# To use this for development, create a docker-compose.override.yml file
+# with development-specific configurations like:
+# - Volume mounts for hot reloading
+# - Different environment variables
+# - Debug ports
+# - Development databases
