@@ -276,6 +276,12 @@ export class RematchService {
 
   // Start automatic cleanup timer (call this when the app starts)
   static startRematchCleanupTimer(): void {
+    // Only run on the client side
+    if (typeof window === 'undefined') {
+      console.warn('⚠️ RematchService: Cleanup timer skipped (SSR environment)');
+      return;
+    }
+
     // Clean up expired rematches every 5 minutes (they only last 10 seconds)
     setInterval(() => {
       this.cleanupExpiredRematches();

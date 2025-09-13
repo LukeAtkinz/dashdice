@@ -1,0 +1,48 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['api-gateway:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+
+  - job_name: 'match-service'
+    static_configs:
+      - targets: ['match-service:8081']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+
+  - job_name: 'queue-service'
+    static_configs:
+      - targets: ['queue-service:8082']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+
+  - job_name: 'presence-service'
+    static_configs:
+      - targets: ['presence-service:8083']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+
+  - job_name: 'notification-service'
+    static_configs:
+      - targets: ['notification-service:8084']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+
+  - job_name: 'websocket-server'
+    static_configs:
+      - targets: ['websocket-server:8090']
+    metrics_path: '/metrics'
+    scrape_interval: 5s

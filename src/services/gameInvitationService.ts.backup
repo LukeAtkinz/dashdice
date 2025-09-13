@@ -547,6 +547,155 @@ export class GameInvitationService {
       // Create the waiting room
       const waitingRoomRef = await addDoc(collection(db, 'waitingroom'), waitingRoomData);
       const gameId = waitingRoomRef.id;
+    try {
+      console.log('🎮 Creating friend game session for invitation:', invitation);
+      
+      // Get user data for both players
+      const [fromUser, toUser] = await Promise.all([
+        this.getUser(invitation.fromUserId),
+        this.getUser(invitation.toUserId)
+      ]);
+
+      if (!fromUser || !toUser) {
+        throw new Error('User data not found');
+      }
+
+      // Get complete user profiles with stats and backgrounds
+      const [fromProfile, toProfile] = await Promise.all([
+        UserService.getUserProfile(invitation.fromUserId),
+        UserService.getUserProfile(invitation.toUserId)
+      ]);
+
+      // Default background
+      const defaultBackground = { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+
+      // Helper functions for proper game mode initialization
+      const getRoundObjective = (gameMode: string): number => {
+        switch (gameMode.toLowerCase()) {
+          case 'quickfire':
+            return 50;
+          case 'classic':
+            return 100;
+          case 'zero hour':
+          case 'zerohour':
+            return 0;
+          case 'last line':
+          case 'lastline':
+          case 'last-line':
+            return 0;   // Last Line targets 0 (opponent elimination)
+          case 'true grit':
+          case 'truegrit':
+          case 'true-grit':
+            return 100;
+          default:
+            return 100;
+        }
+      };
+
+      const getStartingScore = (gameMode: string): number => {
+        switch (gameMode.toLowerCase()) {
+          case 'quickfire':
+            return 0;
+          case 'classic':
+            return 0;
+          case 'zero hour':
+          case 'zerohour':
+            return 100;
+          case 'last line':
+          case 'lastline':
+          case 'last-line':
+            return 50;  // Last Line starts at 50 (tug-of-war)
+          case 'true grit':
+          case 'truegrit':
+          case 'true-grit':
+            return 0;
+          default:
+            return 0;
+        }
+      };
+
+      // Create waiting room with both players ready and proper game mode initialization
+      const waitingRoomData = {
+        gameMode: invitation.gameType,
+        gameType: 'Friend Invitation',
+        playersRequired: 0, // Both players already confirmed
+        friendInvitation: true,
+        readyPlayers: [invitation.fromUserId, invitation.toUserId], // Both auto-ready
+        createdAt: serverTimestamp(),
+        expiresAt: new Date(Date.now() + (20 * 60 * 1000)), // 20 minute expiry
+        
+        // Game initialization data for proper mode setup
+        gameData: {
+          type: 'dice',
+          settings: {},
+          roundObjective: getRoundObjective(invitation.gameType),
+          startingScore: getStartingScore(invitation.gameType)
+        },
+        
+        // Host player data (inviter)
+        hostData: {
+          playerDisplayName: fromUser.displayName || 'Unknown Player',
+          playerId: invitation.fromUserId,
+          displayBackgroundEquipped: fromProfile?.inventory?.displayBackgroundEquipped || defaultBackground,
+          matchBackgroundEquipped: fromProfile?.inventory?.matchBackgroundEquipped || defaultBackground,
+          playerStats: fromProfile?.stats || {
+            bestStreak: 0,
+            currentStreak: 0,
+            gamesPlayed: 0,
+            matchWins: 0
+          },
+          ready: true // Auto-ready
+        },
+        
+        // Opponent player data (invitee)
+        opponentData: {
+          playerDisplayName: toUser.displayName || 'Unknown Player',
+          playerId: invitation.toUserId,
+          displayBackgroundEquipped: toProfile?.inventory?.displayBackgroundEquipped || defaultBackground,
+          matchBackgroundEquipped: toProfile?.inventory?.matchBackgroundEquipped || defaultBackground,
+          playerStats: toProfile?.stats || {
+            bestStreak: 0,
+            currentStreak: 0,
+            gamesPlayed: 0,
+            matchWins: 0
+          },
+          ready: true // Auto-ready
+        },
+        
+        // Players array for compatibility
+        players: [
+          {
+            playerDisplayName: fromUser.displayName || 'Unknown Player',
+            playerId: invitation.fromUserId,
+            displayBackgroundEquipped: fromProfile?.inventory?.displayBackgroundEquipped || defaultBackground,
+            matchBackgroundEquipped: fromProfile?.inventory?.matchBackgroundEquipped || defaultBackground,
+            playerStats: fromProfile?.stats || {
+              bestStreak: 0,
+              currentStreak: 0,
+              gamesPlayed: 0,
+              matchWins: 0
+            },
+            ready: true
+          },
+          {
+            playerDisplayName: toUser.displayName || 'Unknown Player',
+            playerId: invitation.toUserId,
+            displayBackgroundEquipped: toProfile?.inventory?.displayBackgroundEquipped || defaultBackground,
+            matchBackgroundEquipped: toProfile?.inventory?.matchBackgroundEquipped || defaultBackground,
+            playerStats: toProfile?.stats || {
+              bestStreak: 0,
+              currentStreak: 0,
+              gamesPlayed: 0,
+              matchWins: 0
+            },
+            ready: true
+          }
+        ]
+      };
+
+      // Create the waiting room
+      const waitingRoomRef = await addDoc(collection(db, 'waitingroom'), waitingRoomData);
+      const gameId = waitingRoomRef.id;
 
       console.log('✅ Friend game session created via Firebase fallback:', gameId);
       
@@ -731,12 +880,6 @@ export class GameInvitationService {
 
   // Start automatic cleanup timer (call this when the app starts)
   static startInvitationCleanupTimer(): void {
-    // Only run on the client side
-    if (typeof window === 'undefined') {
-      console.warn('⚠️ GameInvitationService: Cleanup timer skipped (SSR environment)');
-      return;
-    }
-
     // Clean up expired invitations every 2 minutes
     setInterval(() => {
       this.cleanupExpiredInvitations();

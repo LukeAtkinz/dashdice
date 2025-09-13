@@ -21,12 +21,28 @@ interface ProvidersProps {
 export const Providers: React.FC<ProvidersProps> = ({ children }) => {
   // Initialize database cleanup on app start - TEMPORARILY DISABLED
   useEffect(() => {
+    // Only run on the client side to avoid SSR issues
+    if (typeof window === 'undefined') return;
+    
     // CleanupService.initializeCleanupScheduler(); // Disabled to prevent matchmaking issues
     console.log('🚫 Database cleanup temporarily disabled to prevent matchmaking issues');
     
     // Start invitation and rematch cleanup timers to keep database clean
-    GameInvitationService.startInvitationCleanupTimer();
-    RematchService.startRematchCleanupTimer();
+    try {
+      if (GameInvitationService && typeof GameInvitationService.startInvitationCleanupTimer === 'function') {
+        GameInvitationService.startInvitationCleanupTimer();
+      } else {
+        console.warn('⚠️ GameInvitationService cleanup timer not available');
+      }
+      
+      if (RematchService && typeof RematchService.startRematchCleanupTimer === 'function') {
+        RematchService.startRematchCleanupTimer();
+      } else {
+        console.warn('⚠️ RematchService cleanup timer not available');
+      }
+    } catch (error) {
+      console.error('❌ Error starting cleanup timers:', error);
+    }
   }, []);
 
   return (

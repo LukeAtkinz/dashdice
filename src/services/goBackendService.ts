@@ -18,7 +18,23 @@ interface RematchRequest {
   original_match_id?: string;
 }
 
+interface FriendInviteRequest {
+  game_mode: string;
+  game_type: string;
+  inviter_user_id: string;
+  inviter_display_name: string;
+  invitee_user_id: string;
+  invitee_display_name: string;
+  message?: string;
+}
+
 interface RematchResponse {
+  success: boolean;
+  waiting_room: any;
+  waiting_room_id: string;
+}
+
+interface FriendInviteResponse {
   success: boolean;
   waiting_room: any;
   waiting_room_id: string;
@@ -90,6 +106,49 @@ export class GoBackendService {
       
     } catch (error) {
       console.error(`❌ GoBackendService: Request failed for ${url}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a friend invite waiting room using Go services
+   */
+  static async createFriendInviteWaitingRoom(
+    inviterUserId: string,
+    inviterDisplayName: string,
+    inviteeUserId: string,
+    inviteeDisplayName: string,
+    gameMode: string,
+    gameType: string = 'Friend Invitation',
+    message?: string
+  ): Promise<string> {
+    try {
+      console.log('🔄 GoBackendService: Creating friend invite waiting room via Go services');
+      
+      const friendInviteRequest: FriendInviteRequest = {
+        game_mode: gameMode,
+        game_type: gameType,
+        inviter_user_id: inviterUserId,
+        inviter_display_name: inviterDisplayName,
+        invitee_user_id: inviteeUserId,
+        invitee_display_name: inviteeDisplayName,
+        message: message,
+      };
+
+      const response: FriendInviteResponse = await this.makeRequest('/v1/matches/friend-invite', {
+        method: 'POST',
+        body: JSON.stringify(friendInviteRequest),
+      });
+
+      if (!response.success || !response.waiting_room_id) {
+        throw new Error('Failed to create friend invite waiting room');
+      }
+
+      console.log('✅ GoBackendService: Friend invite waiting room created:', response.waiting_room_id);
+      return response.waiting_room_id;
+      
+    } catch (error) {
+      console.error('❌ GoBackendService: Error creating friend invite waiting room:', error);
       throw error;
     }
   }
