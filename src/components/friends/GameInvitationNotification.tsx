@@ -175,12 +175,14 @@ export const GameInvitationNotification: React.FC = () => {
       const invitation = validInvitations.find(inv => inv.id === invitationId);
       const result = await acceptGameInvitation(invitationId);
       if (result.success && result.gameId) {
-        // For friend invitations, the session is already created with both players
-        // Navigate directly to the match instead of waiting room
-        setCurrentSection('match', { 
-          matchId: result.gameId,
+        // Navigate to waiting room to show countdown and player cards
+        // This provides the same optimistic experience as regular matchmaking
+        setCurrentSection('waiting-room', { 
           roomId: result.gameId,
-          gameMode: invitation?.gameMode || 'classic'
+          gameMode: invitation?.gameMode || 'classic',
+          actionType: 'live',
+          gameType: invitation?.gameType || 'quick',
+          isOptimistic: true // Enable optimistic UI for friend matches
         });
       }
     } catch (error) {

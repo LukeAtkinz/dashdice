@@ -19,6 +19,8 @@ import { RankedDashboard } from '@/components/ranked/RankedDashboard';
 import GlobalChatButton from '@/components/chat/GlobalChatButton';
 import { GlobalRematchNotification } from '@/components/rematch/GlobalRematchNotification';
 import { GameInvitationNotification } from '@/components/friends/GameInvitationNotification';
+import InviteAcceptedNotification from '@/components/friends/InviteAcceptedNotification';
+import PersistentNotificationManager from '@/components/notifications/PersistentNotificationManager';
 import { GameType } from '@/types/ranked';
 import { RematchProvider } from '@/context/RematchContext';
 import { useAuth } from '@/context/AuthContext';
@@ -772,6 +774,12 @@ const DashboardContent: React.FC = () => {
         
         {/* Game Invitation Notifications */}
         <GameInvitationNotification />
+        
+        {/* Invite Accepted Notifications */}
+        <InviteAcceptedNotification />
+        
+        {/* Persistent Match Notifications */}
+        <PersistentNotificationManager />
         
         {/* Global Chat Button */}
         <GlobalChatButton />

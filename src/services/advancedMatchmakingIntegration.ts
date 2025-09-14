@@ -10,6 +10,7 @@ export interface AdvancedMatchmakingOptions {
   usePriorityQueue?: boolean;
   tournamentMode?: boolean;
   preferredGameMode?: string;
+  gameType?: 'quick' | 'ranked' | 'tournament'; // Add explicit game type
   maxWaitTime?: number;
   skillRange?: number;
   teamBalancing?: boolean;
@@ -111,44 +112,82 @@ export class AdvancedMatchmakingIntegration {
     options: AdvancedMatchmakingOptions
   ): Promise<MatchmakingResult> {
     try {
-      // Check if already in queue
-      const queueStatus = await MatchmakingQueueService.getQueueStatus(
-        playerData.playerId,
-        options.preferredGameMode || 'classic',
-        'quick'
-      );
+      console.log(`⏳ Starting advanced queue-based matchmaking for ${playerData.playerId}`);
+
+      // Use advanced queue management system for better performance
+      const { AdvancedQueueManagementService } = await import('./advancedQueueManagementService');
       
-      if (queueStatus && queueStatus.position > 0) {
+      // Set up queue preferences based on options
+      const skillTolerance: 'strict' | 'balanced' | 'loose' = options.teamBalancing ? 'strict' : 'balanced';
+      const preferences = {
+        maxWaitTime: options.maxWaitTime || 300000,
+        skillTolerance,
+        regionPreference: 'global',
+        allowCrossPlatform: true,
+        preferredGameSpeed: 'normal' as const,
+        avoidRecentOpponents: true,
+        premiumPriority: false // Could be determined from user profile
+      };
+
+      // Join the advanced queue system
+      const queueResult = await AdvancedQueueManagementService.joinQueue(
+        playerData,
+        options.preferredGameMode || 'classic',
+        options.gameType || 'quick',
+        preferences,
+        'global' // Could be determined from user location
+      );
+
+      if (queueResult.success) {
         return {
-          success: false,
+          success: false, // Not immediately successful, but in queue
           matchType: 'queue',
-          error: `In queue, position: ${queueStatus.position}, estimated wait: ${Math.round(queueStatus.estimatedWaitTime / 1000)}s`
+          waitTime: queueResult.estimatedWaitTime,
+          error: `Added to advanced queue - Position: ${queueResult.queuePosition}, Est. wait: ${Math.round(queueResult.estimatedWaitTime / 1000)}s`
         };
       } else {
-        // Join queue
-        const queueId = await MatchmakingQueueService.joinQueue(
+        // Fallback to legacy queue system
+        console.log('⚠️ Advanced queue failed, falling back to legacy system');
+        
+        const gameType = options.gameType || 'quick';
+        const queueStatus = await MatchmakingQueueService.getQueueStatus(
           playerData.playerId,
-          playerData,
           options.preferredGameMode || 'classic',
-          'quick',
-          {
-            maxWaitTime: options.maxWaitTime || 300000,
-            skillTolerance: 'balanced'
-          }
+          gameType
         );
-
-        if (queueId) {
+        
+        if (queueStatus && queueStatus.position > 0) {
           return {
             success: false,
             matchType: 'queue',
-            error: 'Added to matchmaking queue'
+            error: `In legacy queue, position: ${queueStatus.position}, estimated wait: ${Math.round(queueStatus.estimatedWaitTime / 1000)}s`
           };
         } else {
-          return {
-            success: false,
-            matchType: 'queue',
-            error: 'Failed to join queue'
-          };
+          // Join legacy queue
+          const queueId = await MatchmakingQueueService.joinQueue(
+            playerData.playerId,
+            playerData,
+            options.preferredGameMode || 'classic',
+            gameType,
+            {
+              maxWaitTime: options.maxWaitTime || 300000,
+              skillTolerance: 'balanced'
+            }
+          );
+
+          if (queueId) {
+            return {
+              success: false,
+              matchType: 'queue',
+              error: 'Added to legacy matchmaking queue'
+            };
+          } else {
+            return {
+              success: false,
+              matchType: 'queue',
+              error: 'Failed to join queue'
+            };
+          }
         }
       }
     } catch (error) {
@@ -191,10 +230,13 @@ export class AdvancedMatchmakingIntegration {
 
       if (opponents.length > 0) {
         // Use the existing matchmaking service to create a match
+        // Respect the session type - don't force 'quick' for all matches
+        const sessionType = options.gameType || 'quick'; // Use explicit gameType
+        
         const matchResult = await NewMatchmakingService.findOrCreateMatch(
           playerData.playerId,
           options.preferredGameMode || 'classic',
-          'quick'
+          sessionType
         );
 
         return {

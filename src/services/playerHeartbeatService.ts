@@ -142,10 +142,7 @@ export class PlayerHeartbeatService {
     this.activeUsers.delete(userId);
     this.lastHeartbeatTimes.delete(userId);
     
-    // Mark user as offline in database
-    this.markOffline(userId).catch(error => {
-      console.error(`Error marking user ${userId} offline during heartbeat stop:`, error);
-    });
+    // Note: markOffline is called separately to avoid recursive calls
   }
 
   /**
@@ -202,6 +199,7 @@ export class PlayerHeartbeatService {
 
   /**
    * Mark user as offline with enhanced status tracking
+   * NOTE: We preserve currentGame to allow abandonment detection to work properly
    */
   static async markOffline(userId: string): Promise<void> {
     try {
@@ -211,7 +209,7 @@ export class PlayerHeartbeatService {
         isActive: false,
         status: 'offline',
         currentRoom: null,
-        currentGame: null,
+        // Don't clear currentGame immediately - let abandonment detection handle it
         lastSeen: serverTimestamp(),
         offlineTimestamp: serverTimestamp() // Track when user went offline
       });
@@ -221,7 +219,7 @@ export class PlayerHeartbeatService {
       this.lastHeartbeatTimes.delete(userId);
       this.stopHeartbeat(userId);
       
-      console.log(`📴 User ${userId} marked offline`);
+      console.log(`📴 User ${userId} marked offline (preserving currentGame for abandonment detection)`);
       
     } catch (error) {
       console.error('Error marking user offline:', error);

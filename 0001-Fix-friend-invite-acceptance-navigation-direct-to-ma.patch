@@ -1,0 +1,78 @@
+From 2d6fe031f62a3ab5e7a70339c1b3fca7f9fcd899 Mon Sep 17 00:00:00 2001
+From: LukeAtkinz <david.lukeatkins@gmail.com>
+Date: Sun, 14 Sep 2025 14:41:05 +0100
+Subject: [PATCH] Fix friend invite acceptance navigation - direct to match
+ instead of waiting room
+
+- Updated GameInvitations.tsx to navigate to 'match' instead of 'waiting-room'
+- Updated GameInvitationNotification.tsx to navigate to 'match' instead of 'waiting-room'
+- Updated InvitationPopupManager.tsx to navigate to 'match' instead of 'waiting-room'
+- Friend invitations now work correctly - invitee joins match immediately
+- Fixes issue where invitee wasn't joining the match/waiting room after acceptance
+- Session is already created with both players by acceptInvitation method
+---
+ src/components/friends/GameInvitationNotification.tsx |  6 ++++--
+ src/components/friends/GameInvitations.tsx            | 10 ++++++----
+ src/components/friends/InvitationPopupManager.tsx     |  6 ++++--
+ 3 files changed, 14 insertions(+), 8 deletions(-)
+
+diff --git a/src/components/friends/GameInvitationNotification.tsx b/src/components/friends/GameInvitationNotification.tsx
+index 950107e..fe2a0ae 100644
+--- a/src/components/friends/GameInvitationNotification.tsx
++++ b/src/components/friends/GameInvitationNotification.tsx
+@@ -175,8 +175,10 @@ export const GameInvitationNotification: React.FC = () => {
+       const invitation = validInvitations.find(inv => inv.id === invitationId);
+       const result = await acceptGameInvitation(invitationId);
+       if (result.success && result.gameId) {
+-        // Navigate to waiting room with the room ID and game mode
+-        setCurrentSection('waiting-room', { 
++        // For friend invitations, the session is already created with both players
++        // Navigate directly to the match instead of waiting room
++        setCurrentSection('match', { 
++          matchId: result.gameId,
+           roomId: result.gameId,
+           gameMode: invitation?.gameMode || 'classic'
+         });
+diff --git a/src/components/friends/GameInvitations.tsx b/src/components/friends/GameInvitations.tsx
+index a40456f..3244378 100644
+--- a/src/components/friends/GameInvitations.tsx
++++ b/src/components/friends/GameInvitations.tsx
+@@ -36,12 +36,14 @@ export default function GameInvitations({ compact = false }: GameInvitationsProp
+       console.log('🎯 GameInvitations: acceptGameInvitation result:', result);
+       
+       if (result.success && result.gameId) {
+-        // Navigate to waiting room with the room ID and game mode (consistent with GameInvitationNotification)
+-        console.log('🎯 GameInvitations: Navigating to waiting room:', { 
+-          roomId: result.gameId,
++        // For friend invitations, the session is already created with both players
++        // Navigate directly to the match instead of waiting room
++        console.log('🎯 GameInvitations: Friend invitation accepted - navigating to match:', { 
++          sessionId: result.gameId,
+           gameMode: invitation?.gameMode || 'classic'
+         });
+-        setCurrentSection('waiting-room', { 
++        setCurrentSection('match', { 
++          matchId: result.gameId,
+           roomId: result.gameId,
+           gameMode: invitation?.gameMode || 'classic'
+         });
+diff --git a/src/components/friends/InvitationPopupManager.tsx b/src/components/friends/InvitationPopupManager.tsx
+index af443e1..c57538a 100644
+--- a/src/components/friends/InvitationPopupManager.tsx
++++ b/src/components/friends/InvitationPopupManager.tsx
+@@ -162,8 +162,10 @@ export default function InvitationPopupManager() {
+       const invitation = gameInvitations.find(inv => inv.id === invitationId);
+       const result = await acceptGameInvitation(invitationId);
+       if (result.success && result.gameId) {
+-        // Navigate to waiting room with the room ID and game mode (consistent with other components)
+-        setCurrentSection('waiting-room', { 
++        // For friend invitations, the session is already created with both players
++        // Navigate directly to the match instead of waiting room
++        setCurrentSection('match', { 
++          matchId: result.gameId,
+           roomId: result.gameId,
+           gameMode: invitation?.gameMode || 'classic'
+         });
+-- 
+2.47.1.windows.1
+

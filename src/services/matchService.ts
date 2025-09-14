@@ -1447,6 +1447,118 @@ export class MatchService {
   }
 
   /**
+   * 🔌 Handle player disconnection with coordinated cleanup
+   * This method coordinates between MatchService and GameSessionService
+   */
+  static async handlePlayerDisconnection(
+    matchId: string, 
+    playerId: string, 
+    fromSession = false
+  ): Promise<void> {
+    try {
+      console.log(`🔌 Handling comprehensive disconnection for player ${playerId} in match ${matchId}`);
+      
+      // 1. End the match in MatchService
+      const matchData = await this.getMatch(matchId);
+      if (matchData) {
+        // Determine winner (other player)
+        const winnerId = matchData.hostData.playerId === playerId 
+          ? matchData.opponentData.playerId 
+          : matchData.hostData.playerId;
+          
+        await this.endMatch(matchId, winnerId);
+        console.log(`✅ Match ${matchId} ended due to disconnection`);
+      }
+      
+      // 2. Handle session-level cleanup if not already done
+      if (!fromSession) {
+        try {
+          const { GameSessionService } = await import('./gameSessionService');
+          await GameSessionService.handlePlayerDisconnection(matchId, playerId);
+          console.log(`✅ Session cleanup completed for disconnection`);
+        } catch (sessionError) {
+          console.error(`⚠️ Session cleanup failed (session may not exist):`, sessionError);
+        }
+      }
+      
+      // 3. Clean up any waiting room entries
+      try {
+        await this.cleanupPlayerWaitingRooms(playerId);
+        console.log(`✅ Waiting room cleanup completed`);
+      } catch (waitingError) {
+        console.error(`⚠️ Waiting room cleanup failed:`, waitingError);
+      }
+      
+      // 4. Remove from active game tracking
+      try {
+        await this.removeFromActiveGames(playerId);
+        console.log(`✅ Active games cleanup completed`);
+      } catch (activeError) {
+        console.error(`⚠️ Active games cleanup failed:`, activeError);
+      }
+      
+      console.log(`✅ Comprehensive disconnection handling completed for ${playerId}`);
+      
+    } catch (error) {
+      console.error(`❌ Error in comprehensive disconnection handling:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🧹 Clean up player's waiting room entries
+   */
+  private static async cleanupPlayerWaitingRooms(playerId: string): Promise<void> {
+    try {
+      const waitingRoomsQuery = query(
+        collection(db, 'waitingroom'),
+        where('hostData.playerId', '==', playerId)
+      );
+      
+      const snapshot = await getDocs(waitingRoomsQuery);
+      const batch = writeBatch(db);
+      
+      snapshot.docs.forEach(doc => {
+        batch.delete(doc.ref);
+      });
+      
+      if (snapshot.docs.length > 0) {
+        await batch.commit();
+        console.log(`🧹 Cleaned up ${snapshot.docs.length} waiting room entries for ${playerId}`);
+      }
+    } catch (error) {
+      console.error(`❌ Error cleaning up waiting rooms:`, error);
+    }
+  }
+
+  /**
+   * 🎮 Remove player from active games tracking
+   */
+  private static async removeFromActiveGames(playerId: string): Promise<void> {
+    try {
+      // Clean up activeGamesSessions collection entries
+      const activeGamesQuery = query(
+        collection(db, 'activeGamesSessions'),
+        where('playerId', '==', playerId)
+      );
+      
+      const snapshot = await getDocs(activeGamesQuery);
+      const batch = writeBatch(db);
+      
+      snapshot.docs.forEach(doc => {
+        batch.delete(doc.ref);
+      });
+      
+      if (snapshot.docs.length > 0) {
+        await batch.commit();
+        console.log(`🎮 Removed ${snapshot.docs.length} active game entries for ${playerId}`);
+      }
+    } catch (error) {
+      console.error(`❌ Error removing from active games:`, error);
+    }
+  }
+
+  /**
    * Archive a completed match to prevent rejoining
    * Called when players leave the game over screen or start a rematch
    */

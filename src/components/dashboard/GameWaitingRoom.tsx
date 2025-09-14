@@ -121,6 +121,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const [showAbandonmentNotification, setShowAbandonmentNotification] = useState(false);
   const [abandonmentTimer, setAbandonmentTimer] = useState<NodeJS.Timeout | null>(null);
   const [opponentLastSeen, setOpponentLastSeen] = useState<Date | null>(null);
+  const [gameHasStarted, setGameHasStarted] = useState(false); // Track if the game has actually started
 
   // Waiting room cleanup functionality
   const { leaveWaitingRoom } = useWaitingRoomCleanup(waitingRoomEntry?.id || roomId);
@@ -394,6 +395,15 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 };
                 setGoBackendOpponentData(opponentDisplayData);
                 console.log('🎮 GameWaitingRoom: Stored Go backend opponent data:', opponentDisplayData);
+                
+                // Set opponent joined state and start countdown if not already started
+                if (!opponentJoined) {
+                  setOpponentJoined(true);
+                  if (vsCountdown === null) {
+                    console.log('🚀 GameWaitingRoom: Starting countdown for Go backend match');
+                    startVsCountdown();
+                  }
+                }
                 
                 // 🎯 FIXED: Use proper game mode initialization with inline logic
                 const actualGameMode = ourMatch.gameMode || gameMode;
@@ -1025,9 +1035,51 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     };
   }, [user, gameMode, actionType, roomId || '']);
 
-  // Abandonment detection - monitor when opponent leaves
+  // Monitor for game start - check if match with status 'active' exists
   useEffect(() => {
-    if (!waitingRoomEntry || !opponentJoined) return;
+    if (!roomId || gameHasStarted) return;
+
+    const checkForActiveMatch = async () => {
+      try {
+        const matchDoc = await getDoc(doc(db, 'matches', roomId));
+        if (matchDoc.exists()) {
+          const matchData = matchDoc.data();
+          if (matchData.status === 'active') {
+            console.log('🎮 Game has started - enabling abandonment detection');
+            setGameHasStarted(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking for active match:', error);
+      }
+    };
+
+    // Check immediately
+    checkForActiveMatch();
+
+    // Set up listener for match creation/updates
+    const unsubscribe = onSnapshot(
+      doc(db, 'matches', roomId),
+      (doc) => {
+        if (doc.exists()) {
+          const matchData = doc.data();
+          if (matchData.status === 'active' && !gameHasStarted) {
+            console.log('🎮 Game has started - enabling abandonment detection');
+            setGameHasStarted(true);
+          }
+        }
+      },
+      (error) => {
+        console.error('Error listening to match updates:', error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [roomId, gameHasStarted]);
+
+  // Abandonment detection - monitor when opponent leaves (ONLY after game starts)
+  useEffect(() => {
+    if (!waitingRoomEntry || !opponentJoined || !gameHasStarted) return;
 
     // Update last seen time when opponent is present
     if (waitingRoomEntry.opponentData || goBackendOpponentData) {
@@ -1064,7 +1116,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         setAbandonmentTimer(null);
       }
     };
-  }, [waitingRoomEntry, goBackendOpponentData, opponentJoined, opponentLastSeen, abandonmentTimer, showAbandonmentNotification]);
+  }, [waitingRoomEntry, goBackendOpponentData, opponentJoined, opponentLastSeen, abandonmentTimer, showAbandonmentNotification, gameHasStarted]);
 
   // Function to start 5-second countdown for VS section
   const startVsCountdown = () => {
@@ -2283,7 +2335,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           </div>
 
           {/* Opponent Section - Show opponent card or waiting */}
-          {waitingRoomEntry?.opponentData ? (
+          {getOpponentData() ? (
             // Show opponent card when joined - Stats on left, Background on right (opposite of host)
             <div
               style={{

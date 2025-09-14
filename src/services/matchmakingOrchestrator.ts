@@ -4,6 +4,7 @@ import { TournamentService } from './tournamentService';
 import { UserService } from './userService';
 import { RematchService } from './rematchService';
 import { GameInvitationService } from './gameInvitationService';
+import { MatchmakingDeduplicationService } from './matchmakingDeduplicationService';
 import { collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -52,42 +53,105 @@ export class MatchmakingOrchestrator {
       console.log(`🎯 Starting matchmaking for ${request.sessionType} - ${request.gameMode}`);
       const startTime = Date.now();
       
-      // Validate request
-      await this.validateMatchmakingRequest(request);
+      // 🚫 Check for duplicate/concurrent requests
+      const deduplicationCheck = MatchmakingDeduplicationService.canMakeRequest(
+        request.hostData.playerId,
+        request.sessionType,
+        request.gameMode
+      );
       
-      let result: MatchmakingResult;
-      
-      // Route to appropriate matchmaking service
-      switch (request.sessionType) {
-        case 'quick':
-          result = await this.handleQuickMatch(request);
-          break;
-          
-        case 'ranked':
-          result = await this.handleRankedMatch(request);
-          break;
-          
-        case 'friend':
-          result = await this.handleFriendMatch(request);
-          break;
-          
-        case 'tournament':
-          result = await this.handleTournamentMatch(request);
-          break;
-          
-        case 'rematch':
-          result = await this.handleRematch(request);
-          break;
-          
-        default:
-          throw new Error(`Unsupported session type: ${request.sessionType}`);
+      if (!deduplicationCheck.allowed) {
+        console.log(`🚫 Matchmaking request blocked: ${deduplicationCheck.reason}`);
+        return {
+          success: false,
+          error: deduplicationCheck.reason,
+          waitTime: deduplicationCheck.waitTime
+        };
       }
       
-      // Calculate wait time
-      result.waitTime = Math.round((Date.now() - startTime) / 1000);
+      // 🎯 Additional validation: Check if player is already in a session
+      try {
+        const { PlayerStateService } = await import('./playerStateService');
+        const playerState = await PlayerStateService.getPlayerState(request.hostData.playerId);
+        
+        if (playerState && playerState.isInGame && playerState.currentSessionId) {
+          console.log(`🚫 Player ${request.hostData.playerId} already in session ${playerState.currentSessionId}`);
+          return {
+            success: false,
+            error: `Already in an active ${playerState.currentSessionType} game. Please finish your current game first.`
+          };
+        }
+        
+        if (playerState && playerState.isInQueue && playerState.currentStatus === 'searching') {
+          console.log(`🚫 Player ${request.hostData.playerId} already searching via PlayerState`);
+          return {
+            success: false,
+            error: 'Already searching for a match. Please wait or cancel your current search.'
+          };
+        }
+      } catch (stateError) {
+        console.warn('⚠️ Could not validate player state:', stateError);
+        // Continue with matchmaking if PlayerStateService is unavailable
+      }
       
-      console.log(`✅ Matchmaking completed in ${result.waitTime}s:`, result);
-      return result;
+      // 📝 Register the request
+      const requestId = MatchmakingDeduplicationService.registerRequest(
+        request.hostData.playerId,
+        request.sessionType,
+        request.gameMode
+      );
+      
+      try {
+        // Validate request
+        await this.validateMatchmakingRequest(request);
+        
+        let result: MatchmakingResult;
+        
+        // Route to appropriate matchmaking service
+        switch (request.sessionType) {
+          case 'quick':
+            result = await this.handleQuickMatch(request);
+            break;
+            
+          case 'ranked':
+            result = await this.handleRankedMatch(request);
+            break;
+            
+          case 'friend':
+            result = await this.handleFriendMatch(request);
+            break;
+            
+          case 'tournament':
+            result = await this.handleTournamentMatch(request);
+            break;
+            
+          case 'rematch':
+            result = await this.handleRematch(request);
+            break;
+            
+          default:
+            throw new Error(`Unsupported session type: ${request.sessionType}`);
+        }
+        
+        // Calculate wait time
+        result.waitTime = Math.round((Date.now() - startTime) / 1000);
+        
+        // ✅ Complete the request on success
+        if (result.success) {
+          MatchmakingDeduplicationService.completeRequest(request.hostData.playerId, requestId);
+          console.log(`✅ Matchmaking completed in ${result.waitTime}s:`, result);
+        } else {
+          // ❌ Cancel the request on failure
+          MatchmakingDeduplicationService.cancelRequest(request.hostData.playerId, result.error || 'Matchmaking failed');
+        }
+        
+        return result;
+        
+      } catch (error) {
+        // ❌ Cancel the request on exception
+        MatchmakingDeduplicationService.cancelRequest(request.hostData.playerId, error instanceof Error ? error.message : 'Unknown error');
+        throw error;
+      }
       
     } catch (error) {
       console.error('❌ Matchmaking error:', error);
@@ -99,58 +163,95 @@ export class MatchmakingOrchestrator {
   }
 
   /**
+   * 🚫 Cancel pending matchmaking request for a player
+   */
+  static cancelPendingRequest(playerId: string): {
+    success: boolean;
+    message: string;
+  } {
+    try {
+      const wasCancelled = MatchmakingDeduplicationService.cancelRequest(playerId, 'User cancelled');
+      
+      if (wasCancelled) {
+        return {
+          success: true,
+          message: 'Matchmaking request cancelled successfully'
+        };
+      } else {
+        return {
+          success: false,
+          message: 'No active matchmaking request found'
+        };
+      }
+    } catch (error) {
+      console.error('❌ Error cancelling matchmaking:', error);
+      return {
+        success: false,
+        message: 'Failed to cancel matchmaking request'
+      };
+    }
+  }
+
+  /**
+   * 📊 Get matchmaking status for a player
+   */
+  static getMatchmakingStatus(playerId: string): {
+    hasActiveRequest: boolean;
+    request?: {
+      sessionType: string;
+      gameMode: string;
+      timeRemaining: number;
+    };
+  } {
+    try {
+      const status = MatchmakingDeduplicationService.getRequestStatus(playerId);
+      
+      if (status) {
+        const timeRemaining = Math.max(0, Math.ceil((status.expiresAt - Date.now()) / 1000));
+        return {
+          hasActiveRequest: true,
+          request: {
+            sessionType: status.sessionType,
+            gameMode: status.gameMode,
+            timeRemaining
+          }
+        };
+      }
+      
+      return { hasActiveRequest: false };
+    } catch (error) {
+      console.error('❌ Error getting matchmaking status:', error);
+      return { hasActiveRequest: false };
+    }
+  }
+
+  /**
    * Handle quick match (casual) matchmaking
    */
   private static async handleQuickMatch(request: MatchmakingRequest): Promise<MatchmakingResult> {
     console.log('⚡ Processing quick match request');
     
-    // Find existing sessions with enhanced retry logic for race conditions
-    let availableSessions = await GameSessionService.findAvailableSessions(
+    // 🔒 ATOMIC: Try to find and join a session atomically to prevent race conditions
+    const atomicResult = await GameSessionService.findAndJoinSession(
       'quick',
       request.gameMode,
       request.hostData
     );
     
-    // Enhanced retry logic with multiple attempts
-    let retryCount = 0;
-    const maxRetries = 3;
-    const retryDelays = [500, 1000, 2000]; // Progressive delays
-    
-    while (availableSessions.length === 0 && retryCount < maxRetries) {
-      const delay = retryDelays[retryCount];
-      console.log(`🔄 No sessions found on attempt ${retryCount + 1}, waiting ${delay}ms and retrying...`);
-      await new Promise(resolve => setTimeout(resolve, delay));
+    if (atomicResult.success && atomicResult.session) {
+      console.log(`✅ ATOMIC: Successfully joined session ${atomicResult.session.id}`);
       
-      availableSessions = await GameSessionService.findAvailableSessions(
-        'quick',
-        request.gameMode,
-        request.hostData
-      );
-      
-      console.log(`🔄 Retry ${retryCount + 1} found ${availableSessions.length} sessions`);
-      retryCount++;
+      // Convert GameSession to MatchmakingResult format
+      return {
+        success: true,
+        sessionId: atomicResult.session.id,
+        roomId: atomicResult.session.id, // For compatibility
+        hasOpponent: true,
+        isNewRoom: false // Joined existing session
+      };
     }
     
-    if (availableSessions.length > 0) {
-      // Join existing session
-      const session = availableSessions[0];
-      console.log(`🔗 Attempting to join existing session ${session.id}`);
-      
-      const joinResult = await GameSessionService.joinSession(session.id, request.hostData);
-      
-      if (joinResult.success) {
-        console.log(`✅ Successfully joined session ${session.id}`);
-        return {
-          success: true,
-          sessionId: session.id,
-          roomId: session.id, // For compatibility
-          isNewRoom: false,
-          hasOpponent: true
-        };
-      } else {
-        console.log(`❌ Failed to join session ${session.id}, creating new session instead`);
-      }
-    }
+    console.log(`🔍 ATOMIC: No available sessions found (${atomicResult.error}), creating new session`);
     
     // Create new session
     console.log('🆕 Creating new session as no suitable sessions found after retries');
@@ -188,49 +289,27 @@ export class MatchmakingOrchestrator {
     // Remove skill-based filtering completely to allow all players to connect
     console.log('🔧 DEBUG: Searching for ANY available ranked sessions (no skill filtering)');
     
-    let availableSessions = await GameSessionService.findAvailableSessions(
+    // 🔒 ATOMIC: Try to find and join a ranked session atomically
+    const atomicResult = await GameSessionService.findAndJoinSession(
       'ranked',
       request.gameMode,
       request.hostData
       // Removed skillRange parameter entirely
     );
     
-    // Enhanced retry logic with multiple attempts  
-    let retryCount = 0;
-    const maxRetries = 3;
-    const retryDelays = [500, 1000, 2000]; // Progressive delays
-    
-    while (availableSessions.length === 0 && retryCount < maxRetries) {
-      const delay = retryDelays[retryCount];
-      console.log(`🔄 No ranked sessions found on attempt ${retryCount + 1}, waiting ${delay}ms and retrying...`);
-      await new Promise(resolve => setTimeout(resolve, delay));
+    if (atomicResult.success && atomicResult.session) {
+      console.log(`✅ ATOMIC: Successfully joined ranked session ${atomicResult.session.id}`);
       
-      availableSessions = await GameSessionService.findAvailableSessions(
-        'ranked',
-        request.gameMode,
-        request.hostData
-      );
-      
-      console.log(`🔄 Ranked retry ${retryCount + 1} found ${availableSessions.length} sessions`);
-      retryCount++;
+      return {
+        success: true,
+        sessionId: atomicResult.session.id,
+        roomId: atomicResult.session.id,
+        isNewRoom: false,
+        hasOpponent: true
+      };
     }
     
-    if (availableSessions.length > 0) {
-      // Join the first available session (no skill matching)
-      const session = availableSessions[0];
-      console.log(`🔗 Joining existing ranked session: ${session.id}`);
-      const joinResult = await GameSessionService.joinSession(session.id, request.hostData);
-      
-      if (joinResult.success) {
-        return {
-          success: true,
-          sessionId: session.id,
-          roomId: session.id,
-          isNewRoom: false,
-          hasOpponent: true
-        };
-      }
-    }
+    console.log(`🔍 ATOMIC: No available ranked sessions found (${atomicResult.error}), creating new session`);
     
     // Create new ranked session
     console.log('🆕 Creating new ranked session');

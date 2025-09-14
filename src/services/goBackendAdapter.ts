@@ -92,20 +92,35 @@ export class GoBackendAdapter {
       // Use Go backend
       console.log('🎯 Checking match status via Go backend for user:', userId);
       
-      // Get user's current matches
-      const response = await this.apiClient.listMatches({ 
-        status: 'active',
-        limit: 1 
-      });
+      // Check for matches in ACTIVE states only (not 'ready' which means matched but not started)
+      const statuses = ['active', 'in_progress'];
+      let activeMatch = null;
+      
+      for (const status of statuses) {
+        const response = await this.apiClient.listMatches({ 
+          status,
+          limit: 10 
+        });
 
-      const activeMatch = response.data?.matches?.[0];
+        if (response.data?.matches) {
+          // Look for a match containing this user
+          activeMatch = response.data.matches.find((match: any) => 
+            match.players && match.players.includes(userId)
+          );
+          
+          if (activeMatch) {
+            console.log(`🎯 Found user in match with status: ${status}`, activeMatch);
+            break;
+          }
+        }
+      }
       
       if (activeMatch) {
         return {
           inMatch: true,
-          gameMode: activeMatch.game_mode || 'unknown',
-          currentGame: activeMatch.id,
-          matchId: activeMatch.id
+          gameMode: (activeMatch as any).game_mode || 'unknown',
+          currentGame: (activeMatch as any).matchId || activeMatch.id,
+          matchId: (activeMatch as any).matchId || activeMatch.id
         };
       }
 

@@ -228,6 +228,7 @@ export const DashboardSection: React.FC = () => {
           setCurrentSection('waiting-room', {
             gameMode,
             actionType: action as 'live' | 'custom',
+            gameType: gameType as 'quick' | 'ranked', // Pass gameType to preserve ranked selection
             roomId: matchResult.roomId,
             isOptimistic: false // This is a real Go backend room
           });

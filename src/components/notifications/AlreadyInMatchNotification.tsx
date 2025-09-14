@@ -11,6 +11,7 @@ interface AlreadyInMatchNotificationProps {
   userId: string;
   onClose: () => void;
   onJoin?: () => void;
+  onAbandon?: () => void;
 }
 
 export const AlreadyInMatchNotification: React.FC<AlreadyInMatchNotificationProps> = ({
@@ -18,7 +19,8 @@ export const AlreadyInMatchNotification: React.FC<AlreadyInMatchNotificationProp
   currentGame,
   userId,
   onClose,
-  onJoin
+  onJoin,
+  onAbandon
 }) => {
   const { setCurrentSection } = useNavigation();
 
@@ -38,22 +40,27 @@ export const AlreadyInMatchNotification: React.FC<AlreadyInMatchNotificationProp
   const handleAbandonMatch = async () => {
     console.log(`🏃‍♂️ Abandoning ${gameMode} match: ${currentGame}`);
     
-    try {
-      // First update stats - abandoning counts as a loss
-      const { UserService } = await import('@/services/userService');
-      await UserService.updateMatchLoss(userId);
-      console.log('✅ Updated user stats with loss for abandonment');
-      
-      // Then leave the match
-      const result = await GoBackendAdapter.forceLeaveMatch(userId);
-      
-      if (result.success) {
-        console.log('✅ Successfully abandoned match');
-      } else {
-        console.error('❌ Failed to abandon match:', result.message);
+    if (onAbandon) {
+      onAbandon();
+    } else {
+      // Default abandonment logic
+      try {
+        // First update stats - abandoning counts as a loss
+        const { UserService } = await import('@/services/userService');
+        await UserService.updateMatchLoss(userId);
+        console.log('✅ Updated user stats with loss for abandonment');
+        
+        // Then leave the match
+        const result = await GoBackendAdapter.forceLeaveMatch(userId);
+        
+        if (result.success) {
+          console.log('✅ Successfully abandoned match');
+        } else {
+          console.error('❌ Failed to abandon match:', result.message);
+        }
+      } catch (error) {
+        console.error('❌ Error abandoning match:', error);
       }
-    } catch (error) {
-      console.error('❌ Error abandoning match:', error);
     }
     
     onClose();

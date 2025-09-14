@@ -287,9 +287,32 @@ export class EnhancedFriendInviteService {
         ]);
 
         console.log('✅ Invitation accepted, session created:', sessionResult.sessionId);
+        
+        // Since we're navigating directly to match, we need to get the match ID
+        // The sessionResult contains the sessionId, but we need the match document ID
+        // Wait a brief moment for match document creation to complete
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Query for the match document that was created from this session
+        const { collection, query, where, getDocs } = await import('firebase/firestore');
+        
+        const matchQuery = query(
+          collection(db, 'matches'),
+          where('sessionId', '==', sessionResult.sessionId)
+        );
+        const matchSnapshot = await getDocs(matchQuery);
+        
+        let matchId = sessionResult.sessionId; // Fallback to session ID
+        if (!matchSnapshot.empty) {
+          matchId = matchSnapshot.docs[0].id;
+          console.log('✅ Found match document:', matchId, 'for session:', sessionResult.sessionId);
+        } else {
+          console.warn('⚠️ No match document found for session, using session ID as fallback');
+        }
+        
         return { 
           success: true, 
-          sessionId: sessionResult.roomId || sessionResult.sessionId // Return proxy room ID if available
+          sessionId: matchId // Return the actual match ID for navigation
         };
       });
 

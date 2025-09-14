@@ -115,6 +115,7 @@ export function AdvancedMatchmaking({ userId, userDisplayName, compactMode = fal
         usePriorityQueue: selectedMatchType === 'queue',
         tournamentMode: selectedMatchType === 'tournament',
         preferredGameMode: selectedGameMode,
+        gameType: 'ranked', // Ensure ranked players only match with ranked players
         maxWaitTime: 300000, // 5 minutes
         skillRange: 200
       };

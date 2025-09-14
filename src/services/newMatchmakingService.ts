@@ -542,7 +542,27 @@ export class NewMatchmakingService {
   static async cleanupAbandonedSessions(): Promise<void> {
     try {
       console.log('🧹 NewMatchmakingService: Triggering manual cleanup...');
-      await AbandonedMatchService.forceCleanup();
+      
+      // Trigger both existing abandoned match cleanup and new orphaned session cleanup
+      const [abandonedResult, orphanedResult] = await Promise.allSettled([
+        AbandonedMatchService.forceCleanup(),
+        import('./orphanedSessionCleanupService').then(({ OrphanedSessionCleanupService }) => 
+          OrphanedSessionCleanupService.runManualCleanup()
+        )
+      ]);
+
+      if (abandonedResult.status === 'fulfilled') {
+        console.log('✅ Abandoned match cleanup completed');
+      } else {
+        console.error('❌ Abandoned match cleanup failed:', abandonedResult.reason);
+      }
+
+      if (orphanedResult.status === 'fulfilled') {
+        console.log('✅ Orphaned session cleanup completed:', orphanedResult.value);
+      } else {
+        console.error('❌ Orphaned session cleanup failed:', orphanedResult.reason);
+      }
+
     } catch (error) {
       console.error('Error during manual cleanup:', error);
     }
@@ -556,20 +576,30 @@ export class NewMatchmakingService {
     activeSessions: number;
     waitingPlayers: number;
     abandonedMatches: any;
+    orphanedSessions?: any;
+    queueStats?: any;
   }> {
     try {
-      const [activePlayers, activeSessions, waitingPlayers, abandonedMatches] = await Promise.all([
+      const [activePlayers, activeSessions, waitingPlayers, abandonedMatches, orphanedSessions, queueStats] = await Promise.all([
         PlayerHeartbeatService.getActivePlayersCount(),
         this.getActiveSessionsCount(),
         this.getWaitingPlayersCount(),
-        AbandonedMatchService.getAbandonedMatchesStats(24)
+        AbandonedMatchService.getAbandonedMatchesStats(24),
+        import('./orphanedSessionCleanupService').then(({ OrphanedSessionCleanupService }) => 
+          OrphanedSessionCleanupService.getOrphanedSessionStats(24)
+        ).catch(() => null),
+        import('./advancedQueueManagementService').then(({ AdvancedQueueManagementService }) => 
+          AdvancedQueueManagementService.getQueueStatistics()
+        ).catch(() => null)
       ]);
 
       return {
         activePlayers,
         activeSessions,
         waitingPlayers,
-        abandonedMatches
+        abandonedMatches,
+        orphanedSessions,
+        queueStats
       };
 
     } catch (error) {
@@ -701,22 +731,55 @@ export class NewMatchmakingService {
 
       console.log('✅ Friend match created successfully:', sessionId);
       
-      // Create a waiting room proxy for compatibility with GameWaitingRoom component
-      let proxyRoomId = sessionId; // Default fallback
+      // Create a waiting room entry for the optimistic UI experience
+      console.log('🎭 Creating friend invitation waiting room for optimistic UI...');
+      
+      let waitingRoomId = sessionId; // Default fallback
       
       try {
-        const { SessionCompatibilityService } = await import('./sessionCompatibilityService');
-        proxyRoomId = await SessionCompatibilityService.createWaitingRoomProxy(sessionId);
-        console.log(`✅ Created waiting room proxy ${proxyRoomId} for friend session ${sessionId}`);
+        const { addDoc, collection, serverTimestamp } = await import('firebase/firestore');
+        const { db } = await import('./firebase');
+        
+        const waitingRoomData = {
+          gameMode,
+          gameType: 'Friend Match',
+          playersRequired: 0, // Both players already confirmed
+          createdAt: serverTimestamp(),
+          friendInvitation: true, // Mark as friend invitation room
+          readyPlayers: [hostUserId, guestUserId], // Both players are ready by default
+          sessionProxy: sessionId, // Reference to the actual game session
+          hostData: {
+            playerDisplayName: hostData.playerDisplayName,
+            playerId: hostData.playerId,
+            displayBackgroundEquipped: hostData.displayBackgroundEquipped,
+            matchBackgroundEquipped: hostData.matchBackgroundEquipped,
+            playerStats: hostData.playerStats
+          },
+          opponentData: {
+            playerDisplayName: guestData.playerDisplayName,
+            playerId: guestData.playerId,
+            displayBackgroundEquipped: guestData.displayBackgroundEquipped,
+            matchBackgroundEquipped: guestData.matchBackgroundEquipped,
+            playerStats: guestData.playerStats
+          },
+          gameData: {
+            type: 'dice',
+            settings: {}
+          }
+        };
+
+        const waitingRoomRef = await addDoc(collection(db, 'waitingroom'), waitingRoomData);
+        waitingRoomId = waitingRoomRef.id;
+        console.log('✅ Created friend invitation waiting room:', waitingRoomId);
       } catch (error) {
-        console.error('⚠️ Failed to create waiting room proxy for friend match:', error);
-        // Use session ID as fallback if proxy creation fails
+        console.error('⚠️ Failed to create waiting room for friend match:', error);
+        // Use session ID as fallback if waiting room creation fails
       }
       
       return {
         success: true,
-        sessionId: sessionId,
-        roomId: proxyRoomId, // Return proxy room ID for navigation
+        sessionId: waitingRoomId, // Return waiting room ID for navigation to show optimistic UI
+        roomId: waitingRoomId, // Return waiting room ID for navigation
         isNewRoom: true,
         hasOpponent: true
       };
