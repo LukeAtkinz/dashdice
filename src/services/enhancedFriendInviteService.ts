@@ -181,9 +181,14 @@ export class EnhancedFriendInviteService {
     acceptingUserId: string
   ): Promise<{ success: boolean; sessionId?: string; error?: string }> {
     try {
-      console.log('🤝 EnhancedFriendInviteService: Accepting invitation', inviteId);
+      console.log('🤝 EnhancedFriendInviteService: Accepting invitation', inviteId, 'by user', acceptingUserId);
+
+      // Add a small delay to prevent rapid successive calls
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       return await runTransaction(db, async (transaction) => {
+        console.log('🔄 Running acceptance transaction for invitation:', inviteId);
+        
         // Get the invitation
         const inviteRef = doc(db, this.INVITES_COLLECTION, inviteId);
         const inviteDoc = await transaction.get(inviteRef);
@@ -200,11 +205,21 @@ export class EnhancedFriendInviteService {
         }
 
         if (invite.status !== 'pending') {
+          console.log('⚠️ Invitation is not pending, current status:', invite.status);
           throw new Error(`Invitation is ${invite.status} and cannot be accepted`);
         }
 
         if (invite.expiresAt.toDate() < new Date()) {
           throw new Error('Invitation has expired');
+        }
+
+        // Check if session already exists for this invitation
+        if (invite.sessionId) {
+          console.log('✅ Session already exists for this invitation:', invite.sessionId);
+          return { 
+            success: true, 
+            sessionId: invite.sessionId
+          };
         }
 
         // Clear any existing sessions for both players before creating new session
@@ -233,10 +248,12 @@ export class EnhancedFriendInviteService {
           sessionId: sessionResult.sessionId
         });
 
-        // Start heartbeats for both players
+        // Start heartbeats for both players and update their currentGame status
         await Promise.all([
-          PlayerHeartbeatService.startHeartbeat(invite.fromUserId, sessionResult.sessionId),
-          PlayerHeartbeatService.startHeartbeat(invite.toUserId, sessionResult.sessionId)
+          PlayerHeartbeatService.startHeartbeat(invite.fromUserId, sessionResult.sessionId, sessionResult.sessionId),
+          PlayerHeartbeatService.startHeartbeat(invite.toUserId, sessionResult.sessionId, sessionResult.sessionId),
+          PlayerHeartbeatService.updateCurrentGame(invite.fromUserId, sessionResult.sessionId),
+          PlayerHeartbeatService.updateCurrentGame(invite.toUserId, sessionResult.sessionId)
         ]);
 
         // Send notifications to both users

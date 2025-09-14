@@ -23,14 +23,24 @@ export default function GameInvitations({ compact = false }: GameInvitationsProp
   });
 
   const handleAcceptInvitation = async (invitationId: string) => {
+    console.log('🎯 GameInvitations: Accept button clicked for invitation:', invitationId);
     setProcessingInvitations(prev => new Set(prev).add(invitationId));
     
     try {
       // Find the invitation to get the game mode
       const invitation = validInvitations.find(inv => inv.id === invitationId);
+      console.log('🎯 GameInvitations: Found invitation:', invitation);
+      
+      console.log('🎯 GameInvitations: Calling acceptGameInvitation...');
       const result = await acceptGameInvitation(invitationId);
+      console.log('🎯 GameInvitations: acceptGameInvitation result:', result);
+      
       if (result.success && result.gameId) {
         // Navigate to waiting room with the room ID and game mode (consistent with GameInvitationNotification)
+        console.log('🎯 GameInvitations: Navigating to waiting room:', { 
+          roomId: result.gameId,
+          gameMode: invitation?.gameMode || 'classic'
+        });
         setCurrentSection('waiting-room', { 
           roomId: result.gameId,
           gameMode: invitation?.gameMode || 'classic'
@@ -48,10 +58,13 @@ export default function GameInvitations({ compact = false }: GameInvitationsProp
   };
 
   const handleDeclineInvitation = async (invitationId: string) => {
+    console.log('🎯 GameInvitations: Decline button clicked for invitation:', invitationId);
     setProcessingInvitations(prev => new Set(prev).add(invitationId));
     
     try {
-      await declineGameInvitation(invitationId);
+      console.log('🎯 GameInvitations: Calling declineGameInvitation...');
+      const result = await declineGameInvitation(invitationId);
+      console.log('🎯 GameInvitations: declineGameInvitation result:', result);
     } catch (error) {
       console.error('Error declining invitation:', error);
     } finally {

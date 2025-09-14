@@ -174,12 +174,16 @@ export function FriendsProvider({ children }: FriendsProviderProps) {
   };
 
   const acceptGameInvitation = async (invitationId: string) => {
+    console.log('🎯 FriendsContext: acceptGameInvitation called with ID:', invitationId);
     if (!user?.uid) {
+      console.log('🎯 FriendsContext: User not authenticated');
       return { success: false, error: 'User not authenticated' };
     }
 
     try {
+      console.log('🎯 FriendsContext: Calling EnhancedFriendInviteService.acceptInvitation...');
       const result = await EnhancedFriendInviteService.acceptInvitation(invitationId, user.uid);
+      console.log('🎯 FriendsContext: EnhancedFriendInviteService result:', result);
       
       if (result.success) {
         showToast?.('Game invitation accepted! Joining match...', 'success');
@@ -189,6 +193,7 @@ export function FriendsProvider({ children }: FriendsProviderProps) {
         return { success: false, error: result.error };
       }
     } catch (error) {
+      console.error('🎯 FriendsContext: Error in acceptGameInvitation:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       showToast?.(`Error accepting invitation: ${errorMessage}`, 'error');
       return { success: false, error: errorMessage };
@@ -196,10 +201,16 @@ export function FriendsProvider({ children }: FriendsProviderProps) {
   };
 
   const declineGameInvitation = async (invitationId: string): Promise<boolean> => {
-    if (!user?.uid) return false;
+    console.log('🎯 FriendsContext: declineGameInvitation called with ID:', invitationId);
+    if (!user?.uid) {
+      console.log('🎯 FriendsContext: User not authenticated');
+      return false;
+    }
     
     try {
+      console.log('🎯 FriendsContext: Calling EnhancedFriendInviteService.declineInvitation...');
       const result = await EnhancedFriendInviteService.declineInvitation(invitationId, user.uid);
+      console.log('🎯 FriendsContext: EnhancedFriendInviteService decline result:', result);
       
       if (result.success) {
         showToast?.('Game invitation declined', 'info');
@@ -209,6 +220,7 @@ export function FriendsProvider({ children }: FriendsProviderProps) {
         return false;
       }
     } catch (error) {
+      console.error('🎯 FriendsContext: Error in declineGameInvitation:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       showToast?.(`Error declining invitation: ${errorMessage}`, 'error');
       return false;
