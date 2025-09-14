@@ -104,17 +104,37 @@ export class RematchService {
         throw new Error('Rematch has expired');
       }
       
-      // Create a new waiting room for the rematch using Go services
+      // Create a new waiting room for the rematch using Go services with Firebase fallback
       // We'll use the same game settings as the original match
-      const newMatchId = await GoBackendService.createRematchWaitingRoom(
-        rematchData.requesterUserId,
-        rematchData.requesterDisplayName,
-        rematchData.opponentUserId,
-        rematchData.opponentDisplayName,
-        rematchData.gameMode,
-        rematchData.gameType,
-        rematchData.originalMatchId
-      );
+      let newMatchId: string;
+      
+      try {
+        newMatchId = await GoBackendService.createRematchWaitingRoom(
+          rematchData.requesterUserId,
+          rematchData.requesterDisplayName,
+          rematchData.opponentUserId,
+          rematchData.opponentDisplayName,
+          rematchData.gameMode,
+          rematchData.gameType,
+          rematchData.originalMatchId
+        );
+        console.log('✅ RematchService: Created rematch via Go backend:', newMatchId);
+      } catch (error) {
+        console.warn('⚠️ RematchService: Go backend failed, falling back to Firebase');
+        console.error('Go backend error:', error);
+        
+        // Fallback to Firebase-based rematch creation
+        newMatchId = await this.createRematchWaitingRoomFirebase(
+          rematchData.requesterUserId,
+          rematchData.requesterDisplayName,
+          rematchData.opponentUserId,
+          rematchData.opponentDisplayName,
+          rematchData.gameMode,
+          rematchData.gameType,
+          rematchData.originalMatchId
+        );
+        console.log('✅ RematchService: Created rematch via Firebase fallback:', newMatchId);
+      }
       
       // Update rematch room status with new match ID
       await setDoc(rematchRef, { 
@@ -246,6 +266,39 @@ export class RematchService {
 
   /**
    * Clean up expired rematch rooms
+   */
+  /**
+   * Create rematch waiting room using Firebase (fallback method)
+   */
+  private static async createRematchWaitingRoomFirebase(
+    requesterUserId: string,
+    requesterDisplayName: string,
+    opponentUserId: string,
+    opponentDisplayName: string,
+    gameMode: string,
+    gameType: string,
+    originalMatchId?: string
+  ): Promise<string> {
+    console.log('🔄 RematchService: Creating rematch waiting room via Firebase');
+    
+    // Import MatchmakingService for Firebase fallback
+    const { MatchmakingService } = await import('./matchmakingService');
+    
+    const newMatchId = await MatchmakingService.createRematchWaitingRoom(
+      requesterUserId,
+      requesterDisplayName,
+      opponentUserId,
+      opponentDisplayName,
+      gameMode,
+      gameType
+    );
+    
+    console.log('✅ RematchService: Firebase rematch waiting room created:', newMatchId);
+    return newMatchId;
+  }
+
+  /**
+   * Cleanup expired rematches from the database
    */
   static async cleanupExpiredRematches(): Promise<void> {
     try {
