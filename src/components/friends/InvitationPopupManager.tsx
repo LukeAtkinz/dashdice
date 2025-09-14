@@ -162,8 +162,10 @@ export default function InvitationPopupManager() {
       const invitation = gameInvitations.find(inv => inv.id === invitationId);
       const result = await acceptGameInvitation(invitationId);
       if (result.success && result.gameId) {
-        // Navigate to waiting room with the room ID and game mode (consistent with other components)
-        setCurrentSection('waiting-room', { 
+        // For friend invitations, the session is already created with both players
+        // Navigate directly to the match instead of waiting room
+        setCurrentSection('match', { 
+          matchId: result.gameId,
           roomId: result.gameId,
           gameMode: invitation?.gameMode || 'classic'
         });

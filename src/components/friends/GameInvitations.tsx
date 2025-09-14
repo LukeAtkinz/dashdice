@@ -36,12 +36,14 @@ export default function GameInvitations({ compact = false }: GameInvitationsProp
       console.log('🎯 GameInvitations: acceptGameInvitation result:', result);
       
       if (result.success && result.gameId) {
-        // Navigate to waiting room with the room ID and game mode (consistent with GameInvitationNotification)
-        console.log('🎯 GameInvitations: Navigating to waiting room:', { 
-          roomId: result.gameId,
+        // For friend invitations, the session is already created with both players
+        // Navigate directly to the match instead of waiting room
+        console.log('🎯 GameInvitations: Friend invitation accepted - navigating to match:', { 
+          sessionId: result.gameId,
           gameMode: invitation?.gameMode || 'classic'
         });
-        setCurrentSection('waiting-room', { 
+        setCurrentSection('match', { 
+          matchId: result.gameId,
           roomId: result.gameId,
           gameMode: invitation?.gameMode || 'classic'
         });

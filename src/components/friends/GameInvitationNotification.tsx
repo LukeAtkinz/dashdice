@@ -175,8 +175,10 @@ export const GameInvitationNotification: React.FC = () => {
       const invitation = validInvitations.find(inv => inv.id === invitationId);
       const result = await acceptGameInvitation(invitationId);
       if (result.success && result.gameId) {
-        // Navigate to waiting room with the room ID and game mode
-        setCurrentSection('waiting-room', { 
+        // For friend invitations, the session is already created with both players
+        // Navigate directly to the match instead of waiting room
+        setCurrentSection('match', { 
+          matchId: result.gameId,
           roomId: result.gameId,
           gameMode: invitation?.gameMode || 'classic'
         });
