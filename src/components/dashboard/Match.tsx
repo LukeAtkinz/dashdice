@@ -13,6 +13,7 @@ import { useGameAchievements } from '@/hooks/useGameAchievements';
 import { useMatchAchievements } from '@/hooks/useMatchAchievements';
 import { db } from '@/services/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
+import MatchAbandonmentNotification from '@/components/notifications/MatchAbandonmentNotification';
 
 interface MatchProps {
   gameMode?: string;
@@ -56,6 +57,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showGameOverScreen, setShowGameOverScreen] = useState(false);
+  
+  // Abandonment notification states
+  const [showAbandonmentNotification, setShowAbandonmentNotification] = useState(false);
+  const [opponentLastSeen, setOpponentLastSeen] = useState<Date | null>(null);
+  const [abandonmentTimer, setAbandonmentTimer] = useState<NodeJS.Timeout | null>(null);
   
   // Add body class for mobile scrolling control
   useEffect(() => {
@@ -608,6 +614,41 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     }
   };
 
+  // Abandonment notification handlers
+  const handleClaimVictory = async () => {
+    if (!matchData || !user) return;
+    
+    try {
+      console.log('🏆 Player claiming victory due to opponent abandonment');
+      
+      // End the match with current user as winner
+      await MatchService.endMatch(matchData.id!, user.uid);
+      
+      // Hide the notification
+      setShowAbandonmentNotification(false);
+      if (abandonmentTimer) {
+        clearInterval(abandonmentTimer);
+        setAbandonmentTimer(null);
+      }
+    } catch (error) {
+      console.error('❌ Error claiming victory:', error);
+    }
+  };
+
+  const handleWaitForOpponent = () => {
+    console.log('⏰ Player choosing to wait for opponent return');
+    
+    // Hide the notification but reset timer to check again later
+    setShowAbandonmentNotification(false);
+    if (abandonmentTimer) {
+      clearInterval(abandonmentTimer);
+      setAbandonmentTimer(null);
+    }
+    
+    // Reset the last seen time to current time to restart the timer
+    setOpponentLastSeen(new Date());
+  };
+
   // Trigger dice animations based on match data
   useEffect(() => {
     if (!matchData) return;
@@ -661,6 +702,53 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     dice2Animation.isSpinning,
     turnDeciderDiceAnimation.isSpinning
   ]);
+
+  // Abandonment detection - monitor when opponent leaves during match
+  useEffect(() => {
+    if (!matchData || !user) return;
+
+    // Find opponent player data
+    const isHost = matchData.hostData.playerId === user.uid;
+    const opponentData = isHost ? matchData.opponentData : matchData.hostData;
+    
+    if (opponentData && opponentData.lastHeartbeat) {
+      setOpponentLastSeen(opponentData.lastHeartbeat.toDate());
+      
+      // Clear any existing abandonment notification if opponent is active
+      if (showAbandonmentNotification) {
+        setShowAbandonmentNotification(false);
+        if (abandonmentTimer) {
+          clearInterval(abandonmentTimer);
+          setAbandonmentTimer(null);
+        }
+      }
+      return;
+    }
+
+    // Opponent data is missing or lastHeartbeat is old - start abandonment timer if not already started
+    if (!abandonmentTimer && opponentLastSeen) {
+      const checkInterval = setInterval(() => {
+        const now = new Date();
+        const timeSinceLastSeen = now.getTime() - (opponentLastSeen?.getTime() || 0);
+        
+        // Show notification after 15 seconds
+        if (timeSinceLastSeen >= 15000) {
+          setShowAbandonmentNotification(true);
+          setAbandonmentTimer(null);
+          clearInterval(checkInterval);
+        }
+      }, 1000);
+      
+      setAbandonmentTimer(checkInterval);
+    }
+
+    return () => {
+      if (abandonmentTimer) {
+        clearInterval(abandonmentTimer);
+        setAbandonmentTimer(null);
+      }
+    };
+  }, [matchData?.hostData, matchData?.opponentData, opponentLastSeen, abandonmentTimer, showAbandonmentNotification, user]);
 
   if (loading) {
     return (
@@ -725,6 +813,18 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
   return (
     <>
+      {/* Match Abandonment Notification */}
+      {showAbandonmentNotification && (
+        <MatchAbandonmentNotification
+          onClaim={handleClaimVictory}
+          onWait={handleWaitForOpponent}
+          opponentName={(() => {
+            const isHost = matchData.hostData.playerId === user?.uid;
+            return isHost ? matchData.opponentData.playerDisplayName : matchData.hostData.playerDisplayName;
+          })()}
+        />
+      )}
+
       {/* Game Over Screen - Full Screen Overlay */}
       {matchData.gameData.gamePhase === 'gameOver' && showGameOverScreen && (
         <motion.div 
