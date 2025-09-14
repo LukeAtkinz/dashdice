@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">DashDice</string>
+    <string name="title_activity_main">DashDice</string>
+    <string name="package_name">com.dashdice.app</string>
+    <string name="custom_url_scheme">com.dashdice.app</string>
+</resources>

@@ -22,6 +22,16 @@ export const metadata: Metadata = {
       { url: "/Design Elements/favicon-32x32_2.png", sizes: "32x32", type: "image/png" }
     ],
   },
+  // PWA manifest (safe addition - doesn't affect existing functionality)
+  manifest: "/manifest.json",
+  // Mobile app meta tags (safe enhancements)
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "DashDice",
+  },
+  applicationName: "DashDice",
+  keywords: ["dice", "game", "multiplayer", "online", "friends"],
 };
 
 export const viewport: Viewport = {
