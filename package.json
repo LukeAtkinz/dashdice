@@ -6,6 +6,7 @@
     "dev": "next dev --turbopack",
     "dev:webpack": "next dev",
     "build": "next build",
+    "build:capacitor": "CAPACITOR_BUILD=true next build",
     "start": "next start",
     "lint": "next lint",
     "init-achievements": "node scripts/initializeAchievements.js"

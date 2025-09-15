@@ -29,10 +29,13 @@ const nextConfig: NextConfig = {
   },
   poweredByHeader: false,
   compress: true,
-  output: 'standalone',
+  output: process.env.CAPACITOR_BUILD === 'true' ? 'export' : 'standalone',
+  distDir: process.env.CAPACITOR_BUILD === 'true' ? 'out' : '.next',
+  trailingSlash: process.env.CAPACITOR_BUILD === 'true' ? true : false,
   images: {
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 31536000,
+    unoptimized: process.env.CAPACITOR_BUILD === 'true' ? true : false,
   },
   // Only apply webpack config when not using Turbopack
   ...(!process.env.TURBOPACK && {

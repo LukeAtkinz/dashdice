@@ -3,5 +3,8 @@
   "integrations": {
     "capacitor": {}
   },
-  "type": "custom"
+  "type": "custom",
+  "hooks": {
+    "build:before": "CAPACITOR_BUILD=true"
+  }
 }
