@@ -1,0 +1,20 @@
+{
+  "resources": {
+    "icon": {
+      "sources": ["resources/icon.png"],
+      "platforms": {
+        "ios": {
+          "sources": ["resources/ios/icon.png"]
+        }
+      }
+    },
+    "splash": {
+      "sources": ["resources/splash.png"],
+      "platforms": {
+        "ios": {
+          "sources": ["resources/ios/splash.png"]
+        }
+      }
+    }
+  }
+}
