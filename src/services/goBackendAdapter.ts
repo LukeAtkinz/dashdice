@@ -114,7 +114,7 @@ export class GoBackendAdapter {
         if (response.data?.matches) {
           // Look for a match containing this user
           activeMatch = response.data.matches.find((match: any) => 
-            match.players && match.players.includes(userId)
+            match.players && Array.isArray(match.players) && match.players.includes(userId)
           );
           
           if (activeMatch) {

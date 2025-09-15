@@ -4,13 +4,6 @@ import { NextRequest, NextResponse } from 'next/server';
 // Checks all microservices and provides comprehensive status
 
 
-// Static export configuration for Capacitor builds
-export const dynamic = 'force-static';
-export const revalidate = false;
-export const fetchCache = 'force-cache';
-export const runtime = 'nodejs';
-export const preferredRegion = 'auto';
-
 interface ServiceStatus {
   name: string;
   url: string;

@@ -9,12 +9,8 @@
     }
   },
   "type": "custom",
-  "hooks": {
-    "build:before": "CAPACITOR_BUILD=true npm run configure-api-static",
-    "build:after": "npm run revert-api-static"
-  },
   "build": {
-    "command": "CAPACITOR_BUILD=true npm run build",
+    "command": "set CAPACITOR_BUILD=true && npm run build",
     "outputDirectory": "out"
   },
   "serve": {

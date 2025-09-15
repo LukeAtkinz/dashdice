@@ -4,13 +4,6 @@ import { getAuth } from 'firebase-admin/auth';
 
 // Initialize Firebase Admin only once
 
-// Static export configuration for Capacitor builds
-export const dynamic = 'force-static';
-export const revalidate = false;
-export const fetchCache = 'force-cache';
-export const runtime = 'nodejs';
-export const preferredRegion = 'auto';
-
 if (!getApps().length) {
   const serviceAccount = {
     projectId: process.env.FIREBASE_PROJECT_ID,
