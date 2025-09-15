@@ -1,0 +1,16 @@
+# Ignore frontend and Node.js files to force Go/Docker detection
+package.json
+package-lock.json
+node_modules/
+.next/
+out/
+websocket-server/
+websocket-service/
+
+# Only deploy Go API Gateway
+!api-gateway/
+!shared/
+!*.go
+!go.mod
+!go.sum
+!Dockerfile
