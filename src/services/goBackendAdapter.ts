@@ -89,6 +89,15 @@ export class GoBackendAdapter {
     }
 
     try {
+      // Check if user is properly authenticated before making Go backend calls
+      const { auth } = await import('./firebase');
+      if (!auth.currentUser) {
+        console.log('🔒 User not authenticated yet, skipping Go backend match check');
+        // Fall back to Firebase check which doesn't require Go backend auth
+        const { NewMatchmakingService } = await import('./newMatchmakingService');
+        return NewMatchmakingService.checkUserInMatch(userId);
+      }
+
       // Use Go backend
       console.log('🎯 Checking match status via Go backend for user:', userId);
       

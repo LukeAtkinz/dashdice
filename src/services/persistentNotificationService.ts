@@ -35,7 +35,11 @@ export class PersistentNotificationService {
     
     this.currentUserId = userId;
     
-    // Check for active matches immediately
+    // Wait a moment for authentication to fully initialize
+    // This prevents making Go backend calls before auth token is ready
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Check for active matches after auth has settled
     await this.checkActiveMatches(userId);
     
     // Set up real-time monitoring
