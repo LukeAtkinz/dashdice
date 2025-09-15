@@ -52,3 +52,7 @@ Reference/
 next-env.d.ts
 
 .vercel
+
+# Backend directories (separate git repos)
+backend-deploy/
+backend-simple/
