@@ -1,3 +1,6 @@
 *.png filter=lfs diff=lfs merge=lfs -text
 *.jpg filter=lfs diff=lfs merge=lfs -text
+public/Design[[:space:]]Elements/** filter=lfs diff=lfs merge=lfs -text
+android/app/src/main/res/drawable*/** filter=lfs diff=lfs merge=lfs -text
+ios/App/App/Assets.xcassets/** filter=lfs diff=lfs merge=lfs -text
 *.zip filter=lfs diff=lfs merge=lfs -text
