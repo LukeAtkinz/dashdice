@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:webpack": "next dev",
-    "build": "next build",
+    "build": "set CAPACITOR_BUILD=true && npm run configure-api-static && next build && npm run revert-api-static",
+    "build:webpack": "next build",
     "build:capacitor": "set CAPACITOR_BUILD=true && next build",
     "ionic:build": "set CAPACITOR_BUILD=true && npm run configure-api-static && next build && npm run revert-api-static",
     "start": "next start",

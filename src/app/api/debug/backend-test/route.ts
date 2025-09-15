@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 
-
-
-
+export const dynamic = 'force-static';
+export const revalidate = false;
 
 export async function GET() {
   const goBackendUrl = process.env.GO_BACKEND_URL || 'NOT_SET';
