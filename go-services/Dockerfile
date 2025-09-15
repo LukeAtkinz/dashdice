@@ -6,9 +6,9 @@ WORKDIR /app
 # Copy all files
 COPY . .
 
-# Download dependencies and build
+# Download dependencies and build simple main
 RUN go mod tidy && \
-    CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./api-gateway/main.go
+    CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main main-simple.go
 
 # Final stage
 FROM alpine:latest
