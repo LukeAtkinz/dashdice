@@ -6,10 +6,12 @@
     "dev": "next dev --turbopack",
     "dev:webpack": "next dev",
     "build": "next build",
-    "build:capacitor": "CAPACITOR_BUILD=true next build",
+    "build:capacitor": "set CAPACITOR_BUILD=true && next build",
     "start": "next start",
     "lint": "next lint",
-    "init-achievements": "node scripts/initializeAchievements.js"
+    "init-achievements": "node scripts/initializeAchievements.js",
+    "configure-api-static": "node configure-api-routes-for-static.js",
+    "revert-api-static": "node revert-api-routes-static.js"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
@@ -39,6 +41,7 @@
     "@types/ws": "^8.18.1",
     "eslint": "^9",
     "eslint-config-next": "15.4.3",
+    "glob": "^11.0.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

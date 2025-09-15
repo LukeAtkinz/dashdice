@@ -47,6 +47,7 @@ FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFA
 #### General Environment:
 ```
 NODE_ENV=production
+CAPACITOR_BUILD=true
 ```
 
 ### 5. **Save Environment**

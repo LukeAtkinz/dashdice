@@ -1,10 +1,24 @@
 {
   "name": "DashDice",
   "integrations": {
-    "capacitor": {}
+    "capacitor": {
+      "appId": "com.dashdice.app",
+      "appName": "DashDice",
+      "bundledWebRuntime": false,
+      "webDir": "out"
+    }
   },
   "type": "custom",
   "hooks": {
-    "build:before": "CAPACITOR_BUILD=true"
+    "build:before": "npm run configure-api-static",
+    "build:after": "npm run revert-api-static"
+  },
+  "build": {
+    "command": "npm run build:capacitor",
+    "outputDirectory": "out"
+  },
+  "serve": {
+    "command": "npm run dev",
+    "port": 3000
   }
 }

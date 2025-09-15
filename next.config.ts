@@ -32,6 +32,13 @@ const nextConfig: NextConfig = {
   output: process.env.CAPACITOR_BUILD === 'true' ? 'export' : 'standalone',
   distDir: process.env.CAPACITOR_BUILD === 'true' ? 'out' : '.next',
   trailingSlash: process.env.CAPACITOR_BUILD === 'true' ? true : false,
+  // Skip API routes during static export for Capacitor builds
+  ...(process.env.CAPACITOR_BUILD === 'true' && {
+    generateBuildId: () => 'capacitor-build',
+    assetPrefix: '',
+    basePath: '',
+    skipTrailingSlashRedirect: true,
+  }),
   images: {
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 31536000,
