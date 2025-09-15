@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Types for different moderation services
 
+// Static export configuration for Capacitor builds
+export const dynamic = 'force-static';
+export const revalidate = false;
+
 interface OpenAIModerationResult {
   flagged: boolean;
   categories: {

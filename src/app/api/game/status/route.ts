@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Static export configuration for Capacitor builds
+export const dynamic = 'force-static';
+export const revalidate = false;
 
 interface GameStatusRequest {
   match_id?: string;

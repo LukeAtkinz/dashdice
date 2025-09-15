@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // This is a debug endpoint to reset backend availability cache
 
+// Static export configuration for Capacitor builds
+export const dynamic = 'force-static';
+export const revalidate = false;
+
 export async function POST(request: NextRequest) {
   try {
     // Reset cache by clearing module cache for proxy routes
