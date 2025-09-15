@@ -9,6 +9,5 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	go.uber.org/zap v1.25.0
 	google.golang.org/api v0.126.0
-)
 	google.golang.org/grpc v1.56.2
 )
