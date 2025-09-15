@@ -25,7 +25,7 @@ if (!(Test-Path $sourceIcon)) {
 
 # Check if cordova-res is installed
 try {
-    $cordovaRes = Get-Command cordova-res -ErrorAction Stop
+    Get-Command cordova-res -ErrorAction Stop | Out-Null
     Write-Host "✅ cordova-res is available" -ForegroundColor Green
 } catch {
     Write-Host "📦 Installing cordova-res for icon generation..." -ForegroundColor Cyan
