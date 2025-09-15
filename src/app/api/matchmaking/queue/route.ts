@@ -3,10 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 // Matchmaking API proxy for Vercel deployment
 // Connects to Go microservices running on Docker containers
 
-// Static export configuration for Capacitor builds
-export const dynamic = 'force-static';
-export const revalidate = false;
-
 interface MatchmakingRequest {
   game_mode: string;
   user_id: string;

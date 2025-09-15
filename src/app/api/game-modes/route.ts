@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GameModeService } from '@/services/gameModeService';
 
-// Static export configuration for Capacitor builds
-export const dynamic = 'force-static';
-export const revalidate = false;
-
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

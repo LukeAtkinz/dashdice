@@ -4,10 +4,6 @@ import { WebSocketServer, WebSocket } from 'ws';
 // WebSocket handler for real-time matchmaking updates
 // Provides live notifications for queue status, match found, game updates
 
-// Static export configuration for Capacitor builds
-export const dynamic = 'force-static';
-export const revalidate = false;
-
 interface WebSocketMessage {
   type: 'queue_joined' | 'queue_left' | 'match_found' | 'game_started' | 'game_ended' | 'error' | 'ping';
   user_id?: string;

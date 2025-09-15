@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Static export configuration for Capacitor builds
-export const dynamic = 'force-static';
-export const revalidate = false;
-
 const GO_BACKEND_URL = process.env.GO_BACKEND_URL || 'https://dashdice-production.up.railway.app';
 
 // Simple in-memory cache to avoid hitting unavailable backend repeatedly
