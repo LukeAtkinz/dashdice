@@ -12,7 +12,7 @@ const GO_BACKEND_URL = process.env.GO_BACKEND_URL || 'http://localhost:8080';
 
 // Simple in-memory cache to avoid hitting unavailable backend repeatedly
 let backendUnavailableUntil = 0;
-const BACKEND_RETRY_DELAY = 5 * 60 * 1000; // 5 minutes
+const BACKEND_RETRY_DELAY = 30 * 1000; // Reduced to 30 seconds for development
 
 async function tryGoBackend(url: string, options: RequestInit): Promise<Response | null> {
   // If backend is marked as unavailable and we're still in the retry delay, skip
