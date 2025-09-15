@@ -16,9 +16,9 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/api/option"
 	
-	"github.com/LukeAtkinz/dashdice/go-services/shared/config"
-	"github.com/LukeAtkinz/dashdice/go-services/shared/database"
-	"github.com/LukeAtkinz/dashdice/go-services/shared/middleware"
+	"dashdice-api/shared/config"
+	"dashdice-api/shared/database"
+	"dashdice-api/shared/middleware"
 )
 
 func main() {
