@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+
+
+
+
 const GO_BACKEND_URL = process.env.GO_BACKEND_URL || 'https://dashdice-production-55b7.up.railway.app';
 
 export async function DELETE(request: NextRequest) {

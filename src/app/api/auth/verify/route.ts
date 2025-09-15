@@ -4,6 +4,10 @@ import { getAuth } from 'firebase-admin/auth';
 
 // Initialize Firebase Admin only once
 
+
+
+
+
 if (!getApps().length) {
   const serviceAccount = {
     projectId: process.env.FIREBASE_PROJECT_ID,

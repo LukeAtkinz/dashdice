@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 
+
+
+
+
 export async function GET() {
   const goBackendUrl = process.env.GO_BACKEND_URL || 'NOT_SET';
   

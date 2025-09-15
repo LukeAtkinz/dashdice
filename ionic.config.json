@@ -10,11 +10,12 @@
   },
   "type": "custom",
   "build": {
-    "command": "set CAPACITOR_BUILD=true && npm run build",
+    "command": "npm run ionic:build",
     "outputDirectory": "out"
   },
   "serve": {
     "command": "npm run dev",
     "port": 3000
-  }
+  },
+  "id": "32dbef05"
 }

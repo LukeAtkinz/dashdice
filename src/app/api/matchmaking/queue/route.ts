@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 // Matchmaking API proxy for Vercel deployment
 // Connects to Go microservices running on Docker containers
 
+
+
+
+
 interface MatchmakingRequest {
   game_mode: string;
   user_id: string;

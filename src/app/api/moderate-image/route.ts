@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Types for different moderation services
 
+
+
+
+
 interface OpenAIModerationResult {
   flagged: boolean;
   categories: {

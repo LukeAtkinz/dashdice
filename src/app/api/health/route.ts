@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 // System health monitoring endpoint for Vercel deployment
 // Checks all microservices and provides comprehensive status
 
+
+
+
+
 interface ServiceStatus {
   name: string;
   url: string;
