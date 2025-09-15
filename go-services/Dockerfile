@@ -3,17 +3,12 @@ FROM golang:1.21-alpine AS builder
 
 WORKDIR /app
 
-# Copy go mod file
-COPY go.mod ./
-
-# Initialize the module if needed
-RUN go mod tidy || echo "Module already initialized"
-
-# Copy the entire source code including subdirectories
+# Copy all files
 COPY . .
 
-# Build the API Gateway application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./api-gateway
+# Download dependencies and build
+RUN go mod tidy && \
+    CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./api-gateway/main.go
 
 # Final stage
 FROM alpine:latest
