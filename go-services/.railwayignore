@@ -11,6 +11,7 @@ yarn-error.log*
 # Ignore all subdirectories with Node.js
 **/package.json
 **/node_modules/
+websocket-server/
 
 # Only include Go files
 !*.go
