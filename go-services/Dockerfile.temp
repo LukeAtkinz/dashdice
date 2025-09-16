@@ -1,0 +1,9 @@
+# Temporary Dockerfile for generating go.sum
+FROM golang:1.21-alpine
+
+WORKDIR /app
+COPY go.mod ./
+COPY shared/ ./shared/
+COPY api-gateway/ ./api-gateway/
+
+RUN go mod tidy && cat go.sum
