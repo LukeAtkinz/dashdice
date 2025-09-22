@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255316_bz9duqijt",
+  "displayName": "Hayden Wilson",
+  "email": "hayden.wilson@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.316Z",
+  "updatedAt": "2025-09-16T13:10:55.318Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 94,
+    "matchWins": 28,
+    "currentStreak": 2,
+    "bestStreak": 6,
+    "totalScore": 94859,
+    "averageScore": 1009,
+    "elo": 1587
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.71,
+    "bankingTendency": 0.72,
+    "riskTolerance": 0.17,
+    "pressureResistance": 0.6,
+    "tiltResistance": 0.56,
+    "momentumAwareness": 0.74,
+    "adaptationSpeed": 0.65,
+    "confidenceLevel": 0.45,
+    "emotionalVolatility": 0.48,
+    "region": "asia-pacific",
+    "skillLevel": "beginner",
+    "archetypeCategory": "aggressive"
+  },
+  "generationDate": "2025-09-16T13:10:55.318Z",
+  "lastActiveDate": "2025-09-16T13:10:55.318Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 258,
+    "favoriteTimeToPlay": 19,
+    "commonStrategies": []
+  }
+}

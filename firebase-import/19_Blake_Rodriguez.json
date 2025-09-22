@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255322_txonx89mw",
+  "displayName": "Blake Rodriguez",
+  "email": "blake.rodriguez@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.322Z",
+  "updatedAt": "2025-09-16T13:10:55.322Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 47,
+    "matchWins": 32,
+    "currentStreak": 0,
+    "bestStreak": 0,
+    "totalScore": 54802,
+    "averageScore": 1166,
+    "elo": 1187
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.1,
+    "bankingTendency": 0.74,
+    "riskTolerance": 0.45,
+    "pressureResistance": 0.5,
+    "tiltResistance": 0.63,
+    "momentumAwareness": 0.73,
+    "adaptationSpeed": 0.26,
+    "confidenceLevel": 0.51,
+    "emotionalVolatility": 0.2,
+    "region": "asia-pacific",
+    "skillLevel": "advanced",
+    "archetypeCategory": "conservative"
+  },
+  "generationDate": "2025-09-16T13:10:55.322Z",
+  "lastActiveDate": "2025-09-16T13:10:55.322Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 271,
+    "favoriteTimeToPlay": 5,
+    "commonStrategies": []
+  }
+}

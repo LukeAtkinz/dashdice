@@ -10,15 +10,17 @@ import { FriendsProvider } from './FriendsContext';
 import { GameModeProvider } from './GameModeContext';
 import { ChatProvider } from './ChatContext';
 import { ToastProvider } from './ToastContext';
+import { AppLoadingProvider } from './AppLoadingContext';
 import { CleanupService } from '@/services/cleanupService';
 import { GameInvitationService } from '@/services/gameInvitationService';
 import { RematchService } from '@/services/rematchService';
 
 interface ProvidersProps {
   children: React.ReactNode;
+  skipSplash?: boolean;
 }
 
-export const Providers: React.FC<ProvidersProps> = ({ children }) => {
+export const Providers: React.FC<ProvidersProps> = ({ children, skipSplash = false }) => {
   // Initialize database cleanup on app start - TEMPORARILY DISABLED
   useEffect(() => {
     // Only run on the client side to avoid SSR issues
@@ -46,8 +48,9 @@ export const Providers: React.FC<ProvidersProps> = ({ children }) => {
   }, []);
 
   return (
-    <AuthProvider>
-      <ToastProvider>
+    <AppLoadingProvider skipSplash={skipSplash}>
+      <AuthProvider>
+        <ToastProvider>
         <BackgroundProvider>
           <InventoryProvider>
             <AchievementProvider>
@@ -63,7 +66,8 @@ export const Providers: React.FC<ProvidersProps> = ({ children }) => {
             </AchievementProvider>
           </InventoryProvider>
         </BackgroundProvider>
-      </ToastProvider>
-    </AuthProvider>
+        </ToastProvider>
+      </AuthProvider>
+    </AppLoadingProvider>
   );
 };

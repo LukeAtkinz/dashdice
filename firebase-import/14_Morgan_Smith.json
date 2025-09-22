@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255321_ulxzj7fcc",
+  "displayName": "Morgan Smith",
+  "email": "morgan.smith@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.321Z",
+  "updatedAt": "2025-09-16T13:10:55.321Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 28,
+    "matchWins": 22,
+    "currentStreak": 1,
+    "bestStreak": 6,
+    "totalScore": 18070,
+    "averageScore": 645,
+    "elo": 1357
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.55,
+    "bankingTendency": 0.22,
+    "riskTolerance": 0.44,
+    "pressureResistance": 0.53,
+    "tiltResistance": 0.24,
+    "momentumAwareness": 0.34,
+    "adaptationSpeed": 0.72,
+    "confidenceLevel": 0.62,
+    "emotionalVolatility": 0.63,
+    "region": "eu-west",
+    "skillLevel": "expert",
+    "archetypeCategory": "aggressive"
+  },
+  "generationDate": "2025-09-16T13:10:55.321Z",
+  "lastActiveDate": "2025-09-16T13:10:55.321Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 295,
+    "favoriteTimeToPlay": 10,
+    "commonStrategies": []
+  }
+}

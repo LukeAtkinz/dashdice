@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255319_84j56qtjr",
+  "displayName": "Avery Martin",
+  "email": "avery.martin@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.319Z",
+  "updatedAt": "2025-09-16T13:10:55.319Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 51,
+    "matchWins": 35,
+    "currentStreak": 2,
+    "bestStreak": 8,
+    "totalScore": 27313,
+    "averageScore": 535,
+    "elo": 1288
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.21,
+    "bankingTendency": 0.56,
+    "riskTolerance": 0.56,
+    "pressureResistance": 0.79,
+    "tiltResistance": 0.77,
+    "momentumAwareness": 0.71,
+    "adaptationSpeed": 0.21,
+    "confidenceLevel": 0.87,
+    "emotionalVolatility": 0.55,
+    "region": "asia-pacific",
+    "skillLevel": "advanced",
+    "archetypeCategory": "conservative"
+  },
+  "generationDate": "2025-09-16T13:10:55.319Z",
+  "lastActiveDate": "2025-09-16T13:10:55.319Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 270,
+    "favoriteTimeToPlay": 10,
+    "commonStrategies": []
+  }
+}

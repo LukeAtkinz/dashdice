@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255319_6ihvdujgj",
+  "displayName": "Skylar Davis",
+  "email": "skylar.davis@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.319Z",
+  "updatedAt": "2025-09-16T13:10:55.319Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 50,
+    "matchWins": 25,
+    "currentStreak": 3,
+    "bestStreak": 14,
+    "totalScore": 73411,
+    "averageScore": 1468,
+    "elo": 1193
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.72,
+    "bankingTendency": 0.7,
+    "riskTolerance": 0.17,
+    "pressureResistance": 0.45,
+    "tiltResistance": 0.31,
+    "momentumAwareness": 0.52,
+    "adaptationSpeed": 0.79,
+    "confidenceLevel": 0.44,
+    "emotionalVolatility": 0.49,
+    "region": "asia-pacific",
+    "skillLevel": "intermediate",
+    "archetypeCategory": "unpredictable"
+  },
+  "generationDate": "2025-09-16T13:10:55.319Z",
+  "lastActiveDate": "2025-09-16T13:10:55.319Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 284,
+    "favoriteTimeToPlay": 4,
+    "commonStrategies": []
+  }
+}

@@ -136,6 +136,34 @@ services:
     networks:
       - dashdice-network
 
+  # Bot AI Service
+  bot-ai-service:
+    build:
+      context: .
+      dockerfile: bot-ai-service/Dockerfile
+    container_name: dashdice-bot-ai-service
+    restart: unless-stopped
+    ports:
+      - "8085:8085"
+    environment:
+      - PORT=8085
+      - ENVIRONMENT=development
+      - LOG_LEVEL=info
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_URL=postgres://dashdice:${POSTGRES_PASSWORD:-dashdice123}@postgres:5432/dashdice
+      - FIREBASE_CREDENTIALS_PATH=/app/serviceAccountKey.json
+      - BOT_AI_SERVICE_URL=http://bot-ai-service:8085
+      - JWT_SECRET=${JWT_SECRET:-development-jwt-secret-key-change-for-production}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-development-jwt-secret-key-change-for-production}
+    volumes:
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - dashdice-network
+
   # Presence Service
   presence-service:
     build:

@@ -41,6 +41,7 @@ type QueuePlayer struct {
 	Priority          int    `json:"priority" redis:"priority"` // Higher number = higher priority
 	IsPremium         bool   `json:"isPremium" redis:"isPremium"`
 	AllowBots         bool   `json:"allowBots" redis:"allowBots"`
+	IsBot             bool   `json:"isBot" redis:"isBot"` // 🤖 Indicates if this is a bot player
 	
 	// Retry tracking
 	RetryCount        int      `json:"retryCount" redis:"retryCount"`

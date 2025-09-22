@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255320_ud67v8zuw",
+  "displayName": "Ash Jackson",
+  "email": "ash.jackson@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.320Z",
+  "updatedAt": "2025-09-16T13:10:55.320Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 87,
+    "matchWins": 43,
+    "currentStreak": 0,
+    "bestStreak": 6,
+    "totalScore": 49425,
+    "averageScore": 568,
+    "elo": 1238
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.59,
+    "bankingTendency": 0.55,
+    "riskTolerance": 0.55,
+    "pressureResistance": 0.5,
+    "tiltResistance": 0.56,
+    "momentumAwareness": 0.61,
+    "adaptationSpeed": 0.48,
+    "confidenceLevel": 0.5,
+    "emotionalVolatility": 0.56,
+    "region": "eu-west",
+    "skillLevel": "intermediate",
+    "archetypeCategory": "conservative"
+  },
+  "generationDate": "2025-09-16T13:10:55.320Z",
+  "lastActiveDate": "2025-09-16T13:10:55.320Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 204,
+    "favoriteTimeToPlay": 23,
+    "commonStrategies": []
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255321_axbve6rvm",
+  "displayName": "Oakley Jackson",
+  "email": "oakley.jackson@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.321Z",
+  "updatedAt": "2025-09-16T13:10:55.321Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 50,
+    "matchWins": 40,
+    "currentStreak": 0,
+    "bestStreak": 1,
+    "totalScore": 40025,
+    "averageScore": 800,
+    "elo": 1023
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.89,
+    "bankingTendency": 0.35,
+    "riskTolerance": 0.86,
+    "pressureResistance": 0.51,
+    "tiltResistance": 0.82,
+    "momentumAwareness": 0.88,
+    "adaptationSpeed": 0.23,
+    "confidenceLevel": 0.51,
+    "emotionalVolatility": 0.26,
+    "region": "us-east",
+    "skillLevel": "expert",
+    "archetypeCategory": "conservative"
+  },
+  "generationDate": "2025-09-16T13:10:55.321Z",
+  "lastActiveDate": "2025-09-16T13:10:55.321Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 185,
+    "favoriteTimeToPlay": 7,
+    "commonStrategies": []
+  }
+}

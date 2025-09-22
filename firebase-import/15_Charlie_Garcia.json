@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255321_knq5sd19s",
+  "displayName": "Charlie Garcia",
+  "email": "charlie.garcia@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.321Z",
+  "updatedAt": "2025-09-16T13:10:55.321Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 60,
+    "matchWins": 48,
+    "currentStreak": 4,
+    "bestStreak": 11,
+    "totalScore": 33723,
+    "averageScore": 562,
+    "elo": 1507
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.56,
+    "bankingTendency": 0.68,
+    "riskTolerance": 0.19,
+    "pressureResistance": 0.55,
+    "tiltResistance": 0.25,
+    "momentumAwareness": 0.63,
+    "adaptationSpeed": 0.76,
+    "confidenceLevel": 0.31,
+    "emotionalVolatility": 0.14,
+    "region": "us-east",
+    "skillLevel": "expert",
+    "archetypeCategory": "balanced"
+  },
+  "generationDate": "2025-09-16T13:10:55.321Z",
+  "lastActiveDate": "2025-09-16T13:10:55.322Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 215,
+    "favoriteTimeToPlay": 5,
+    "commonStrategies": []
+  }
+}

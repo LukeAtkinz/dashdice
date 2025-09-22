@@ -1,0 +1,278 @@
+[
+  {
+    "uid": "bot_1758028255319_oupkxhl5z",
+    "displayName": "Sage Martinez",
+    "email": "sage.martinez@dashdice.bot",
+    "createdAt": "2025-09-16T13:10:55.319Z",
+    "updatedAt": "2025-09-16T13:10:55.319Z",
+    "isBot": true,
+    "isActive": true,
+    "stats": {
+      "gamesPlayed": 42,
+      "matchWins": 21,
+      "currentStreak": 1,
+      "bestStreak": 4,
+      "totalScore": 32694,
+      "averageScore": 778,
+      "elo": 1096
+    },
+    "inventory": {
+      "displayBackgroundEquipped": null,
+      "matchBackgroundEquipped": null,
+      "items": []
+    },
+    "personality": {
+      "aggressiveness": 0.42,
+      "bankingTendency": 0.42,
+      "riskTolerance": 0.85,
+      "pressureResistance": 0.39,
+      "tiltResistance": 0.38,
+      "momentumAwareness": 0.49,
+      "adaptationSpeed": 0.24,
+      "confidenceLevel": 0.74,
+      "emotionalVolatility": 0.5,
+      "region": "asia-pacific",
+      "skillLevel": "intermediate",
+      "archetypeCategory": "conservative"
+    },
+    "generationDate": "2025-09-16T13:10:55.319Z",
+    "lastActiveDate": "2025-09-16T13:10:55.319Z",
+    "achievements": {},
+    "recentMatches": [],
+    "matchStatistics": {
+      "averageGameLength": 284,
+      "favoriteTimeToPlay": 14,
+      "commonStrategies": []
+    }
+  },
+  {
+    "uid": "bot_1758028255319_lfpagog7m",
+    "displayName": "Morgan Hernandez",
+    "email": "morgan.hernandez@dashdice.bot",
+    "createdAt": "2025-09-16T13:10:55.319Z",
+    "updatedAt": "2025-09-16T13:10:55.319Z",
+    "isBot": true,
+    "isActive": true,
+    "stats": {
+      "gamesPlayed": 67,
+      "matchWins": 33,
+      "currentStreak": 3,
+      "bestStreak": 11,
+      "totalScore": 79064,
+      "averageScore": 1180,
+      "elo": 1260
+    },
+    "inventory": {
+      "displayBackgroundEquipped": null,
+      "matchBackgroundEquipped": null,
+      "items": []
+    },
+    "personality": {
+      "aggressiveness": 0.47,
+      "bankingTendency": 0.72,
+      "riskTolerance": 0.4,
+      "pressureResistance": 0.42,
+      "tiltResistance": 0.85,
+      "momentumAwareness": 0.59,
+      "adaptationSpeed": 0.61,
+      "confidenceLevel": 0.75,
+      "emotionalVolatility": 0.28,
+      "region": "eu-west",
+      "skillLevel": "intermediate",
+      "archetypeCategory": "conservative"
+    },
+    "generationDate": "2025-09-16T13:10:55.319Z",
+    "lastActiveDate": "2025-09-16T13:10:55.319Z",
+    "achievements": {},
+    "recentMatches": [],
+    "matchStatistics": {
+      "averageGameLength": 214,
+      "favoriteTimeToPlay": 12,
+      "commonStrategies": []
+    }
+  },
+  {
+    "uid": "bot_1758028255319_6ihvdujgj",
+    "displayName": "Skylar Davis",
+    "email": "skylar.davis@dashdice.bot",
+    "createdAt": "2025-09-16T13:10:55.319Z",
+    "updatedAt": "2025-09-16T13:10:55.319Z",
+    "isBot": true,
+    "isActive": true,
+    "stats": {
+      "gamesPlayed": 50,
+      "matchWins": 25,
+      "currentStreak": 3,
+      "bestStreak": 14,
+      "totalScore": 73411,
+      "averageScore": 1468,
+      "elo": 1193
+    },
+    "inventory": {
+      "displayBackgroundEquipped": null,
+      "matchBackgroundEquipped": null,
+      "items": []
+    },
+    "personality": {
+      "aggressiveness": 0.72,
+      "bankingTendency": 0.7,
+      "riskTolerance": 0.17,
+      "pressureResistance": 0.45,
+      "tiltResistance": 0.31,
+      "momentumAwareness": 0.52,
+      "adaptationSpeed": 0.79,
+      "confidenceLevel": 0.44,
+      "emotionalVolatility": 0.49,
+      "region": "asia-pacific",
+      "skillLevel": "intermediate",
+      "archetypeCategory": "unpredictable"
+    },
+    "generationDate": "2025-09-16T13:10:55.319Z",
+    "lastActiveDate": "2025-09-16T13:10:55.319Z",
+    "achievements": {},
+    "recentMatches": [],
+    "matchStatistics": {
+      "averageGameLength": 284,
+      "favoriteTimeToPlay": 4,
+      "commonStrategies": []
+    }
+  },
+  {
+    "uid": "bot_1758028255320_e25jrsk64",
+    "displayName": "Rowan Wilson",
+    "email": "rowan.wilson@dashdice.bot",
+    "createdAt": "2025-09-16T13:10:55.320Z",
+    "updatedAt": "2025-09-16T13:10:55.320Z",
+    "isBot": true,
+    "isActive": true,
+    "stats": {
+      "gamesPlayed": 51,
+      "matchWins": 25,
+      "currentStreak": 2,
+      "bestStreak": 13,
+      "totalScore": 33743,
+      "averageScore": 661,
+      "elo": 1379
+    },
+    "inventory": {
+      "displayBackgroundEquipped": null,
+      "matchBackgroundEquipped": null,
+      "items": []
+    },
+    "personality": {
+      "aggressiveness": 0.12,
+      "bankingTendency": 0.32,
+      "riskTolerance": 0.18,
+      "pressureResistance": 0.46,
+      "tiltResistance": 0.71,
+      "momentumAwareness": 0.25,
+      "adaptationSpeed": 0.4,
+      "confidenceLevel": 0.88,
+      "emotionalVolatility": 0.6,
+      "region": "asia-pacific",
+      "skillLevel": "intermediate",
+      "archetypeCategory": "balanced"
+    },
+    "generationDate": "2025-09-16T13:10:55.320Z",
+    "lastActiveDate": "2025-09-16T13:10:55.320Z",
+    "achievements": {},
+    "recentMatches": [],
+    "matchStatistics": {
+      "averageGameLength": 255,
+      "favoriteTimeToPlay": 12,
+      "commonStrategies": []
+    }
+  },
+  {
+    "uid": "bot_1758028255320_ud67v8zuw",
+    "displayName": "Ash Jackson",
+    "email": "ash.jackson@dashdice.bot",
+    "createdAt": "2025-09-16T13:10:55.320Z",
+    "updatedAt": "2025-09-16T13:10:55.320Z",
+    "isBot": true,
+    "isActive": true,
+    "stats": {
+      "gamesPlayed": 87,
+      "matchWins": 43,
+      "currentStreak": 0,
+      "bestStreak": 6,
+      "totalScore": 49425,
+      "averageScore": 568,
+      "elo": 1238
+    },
+    "inventory": {
+      "displayBackgroundEquipped": null,
+      "matchBackgroundEquipped": null,
+      "items": []
+    },
+    "personality": {
+      "aggressiveness": 0.59,
+      "bankingTendency": 0.55,
+      "riskTolerance": 0.55,
+      "pressureResistance": 0.5,
+      "tiltResistance": 0.56,
+      "momentumAwareness": 0.61,
+      "adaptationSpeed": 0.48,
+      "confidenceLevel": 0.5,
+      "emotionalVolatility": 0.56,
+      "region": "eu-west",
+      "skillLevel": "intermediate",
+      "archetypeCategory": "conservative"
+    },
+    "generationDate": "2025-09-16T13:10:55.320Z",
+    "lastActiveDate": "2025-09-16T13:10:55.320Z",
+    "achievements": {},
+    "recentMatches": [],
+    "matchStatistics": {
+      "averageGameLength": 204,
+      "favoriteTimeToPlay": 23,
+      "commonStrategies": []
+    }
+  },
+  {
+    "uid": "bot_1758028255322_0o3hkjzod",
+    "displayName": "Reese Miller",
+    "email": "reese.miller@dashdice.bot",
+    "createdAt": "2025-09-16T13:10:55.322Z",
+    "updatedAt": "2025-09-16T13:10:55.322Z",
+    "isBot": true,
+    "isActive": true,
+    "stats": {
+      "gamesPlayed": 24,
+      "matchWins": 12,
+      "currentStreak": 1,
+      "bestStreak": 9,
+      "totalScore": 12149,
+      "averageScore": 506,
+      "elo": 1388
+    },
+    "inventory": {
+      "displayBackgroundEquipped": null,
+      "matchBackgroundEquipped": null,
+      "items": []
+    },
+    "personality": {
+      "aggressiveness": 0.41,
+      "bankingTendency": 0.38,
+      "riskTolerance": 0.77,
+      "pressureResistance": 0.51,
+      "tiltResistance": 0.39,
+      "momentumAwareness": 0.71,
+      "adaptationSpeed": 0.42,
+      "confidenceLevel": 0.32,
+      "emotionalVolatility": 0.14,
+      "region": "eu-west",
+      "skillLevel": "intermediate",
+      "archetypeCategory": "aggressive"
+    },
+    "generationDate": "2025-09-16T13:10:55.322Z",
+    "lastActiveDate": "2025-09-16T13:10:55.322Z",
+    "achievements": {},
+    "recentMatches": [],
+    "matchStatistics": {
+      "averageGameLength": 207,
+      "favoriteTimeToPlay": 7,
+      "commonStrategies": []
+    }
+  }
+]

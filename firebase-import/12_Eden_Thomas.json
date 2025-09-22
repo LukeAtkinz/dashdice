@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255321_6ioxraad2",
+  "displayName": "Eden Thomas",
+  "email": "eden.thomas@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.321Z",
+  "updatedAt": "2025-09-16T13:10:55.321Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 43,
+    "matchWins": 34,
+    "currentStreak": 2,
+    "bestStreak": 8,
+    "totalScore": 33722,
+    "averageScore": 784,
+    "elo": 1353
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.61,
+    "bankingTendency": 0.72,
+    "riskTolerance": 0.47,
+    "pressureResistance": 0.55,
+    "tiltResistance": 0.57,
+    "momentumAwareness": 0.67,
+    "adaptationSpeed": 0.72,
+    "confidenceLevel": 0.61,
+    "emotionalVolatility": 0.31,
+    "region": "us-east",
+    "skillLevel": "expert",
+    "archetypeCategory": "unpredictable"
+  },
+  "generationDate": "2025-09-16T13:10:55.321Z",
+  "lastActiveDate": "2025-09-16T13:10:55.321Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 288,
+    "favoriteTimeToPlay": 14,
+    "commonStrategies": []
+  }
+}

@@ -63,6 +63,7 @@ type Config struct {
 	MatchServiceAddr    string
 	QueueServiceAddr    string
 	APIGatewayAddr      string
+	BotServiceAddr      string   // 🤖 Bot AI Service address
 }
 
 // LoadConfig loads configuration from environment variables
@@ -123,6 +124,7 @@ func LoadConfig() (*Config, error) {
 		MatchServiceAddr:    getEnv("MATCH_SERVICE_ADDR", "match-service:8080"),
 		QueueServiceAddr:    getEnv("QUEUE_SERVICE_ADDR", "queue-service:8080"),
 		APIGatewayAddr:      getEnv("API_GATEWAY_ADDR", "api-gateway:8080"),
+		BotServiceAddr:      getEnv("BOT_SERVICE_ADDR", "bot-ai-service:8080"), // 🤖 Bot AI Service
 	}
 
 	// Validate required configuration

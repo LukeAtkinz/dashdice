@@ -107,15 +107,16 @@ class AdvancedQueueTester {
   private createSessionPlayerData(testPlayer: TestPlayer): SessionPlayerData {
     return {
       playerId: testPlayer.id,
-      displayName: testPlayer.displayName,
+      playerDisplayName: testPlayer.displayName,
       playerStats: {
         gamesPlayed: Math.floor(Math.random() * 100) + 10,
         matchWins: Math.floor(Math.random() * 50) + 5,
         currentStreak: Math.floor(Math.random() * 10),
-        bestStreak: Math.floor(Math.random() * 15) + 5,
-        totalScore: Math.floor(Math.random() * 10000) + 1000,
-        averageScore: Math.floor(Math.random() * 500) + 100
-      }
+        bestStreak: Math.floor(Math.random() * 15) + 5
+      },
+      displayBackgroundEquipped: null,
+      matchBackgroundEquipped: null,
+      ready: false
     };
   }
 

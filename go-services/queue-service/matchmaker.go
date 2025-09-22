@@ -359,6 +359,10 @@ func (mm *Matchmaker) processQueueForMatches(gameMode string, queue *GameQueue) 
 	defer queue.Mutex.Unlock()
 	
 	if len(queue.Players) < queue.MinPlayers {
+		// 🤖 BOT INTEGRATION: Check for players waiting > 10 seconds in quick games
+		if gameMode == "quick" || gameMode == "classic" {
+			mm.checkForBotMatching(gameMode, queue)
+		}
 		return
 	}
 	
@@ -387,6 +391,11 @@ func (mm *Matchmaker) processQueueForMatches(gameMode string, queue *GameQueue) 
 				}
 				queue.Players = append(queue.Players, queuedPlayer)
 			}
+		}
+	} else {
+		// 🤖 No human match found, check for bot matching for players waiting > 10s
+		if gameMode == "quick" || gameMode == "classic" {
+			mm.checkForBotMatching(gameMode, queue)
 		}
 	}
 }
@@ -888,6 +897,227 @@ func (mm *Matchmaker) removeMatchedPlayers(queue *GameQueue, matchedPlayers []*m
 	}
 	
 	queue.Players = filteredPlayers
+}
+
+// 🤖 BOT INTEGRATION FUNCTIONS
+
+// checkForBotMatching checks if any players have been waiting > 10 seconds for bot matching
+func (mm *Matchmaker) checkForBotMatching(gameMode string, queue *GameQueue) {
+	now := time.Now()
+	const botMatchingThreshold = 10 * time.Second
+	
+	for _, queuedPlayer := range queue.Players {
+		waitTime := now.Sub(queuedPlayer.QueueTime)
+		
+		// Only match with bots after 10 seconds in quick games (not ranked)
+		if waitTime >= botMatchingThreshold {
+			mm.logger.Info("🤖 Player waiting > 10s, attempting bot match",
+				zap.String("user_id", queuedPlayer.Player.UserID),
+				zap.String("game_mode", gameMode),
+				zap.Duration("wait_time", waitTime))
+			
+			// Attempt to create a bot match
+			botMatch := mm.createBotMatch(gameMode, queuedPlayer)
+			if botMatch != nil {
+				// Remove player from queue
+				mm.removePlayerFromQueue(queue, queuedPlayer.Player.UserID)
+				
+				// Send bot match for processing
+				select {
+				case mm.matchChan <- botMatch:
+					mm.logger.Info("🤖 Bot match created",
+						zap.String("user_id", queuedPlayer.Player.UserID),
+						zap.String("game_mode", gameMode),
+						zap.Duration("wait_time", waitTime))
+				default:
+					mm.logger.Warn("🤖 Match channel full, dropping bot match")
+					// Re-add player to queue if match channel is full
+					queue.Players = append(queue.Players, queuedPlayer)
+				}
+				
+				// Only match one player at a time to avoid depleting queue
+				return
+			}
+		}
+	}
+}
+
+// createBotMatch creates a match between a human player and a bot
+func (mm *Matchmaker) createBotMatch(gameMode string, humanPlayer *QueuedPlayer) *MatchFound {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	
+	// Get available bots for this game mode and player skill level
+	bots, err := mm.getAvailableBots(ctx, gameMode, humanPlayer.User)
+	if err != nil {
+		mm.logger.Error("🤖 Failed to get available bots", zap.Error(err))
+		return nil
+	}
+	
+	if len(bots) == 0 {
+		mm.logger.Warn("🤖 No available bots found for matching")
+		return nil
+	}
+	
+	// Select best bot opponent based on skill level
+	selectedBot := mm.selectBestBotOpponent(bots, humanPlayer.User)
+	if selectedBot == nil {
+		mm.logger.Warn("🤖 No suitable bot opponent found")
+		return nil
+	}
+	
+	// Create bot QueuePlayer
+	botQueuePlayer := &models.QueuePlayer{
+		UserID:   selectedBot.ID,
+		GameMode: gameMode,
+		Region:   humanPlayer.Player.Region,
+		ELO:      selectedBot.Stats.ELO,
+		JoinedAt: time.Now(),
+		IsBot:    true, // Add this field if not exists
+	}
+	
+	// Create the match
+	match := &MatchFound{
+		GameMode:     gameMode,
+		Players:      []*models.QueuePlayer{humanPlayer.Player, botQueuePlayer},
+		MatchQuality: mm.calculateBotMatchQuality(humanPlayer.User, selectedBot),
+		QueueTime:    time.Since(humanPlayer.QueueTime),
+	}
+	
+	mm.logger.Info("🤖 Bot match created successfully",
+		zap.String("human_player", humanPlayer.Player.UserID),
+		zap.String("bot_player", selectedBot.ID),
+		zap.String("bot_name", selectedBot.Profile.DisplayName),
+		zap.Float64("match_quality", match.MatchQuality))
+	
+	return match
+}
+
+// getAvailableBots fetches available bots from Firebase
+func (mm *Matchmaker) getAvailableBots(ctx context.Context, gameMode string, humanUser *models.User) ([]*BotProfile, error) {
+	// This would query the bot_profiles collection in Firebase
+	// For now, return a mock implementation
+	
+	// TODO: Implement actual Firebase query
+	// Query: bot_profiles where isActive = true and region = humanUser.region
+	
+	mm.logger.Info("🤖 Fetching available bots",
+		zap.String("game_mode", gameMode),
+		zap.String("human_region", humanUser.Region))
+	
+	// Mock implementation - in real version, this would be a Firebase query
+	return []*BotProfile{}, nil
+}
+
+// selectBestBotOpponent selects the best bot based on skill compatibility
+func (mm *Matchmaker) selectBestBotOpponent(bots []*BotProfile, humanUser *models.User) *BotProfile {
+	if len(bots) == 0 {
+		return nil
+	}
+	
+	humanELO := humanUser.Stats.ELO
+	if humanELO == 0 {
+		humanELO = 1200 // Default ELO
+	}
+	
+	var bestBot *BotProfile
+	smallestELODiff := math.MaxInt32
+	
+	// Find bot with closest ELO rating
+	for _, bot := range bots {
+		botELO := bot.Stats.ELO
+		if botELO == 0 {
+			botELO = 1200 // Default bot ELO
+		}
+		
+		eloDiff := int(math.Abs(float64(humanELO - botELO)))
+		
+		// Prefer bots within ±200 ELO range
+		if eloDiff <= 200 && eloDiff < smallestELODiff {
+			bestBot = bot
+			smallestELODiff = eloDiff
+		}
+	}
+	
+	// If no bot within ±200 ELO, select any available bot
+	if bestBot == nil && len(bots) > 0 {
+		bestBot = bots[0] // Select first available bot
+	}
+	
+	if bestBot != nil {
+		mm.logger.Info("🤖 Selected bot opponent",
+			zap.String("bot_id", bestBot.ID),
+			zap.String("bot_name", bestBot.Profile.DisplayName),
+			zap.Int("human_elo", humanELO),
+			zap.Int("bot_elo", bestBot.Stats.ELO),
+			zap.Int("elo_diff", smallestELODiff))
+	}
+	
+	return bestBot
+}
+
+// calculateBotMatchQuality calculates match quality between human and bot
+func (mm *Matchmaker) calculateBotMatchQuality(humanUser *models.User, bot *BotProfile) float64 {
+	humanELO := humanUser.Stats.ELO
+	if humanELO == 0 {
+		humanELO = 1200
+	}
+	
+	botELO := bot.Stats.ELO
+	if botELO == 0 {
+		botELO = 1200
+	}
+	
+	eloDiff := math.Abs(float64(humanELO - botELO))
+	
+	// Quality decreases as ELO difference increases
+	// Perfect match (0 ELO diff) = 1.0 quality
+	// 200 ELO diff = 0.8 quality  
+	// 400+ ELO diff = 0.5 quality
+	quality := 1.0 - (eloDiff / 800.0)
+	
+	// Ensure quality is between 0.5 and 1.0
+	if quality < 0.5 {
+		quality = 0.5
+	}
+	if quality > 1.0 {
+		quality = 1.0
+	}
+	
+	return quality
+}
+
+// removePlayerFromQueue removes a specific player from the queue
+func (mm *Matchmaker) removePlayerFromQueue(queue *GameQueue, userID string) {
+	for i, player := range queue.Players {
+		if player.Player.UserID == userID {
+			// Remove player from slice
+			queue.Players = append(queue.Players[:i], queue.Players[i+1:]...)
+			mm.logger.Debug("Player removed from queue", zap.String("user_id", userID))
+			return
+		}
+	}
+}
+
+// BotProfile represents a bot profile structure (should match frontend TypeScript)
+type BotProfile struct {
+	ID      string `json:"id"`
+	Profile struct {
+		DisplayName string `json:"displayName"`
+		Username    string `json:"username"`
+		Region      string `json:"region"`
+	} `json:"profile"`
+	Stats struct {
+		ELO         int    `json:"elo"`
+		GamesPlayed int    `json:"gamesPlayed"`
+		MatchWins   int    `json:"matchWins"`
+		Rank        string `json:"rank"`
+	} `json:"stats"`
+	BotConfig struct {
+		IsActive   bool   `json:"isActive"`
+		SkillLevel string `json:"skillLevel"`
+		Region     string `json:"region"`
+	} `json:"botConfig"`
 }
 
 // Data structures for API responses

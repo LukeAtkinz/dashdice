@@ -18,9 +18,16 @@ export const metadata: Metadata = {
   description: "Play dice games with friends online",
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/Design Elements/favicon-32x32_2.png", sizes: "32x32", type: "image/png" }
+      { url: "/favicon.ico", sizes: "any", type: "image/x-icon" },
+      { url: "/icons/icon-48.webp", sizes: "48x48", type: "image/webp" },
+      { url: "/icons/icon-96.webp", sizes: "96x96", type: "image/webp" },
+      { url: "/icons/icon-192.webp", sizes: "192x192", type: "image/webp" },
+      { url: "/icons/icon-512.webp", sizes: "512x512", type: "image/webp" }
     ],
+    apple: [
+      { url: "/icons/icon-192.webp", sizes: "192x192", type: "image/webp" }
+    ],
+    shortcut: "/favicon.ico"
   },
   // PWA manifest (safe addition - doesn't affect existing functionality)
   manifest: "/manifest.json",

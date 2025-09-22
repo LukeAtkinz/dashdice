@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255319_lfpagog7m",
+  "displayName": "Morgan Hernandez",
+  "email": "morgan.hernandez@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.319Z",
+  "updatedAt": "2025-09-16T13:10:55.319Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 67,
+    "matchWins": 33,
+    "currentStreak": 3,
+    "bestStreak": 11,
+    "totalScore": 79064,
+    "averageScore": 1180,
+    "elo": 1260
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.47,
+    "bankingTendency": 0.72,
+    "riskTolerance": 0.4,
+    "pressureResistance": 0.42,
+    "tiltResistance": 0.85,
+    "momentumAwareness": 0.59,
+    "adaptationSpeed": 0.61,
+    "confidenceLevel": 0.75,
+    "emotionalVolatility": 0.28,
+    "region": "eu-west",
+    "skillLevel": "intermediate",
+    "archetypeCategory": "conservative"
+  },
+  "generationDate": "2025-09-16T13:10:55.319Z",
+  "lastActiveDate": "2025-09-16T13:10:55.319Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 214,
+    "favoriteTimeToPlay": 12,
+    "commonStrategies": []
+  }
+}

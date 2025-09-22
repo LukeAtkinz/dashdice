@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255319_oupkxhl5z",
+  "displayName": "Sage Martinez",
+  "email": "sage.martinez@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.319Z",
+  "updatedAt": "2025-09-16T13:10:55.319Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 42,
+    "matchWins": 21,
+    "currentStreak": 1,
+    "bestStreak": 4,
+    "totalScore": 32694,
+    "averageScore": 778,
+    "elo": 1096
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.42,
+    "bankingTendency": 0.42,
+    "riskTolerance": 0.85,
+    "pressureResistance": 0.39,
+    "tiltResistance": 0.38,
+    "momentumAwareness": 0.49,
+    "adaptationSpeed": 0.24,
+    "confidenceLevel": 0.74,
+    "emotionalVolatility": 0.5,
+    "region": "asia-pacific",
+    "skillLevel": "intermediate",
+    "archetypeCategory": "conservative"
+  },
+  "generationDate": "2025-09-16T13:10:55.319Z",
+  "lastActiveDate": "2025-09-16T13:10:55.319Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 284,
+    "favoriteTimeToPlay": 14,
+    "commonStrategies": []
+  }
+}

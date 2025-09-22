@@ -1,0 +1,148 @@
+{
+  "collection": "bot_profiles",
+  "total_bots": 20,
+  "import_instruction": "Use Firebase Console to create bot_profiles collection and import individual bot JSON files",
+  "firebase_console_url": "https://console.firebase.google.com/project/dashdice-d1b86/firestore/data",
+  "bots_summary": [
+    {
+      "uid": "bot_1758028255316_bz9duqijt",
+      "displayName": "Hayden Wilson",
+      "skillLevel": "beginner",
+      "elo": 1587,
+      "file": "1_Hayden_Wilson.json"
+    },
+    {
+      "uid": "bot_1758028255318_3f1sdcnkb",
+      "displayName": "Sam Rodriguez",
+      "skillLevel": "expert",
+      "elo": 1266,
+      "file": "2_Sam_Rodriguez.json"
+    },
+    {
+      "uid": "bot_1758028255319_84j56qtjr",
+      "displayName": "Avery Martin",
+      "skillLevel": "advanced",
+      "elo": 1288,
+      "file": "3_Avery_Martin.json"
+    },
+    {
+      "uid": "bot_1758028255319_msz21bp9g",
+      "displayName": "Morgan Martinez",
+      "skillLevel": "beginner",
+      "elo": 1457,
+      "file": "4_Morgan_Martinez.json"
+    },
+    {
+      "uid": "bot_1758028255319_oupkxhl5z",
+      "displayName": "Sage Martinez",
+      "skillLevel": "intermediate",
+      "elo": 1096,
+      "file": "5_Sage_Martinez.json"
+    },
+    {
+      "uid": "bot_1758028255319_lfpagog7m",
+      "displayName": "Morgan Hernandez",
+      "skillLevel": "intermediate",
+      "elo": 1260,
+      "file": "6_Morgan_Hernandez.json"
+    },
+    {
+      "uid": "bot_1758028255319_6ihvdujgj",
+      "displayName": "Skylar Davis",
+      "skillLevel": "intermediate",
+      "elo": 1193,
+      "file": "7_Skylar_Davis.json"
+    },
+    {
+      "uid": "bot_1758028255320_e25jrsk64",
+      "displayName": "Rowan Wilson",
+      "skillLevel": "intermediate",
+      "elo": 1379,
+      "file": "8_Rowan_Wilson.json"
+    },
+    {
+      "uid": "bot_1758028255320_ud67v8zuw",
+      "displayName": "Ash Jackson",
+      "skillLevel": "intermediate",
+      "elo": 1238,
+      "file": "9_Ash_Jackson.json"
+    },
+    {
+      "uid": "bot_1758028255321_mc77upn8k",
+      "displayName": "Micah Jackson",
+      "skillLevel": "expert",
+      "elo": 1131,
+      "file": "10_Micah_Jackson.json"
+    },
+    {
+      "uid": "bot_1758028255321_axbve6rvm",
+      "displayName": "Oakley Jackson",
+      "skillLevel": "expert",
+      "elo": 1023,
+      "file": "11_Oakley_Jackson.json"
+    },
+    {
+      "uid": "bot_1758028255321_6ioxraad2",
+      "displayName": "Eden Thomas",
+      "skillLevel": "expert",
+      "elo": 1353,
+      "file": "12_Eden_Thomas.json"
+    },
+    {
+      "uid": "bot_1758028255321_jz39z045l",
+      "displayName": "Rowan Lopez",
+      "skillLevel": "expert",
+      "elo": 1471,
+      "file": "13_Rowan_Lopez.json"
+    },
+    {
+      "uid": "bot_1758028255321_ulxzj7fcc",
+      "displayName": "Morgan Smith",
+      "skillLevel": "expert",
+      "elo": 1357,
+      "file": "14_Morgan_Smith.json"
+    },
+    {
+      "uid": "bot_1758028255321_knq5sd19s",
+      "displayName": "Charlie Garcia",
+      "skillLevel": "expert",
+      "elo": 1507,
+      "file": "15_Charlie_Garcia.json"
+    },
+    {
+      "uid": "bot_1758028255322_7w77wv24t",
+      "displayName": "Ash Thomas",
+      "skillLevel": "expert",
+      "elo": 1027,
+      "file": "16_Ash_Thomas.json"
+    },
+    {
+      "uid": "bot_1758028255322_0o3hkjzod",
+      "displayName": "Reese Miller",
+      "skillLevel": "intermediate",
+      "elo": 1388,
+      "file": "17_Reese_Miller.json"
+    },
+    {
+      "uid": "bot_1758028255322_3i3gutp2p",
+      "displayName": "Kai Rodriguez",
+      "skillLevel": "expert",
+      "elo": 1332,
+      "file": "18_Kai_Rodriguez.json"
+    },
+    {
+      "uid": "bot_1758028255322_txonx89mw",
+      "displayName": "Blake Rodriguez",
+      "skillLevel": "advanced",
+      "elo": 1187,
+      "file": "19_Blake_Rodriguez.json"
+    },
+    {
+      "uid": "bot_1758028255322_b131hofwl",
+      "displayName": "Sage Jones",
+      "skillLevel": "expert",
+      "elo": 1558,
+      "file": "20_Sage_Jones.json"
+    }
+  ]
+}

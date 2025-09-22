@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255320_e25jrsk64",
+  "displayName": "Rowan Wilson",
+  "email": "rowan.wilson@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.320Z",
+  "updatedAt": "2025-09-16T13:10:55.320Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 51,
+    "matchWins": 25,
+    "currentStreak": 2,
+    "bestStreak": 13,
+    "totalScore": 33743,
+    "averageScore": 661,
+    "elo": 1379
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.12,
+    "bankingTendency": 0.32,
+    "riskTolerance": 0.18,
+    "pressureResistance": 0.46,
+    "tiltResistance": 0.71,
+    "momentumAwareness": 0.25,
+    "adaptationSpeed": 0.4,
+    "confidenceLevel": 0.88,
+    "emotionalVolatility": 0.6,
+    "region": "asia-pacific",
+    "skillLevel": "intermediate",
+    "archetypeCategory": "balanced"
+  },
+  "generationDate": "2025-09-16T13:10:55.320Z",
+  "lastActiveDate": "2025-09-16T13:10:55.320Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 255,
+    "favoriteTimeToPlay": 12,
+    "commonStrategies": []
+  }
+}

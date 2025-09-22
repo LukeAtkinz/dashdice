@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255322_3i3gutp2p",
+  "displayName": "Kai Rodriguez",
+  "email": "kai.rodriguez@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.322Z",
+  "updatedAt": "2025-09-16T13:10:55.322Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 48,
+    "matchWins": 38,
+    "currentStreak": 4,
+    "bestStreak": 11,
+    "totalScore": 43153,
+    "averageScore": 899,
+    "elo": 1332
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.32,
+    "bankingTendency": 0.41,
+    "riskTolerance": 0.6,
+    "pressureResistance": 0.69,
+    "tiltResistance": 0.38,
+    "momentumAwareness": 0.35,
+    "adaptationSpeed": 0.38,
+    "confidenceLevel": 0.62,
+    "emotionalVolatility": 0.31,
+    "region": "us-east",
+    "skillLevel": "expert",
+    "archetypeCategory": "unpredictable"
+  },
+  "generationDate": "2025-09-16T13:10:55.322Z",
+  "lastActiveDate": "2025-09-16T13:10:55.322Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 246,
+    "favoriteTimeToPlay": 23,
+    "commonStrategies": []
+  }
+}

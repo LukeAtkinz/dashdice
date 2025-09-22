@@ -725,11 +725,11 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     transition={{ delay: 0.1 }}
                   >
                     <div className="text-2xl font-bold text-yellow-400 font-audiowide">
-                      {(userProfile as any).rankedStats?.rankPoints || '--'}
+                      {(userProfile as any).rankedStats?.currentSeason?.level || '--'}
                     </div>
                     <div className="text-sm text-gray-300 font-montserrat">
-                      <span className="md:hidden">Points</span>
-                      <span className="hidden md:inline">Rank Points</span>
+                      <span className="md:hidden">Level</span>
+                      <span className="hidden md:inline">Current Level</span>
                     </div>
                   </motion.div>
 
@@ -740,11 +740,11 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     transition={{ delay: 0.2 }}
                   >
                     <div className="text-2xl font-bold text-amber-400 font-audiowide">
-                      {(userProfile as any).rankedStats?.currentRank || '--'}
+                      {(userProfile as any).rankedStats?.currentSeason?.dashNumber || '--'}
                     </div>
                     <div className="text-sm text-gray-300 font-montserrat">
-                      <span className="md:hidden">Rank</span>
-                      <span className="hidden md:inline">Current Rank</span>
+                      <span className="md:hidden">Dash</span>
+                      <span className="hidden md:inline">Current Dash</span>
                     </div>
                   </motion.div>
 
@@ -755,11 +755,11 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     transition={{ delay: 0.3 }}
                   >
                     <div className="text-2xl font-bold text-purple-400 font-audiowide">
-                      {(userProfile as any).rankedStats?.peakRank || '--'}
+                      {(userProfile as any).rankedStats?.allTime?.maxLevelReached || '--'}
                     </div>
                     <div className="text-sm text-gray-300 font-montserrat">
                       <span className="md:hidden">Peak</span>
-                      <span className="hidden md:inline">Peak Rank</span>
+                      <span className="hidden md:inline">Peak Level</span>
                     </div>
                   </motion.div>
 
@@ -770,7 +770,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     transition={{ delay: 0.4 }}
                   >
                     <div className="text-2xl font-bold text-green-400 font-audiowide">
-                      {(userProfile as any).rankedStats?.seasonWins || 0}
+                      {(userProfile as any).rankedStats?.currentSeason?.totalWins || 0}
                     </div>
                     <div className="text-sm text-gray-300 font-montserrat">
                       <span className="md:hidden">Wins</span>

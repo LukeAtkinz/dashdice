@@ -1,0 +1,63 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "bot_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "personality.skillLevel",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "stats.elo",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "region",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastActiveDate",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "bot_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "personality.archetypeCategory",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "stats.gamesPlayed",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "generationDate",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "bot_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isActive",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "personality.skillLevel",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "stats.elo",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255319_msz21bp9g",
+  "displayName": "Morgan Martinez",
+  "email": "morgan.martinez@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.319Z",
+  "updatedAt": "2025-09-16T13:10:55.319Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 85,
+    "matchWins": 25,
+    "currentStreak": 0,
+    "bestStreak": 13,
+    "totalScore": 102388,
+    "averageScore": 1204,
+    "elo": 1457
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.83,
+    "bankingTendency": 0.63,
+    "riskTolerance": 0.27,
+    "pressureResistance": 0.35,
+    "tiltResistance": 0.24,
+    "momentumAwareness": 0.85,
+    "adaptationSpeed": 0.56,
+    "confidenceLevel": 0.51,
+    "emotionalVolatility": 0.36,
+    "region": "us-east",
+    "skillLevel": "beginner",
+    "archetypeCategory": "balanced"
+  },
+  "generationDate": "2025-09-16T13:10:55.319Z",
+  "lastActiveDate": "2025-09-16T13:10:55.319Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 208,
+    "favoriteTimeToPlay": 4,
+    "commonStrategies": []
+  }
+}

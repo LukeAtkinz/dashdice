@@ -69,14 +69,34 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if request.auth != null;
     }
-    
+
+    // Bot Profiles - Allow authenticated users to read bot profiles for seamless integration
+    // System can write/update bot profiles and stats
+    match /bot_profiles/{botId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null; // Allow system updates for stats, achievements, etc.
+      
+      // Allow bot stats subcollections
+      match /stats/{statId} {
+        allow read, write: if request.auth != null;
+      }
+      
+      // Allow bot game history subcollections
+      match /gameHistory/{gameId} {
+        allow read, write: if request.auth != null;
+      }
+      
+      // Allow bot achievement progress
+      match /achievementProgress/{progressId} {
+        allow read, write: if request.auth != null;
+      }
+    }
+
     // Achievement Definitions - Read-only for all authenticated users
     match /achievementDefinitions/{achievementId} {
       allow read: if request.auth != null;
       allow write: if false; // Only admin can write
-    }
-
-    // User Achievements - allow cross-user access during match operations
+    }    // User Achievements - allow cross-user access during match operations
     match /userAchievements/{achievementId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null;

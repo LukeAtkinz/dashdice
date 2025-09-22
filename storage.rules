@@ -20,9 +20,9 @@ service firebase.storage {
       allow read: if false; // No direct reads allowed
     }
     
-    // Allow read access to background images for all authenticated users
+    // Allow read access to background images for everyone (public)
     match /backgrounds/{fileName} {
-      allow read: if request.auth != null;
+      allow read: if true;
     }
     
     // Game assets and design elements - read only for authenticated users

@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255322_0o3hkjzod",
+  "displayName": "Reese Miller",
+  "email": "reese.miller@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.322Z",
+  "updatedAt": "2025-09-16T13:10:55.322Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 24,
+    "matchWins": 12,
+    "currentStreak": 1,
+    "bestStreak": 9,
+    "totalScore": 12149,
+    "averageScore": 506,
+    "elo": 1388
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.41,
+    "bankingTendency": 0.38,
+    "riskTolerance": 0.77,
+    "pressureResistance": 0.51,
+    "tiltResistance": 0.39,
+    "momentumAwareness": 0.71,
+    "adaptationSpeed": 0.42,
+    "confidenceLevel": 0.32,
+    "emotionalVolatility": 0.14,
+    "region": "eu-west",
+    "skillLevel": "intermediate",
+    "archetypeCategory": "aggressive"
+  },
+  "generationDate": "2025-09-16T13:10:55.322Z",
+  "lastActiveDate": "2025-09-16T13:10:55.322Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 207,
+    "favoriteTimeToPlay": 7,
+    "commonStrategies": []
+  }
+}

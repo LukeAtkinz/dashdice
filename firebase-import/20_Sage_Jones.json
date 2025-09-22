@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255322_b131hofwl",
+  "displayName": "Sage Jones",
+  "email": "sage.jones@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.322Z",
+  "updatedAt": "2025-09-16T13:10:55.322Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 14,
+    "matchWins": 11,
+    "currentStreak": 2,
+    "bestStreak": 10,
+    "totalScore": 11829,
+    "averageScore": 844,
+    "elo": 1558
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.53,
+    "bankingTendency": 0.74,
+    "riskTolerance": 0.61,
+    "pressureResistance": 0.84,
+    "tiltResistance": 0.65,
+    "momentumAwareness": 0.14,
+    "adaptationSpeed": 0.76,
+    "confidenceLevel": 0.73,
+    "emotionalVolatility": 0.49,
+    "region": "eu-west",
+    "skillLevel": "expert",
+    "archetypeCategory": "conservative"
+  },
+  "generationDate": "2025-09-16T13:10:55.322Z",
+  "lastActiveDate": "2025-09-16T13:10:55.322Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 224,
+    "favoriteTimeToPlay": 15,
+    "commonStrategies": []
+  }
+}

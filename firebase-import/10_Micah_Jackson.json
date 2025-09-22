@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255321_mc77upn8k",
+  "displayName": "Micah Jackson",
+  "email": "micah.jackson@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.321Z",
+  "updatedAt": "2025-09-16T13:10:55.321Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 10,
+    "matchWins": 8,
+    "currentStreak": 0,
+    "bestStreak": 13,
+    "totalScore": 6274,
+    "averageScore": 627,
+    "elo": 1131
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.15,
+    "bankingTendency": 0.31,
+    "riskTolerance": 0.39,
+    "pressureResistance": 0.4,
+    "tiltResistance": 0.82,
+    "momentumAwareness": 0.67,
+    "adaptationSpeed": 0.61,
+    "confidenceLevel": 0.6,
+    "emotionalVolatility": 0.34,
+    "region": "us-east",
+    "skillLevel": "expert",
+    "archetypeCategory": "unpredictable"
+  },
+  "generationDate": "2025-09-16T13:10:55.321Z",
+  "lastActiveDate": "2025-09-16T13:10:55.321Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 195,
+    "favoriteTimeToPlay": 16,
+    "commonStrategies": []
+  }
+}

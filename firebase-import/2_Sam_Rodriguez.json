@@ -1,0 +1,46 @@
+{
+  "uid": "bot_1758028255318_3f1sdcnkb",
+  "displayName": "Sam Rodriguez",
+  "email": "sam.rodriguez@dashdice.bot",
+  "createdAt": "2025-09-16T13:10:55.318Z",
+  "updatedAt": "2025-09-16T13:10:55.318Z",
+  "isBot": true,
+  "isActive": true,
+  "stats": {
+    "gamesPlayed": 14,
+    "matchWins": 11,
+    "currentStreak": 2,
+    "bestStreak": 13,
+    "totalScore": 12342,
+    "averageScore": 881,
+    "elo": 1266
+  },
+  "inventory": {
+    "displayBackgroundEquipped": null,
+    "matchBackgroundEquipped": null,
+    "items": []
+  },
+  "personality": {
+    "aggressiveness": 0.7,
+    "bankingTendency": 0.42,
+    "riskTolerance": 0.53,
+    "pressureResistance": 0.39,
+    "tiltResistance": 0.38,
+    "momentumAwareness": 0.79,
+    "adaptationSpeed": 0.59,
+    "confidenceLevel": 0.73,
+    "emotionalVolatility": 0.67,
+    "region": "us-east",
+    "skillLevel": "expert",
+    "archetypeCategory": "unpredictable"
+  },
+  "generationDate": "2025-09-16T13:10:55.318Z",
+  "lastActiveDate": "2025-09-16T13:10:55.318Z",
+  "achievements": {},
+  "recentMatches": [],
+  "matchStatistics": {
+    "averageGameLength": 256,
+    "favoriteTimeToPlay": 15,
+    "commonStrategies": []
+  }
+}
