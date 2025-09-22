@@ -1,0 +1,24 @@
+# Railway Deployment Configuration
+# This file configures automatic deployment from GitHub to Railway
+
+[build]
+  command = "npm run build"
+
+[start]
+  command = "npm run start"
+
+[services.main]
+  build.command = "npm run build"
+  start.command = "npm run start"
+  port = 3000
+  
+  # Environment variables for Railway
+  [services.main.env]
+    NODE_ENV = "production"
+    PORT = "$PORT"
+    
+[healthcheck]
+  path = "/api/health"
+  interval = "30s"
+  timeout = "10s"
+  retries = 3

@@ -5,8 +5,29 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
-import DashDiceAPI from '@/services/apiClient';
+import { useState } from 'react';
+
+interface ConnectionStatus {
+  healthy: boolean;
+  status: string;
+  error?: string;
+}
+
+export default function GoServicesTest() {
+  const [status, setStatus] = useState<ConnectionStatus>({
+    healthy: false,
+    status: 'Go services not implemented yet'
+  });
+
+  return (
+    <div className="p-6 bg-gray-800 rounded-lg">
+      <h2 className="text-xl font-bold text-white mb-4">Go Services Status</h2>
+      <div className="text-yellow-400">
+        {status.status}
+      </div>
+    </div>
+  );
+}
 
 interface ConnectionStatus {
   healthy: boolean;

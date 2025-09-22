@@ -208,8 +208,8 @@ export const DashboardSection: React.FC = () => {
           playerStats: userProfile.stats
         };
 
-        // STEP 2: Go Backend ONLY (no fallback for debugging)
-        console.log('🚀 Attempting Go backend match creation (NO FALLBACK)...');
+        // STEP 2: Go Backend ONLY 
+        console.log('🚀 Attempting Go backend match creation...');
         
         // Determine game type
         const gameType = action === 'ranked' ? 'ranked' : 'quick';
@@ -235,7 +235,7 @@ export const DashboardSection: React.FC = () => {
           return;
         } else {
           console.error('❌ Go backend failed:', matchResult);
-          alert(`Go backend failed: ${matchResult.error || 'Unknown error'}`);
+          alert(`Go backend failed: ${matchResult.error || 'Unknown error'}. Make sure Go backend server is running on port 8080.`);
           setIsExiting(false);
           return;
         }

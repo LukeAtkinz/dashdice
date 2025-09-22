@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, query, where, updateDoc, deleteDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, where, updateDoc, deleteDoc, setDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
 import { db } from './firebase';
 
 /**
@@ -54,13 +54,19 @@ export class PlayerStateService {
   }
 
   /**
-   * 🔄 Update player state
+   * 🔄 Update player state - Creates document if it doesn't exist
    */
   static async updatePlayerState(
     playerId: string, 
     updates: Partial<Omit<PlayerGameState, 'playerId' | 'lastActivity'>>
   ): Promise<boolean> {
     try {
+      // Skip player state updates for bots (they don't have authentication)
+      if (playerId.startsWith('bot_')) {
+        console.log(`🤖 Skipping player state update for bot ${playerId} (no auth required)`);
+        return true;
+      }
+
       const stateRef = doc(db, this.COLLECTION_NAME, playerId);
       
       const updateData: any = {
@@ -76,7 +82,8 @@ export class PlayerStateService {
         updateData.sessionExpiresAt = updates.sessionExpiresAt;
       }
       
-      await updateDoc(stateRef, updateData);
+      // Use setDoc with merge to create document if it doesn't exist
+      await setDoc(stateRef, updateData, { merge: true });
       console.log(`✅ Updated player state for ${playerId}:`, updates);
       return true;
     } catch (error) {
@@ -135,11 +142,11 @@ export class PlayerStateService {
       };
       
       const stateRef = doc(db, this.COLLECTION_NAME, playerId);
-      await updateDoc(stateRef, {
+      await setDoc(stateRef, {
         ...newState,
         lastActivity: serverTimestamp(),
         sessionStartedAt: serverTimestamp()
-      });
+      }, { merge: true });
       
       console.log(`🔍 Player ${playerId} set to searching for ${sessionType} match`);
       return { success: true };
@@ -402,6 +409,42 @@ export class PlayerStateService {
     } catch (error) {
       console.error(`❌ Error getting session type distribution:`, error);
       return {};
+    }
+  }
+
+  /**
+   * 🚨 Force clear all player data (emergency cleanup)
+   */
+  static async forceCleanupPlayer(playerId: string): Promise<boolean> {
+    try {
+      console.log(`🚨 FORCE CLEANUP starting for player: ${playerId}`);
+      
+      // 1. Set player to idle
+      await this.setPlayerIdle(playerId);
+      
+      // 2. Delete player state completely
+      const stateRef = doc(db, this.COLLECTION_NAME, playerId);
+      await deleteDoc(stateRef);
+      
+      // 3. Clean up all related sessions
+      await this.cleanupPlayerSessions(playerId);
+      
+      // 4. Clear any user references
+      try {
+        const userRef = doc(db, 'users', playerId);
+        await updateDoc(userRef, {
+          currentGameId: null,
+          isInGame: false
+        });
+      } catch (error) {
+        console.warn(`⚠️ Could not update user document:`, error);
+      }
+      
+      console.log(`✅ FORCE CLEANUP completed for player: ${playerId}`);
+      return true;
+    } catch (error) {
+      console.error(`❌ Force cleanup failed for ${playerId}:`, error);
+      return false;
     }
   }
 }

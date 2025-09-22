@@ -32,9 +32,16 @@ export class GoBackendAdapter {
    */
   private static async _doInitialize(): Promise<boolean> {
     try {
-      console.log('🔄 Testing Go backend connectivity...');
+      console.log('🔄 Initializing Go backend with Redis and Railway connectivity...');
       
       // Check Go backend availability
+      if (typeof window === 'undefined') {
+        // Server-side - assume Go backend is available
+        console.log('🌐 Server-side environment - enabling Go backend by default');
+        this.isGoBackendAvailable = true;
+        return true;
+      }
+
       const isProduction = typeof window !== 'undefined' && 
         (window.location.hostname === 'www.dashdice.gg' || 
          window.location.hostname === 'dashdice.gg' ||
@@ -60,7 +67,9 @@ export class GoBackendAdapter {
         return true;
       } catch (healthError) {
         clearTimeout(timeoutId);
-        throw healthError;
+        console.warn('⚠️ Go backend health check failed, falling back to Firebase:', healthError);
+        this.isGoBackendAvailable = false;
+        return false;
       }
     } catch (error) {
       console.warn('⚠️ Go backend not available, using Firebase fallback:', error);

@@ -694,10 +694,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 // For friend invitations, immediately check if room was moved to matches
                 console.log('🔍 GameWaitingRoom: Room not found, checking for existing matches...');
                 
-                // Check if this room was moved to matches collection
-                const checkForExistingMatch = async () => {
-                  try {
-                    console.log('🔍 DEBUG: Starting match search for roomId:', roomId);
+                // Add small delay to ensure Firebase document is fully committed
+                setTimeout(() => {
+                  // Check if this room was moved to matches collection
+                  const checkForExistingMatch = async () => {
+                    try {
+                      console.log('🔍 DEBUG: Starting match search for roomId:', roomId);
                     
                     // Check for match by originalRoomId
                     const matchQuery = query(
@@ -811,6 +813,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 };
                 
                 checkForExistingMatch();
+                }, 500); // 500ms delay to ensure Firebase document is fully committed
               }
             },
             (error) => {

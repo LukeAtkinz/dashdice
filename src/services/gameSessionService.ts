@@ -286,6 +286,20 @@ export class GameSessionService {
         console.warn('⚠️ Failed to update player state:', stateError);
       }
       
+      // 🤖 Start 10-second bot fallback timer for quick games
+      try {
+        const { BotMatchingService } = await import('./botMatchingService');
+        BotMatchingService.startBotFallbackTimer(
+          result,
+          hostData.playerId,
+          gameMode,
+          sessionType as 'quick' | 'ranked'
+        );
+        console.log(`🤖 Started bot fallback timer for session ${result}`);
+      } catch (botError) {
+        console.warn('⚠️ Failed to start bot fallback timer:', botError);
+      }
+      
       // Start enhanced timeout management (background cleanup handles this now)
       // Keep fallback timer for redundancy
       this.scheduleSessionCleanup(result, this.TIMEOUT_RULES.waiting);
@@ -419,6 +433,15 @@ export class GameSessionService {
           console.log(`✅ Updated player states for matched session ${sessionId}`);
         } catch (stateError) {
           console.warn('⚠️ Failed to update player states:', stateError);
+        }
+        
+        // 🤖 Clear bot fallback timer since human player joined
+        try {
+          const { BotMatchingService } = await import('./botMatchingService');
+          BotMatchingService.clearBotFallbackTimer(sessionId);
+          console.log(`🛑 Cleared bot fallback timer for session ${sessionId} (human joined)`);
+        } catch (botError) {
+          console.warn('⚠️ Failed to clear bot fallback timer:', botError);
         }
       }
 

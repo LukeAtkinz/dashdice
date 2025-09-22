@@ -6,7 +6,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import EnhancedLoadingScreen from '@/components/EnhancedLoadingScreen';
+import VideoSplashScreen from '@/components/VideoSplashScreenSimple';
 
 interface AppLoadingContextType {
   isLoading: boolean;
@@ -52,7 +52,7 @@ export const AppLoadingProvider: React.FC<AppLoadingProviderProps> = ({
   };
 
   // Skip loading screen in development if requested
-  if (skipSplash || process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_SKIP_SPLASH === 'true') {
+  if (false && (skipSplash || process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_SKIP_SPLASH === 'true')) {
     return (
       <AppLoadingContext.Provider value={{ ...contextValue, isLoading: false, isPreloadComplete: true }}>
         {children}
@@ -63,7 +63,7 @@ export const AppLoadingProvider: React.FC<AppLoadingProviderProps> = ({
   return (
     <AppLoadingContext.Provider value={contextValue}>
       {isLoading ? (
-        <EnhancedLoadingScreen 
+        <VideoSplashScreen 
           onLoadingComplete={handleLoadingComplete}
           skipPreload={skipSplash}
         />
