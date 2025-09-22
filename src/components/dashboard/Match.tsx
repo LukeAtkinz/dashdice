@@ -14,6 +14,7 @@ import { useMatchAchievements } from '@/hooks/useMatchAchievements';
 import { db } from '@/services/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import MatchAbandonmentNotification from '@/components/notifications/MatchAbandonmentNotification';
+import BotGameController from '@/services/botGameController';
 
 interface MatchProps {
   gameMode?: string;
@@ -349,6 +350,20 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           matchStartTime.current = Date.now();
         }
         
+        // 🤖 Bot AI Integration: Start bot controller if opponent is a bot
+        if (user?.uid) {
+          const hostIsBot = BotGameController.isBotPlayer(data.hostData.playerId);
+          const opponentIsBot = BotGameController.isBotPlayer(data.opponentData.playerId);
+          
+          if (hostIsBot || opponentIsBot) {
+            const botPlayerId = hostIsBot ? data.hostData.playerId : data.opponentData.playerId;
+            console.log('🤖 Dashboard Match: Bot opponent detected, starting AI controller:', botPlayerId);
+            
+            const botController = BotGameController.getInstance();
+            botController.startBotSession(roomId, botPlayerId);
+          }
+        }
+        
         // Clear any previous errors when we receive valid data
         setError(null);
       } else {
@@ -372,6 +387,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       // Remove performance-impacting logs
       // console.log('🎮 Match: Unsubscribing from match:', roomId);
       unsubscribe();
+      
+      // 🤖 Cleanup bot controller when component unmounts
+      const botController = BotGameController.getInstance();
+      botController.stopBotSession(roomId);
     };
   }, [roomId, user]);
 

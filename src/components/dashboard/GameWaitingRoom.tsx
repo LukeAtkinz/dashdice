@@ -12,6 +12,7 @@ import { GameType } from '@/types/ranked';
 import { RankedMatchmakingService } from '@/services/rankedMatchmakingService';
 import { NewMatchmakingService } from '@/services/newMatchmakingService';
 import { OptimisticMatchmakingService } from '@/services/optimisticMatchmakingService';
+import { BotMatchingService } from '@/services/botMatchingService';
 import MatchAbandonmentNotification from '@/components/notifications/MatchAbandonmentNotification';
 
 interface GameWaitingRoomProps {
@@ -347,6 +348,17 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
     console.log('🔄 GameWaitingRoom: Starting Go backend match status polling for:', roomId);
 
+    // 🤖 Start 10-second bot fallback timer for quick games only
+    if (gameType === 'quick' && user?.uid) {
+      console.log('🤖 GameWaitingRoom: Starting bot fallback timer for Go backend room');
+      BotMatchingService.startBotFallbackTimer(
+        roomId,
+        user.uid,
+        gameMode,
+        'quick'
+      );
+    }
+
     const pollInterval = setInterval(async () => {
       try {
         // Import DashDiceAPI to check match status
@@ -369,6 +381,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             // Clear polling
             clearInterval(pollInterval);
             
+            // 🤖 Clear bot fallback timer since human opponent found
+            BotMatchingService.clearBotFallbackTimer(roomId);
+            console.log('🛑 GameWaitingRoom: Cleared bot timer - human opponent found');
+            
             // Start countdown and transition to match
             setSearchingText('Match found! Starting game...');
             setOpponentJoined(true);
@@ -380,7 +396,61 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               
               // Get opponent player data (second player in Go backend match)
               const opponentPlayerId = ourMatch.players.find((p: string) => p !== user!.uid);
-              const opponentProfile = opponentPlayerId ? await UserService.getUserProfile(opponentPlayerId) : null;
+              
+              let opponentProfile = null;
+              if (opponentPlayerId) {
+                if (opponentPlayerId.startsWith('bot_')) {
+                  // Handle bot opponent - get from bot_profiles collection
+                  console.log('🤖 Detected bot opponent, fetching from bot_profiles:', opponentPlayerId);
+                  try {
+                    const { BotMatchingService } = await import('@/services/botMatchingService');
+                    const botProfiles = await BotMatchingService.getBotAvailabilityStatus();
+                    if (botProfiles.available) {
+                      // Get bot from bot_profiles collection
+                      const { getDocs, collection, query, where } = await import('firebase/firestore');
+                      const { db } = await import('@/services/firebase');
+                      const botQuery = query(collection(db, 'bot_profiles'), where('uid', '==', opponentPlayerId));
+                      const botSnapshot = await getDocs(botQuery);
+                      
+                      if (!botSnapshot.empty) {
+                        const botData = botSnapshot.docs[0].data();
+                        // Convert bot data to user profile format
+                        opponentProfile = {
+                          uid: botData.uid,
+                          displayName: botData.displayName,
+                          email: botData.email,
+                          stats: botData.stats || {},
+                          inventory: botData.inventory || {}
+                        };
+                        console.log('✅ Got bot profile for match creation:', opponentProfile.displayName);
+                      } else {
+                        console.log('⚠️ Bot not found in bot_profiles, using fallback data');
+                        // Use fallback bot data
+                        opponentProfile = {
+                          uid: opponentPlayerId,
+                          displayName: 'Bot Player',
+                          email: 'bot@dashdice.com',
+                          stats: { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
+                          inventory: {}
+                        };
+                      }
+                    }
+                  } catch (botError) {
+                    console.error('❌ Error fetching bot profile:', botError);
+                    // Use fallback bot data
+                    opponentProfile = {
+                      uid: opponentPlayerId,
+                      displayName: 'Bot Player',
+                      email: 'bot@dashdice.com',
+                      stats: { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
+                      inventory: {}
+                    };
+                  }
+                } else {
+                  // Handle human opponent - get from users collection
+                  opponentProfile = await UserService.getUserProfile(opponentPlayerId);
+                }
+              }
               
               if (opponentProfile && bridgeData && userProfile) {
                 console.log('🔄 GameWaitingRoom: Creating Firebase match from Go backend match');
@@ -390,8 +460,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   playerId: opponentPlayerId,
                   playerDisplayName: opponentProfile.displayName || 'Player 2',
                   playerStats: opponentProfile.stats || {},
-                  displayBackgroundEquipped: opponentProfile.inventory?.displayBackgroundEquipped,
-                  matchBackgroundEquipped: opponentProfile.inventory?.matchBackgroundEquipped,
+                  displayBackgroundEquipped: opponentProfile.inventory?.displayBackgroundEquipped || null,
+                  matchBackgroundEquipped: opponentProfile.inventory?.matchBackgroundEquipped || null,
                 };
                 setGoBackendOpponentData(opponentDisplayData);
                 console.log('🎮 GameWaitingRoom: Stored Go backend opponent data:', opponentDisplayData);
@@ -459,8 +529,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     playerId: user!.uid,
                     playerDisplayName: userProfile.displayName || 'Player 1',
                     playerStats: userProfile.stats || {},
-                    displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped,
-                    matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped,
+                    displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped || null,
+                    matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped || null,
                     playerScore: startingScore, // Use proper starting score
                     turnActive: false, // Will be set by turn decider
                   },
@@ -469,8 +539,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     playerId: opponentPlayerId,
                     playerDisplayName: opponentProfile.displayName || 'Player 2',
                     playerStats: opponentProfile.stats || {},
-                    displayBackgroundEquipped: opponentProfile.inventory?.displayBackgroundEquipped,
-                    matchBackgroundEquipped: opponentProfile.inventory?.matchBackgroundEquipped,
+                    displayBackgroundEquipped: opponentProfile.inventory?.displayBackgroundEquipped || null,
+                    matchBackgroundEquipped: opponentProfile.inventory?.matchBackgroundEquipped || null,
                     playerScore: startingScore, // Use proper starting score
                     turnActive: false, // Will be set by turn decider
                   },
@@ -504,8 +574,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       playerId: opponentPlayerId,
                       playerDisplayName: opponentProfile.displayName || 'Player 2',
                       playerStats: opponentProfile.stats || {},
-                      displayBackgroundEquipped: opponentProfile.inventory?.displayBackgroundEquipped,
-                      matchBackgroundEquipped: opponentProfile.inventory?.matchBackgroundEquipped,
+                      displayBackgroundEquipped: opponentProfile.inventory?.displayBackgroundEquipped || null,
+                      matchBackgroundEquipped: opponentProfile.inventory?.matchBackgroundEquipped || null,
                     }
                   };
                   setWaitingRoomEntry(updatedWaitingRoom);
@@ -540,6 +610,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     return () => {
       console.log('🛑 GameWaitingRoom: Stopping Go backend polling');
       clearInterval(pollInterval);
+      
+      // 🤖 Clear bot fallback timer when leaving component
+      if (roomId) {
+        BotMatchingService.clearBotFallbackTimer(roomId);
+        console.log('🛑 GameWaitingRoom: Cleared bot timer on component cleanup');
+      }
     };
   }, [roomId, gameMode, setCurrentSection]);
 

@@ -5,29 +5,8 @@
 
 "use client";
 
-import { useState } from 'react';
-
-interface ConnectionStatus {
-  healthy: boolean;
-  status: string;
-  error?: string;
-}
-
-export default function GoServicesTest() {
-  const [status, setStatus] = useState<ConnectionStatus>({
-    healthy: false,
-    status: 'Go services not implemented yet'
-  });
-
-  return (
-    <div className="p-6 bg-gray-800 rounded-lg">
-      <h2 className="text-xl font-bold text-white mb-4">Go Services Status</h2>
-      <div className="text-yellow-400">
-        {status.status}
-      </div>
-    </div>
-  );
-}
+import { useState, useEffect } from 'react';
+import DashDiceAPI from '@/services/apiClientNew';
 
 interface ConnectionStatus {
   healthy: boolean;
@@ -60,8 +39,8 @@ export default function GoServicesTest() {
         
         // Test public status endpoint
         try {
-          const status = await DashDiceAPI.getPublicStatus();
-          setPublicStatus(status);
+          const statusResponse = await DashDiceAPI.getPublicStatus();
+          setPublicStatus(statusResponse.data);
           addTestResult('✅ Public status retrieved');
         } catch (error) {
           addTestResult(`⚠️ Public status error: ${error}`);
@@ -89,14 +68,12 @@ export default function GoServicesTest() {
     addTestResult('🔄 Testing authentication...');
     
     try {
-      // Set a dummy token for testing
-      DashDiceAPI.setAuthToken('test_token_12345');
-      
+      // Note: Auth token is automatically handled by DashDiceAPI
       const result = await DashDiceAPI.verifyAuth();
-      if (result.valid) {
-        addTestResult('✅ Auth verification passed');
+      if (result.data?.valid) {
+        addTestResult(`✅ Auth verification passed for user: ${result.data.user_id}`);
       } else {
-        addTestResult('⚠️ Auth verification failed (expected for demo token)');
+        addTestResult('⚠️ Auth verification failed (no authenticated user)');
       }
     } catch (error) {
       addTestResult(`❌ Auth test error: ${error}`);
@@ -107,14 +84,18 @@ export default function GoServicesTest() {
     addTestResult('🔄 Testing user endpoints...');
     
     try {
-      const user = await DashDiceAPI.getCurrentUser();
-      if (user.username) {
-        addTestResult(`✅ Got user data: ${user.username}`);
+      const userResponse = await DashDiceAPI.getCurrentUser();
+      if (userResponse.data?.displayName) {
+        addTestResult(`✅ Got user data: ${userResponse.data.displayName}`);
+      } else {
+        addTestResult('⚠️ User data not available or user not authenticated');
       }
       
-      const stats = await DashDiceAPI.getUserStats();
-      if (stats.stats) {
-        addTestResult(`✅ Got user stats: ${stats.stats.total_games} games played`);
+      const statsResponse = await DashDiceAPI.getUserStats();
+      if (statsResponse.data) {
+        addTestResult(`✅ Got user stats: ${JSON.stringify(statsResponse.data)}`);
+      } else {
+        addTestResult('⚠️ User stats not available');
       }
     } catch (error) {
       addTestResult(`❌ User endpoints error: ${error}`);
@@ -126,20 +107,24 @@ export default function GoServicesTest() {
     
     try {
       // Test listing matches
-      const matches = await DashDiceAPI.listMatches();
-      if (matches.matches) {
-        addTestResult(`✅ Listed ${matches.matches.length} matches`);
+      const matchesResponse = await DashDiceAPI.listMatches();
+      if (matchesResponse.data?.matches) {
+        addTestResult(`✅ Listed ${matchesResponse.data.matches.length} matches`);
+      } else {
+        addTestResult('⚠️ No matches data available');
       }
       
       // Test creating a match
-      const newMatch = await DashDiceAPI.createMatch({
+      const newMatchResponse = await DashDiceAPI.createMatch({
         game_mode: 'classic',
         max_players: 2,
-        private: false,
+        is_private: false,
       });
       
-      if (newMatch.match) {
-        addTestResult(`✅ Created match: ${newMatch.match.id}`);
+      if (newMatchResponse.data?.match) {
+        addTestResult(`✅ Created match: ${newMatchResponse.data.match.id}`);
+      } else {
+        addTestResult('⚠️ Failed to create match');
       }
     } catch (error) {
       addTestResult(`❌ Matchmaking error: ${error}`);
@@ -153,14 +138,16 @@ export default function GoServicesTest() {
       // Join queue
       await DashDiceAPI.joinQueue({
         game_mode: 'classic',
-        preference: 'casual',
+        preferences: { style: 'casual' },
       });
       addTestResult('✅ Joined matchmaking queue');
       
       // Check queue status
-      const status = await DashDiceAPI.getQueueStatus();
-      if (status.in_queue) {
-        addTestResult(`✅ Queue status: Position ${status.queue_info?.position}`);
+      const statusResponse = await DashDiceAPI.getQueueStatus();
+      if (statusResponse.data) {
+        addTestResult(`✅ Queue status: ${JSON.stringify(statusResponse.data)}`);
+      } else {
+        addTestResult('⚠️ No queue status available');
       }
       
       // Leave queue

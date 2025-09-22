@@ -231,7 +231,55 @@ export class MatchmakingOrchestrator {
   private static async handleQuickMatch(request: MatchmakingRequest): Promise<MatchmakingResult> {
     console.log('⚡ Processing quick match request');
     
-    // 🔒 ATOMIC: Try to find and join a session atomically to prevent race conditions
+    // � FIRST: Try to find and join Go backend matches
+    try {
+      console.log('🔍 Searching for available Go backend matches...');
+      const { default: DashDiceAPI } = await import('./apiClientNew');
+      
+      // Look for available Go backend matches with 'ready' status (waiting for players)
+      const goMatches = await DashDiceAPI.listMatches({ 
+        status: 'ready',
+        limit: 10 
+      });
+      
+      if (goMatches.success && goMatches.data?.matches && goMatches.data.matches.length > 0) {
+        // Find a compatible match for this game mode
+        const compatibleMatch = goMatches.data.matches.find((match: any) => 
+          match.gameMode === request.gameMode && 
+          (match.players?.length || 0) < 2 // Has space for another player
+        );
+        
+        if (compatibleMatch) {
+          console.log(`🎯 Found compatible Go backend match: ${(compatibleMatch as any).matchId || compatibleMatch.id}`);
+          
+          // Try to join this Go backend match
+          const matchId = (compatibleMatch as any).matchId || compatibleMatch.id;
+          const joinResult = await DashDiceAPI.updateMatch(matchId, {
+            action: 'join',
+            playerId: request.hostData.playerId,
+            playerName: request.hostData.playerDisplayName,
+            playerType: 'human'
+          });
+          
+          if (joinResult.success) {
+            console.log(`✅ Successfully joined Go backend match: ${matchId}`);
+            return {
+              success: true,
+              sessionId: matchId,
+              roomId: matchId,
+              hasOpponent: true,
+              isNewRoom: false // Joined existing Go backend match
+            };
+          }
+        }
+      }
+      
+      console.log('🔍 No compatible Go backend matches found, checking Firebase...');
+    } catch (error) {
+      console.warn('⚠️ Go backend match search failed, falling back to Firebase:', error);
+    }
+    
+    // 🔒 FALLBACK: Try to find and join a Firebase session atomically
     const atomicResult = await GameSessionService.findAndJoinSession(
       'quick',
       request.gameMode,
@@ -239,7 +287,7 @@ export class MatchmakingOrchestrator {
     );
     
     if (atomicResult.success && atomicResult.session) {
-      console.log(`✅ ATOMIC: Successfully joined session ${atomicResult.session.id}`);
+      console.log(`✅ ATOMIC: Successfully joined Firebase session ${atomicResult.session.id}`);
       
       // Convert GameSession to MatchmakingResult format
       return {
@@ -251,10 +299,43 @@ export class MatchmakingOrchestrator {
       };
     }
     
-    console.log(`🔍 ATOMIC: No available sessions found (${atomicResult.error}), creating new session`);
+    console.log(`🔍 ATOMIC: No available sessions found (${atomicResult.error}), creating new Go backend session`);
     
-    // Create new session
-    console.log('🆕 Creating new session as no suitable sessions found after retries');
+    // 🆕 LAST RESORT: Create new Go backend session instead of Firebase session
+    try {
+      console.log('🆕 Creating new Go backend session...');
+      const { GoBackendAdapter } = await import('./goBackendAdapter');
+      
+      const createResult = await GoBackendAdapter.findOrCreateMatch(
+        request.gameMode,
+        'quick',
+        request.hostData.playerId,
+        {
+          displayName: request.hostData.playerDisplayName,
+          stats: request.hostData.playerStats,
+          inventory: {
+            displayBackgroundEquipped: request.hostData.displayBackgroundEquipped,
+            matchBackgroundEquipped: request.hostData.matchBackgroundEquipped
+          }
+        }
+      );
+      
+      if (createResult.success && createResult.roomId) {
+        console.log(`✅ Created new Go backend session: ${createResult.roomId}`);
+        return {
+          success: true,
+          sessionId: createResult.roomId,
+          roomId: createResult.roomId,
+          hasOpponent: false,
+          isNewRoom: true
+        };
+      }
+    } catch (error) {
+      console.warn('⚠️ Go backend session creation failed, falling back to Firebase:', error);
+    }
+    
+    // FINAL FALLBACK: Create Firebase session
+    console.log('🆕 Creating new Firebase session as final fallback');
     const sessionId = await GameSessionService.createSession(
       'quick',
       request.gameMode,

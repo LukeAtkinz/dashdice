@@ -110,65 +110,17 @@ export class BotMatchingService {
     gameMode: string
   ): Promise<void> {
     try {
-      // First, check if the session still exists and needs a bot
-      const session = await GameSessionService.getSession(sessionId);
-      if (!session) {
-        console.log(`❌ Session ${sessionId} no longer exists, skipping bot match`);
-        return;
+      // Check if this is a Go backend session by looking at the session ID format
+      const isGoBackendSession = sessionId.startsWith('match-');
+      
+      if (isGoBackendSession) {
+        console.log(`🚀 Detected Go backend session ${sessionId}, handling bot match via Go backend`);
+        return this.attemptGoBackendBotMatch(sessionId, hostPlayerId, gameMode);
       }
       
-      if (session.status !== 'waiting') {
-        console.log(`❌ Session ${sessionId} status is ${session.status}, skipping bot match`);
-        return;
-      }
-      
-      if (session.participants.length >= 2) {
-        console.log(`❌ Session ${sessionId} already has ${session.participants.length} participants, skipping bot match`);
-        return;
-      }
-      
-      console.log(`🤖 Attempting bot match for session ${sessionId} (host: ${hostPlayerId}, mode: ${gameMode})`);
-      
-      // Get a suitable bot
-      const bot = await this.selectBestBot(hostPlayerId, gameMode);
-      if (!bot) {
-        console.log(`❌ No suitable bot found for game mode ${gameMode}`);
-        return;
-      }
-      
-      console.log(`🎯 Selected bot: ${bot.displayName} (ELO: ${bot.stats?.elo || 'Unknown'}, Skill: ${bot.personality?.skillLevel || 'Unknown'})`);
-      console.log('🔍 Bot data structure:', JSON.stringify(bot, null, 2)); // Debug log
-      
-      // Ensure bot has minimum required data, use fallback if needed
-      const safeBotData = this.ensureBotDataStructure(bot);
-      
-      // Join the bot to the session
-      const botPlayerData: SessionPlayerData = {
-        playerId: safeBotData.uid,
-        playerDisplayName: safeBotData.displayName,
-        playerStats: {
-          bestStreak: safeBotData.stats?.bestStreak || 0,
-          currentStreak: safeBotData.stats?.currentStreak || 0,
-          gamesPlayed: safeBotData.stats?.gamesPlayed || 0,
-          matchWins: safeBotData.stats?.matchWins || 0
-        },
-        displayBackgroundEquipped: safeBotData.inventory?.displayBackgroundEquipped || null,
-        matchBackgroundEquipped: safeBotData.inventory?.matchBackgroundEquipped || null,
-        ready: true, // Bots are always ready
-        joinedAt: new Date(),
-        isConnected: true // Bots are always connected
-      };
-      
-      const joinResult = await GameSessionService.joinSession(sessionId, botPlayerData);
-      
-      if (joinResult.success) {
-        console.log(`✅ Bot ${bot.displayName} successfully joined session ${sessionId}`);
-        
-        // Clear the fallback timer since a bot has joined
-        this.clearBotFallbackTimer(sessionId);
-      } else {
-        console.log(`❌ Bot failed to join session ${sessionId}`);
-      }
+      // Original Firebase logic for Firebase sessions
+      console.log(`📊 Detected Firebase session ${sessionId}, handling bot match via Firebase`);
+      return this.attemptFirebaseBotMatch(sessionId, hostPlayerId, gameMode);
       
     } catch (error) {
       console.error('❌ Error in bot matching:', error);
@@ -403,5 +355,189 @@ export class BotMatchingService {
    */
   static getActiveTimerCount(): number {
     return this.activeBotMatching.size;
+  }
+
+  /**
+   * 🤖 Attempt bot match for Firebase sessions (original logic)
+   */
+  private static async attemptFirebaseBotMatch(
+    sessionId: string,
+    hostPlayerId: string,
+    gameMode: string
+  ): Promise<void> {
+    try {
+      // First, check if the session still exists and needs a bot
+      const session = await GameSessionService.getSession(sessionId);
+      if (!session) {
+        console.log(`❌ Firebase session ${sessionId} no longer exists, skipping bot match`);
+        return;
+      }
+      
+      if (session.status !== 'waiting') {
+        console.log(`❌ Firebase session ${sessionId} status is ${session.status}, skipping bot match`);
+        return;
+      }
+      
+      if (session.participants.length >= 2) {
+        console.log(`❌ Firebase session ${sessionId} already has ${session.participants.length} participants, skipping bot match`);
+        return;
+      }
+      
+      console.log(`🤖 Attempting bot match for Firebase session ${sessionId} (host: ${hostPlayerId}, mode: ${gameMode})`);
+
+      // Get a suitable bot
+      const bot = await this.selectBestBot(hostPlayerId, gameMode);
+      if (!bot) {
+        console.log(`❌ No suitable bot found for game mode ${gameMode}`);
+        return;
+      }
+      
+      console.log(`🎯 Selected bot: ${bot.displayName} (ELO: ${bot.stats?.elo || 'Unknown'}, Skill: ${bot.personality?.skillLevel || 'Unknown'})`);
+      console.log('🔍 Bot data structure:', JSON.stringify(bot, null, 2)); // Debug log
+      
+      // Ensure bot has minimum required data, use fallback if needed
+      const safeBotData = this.ensureBotDataStructure(bot);
+      
+      // Join the bot to the session
+      const botPlayerData: SessionPlayerData = {
+        playerId: safeBotData.uid,
+        playerDisplayName: safeBotData.displayName,
+        playerStats: {
+          bestStreak: safeBotData.stats?.bestStreak || 0,
+          currentStreak: safeBotData.stats?.currentStreak || 0,
+          gamesPlayed: safeBotData.stats?.gamesPlayed || 0,
+          matchWins: safeBotData.stats?.matchWins || 0
+        },
+        displayBackgroundEquipped: safeBotData.inventory?.displayBackgroundEquipped || null,
+        matchBackgroundEquipped: safeBotData.inventory?.matchBackgroundEquipped || null,
+        ready: true, // Bots are always ready
+        joinedAt: new Date(),
+        isConnected: true // Bots are always connected
+      };
+      
+      const joinResult = await GameSessionService.joinSession(sessionId, botPlayerData);
+      
+      if (joinResult.success) {
+        console.log(`✅ Bot ${bot.displayName} successfully joined Firebase session ${sessionId}`);
+        
+        // Clear the fallback timer since a bot has joined
+        this.clearBotFallbackTimer(sessionId);
+      } else {
+        console.log(`❌ Bot failed to join Firebase session ${sessionId}`);
+      }
+      
+    } catch (error) {
+      console.error('❌ Error in Firebase bot matching:', error);
+    }
+  }
+
+  /**
+   * 🚀 Attempt bot match for Go backend sessions (new logic)
+   */
+  private static async attemptGoBackendBotMatch(
+    sessionId: string,
+    hostPlayerId: string,
+    gameMode: string
+  ): Promise<void> {
+    try {
+      // Import DashDiceAPI to check Go backend match status
+      const { default: DashDiceAPI } = await import('./apiClientNew');
+      
+      // Check if the Go backend match still exists and needs a bot
+      // Try both 'ready' and 'waiting' status since there might be inconsistency
+      let response = await DashDiceAPI.listMatches({ 
+        status: 'ready',
+        limit: 10 
+      });
+      
+      if (!response.success || !response.data?.matches || response.data.matches.length === 0) {
+        // Try with 'waiting' status as fallback
+        response = await DashDiceAPI.listMatches({ 
+          status: 'waiting',
+          limit: 10 
+        });
+      }
+      
+      if (!response.success || !response.data?.matches) {
+        console.log(`❌ Could not fetch Go backend matches for session ${sessionId}`);
+        return;
+      }
+
+      console.log(`🔍 Searching for session ${sessionId} in ${response.data.matches.length} matches`);
+      console.log(`🔍 Available matches:`, response.data.matches.map((m: any) => ({ 
+        matchId: m.matchId, 
+        id: m.id, 
+        match_id: m.match_id,
+        status: m.status,
+        players: m.players?.length || 0,
+        fullMatch: m // Log the full object to see all properties
+      })));
+      
+      // Find our specific match - try multiple possible ID field names
+      const ourMatch = response.data.matches.find((match: any) => 
+        match.matchId === sessionId || 
+        match.id === sessionId || 
+        match.match_id === sessionId ||
+        match.MatchID === sessionId ||
+        match.sessionId === sessionId ||
+        match.room_id === sessionId ||
+        match.roomId === sessionId
+      );
+      
+      console.log(`🔍 Match search results for ${sessionId}:`, {
+        foundMatch: !!ourMatch,
+        searchedProperties: ['matchId', 'id', 'match_id', 'MatchID', 'sessionId', 'room_id', 'roomId'],
+        firstMatchSample: response.data.matches[0] // Show the actual structure
+      });
+      
+      if (!ourMatch) {
+        console.log(`❌ Go backend session ${sessionId} no longer exists, skipping bot match`);
+        return;
+      }
+      
+      // Check if match status indicates it's waiting for players
+      // Use type assertion since Go backend may return 'ready' which isn't in our TypeScript types
+      const matchStatus = ourMatch.status as string;
+      if (matchStatus !== 'ready' && matchStatus !== 'waiting') {
+        console.log(`❌ Go backend session ${sessionId} status is ${matchStatus}, skipping bot match`);
+        return;
+      }
+      
+      if (ourMatch.players?.length >= 2) {
+        console.log(`❌ Go backend session ${sessionId} already has ${ourMatch.players.length} participants, skipping bot match`);
+        return;
+      }
+      
+      console.log(`🚀 Go backend session ${sessionId} confirmed waiting, adding bot via Go backend API`);
+
+      // Get a suitable bot
+      const bot = await this.selectBestBot(hostPlayerId, gameMode);
+      if (!bot) {
+        console.log('❌ No suitable bot found for matching');
+        return;
+      }
+
+      console.log(`🎯 Selected bot: ${bot.displayName} (ELO: ${bot.stats?.elo || 'unknown'}, Skill: ${bot.personality?.skillLevel || 'unknown'})`);
+
+      // Add bot to the existing Go backend match using updateMatch
+      const botMatchResponse = await DashDiceAPI.updateMatch(sessionId, {
+        action: 'join',
+        playerId: bot.uid,
+        playerName: bot.displayName,
+        playerType: 'bot'
+      });
+
+      if (botMatchResponse.success) {
+        console.log(`✅ Bot ${bot.displayName} successfully joined Go backend session ${sessionId}`);
+        
+        // Clear the fallback timer since a bot has joined
+        this.clearBotFallbackTimer(sessionId);
+      } else {
+        console.log(`❌ Bot failed to join Go backend session ${sessionId}:`, botMatchResponse);
+      }
+      
+    } catch (error) {
+      console.error('❌ Error in Go backend bot matching:', error);
+    }
   }
 }

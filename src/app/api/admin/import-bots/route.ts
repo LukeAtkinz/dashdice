@@ -8,6 +8,13 @@ import { collection, doc, setDoc, getDocs, query, limit } from 'firebase/firesto
 import { db } from '@/services/firebase';
 
 // Bot data (subset for initial import)
+
+
+
+
+
+
+
 const BOT_PROFILES = [
   {
     uid: "bot_1758028255316_bz9duqijt",

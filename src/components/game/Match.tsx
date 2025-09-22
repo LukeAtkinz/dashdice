@@ -6,6 +6,7 @@ import { useBackground } from '@/context/BackgroundContext';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/services/firebase';
 import { GameService } from '@/services/gameService';
+import BotGameController from '@/services/botGameController';
 
 interface MatchProps {
   matchId: string;
@@ -115,10 +116,30 @@ export const Match: React.FC<MatchProps> = React.memo(({ matchId, onBack }) => {
         if (user?.uid) {
           setIsHost(data.hostData.playerId === user.uid);
         }
+        
+        // 🤖 Bot AI Integration: Start bot controller if opponent is a bot
+        if (user?.uid) {
+          const hostIsBot = BotGameController.isBotPlayer(data.hostData.playerId);
+          const opponentIsBot = BotGameController.isBotPlayer(data.opponentData.playerId);
+          
+          if (hostIsBot || opponentIsBot) {
+            const botPlayerId = hostIsBot ? data.hostData.playerId : data.opponentData.playerId;
+            console.log('🤖 Match: Bot opponent detected, starting AI controller:', botPlayerId);
+            
+            const botController = BotGameController.getInstance();
+            botController.startBotSession(matchId, botPlayerId);
+          }
+        }
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      
+      // 🤖 Cleanup bot controller when component unmounts
+      const botController = BotGameController.getInstance();
+      botController.stopBotSession(matchId);
+    };
   }, [matchId, user?.uid]);
 
   const handleOddEvenChoice = useCallback(async (choice: 'odd' | 'even') => {

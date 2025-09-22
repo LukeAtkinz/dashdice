@@ -153,7 +153,7 @@ export class GoBackendAdapter {
   }
 
   /**
-   * Create/find a match
+   * Find existing match or create new one
    * Same interface as current matchmaking services
    */
   static async findOrCreateMatch(
@@ -179,9 +179,100 @@ export class GoBackendAdapter {
     }
 
     try {
-      console.log('🎯 Creating match via Go backend:', { gameMode, gameType, userId });
+      console.log('🔍 Finding or creating match via Go backend:', { gameMode, gameType, userId });
       
-      // First, try to join existing queue
+      // STEP 1: First try to find existing matches waiting for players
+      console.log('🔍 Searching for existing matches waiting for players...');
+      
+      const existingMatchesResponse = await this.apiClient.listMatches({ 
+        status: 'waiting_for_players',
+        game_mode: gameMode,
+        limit: 10 
+      });
+
+      if (existingMatchesResponse.data?.matches && Array.isArray(existingMatchesResponse.data.matches)) {
+        const availableMatches = existingMatchesResponse.data.matches.filter((match: any) => {
+          // Find matches that:
+          // 1. Have space for another player
+          // 2. Are not created by this user (to avoid self-joining)
+          // 3. Match the game mode
+          const playerCount = match.players ? match.players.length : 0;
+          const maxPlayers = match.max_players || 2;
+          const hasSpace = playerCount < maxPlayers;
+          const notSelfCreated = !match.players || !match.players.includes(userId);
+          const correctGameMode = !gameMode || match.game_mode === gameMode;
+          
+          console.log('🔍 Evaluating match:', {
+            matchId: match.id,
+            playerCount,
+            maxPlayers,
+            hasSpace,
+            notSelfCreated,
+            correctGameMode,
+            players: match.players
+          });
+          
+          return hasSpace && notSelfCreated && correctGameMode;
+        });
+
+        if (availableMatches.length > 0) {
+          const matchToJoin = availableMatches[0];
+          console.log('🎯 Found existing match to join:', matchToJoin.id);
+
+          try {
+            // Since there's no direct joinMatch API, we'll use the MatchmakingOrchestrator 
+            // which has logic to handle joining existing matches
+            console.log('🎯 Using MatchmakingOrchestrator to join existing match');
+            
+            const { MatchmakingOrchestrator } = await import('./matchmakingOrchestrator');
+            
+            const matchRequest = {
+              sessionType: 'quick' as const,
+              gameMode,
+              hostData: {
+                playerId: userId,
+                playerDisplayName: userProfile.displayName || 'Player',
+                playerStats: userProfile.stats || {},
+                displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped || {
+                  name: 'Relax',
+                  file: 'backgrounds/Relax.png',
+                  type: 'image'
+                },
+                matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped || {
+                  name: 'Relax', 
+                  file: 'backgrounds/Relax.png',
+                  type: 'image'
+                },
+                ready: false,
+                joinedAt: new Date()
+              }
+            };
+
+            const joinResult = await MatchmakingOrchestrator.findMatch(matchRequest);
+            
+            if (joinResult.success && joinResult.sessionId) {
+              console.log('✅ MatchmakingOrchestrator found/joined match:', joinResult.sessionId);
+              
+              return {
+                success: true,
+                roomId: joinResult.sessionId,
+                sessionId: joinResult.sessionId,
+                isNewRoom: false, // This is an existing room we joined
+                hasOpponent: true // There's already another player
+              };
+            } else {
+              console.log('❌ MatchmakingOrchestrator failed to find match, will create new one');
+            }
+          } catch (joinError) {
+            console.log('❌ Error joining existing match, will create new one:', joinError);
+          }
+        }
+      }
+      
+      // STEP 2: No existing matches found, create a new one
+      console.log('🆕 No existing matches found, creating new match');
+      
+      // Try to join existing queue
       const queueResponse = await this.apiClient.joinQueue({
         game_mode: gameMode,
         preferences: {
@@ -192,9 +283,6 @@ export class GoBackendAdapter {
       });
 
       console.log('🔗 Queue response:', queueResponse);
-
-      // Continue to match creation regardless of queue status
-      // The queue join is just for position tracking, not blocking
 
       // Create a match
       const matchResponse = await this.apiClient.createMatch({
