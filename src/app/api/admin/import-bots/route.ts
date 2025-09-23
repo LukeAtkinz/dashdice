@@ -8,6 +8,7 @@ import { NextRequest } from 'next/server';
 // Bot data (subset for initial import)
 
 
+
 const BOT_PROFILES = [
   {
     uid: "bot_1758028255316_bz9duqijt",

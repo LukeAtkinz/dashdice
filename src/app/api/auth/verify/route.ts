@@ -1,37 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
 
 // Initialize Firebase Admin only once
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-if (!getApps().length) {
-  const serviceAccount = {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  };
-  
-  initializeApp({
-    credential: cert(serviceAccount),
-    projectId: process.env.FIREBASE_PROJECT_ID,
-  });
-}
-
-const auth = getAuth();
 
 interface AuthRequest {
   token: string;
@@ -50,6 +20,24 @@ interface AuthResponse {
 
 export async function POST(request: NextRequest) {
   try {
+    // Dynamic import to prevent build-time Firebase initialization
+    const { initializeApp, getApps, cert } = await import('firebase-admin/app');
+    const { getAuth } = await import('firebase-admin/auth');
+    
+    if (!getApps().length) {
+      const serviceAccount = {
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      };
+      
+      initializeApp({
+        credential: cert(serviceAccount),
+        projectId: process.env.FIREBASE_PROJECT_ID,
+      });
+    }
+
+    const auth = getAuth();
     const body: AuthRequest = await request.json();
     
     if (!body.token) {
@@ -114,6 +102,25 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    // Dynamic import to prevent build-time Firebase initialization
+    const { initializeApp, getApps, cert } = await import('firebase-admin/app');
+    const { getAuth } = await import('firebase-admin/auth');
+    
+    if (!getApps().length) {
+      const serviceAccount = {
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      };
+      
+      initializeApp({
+        credential: cert(serviceAccount),
+        projectId: process.env.FIREBASE_PROJECT_ID,
+      });
+    }
+
+    const auth = getAuth();
+    
     const authHeader = request.headers.get('authorization');
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
