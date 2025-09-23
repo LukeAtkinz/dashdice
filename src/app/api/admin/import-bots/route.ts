@@ -4,10 +4,9 @@
  */
 
 import { NextRequest } from 'next/server';
-import { collection, doc, setDoc, getDocs, query, limit } from 'firebase/firestore';
-import { db } from '@/services/firebase';
 
 // Bot data (subset for initial import)
+
 
 const BOT_PROFILES = [
   {
@@ -143,6 +142,10 @@ const BOT_PROFILES = [
 
 export async function GET() {
   try {
+    // Dynamic import to prevent build-time Firebase initialization
+    const { collection, getDocs, query, limit } = await import('firebase/firestore');
+    const { db } = await import('@/services/firebase');
+    
     // Check if bots already exist
     const botsRef = collection(db, 'bot_profiles');
     const existingBots = await getDocs(query(botsRef, limit(1)));
@@ -173,6 +176,10 @@ export async function GET() {
 
 export async function POST() {
   try {
+    // Dynamic import to prevent build-time Firebase initialization
+    const { doc, setDoc } = await import('firebase/firestore');
+    const { db } = await import('@/services/firebase');
+    
     console.log('🤖 Starting bot profiles import...');
     
     let imported = 0;
