@@ -1,11 +1,13 @@
-import { collection, doc, getDocs, getDoc, query, where } from 'firebase/firestore';
-import { db } from './firebase';
 import { GameMode, GameModeSpecificData, GameActionResult } from '@/types/gameModes';
 
 export class GameModeService {
   // Get all available game modes
   static async getAvailableGameModes(platform: 'desktop' | 'mobile' = 'desktop'): Promise<GameMode[]> {
     try {
+      // Dynamic import to prevent build-time Firebase initialization
+      const { collection, getDocs, query, where } = await import('firebase/firestore');
+      const { db } = await import('./firebase');
+      
       // First try to get from Firestore
       const q = query(
         collection(db, 'gameModes'),
@@ -36,6 +38,10 @@ export class GameModeService {
   static async getGameMode(modeId: string): Promise<GameMode | null> {
     try {
       console.log('🎮 GameModeService: Looking for mode:', modeId);
+      
+      // Dynamic import to prevent build-time Firebase initialization
+      const { doc, getDoc } = await import('firebase/firestore');
+      const { db } = await import('./firebase');
       
       // First try to get from Firestore using doc() for direct document access
       const modeDocRef = doc(db, 'gameModes', modeId);

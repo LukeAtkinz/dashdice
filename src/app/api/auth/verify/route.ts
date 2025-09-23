@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // Initialize Firebase Admin only once
 
 
+
 interface AuthRequest {
   token: string;
 }

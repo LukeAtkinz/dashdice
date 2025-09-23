@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GameModeService } from '@/services/gameModeService';
+
 
 
 
@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const platform = searchParams.get('platform') as 'desktop' | 'mobile' || 'desktop';
     
+    const { GameModeService } = await import('@/services/gameModeService');
     const gameModes = await GameModeService.getAvailableGameModes(platform);
     
     return NextResponse.json({
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    const { GameModeService } = await import('@/services/gameModeService');
     const gameMode = await GameModeService.getGameMode(modeId);
     
     if (!gameMode) {

@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 
 
+
 const GO_BACKEND_URL = process.env.GO_BACKEND_URL || 'https://dashdice-production.up.railway.app';
 
 // Simple in-memory cache to avoid hitting unavailable backend repeatedly
