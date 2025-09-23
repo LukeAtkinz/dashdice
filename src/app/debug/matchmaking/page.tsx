@@ -2,8 +2,16 @@
  * Matchmaking Debug Test Page
  */
 
+'use client';
+
 import { Layout } from "@/components/layout/Layout";
-import MatchmakingTester from "@/components/MatchmakingTester";
+import dynamic from 'next/dynamic';
+
+// Dynamically import the MatchmakingTester to prevent SSR issues
+const MatchmakingTester = dynamic(() => import('@/components/MatchmakingTester'), {
+  ssr: false,
+  loading: () => <div className="text-white text-center">Loading debug tools...</div>
+});
 
 export default function MatchmakingTestPage() {
   return (
