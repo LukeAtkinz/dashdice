@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 
 
+
 interface AuthRequest {
   token: string;
 }
