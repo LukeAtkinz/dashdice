@@ -16,12 +16,6 @@ import { NextRequest, NextResponse } from 'next/server';
 
 
 
-
-
-
-
-
-
 interface ServiceStatus {
   name: string;
   url: string;
