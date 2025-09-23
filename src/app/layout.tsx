@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Providers } from "@/context/Providers";
+import { ClientProviders } from "@/context/ClientProviders";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -60,9 +60,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased scrollbar-hide overflow-hidden`}
         style={{ height: '100vh', overflow: 'hidden' }}
       >
-        <Providers>
+        <ClientProviders>
           {children}
-        </Providers>
+        </ClientProviders>
       </body>
     </html>
   );
