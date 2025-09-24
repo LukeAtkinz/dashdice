@@ -8,6 +8,7 @@ import { SectionTransition } from '@/components/layout/SectionTransition';
 import { DashboardSection } from '@/components/dashboard/DashboardSectionNew';
 import { MatchSection } from '@/components/dashboard/MatchSectionNew';
 import { Match } from '@/components/dashboard/Match';
+import { getImageUrl, IMAGE_PATHS } from '@/utils/imageUtils';
 import { GameWaitingRoom } from '@/components/dashboard/GameWaitingRoom';
 import { InventorySection } from '@/components/dashboard/InventoryReference';
 import ProfileSection from '@/components/dashboard/ProfileSection';
@@ -254,7 +255,7 @@ const DashboardContent: React.FC = () => {
               {/* Logo Section */}
               <div className="flex flex-row items-center justify-start gap-[1rem]">
                 <img
-                  src="/Design Elements/CrownLogo.webp"
+                  src={getImageUrl(IMAGE_PATHS.CROWN_LOGO)}
                   alt="DashDice Logo"
                   className="w-8 h-8 md:w-14 md:h-14"
                 />
@@ -303,7 +304,7 @@ const DashboardContent: React.FC = () => {
                   }}
                 >
                   <img
-                    src="/Design Elements/Player Profiles/Vault.webp"
+                    src={getImageUrl(IMAGE_PATHS.VAULT)}
                     alt="Vault"
                     style={{
                       width: "40px",
@@ -366,7 +367,7 @@ const DashboardContent: React.FC = () => {
                       justifyContent: "center"
                     }}
                   >
-                    <img src="/Design Elements/friends.webp" alt="Friends" className="w-10 h-10" />
+                    <img src={getImageUrl(IMAGE_PATHS.FRIENDS)} alt="Friends" className="w-10 h-10" />
                   </div>
                   <span
                     style={{
@@ -427,7 +428,7 @@ const DashboardContent: React.FC = () => {
                       justifyContent: "center"
                     }}
                   >
-                    <img src="/Design Elements/Player Profiles/Ranked.webp" alt="Ranked" className="w-8 h-8" />
+                    <img src={getImageUrl(IMAGE_PATHS.RANKED)} alt="Ranked" className="w-8 h-8" />
                   </div>
                   <span
                     style={{
@@ -464,7 +465,7 @@ const DashboardContent: React.FC = () => {
                     }}
                   >
                     <img
-                      src="/Design Elements/discount tag.webp"
+                      src={getImageUrl(IMAGE_PATHS.DISCOUNT_TAG)}
                       alt="Shop"
                       style={{
                         width: "40px",
@@ -511,7 +512,7 @@ const DashboardContent: React.FC = () => {
                 }}
               >
                 <img
-                  src="/Design Elements/friends.webp"
+                  src={getImageUrl(IMAGE_PATHS.FRIENDS)}
                   alt="Friends"
                   style={{
                     width: "40px",
@@ -565,7 +566,7 @@ const DashboardContent: React.FC = () => {
                 }}
               >
                 <img
-                  src="/Design Elements/Delivery Man.webp"
+                  src={getImageUrl(IMAGE_PATHS.DELIVERY_MAN)}
                   alt="Profile"
                   style={{
                     width: "40px",
@@ -721,7 +722,7 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'profile' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/Delivery Man.webp" alt="Profile" className="w-8 h-8" />
+                <img src={getImageUrl(IMAGE_PATHS.DELIVERY_MAN)} alt="Profile" className="w-8 h-8" />
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PROFILE</span>
               </button>
               <button
@@ -730,7 +731,7 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'friends' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/friends.webp" alt="Friends" className="w-9 h-9" />
+                <img src={getImageUrl(IMAGE_PATHS.FRIENDS)} alt="Friends" className="w-9 h-9" />
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
                 <NotificationBadge count={onlinePlayerCount} />
               </button>
@@ -740,7 +741,7 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/CrownLogo.webp" alt="Play" className="w-8 h-8" />
+                <img src={getImageUrl(IMAGE_PATHS.CROWN_LOGO)} alt="Play" className="w-8 h-8" />
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PLAY</span>
               </button>
               <button
@@ -749,7 +750,7 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'ranked' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/Player Profiles/Ranked.webp" alt="Ranked" className="w-8 h-8" />
+                <img src={getImageUrl(IMAGE_PATHS.RANKED)} alt="Ranked" className="w-8 h-8" />
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>RANKED</span>
               </button>
               <button
@@ -758,7 +759,7 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'inventory' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/Player Profiles/Vault.webp" alt="Vault" className="w-8 h-8" />
+                <img src={getImageUrl(IMAGE_PATHS.VAULT)} alt="Vault" className="w-8 h-8" />
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>VAULT</span>
               </button>
             </div>

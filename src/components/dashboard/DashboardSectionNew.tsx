@@ -8,6 +8,7 @@ import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { MatchmakingService } from '@/services/matchmakingService';
 import { UserService } from '@/services/userService';
+import { getImageUrl, IMAGE_PATHS } from '@/utils/imageUtils';
 import { RankedMatchmakingService } from '@/services/rankedMatchmakingService';
 import { GoBackendAdapter } from '@/services/goBackendAdapter';
 import { OptimisticMatchmakingService } from '@/services/optimisticMatchmakingService';
@@ -424,7 +425,7 @@ export const DashboardSection: React.FC = () => {
                     >
                       <div className="flex items-center gap-2 pointer-events-none">
                         <img 
-                          src="/Design Elements/Player Profiles/QuickMatch.webp" 
+                          src={getImageUrl(IMAGE_PATHS.QUICK_MATCH)}
                           alt="Quick Match" 
                           className="w-6 h-6 md:w-8 md:h-8 object-contain"
                         />
@@ -473,7 +474,7 @@ export const DashboardSection: React.FC = () => {
                     >
                       <div className="flex items-center gap-2 pointer-events-none">
                         <img 
-                          src="/Design Elements/Player Profiles/Ranked.webp" 
+                          src={getImageUrl(IMAGE_PATHS.RANKED)}
                           alt="Ranked" 
                           className="w-6 h-6 md:w-8 md:h-8 object-contain"
                         />

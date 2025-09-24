@@ -8,6 +8,7 @@ import { DashboardSection } from '@/components/dashboard/DashboardSectionNew';
 import { MatchSection } from '@/components/dashboard/MatchSectionNew';
 import { Match } from '@/components/dashboard/Match';
 import { GameWaitingRoom } from '@/components/dashboard/GameWaitingRoom';
+import { getImageUrl, IMAGE_PATHS } from '@/utils/imageUtils';
 import { InventorySection } from '@/components/dashboard/InventoryReference';
 import ProfileSection from '@/components/dashboard/ProfileSection';
 import UserProfileViewer from '@/components/profile/UserProfileViewer';
@@ -49,7 +50,7 @@ const LockedFeatureOverlay: React.FC<LockedFeatureOverlayProps> = ({ featureName
       {/* Lock overlay */}
       <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 rounded-lg">
         <img 
-          src="/Design Elements/lock.png" 
+          src={getImageUrl(IMAGE_PATHS.LOCK)} 
           alt="Locked" 
           className="w-16 h-16 mb-4 opacity-80"
         />
@@ -271,7 +272,7 @@ const GuestDashboardContent: React.FC = () => {
               {/* Logo Section */}
               <div className="flex flex-row items-center justify-start gap-[1rem]">
                 <img
-                  src="/Design Elements/CrownLogo.webp"
+                  src={getImageUrl(IMAGE_PATHS.CROWN_LOGO)}
                   alt="DashDice Logo"
                   className="w-8 h-8 md:w-14 md:h-14"
                 />
@@ -308,7 +309,7 @@ const GuestDashboardContent: React.FC = () => {
                   }}
                 >
                   <div style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <img src="/Design Elements/Player Profiles/Vault.webp" alt="Vault" className="w-10 h-10" />
+                    <img src={getImageUrl(IMAGE_PATHS.VAULT)} alt="Vault" className="w-10 h-10" />
                   </div>
                   <span style={{ color: "#FFF", fontFamily: "Audiowide", fontSize: "20px", fontWeight: 400, lineHeight: "20px" }}>
                     VAULT
@@ -334,7 +335,7 @@ const GuestDashboardContent: React.FC = () => {
                   }}
                 >
                   <div style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <img src="/Design Elements/friends.webp" alt="Friends" className="w-10 h-10" />
+                    <img src={getImageUrl(IMAGE_PATHS.FRIENDS)} alt="Friends" className="w-10 h-10" />
                   </div>
                   <span style={{ color: "#FFF", fontFamily: "Audiowide", fontSize: "20px", fontWeight: 400, lineHeight: "20px" }}>
                     FRIENDS
@@ -360,7 +361,7 @@ const GuestDashboardContent: React.FC = () => {
                   }}
                 >
                   <div style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <img src="/Design Elements/Player Profiles/Ranked.webp" alt="Ranked" className="w-8 h-8" />
+                    <img src={getImageUrl(IMAGE_PATHS.RANKED)} alt="Ranked" className="w-8 h-8" />
                   </div>
                   <span style={{ color: "#FFF", fontFamily: "Audiowide", fontSize: "22px", fontWeight: 400, lineHeight: "22px" }}>
                     RANKED
@@ -489,7 +490,7 @@ const GuestDashboardContent: React.FC = () => {
                 onClick={() => {}} // Locked for guests
                 className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] opacity-50"
               >
-                <img src="/Design Elements/Delivery Man.webp" alt="Profile" className="w-8 h-8" />
+                <img src={getImageUrl(IMAGE_PATHS.DELIVERY_MAN)} alt="Profile" className="w-8 h-8" />
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PROFILE</span>
               </button>
               
@@ -497,7 +498,7 @@ const GuestDashboardContent: React.FC = () => {
                 onClick={() => {}} // Locked for guests
                 className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] opacity-50"
               >
-                <img src="/Design Elements/friends.webp" alt="Friends" className="w-9 h-9" />
+                <img src={getImageUrl(IMAGE_PATHS.FRIENDS)} alt="Friends" className="w-9 h-9" />
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
               </button>
               
@@ -507,7 +508,7 @@ const GuestDashboardContent: React.FC = () => {
                   currentSection === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/CrownLogo.webp" alt="Play" className="w-8 h-8" />
+                <img src={getImageUrl(IMAGE_PATHS.CROWN_LOGO)} alt="Play" className="w-8 h-8" />
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PLAY</span>
               </button>
               
@@ -515,7 +516,7 @@ const GuestDashboardContent: React.FC = () => {
                 onClick={() => {}} // Locked for guests
                 className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] opacity-50"
               >
-                <img src="/Design Elements/Player Profiles/Ranked.webp" alt="Ranked" className="w-8 h-8" />
+                <img src={getImageUrl(IMAGE_PATHS.RANKED)} alt="Ranked" className="w-8 h-8" />
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>RANKED</span>
               </button>
               
@@ -523,7 +524,7 @@ const GuestDashboardContent: React.FC = () => {
                 onClick={() => {}} // Locked for guests
                 className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] opacity-50"
               >
-                <img src="/Design Elements/Player Profiles/Vault.webp" alt="Vault" className="w-8 h-8" />
+                <img src={getImageUrl(IMAGE_PATHS.VAULT)} alt="Vault" className="w-8 h-8" />
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>VAULT</span>
               </button>
             </div>
