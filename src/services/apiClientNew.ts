@@ -185,12 +185,12 @@ export class DashDiceAPI {
       }
       
       if (!response.ok) {
-        console.error(`❌ API Error: ${response.status}`, data);
+        console.warn(`⚠️ API Error: ${response.status}`, data);
         
         // Return properly formatted error response
         return {
           success: false,
-          error: data.error || data.message || `HTTP ${response.status}`,
+          error: data?.error || data?.message || `HTTP ${response.status}`,
           code: response.status.toString(),
           data: data
         };
@@ -211,7 +211,7 @@ export class DashDiceAPI {
         message: data.message || 'Request successful'
       };
     } catch (error) {
-      console.error('❌ API Request Error:', error);
+      console.warn('⚠️ API Request Error:', error);
       
       // Return properly formatted error response
       return {

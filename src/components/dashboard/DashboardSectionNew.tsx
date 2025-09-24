@@ -232,7 +232,7 @@ export const DashboardSection: React.FC = () => {
         
         console.log('🔍 Go backend full response:', matchResult);
         
-        if (matchResult.success && matchResult.roomId) {
+        if (matchResult?.success && matchResult?.roomId) {
           console.log('✅ Go backend match created successfully!');
           setCurrentSection('waiting-room', {
             gameMode,
@@ -243,18 +243,64 @@ export const DashboardSection: React.FC = () => {
           });
           return;
         } else {
-          console.error('❌ Go backend failed:', matchResult);
-          alert(`Go backend failed: ${matchResult.error || 'Unknown error'}. Make sure Go backend server is running on port 8080.`);
-          setIsExiting(false);
-          return;
+          console.warn('⚠️ Go backend unavailable, attempting Firebase fallback...');
+          
+          // Try Firebase fallback using MatchmakingOrchestrator
+          try {
+            const { MatchmakingOrchestrator } = await import('@/services/matchmakingOrchestrator');
+            
+            const matchRequest = {
+              sessionType: 'quick' as const,
+              gameMode,
+              hostData: {
+                playerId: user.uid,
+                playerDisplayName: userProfile.displayName || user.displayName || 'Player',
+                playerStats: userProfile.stats || {},
+                displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped || {
+                  name: 'Relax',
+                  file: 'backgrounds/Relax.png',
+                  type: 'image'
+                },
+                matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped || {
+                  name: 'Relax', 
+                  file: 'backgrounds/Relax.png',
+                  type: 'image'
+                },
+                ready: false,
+                joinedAt: new Date()
+              }
+            };
+
+            const fallbackResult = await MatchmakingOrchestrator.findMatch(matchRequest);
+            
+            if (fallbackResult.success && fallbackResult.sessionId) {
+              console.log('✅ Firebase fallback successful!');
+              setCurrentSection('waiting-room', {
+                gameMode,
+                actionType: action as 'live' | 'custom',
+                gameType: gameType as 'quick' | 'ranked',
+                roomId: fallbackResult.sessionId,
+                isOptimistic: true // This is a Firebase fallback room
+              });
+              return;
+            } else {
+              console.warn('⚠️ Firebase fallback also failed');
+              setIsExiting(false);
+              return;
+            }
+          } catch (fallbackError) {
+            console.warn('⚠️ Firebase fallback error:', fallbackError);
+            setIsExiting(false);
+            return;
+          }
         }
         
         console.log(`🚀 Match creation process completed`);
 
       } catch (error) {
-        console.error('Error in matchmaking:', error);
+        console.warn('⚠️ Error in matchmaking:', error);
         setIsExiting(false);
-        alert('Failed to find or create game room. Please try again.');
+        // Don't show alert - just silently fail and let user try again
       }
     } else {
       // For custom games, navigate to waiting room first
