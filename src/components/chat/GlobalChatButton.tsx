@@ -3,14 +3,21 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import UnifiedChatWindow from './UnifiedChatWindow';
 
 // Global state for managing chat visibility
 let globalChatToggle: (() => void) | null = null;
 
 export default function GlobalChatButton() {
+  const { user } = useAuth();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [totalUnreadCount, setTotalUnreadCount] = useState(0);
+
+  // Don't render chat button for guests (non-authenticated users)
+  if (!user) {
+    return null;
+  }
 
   const handleToggleChat = () => {
     setIsChatOpen(!isChatOpen);

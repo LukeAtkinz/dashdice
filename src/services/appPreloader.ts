@@ -198,7 +198,13 @@ class AppPreloaderService {
    */
   private async preloadAPIConnections(): Promise<void> {
     try {
-      // Test Go services connection
+      // Skip API health check in development to avoid CORS issues
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 Development mode: Skipping API health check');
+        return;
+      }
+
+      // Test Go services connection in production only
       const apiUrl = process.env.NEXT_PUBLIC_API_GATEWAY_URL;
       if (apiUrl) {
         const response = await fetch(`${apiUrl}/health`, {
@@ -207,6 +213,8 @@ class AppPreloaderService {
         } as any);
         if (!response.ok) {
           console.warn('Go services not available');
+        } else {
+          console.log('✅ API health check passed');
         }
       }
     } catch (error) {

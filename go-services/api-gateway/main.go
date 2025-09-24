@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 	
@@ -79,6 +80,18 @@ func main() {
 	logger.Info("API Gateway server stopped")
 }
 
+// Match represents a game match
+type Match struct {
+	ID          string    `json:"id"`
+	GameMode    string    `json:"game_mode"`
+	MaxPlayers  int       `json:"max_players"`
+	Private     bool      `json:"private"`
+	Status      string    `json:"status"`
+	Players     []string  `json:"players"`
+	CreatedAt   int64     `json:"created_at"`
+	CreatedBy   string    `json:"created_by"`
+}
+
 // APIGatewayServer represents the API Gateway server
 type APIGatewayServer struct {
 	config      *config.Config
@@ -89,6 +102,10 @@ type APIGatewayServer struct {
 	firebaseApp *firebase.App
 	authClient  *auth.Client
 	authMiddleware *middleware.FirebaseAuthMiddleware
+	
+	// In-memory match store for real-time matchmaking
+	matches     map[string]*Match
+	matchesMux  sync.RWMutex
 }
 
 // NewAPIGatewayServer creates a new API Gateway server instance
@@ -103,6 +120,7 @@ func NewAPIGatewayServer(cfg *config.Config, logger *zap.Logger, dbManager datab
 		logger:    logger,
 		dbManager: dbManager,
 		engine:    gin.New(),
+		matches:   make(map[string]*Match),
 	}
 	
 	// Initialize Firebase
@@ -500,36 +518,54 @@ func (s *APIGatewayServer) handleGetUserStats(c *gin.Context) {
 func (s *APIGatewayServer) handleListMatches(c *gin.Context) {
 	// Get query parameters
 	status := c.DefaultQuery("status", "active")
+	gameMode := c.Query("game_mode")
 	limit := c.DefaultQuery("limit", "10")
 	
-	// Generate demo matches
-	matches := []gin.H{
-		{
-			"id":          "match_001",
-			"status":      "waiting",
-			"game_mode":   "classic",
-			"players":     []string{"Player_Alpha"},
-			"max_players": 2,
-			"created_at":  time.Now().Add(-5 * time.Minute).Unix(),
-		},
-		{
-			"id":          "match_002",
-			"status":      "active",
-			"game_mode":   "blitz",
-			"players":     []string{"Player_Beta", "Player_Gamma"},
-			"max_players": 2,
-			"created_at":  time.Now().Add(-10 * time.Minute).Unix(),
-			"started_at":  time.Now().Add(-8 * time.Minute).Unix(),
-		},
+	s.matchesMux.RLock()
+	defer s.matchesMux.RUnlock()
+	
+	var filteredMatches []gin.H
+	
+	// Filter matches based on criteria
+	for _, match := range s.matches {
+		// Filter by status
+		if match.Status != status {
+			continue
+		}
+		
+		// Filter by game mode (if specified)
+		if gameMode != "" && match.GameMode != gameMode {
+			continue
+		}
+		
+		// Convert to response format
+		filteredMatches = append(filteredMatches, gin.H{
+			"id":          match.ID,
+			"status":      match.Status,
+			"game_mode":   match.GameMode,
+			"players":     match.Players,
+			"max_players": match.MaxPlayers,
+			"created_at":  match.CreatedAt,
+			"created_by":  match.CreatedBy,
+		})
 	}
+	
+	s.logger.Info("Listed matches", 
+		zap.String("status", status),
+		zap.String("game_mode", gameMode),
+		zap.Int("total_matches", len(s.matches)),
+		zap.Int("filtered_matches", len(filteredMatches)))
 
 	c.JSON(http.StatusOK, gin.H{
-		"matches": matches,
+		"matches": filteredMatches,
 		"filter": gin.H{
 			"status": status,
+			"game_mode": gameMode,
 			"limit":  limit,
 		},
-		"total": len(matches),
+		"total": len(filteredMatches),
+		"message": "Matches retrieved from Go backend",
+		"status": "success",
 	})
 }
 
@@ -551,7 +587,7 @@ func (s *APIGatewayServer) handleCreateMatch(c *gin.Context) {
 	}
 
 	// Validate game mode
-	validModes := []string{"classic", "blitz", "tournament", "custom"}
+	validModes := []string{"classic", "quickfire", "blitz", "tournament", "custom", "zero-hour", "last-line"}
 	validMode := false
 	for _, mode := range validModes {
 		if matchRequest.GameMode == mode {
@@ -569,27 +605,41 @@ func (s *APIGatewayServer) handleCreateMatch(c *gin.Context) {
 		return
 	}
 
-	// Create match (in real implementation, save to database)
-	matchId := fmt.Sprintf("match_%d", time.Now().Unix())
+	// Create match and store it in memory
+	matchId := fmt.Sprintf("match-%d", time.Now().Unix())
 	
-	match := gin.H{
-		"id":          matchId,
-		"game_mode":   matchRequest.GameMode,
-		"max_players": matchRequest.MaxPlayers,
-		"private":     matchRequest.Private,
-		"status":      "waiting",
-		"players":     []string{}, // Would include creator's user ID
-		"created_at":  time.Now().Unix(),
-		"created_by":  "demo_user_123", // Would come from JWT
+	// Default max players if not specified
+	maxPlayers := matchRequest.MaxPlayers
+	if maxPlayers <= 0 {
+		maxPlayers = 2
 	}
+	
+	match := &Match{
+		ID:          matchId,
+		GameMode:    matchRequest.GameMode,
+		MaxPlayers:  maxPlayers,
+		Private:     matchRequest.Private,
+		Status:      "waiting",
+		Players:     []string{}, // Would include creator's user ID from JWT
+		CreatedAt:   time.Now().Unix(),
+		CreatedBy:   "demo_user_123", // Would come from JWT
+	}
+	
+	// Store in in-memory match store
+	s.matchesMux.Lock()
+	s.matches[matchId] = match
+	s.matchesMux.Unlock()
 
-	s.logger.Info("Match created", 
+	s.logger.Info("Match created and stored", 
 		zap.String("match_id", matchId),
-		zap.String("game_mode", matchRequest.GameMode))
+		zap.String("game_mode", matchRequest.GameMode),
+		zap.Int("total_matches", len(s.matches)))
 
 	c.JSON(http.StatusCreated, gin.H{
 		"success": true,
 		"match":   match,
+		"matchId": matchId,
+		"message": "Match created successfully via Go backend",
 	})
 }
 
@@ -765,27 +815,25 @@ func (s *APIGatewayServer) handleGetMatch(c *gin.Context) {
 		return
 	}
 
-	// In real implementation, fetch from database
-	match := gin.H{
-		"id":          matchId,
-		"status":      "active",
-		"game_mode":   "classic",
-		"max_players": 2,
-		"players": []gin.H{
-			{"id": "player_1", "username": "AlphaPlayer", "ready": true},
-			{"id": "player_2", "username": "BetaPlayer", "ready": true},
-		},
-		"created_at": time.Now().Add(-15 * time.Minute).Unix(),
-		"started_at": time.Now().Add(-10 * time.Minute).Unix(),
-		"game_state": gin.H{
-			"current_turn": "player_1",
-			"turn_number": 5,
-			"dice_results": []int{4, 2, 6},
-		},
+	// Look up match in in-memory store
+	s.matchesMux.RLock()
+	match, exists := s.matches[matchId]
+	s.matchesMux.RUnlock()
+	
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Match not found",
+			"code":  "MATCH_NOT_FOUND",
+			"match_id": matchId,
+		})
+		return
 	}
+
+	s.logger.Info("Match retrieved", zap.String("match_id", matchId))
 
 	c.JSON(http.StatusOK, gin.H{
 		"match": match,
+		"success": true,
 	})
 }
 

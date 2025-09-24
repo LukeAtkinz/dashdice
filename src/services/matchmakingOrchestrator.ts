@@ -236,40 +236,88 @@ export class MatchmakingOrchestrator {
       console.log('🔍 Searching for available Go backend matches...');
       const { default: DashDiceAPI } = await import('./apiClientNew');
       
-      // Look for available Go backend matches with 'ready' status (waiting for players)
+      // Look for available Go backend matches with 'waiting' status 
       const goMatches = await DashDiceAPI.listMatches({ 
-        status: 'ready',
-        limit: 10 
+        status: 'waiting',
+        limit: 10,
+        game_mode: request.gameMode
       });
+      
+      console.log('🔍 Go backend response:', { 
+        success: goMatches.success, 
+        hasData: !!goMatches.data, 
+        matchCount: goMatches.data?.matches?.length || 0,
+        error: goMatches.error 
+      });
+      
+      // Check if Go backend returned an error (503 means backend unavailable, should fallback)
+      if (goMatches.error && (goMatches.error.includes('unavailable') || goMatches.error.includes('BACKEND_UNAVAILABLE'))) {
+        console.log('⚠️ Go backend explicitly unavailable, skipping to Firebase fallback');
+        throw new Error('Go backend unavailable - forcing Firebase fallback');
+      }
+      
+      // Also check if the response indicates failure (no success flag or empty data)
+      if (!goMatches.success) {
+        console.log('⚠️ Go backend request failed, forcing Firebase fallback');
+        throw new Error('Go backend request failed - forcing Firebase fallback');
+      }
       
       if (goMatches.success && goMatches.data?.matches && goMatches.data.matches.length > 0) {
         // Find a compatible match for this game mode
         const compatibleMatch = goMatches.data.matches.find((match: any) => 
-          match.gameMode === request.gameMode && 
+          (match.game_mode === request.gameMode || match.gameMode === request.gameMode) && 
           (match.players?.length || 0) < 2 // Has space for another player
         );
         
         if (compatibleMatch) {
           console.log(`🎯 Found compatible Go backend match: ${(compatibleMatch as any).matchId || compatibleMatch.id}`);
           
-          // Try to join this Go backend match
+          // Try to join this Go backend match with retry logic
           const matchId = (compatibleMatch as any).matchId || compatibleMatch.id;
-          const joinResult = await DashDiceAPI.updateMatch(matchId, {
-            action: 'join',
-            playerId: request.hostData.playerId,
-            playerName: request.hostData.playerDisplayName,
-            playerType: 'human'
-          });
+          let attempts = 0;
+          const maxAttempts = 3;
           
-          if (joinResult.success) {
-            console.log(`✅ Successfully joined Go backend match: ${matchId}`);
-            return {
-              success: true,
-              sessionId: matchId,
-              roomId: matchId,
-              hasOpponent: true,
-              isNewRoom: false // Joined existing Go backend match
-            };
+          while (attempts < maxAttempts) {
+            attempts++;
+            console.log(`🔄 Attempt ${attempts}/${maxAttempts} to join Go backend match: ${matchId}`);
+            
+            try {
+              const joinResult = await DashDiceAPI.updateMatch(matchId, {
+                action: 'join',
+                playerId: request.hostData.playerId,
+                playerName: request.hostData.playerDisplayName,
+                playerType: 'human'
+              });
+              
+              if (joinResult.success) {
+                console.log(`✅ Successfully joined Go backend match: ${matchId}`);
+                return {
+                  success: true,
+                  sessionId: matchId,
+                  roomId: matchId,
+                  hasOpponent: true,
+                  isNewRoom: false // Joined existing Go backend match
+                };
+              } else {
+                console.warn(`⚠️ Join attempt ${attempts} failed:`, joinResult.error);
+                // If this was a race condition (match full/changed status), try finding another match
+                if (attempts < maxAttempts && (
+                  joinResult.error?.includes('full') || 
+                  joinResult.error?.includes('started') ||
+                  joinResult.error?.includes('ready')
+                )) {
+                  console.log('🔄 Possible race condition, will retry with fresh match search...');
+                  await new Promise(resolve => setTimeout(resolve, 100)); // Brief delay
+                  break; // Break inner loop to search for matches again
+                }
+              }
+            } catch (joinError) {
+              console.warn(`⚠️ Join attempt ${attempts} threw error:`, joinError);
+              if (attempts === maxAttempts) {
+                throw joinError;
+              }
+              await new Promise(resolve => setTimeout(resolve, 100)); // Brief delay before retry
+            }
           }
         }
       }
@@ -300,6 +348,8 @@ export class MatchmakingOrchestrator {
     }
     
     console.log(`🔍 ATOMIC: No available sessions found (${atomicResult.error}), creating new Go backend session`);
+    console.log(`🔍 MATCHMAKING_FLOW: Player ${request.hostData.playerId} - No Firebase sessions found, proceeding to Go backend creation`);
+    console.log(`📊 MATCHMAKING_STATE: { step: 'go_backend_creation', playerId: '${request.hostData.playerId}', gameMode: '${request.gameMode}', sessionType: '${request.sessionType}' }`);
     
     // 🆕 LAST RESORT: Create new Go backend session instead of Firebase session
     try {
@@ -322,6 +372,8 @@ export class MatchmakingOrchestrator {
       
       if (createResult.success && createResult.roomId) {
         console.log(`✅ Created new Go backend session: ${createResult.roomId}`);
+        console.log(`✅ MATCHMAKING_FLOW: Player ${request.hostData.playerId} - Successfully created Go backend session ${createResult.roomId}`);
+        console.log(`📊 MATCHMAKING_STATE: { step: 'go_backend_created', playerId: '${request.hostData.playerId}', sessionId: '${createResult.roomId}', hasOpponent: false }`);
         return {
           success: true,
           sessionId: createResult.roomId,
@@ -336,6 +388,8 @@ export class MatchmakingOrchestrator {
     
     // FINAL FALLBACK: Create Firebase session
     console.log('🆕 Creating new Firebase session as final fallback');
+    console.log(`🔍 MATCHMAKING_FLOW: Player ${request.hostData.playerId} - Creating Firebase session as final fallback`);
+    console.log(`📊 MATCHMAKING_STATE: { step: 'firebase_fallback_creation', playerId: '${request.hostData.playerId}', gameMode: '${request.gameMode}' }`);
     const sessionId = await GameSessionService.createSession(
       'quick',
       request.gameMode,
@@ -345,7 +399,10 @@ export class MatchmakingOrchestrator {
         expirationTime: 20 // 20 minutes
       }
     );
-    
+
+    console.log(`✅ MATCHMAKING_FLOW: Player ${request.hostData.playerId} - Successfully created Firebase session ${sessionId}`);
+    console.log(`📊 MATCHMAKING_STATE: { step: 'firebase_created', playerId: '${request.hostData.playerId}', sessionId: '${sessionId}', hasOpponent: false }`);
+
     return {
       success: true,
       sessionId,

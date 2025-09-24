@@ -11,6 +11,7 @@ import { GameModeProvider } from './GameModeContext';
 import { ChatProvider } from './ChatContext';
 import { ToastProvider } from './ToastContext';
 import { AppLoadingProvider } from './AppLoadingContext';
+import { GuestProvider } from './GuestContext';
 import { CleanupService } from '@/services/cleanupService';
 import { GameInvitationService } from '@/services/gameInvitationService';
 import { RematchService } from '@/services/rematchService';
@@ -49,25 +50,27 @@ export const Providers: React.FC<ProvidersProps> = ({ children, skipSplash = fal
 
   return (
     <AppLoadingProvider skipSplash={skipSplash}>
-      <AuthProvider>
-        <ToastProvider>
-        <BackgroundProvider>
-          <InventoryProvider>
-            <AchievementProvider>
-              <FriendsProvider>
-                <ChatProvider>
-                  <GameModeProvider>
-                    <GameProvider>
-                      {children}
-                    </GameProvider>
-                  </GameModeProvider>
-                </ChatProvider>
-              </FriendsProvider>
-            </AchievementProvider>
-          </InventoryProvider>
-        </BackgroundProvider>
-        </ToastProvider>
-      </AuthProvider>
+      <GuestProvider>
+        <AuthProvider>
+          <ToastProvider>
+          <BackgroundProvider>
+            <InventoryProvider>
+              <AchievementProvider>
+                <FriendsProvider>
+                  <ChatProvider>
+                    <GameModeProvider>
+                      <GameProvider>
+                        {children}
+                      </GameProvider>
+                    </GameModeProvider>
+                  </ChatProvider>
+                </FriendsProvider>
+              </AchievementProvider>
+            </InventoryProvider>
+          </BackgroundProvider>
+          </ToastProvider>
+        </AuthProvider>
+      </GuestProvider>
     </AppLoadingProvider>
   );
 };

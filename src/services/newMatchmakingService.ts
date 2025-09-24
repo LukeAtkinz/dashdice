@@ -108,6 +108,24 @@ export class NewMatchmakingService {
       // Update user's current room if successful
       if (result.success && result.sessionId) {
         await PlayerHeartbeatService.updateCurrentRoom(userId, result.sessionId);
+        
+        // Check if there are any optimistic rooms for this user that should be transitioned
+        try {
+          const { OptimisticMatchmakingService } = await import('./optimisticMatchmakingService');
+          const optimisticRooms = OptimisticMatchmakingService.getAllOptimisticRooms();
+          
+          // Find optimistic rooms for this user and transition them to the real session
+          const userOptimisticRooms = optimisticRooms.filter(room => 
+            room.playerData.playerId === userId && room.gameMode === gameMode
+          );
+          
+          for (const optimisticRoom of userOptimisticRooms) {
+            console.log(`🔄 Transitioning optimistic room ${optimisticRoom.id} to real session ${result.sessionId}`);
+            OptimisticMatchmakingService.transitionToRealSession(optimisticRoom.id, result.sessionId);
+          }
+        } catch (optimisticError) {
+          console.warn('⚠️ Failed to transition optimistic rooms:', optimisticError);
+        }
       }
 
       return result;

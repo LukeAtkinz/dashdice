@@ -129,6 +129,51 @@ export class OptimisticMatchmakingService {
     if (this.optimisticRooms.delete(roomId)) {
       console.log(`🗑️ Removed optimistic room: ${roomId}`);
     }
+    
+    // Cancel any pending background processes
+    this.cancelBackgroundProcess(roomId);
+  }
+
+  /**
+   * Cancel background room creation process
+   */
+  static cancelBackgroundProcess(optimisticId: string): void {
+    // Cancel timeout if it exists
+    const timeoutCallbacks = this.roomCallbacks.get(optimisticId + '_timeout');
+    if (timeoutCallbacks?.onError) {
+      timeoutCallbacks.onError('Cancelled by main matchmaking'); // This calls clearTimeout
+      this.roomCallbacks.delete(optimisticId + '_timeout');
+      console.log(`⏰ Cancelled background timeout for ${optimisticId}`);
+    }
+    
+    // Remove background process reference
+    this.backgroundProcesses.delete(optimisticId);
+  }
+
+  /**
+   * Transition optimistic room to real session (called when main matchmaking succeeds)
+   */
+  static transitionToRealSession(optimisticId: string, realSessionId: string): void {
+    const room = this.optimisticRooms.get(optimisticId);
+    if (room) {
+      console.log(`🎯 OPTIMISTIC: Transitioning ${optimisticId} to real session ${realSessionId}`);
+      
+      // Cancel any background processes to prevent duplicate rooms
+      this.cancelBackgroundProcess(optimisticId);
+      
+      // Update the optimistic room to point to the real session
+      this.updateOptimisticRoom(optimisticId, {
+        status: 'waiting', // Use valid status
+        realRoomId: realSessionId,
+        searchText: 'Match found!'
+      });
+      
+      // Notify callbacks of successful transition
+      const callbacks = this.roomCallbacks.get(optimisticId);
+      if (callbacks?.onRealRoomCreated) {
+        callbacks.onRealRoomCreated(realSessionId);
+      }
+    }
   }
 
   /**
@@ -148,17 +193,31 @@ export class OptimisticMatchmakingService {
     userId: string,
     userProfile: any
   ): Promise<void> {
-    const backgroundProcess = this.createRealRoomInBackground(optimisticId, gameMode, gameType, userId, userProfile);
-    this.backgroundProcesses.set(optimisticId, backgroundProcess);
+    console.log(`🔧 OPTIMISTIC: Deferring real room creation for ${optimisticId} to avoid duplicate matchmaking`);
     
-    // Start the background process but don't await it here
-    backgroundProcess.catch(error => {
-      console.error(`Background room creation failed for ${optimisticId}:`, error);
-      const callbacks = this.roomCallbacks.get(optimisticId);
-      if (callbacks?.onError) {
-        callbacks.onError(`Failed to create room: ${error.message}`);
-      }
+    // Update status to searching instead of immediately creating a real room
+    // This prevents duplicate matchmaking requests from conflicting
+    this.updateOptimisticRoom(optimisticId, {
+      status: 'searching',
+      searchText: gameType === 'ranked' ? 'Finding worthy challengers...' : 'Scanning the arena...'
     });
+    
+    const callbacks = this.roomCallbacks.get(optimisticId);
+    if (callbacks?.onStatusUpdate) {
+      callbacks.onStatusUpdate('searching', gameType === 'ranked' ? 'Finding worthy challengers...' : 'Scanning the arena...');
+    }
+
+    // Instead of creating a real room immediately, set up a timeout that allows
+    // the main matchmaking flow to complete first. If no real session is found
+    // within a reasonable time, then we'll fall back to creating one.
+    const fallbackTimeout = setTimeout(async () => {
+      console.log(`⏰ OPTIMISTIC: Fallback timeout reached for ${optimisticId}, proceeding with room creation`);
+      await this.createRealRoomInBackground(optimisticId, gameMode, gameType, userId, userProfile);
+    }, 2000); // Wait 2 seconds for main matchmaking to complete
+    
+    // Store the timeout so we can cancel it if main matchmaking succeeds
+    this.backgroundProcesses.set(optimisticId, Promise.resolve());
+    this.roomCallbacks.set(optimisticId + '_timeout', { onError: () => clearTimeout(fallbackTimeout) });
   }
 
   /**

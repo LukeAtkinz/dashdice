@@ -57,7 +57,7 @@ func main() {
 
 	// API endpoints your frontend expects
 	http.HandleFunc("/api/v1/matches", handleMatches)
-	http.HandleFunc("/api/v1/matches/", handleMatches) // Handle both with and without trailing slash
+	http.HandleFunc("/api/v1/matches/", handleIndividualMatch) // Handle individual match requests
 
 	http.HandleFunc("/api/v1/queue/join", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -229,7 +229,7 @@ func handleMatches(w http.ResponseWriter, r *http.Request) {
 			
 		} else {
 			// 🆕 CREATE NEW MATCH
-			matchID := fmt.Sprintf("match_%d", time.Now().Unix())
+			matchID := fmt.Sprintf("match-%d", time.Now().Unix())
 			
 			match := &Match{
 				MatchID:   matchID,
@@ -243,8 +243,15 @@ func handleMatches(w http.ResponseWriter, r *http.Request) {
 			// Store match in memory
 			matchStore[matchID] = match
 			
-			// Return the new match
-			jsonData, err := json.Marshal(match)
+			// Return the new match in the expected format
+			response := map[string]interface{}{
+				"match": match,
+				"matchId": matchID,
+				"success": true,
+				"message": "Match created successfully via Go backend",
+			}
+			
+			jsonData, err := json.Marshal(response)
 			if err != nil {
 				http.Error(w, `{"error": "Failed to create match"}`, http.StatusInternalServerError)
 				return
@@ -253,6 +260,148 @@ func handleMatches(w http.ResponseWriter, r *http.Request) {
 			log.Printf("🆕 Created new match %s for player %s", matchID, userId)
 			w.Write(jsonData)
 		}
+	} else {
+		http.Error(w, `{"error": "Method not allowed"}`, http.StatusMethodNotAllowed)
+	}
+}
+
+// handleIndividualMatch handles requests to /api/v1/matches/{matchId}
+func handleIndividualMatch(w http.ResponseWriter, r *http.Request) {
+	// Set CORS headers
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	w.Header().Set("Content-Type", "application/json")
+	
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	
+	// Extract match ID from URL path
+	path := r.URL.Path
+	if len(path) < len("/api/v1/matches/") {
+		http.Error(w, `{"error": "Match ID required"}`, http.StatusBadRequest)
+		return
+	}
+	
+	matchID := path[len("/api/v1/matches/"):]
+	if matchID == "" {
+		http.Error(w, `{"error": "Match ID required"}`, http.StatusBadRequest)
+		return
+	}
+	
+	if r.Method == "GET" {
+		// Handle GET request (retrieve match)
+		matchMutex.RLock()
+		match, exists := matchStore[matchID]
+		matchMutex.RUnlock()
+		
+		if !exists {
+			http.Error(w, fmt.Sprintf(`{"error": "Match not found", "matchId": "%s"}`, matchID), http.StatusNotFound)
+			return
+		}
+		
+		// Return the match
+		jsonData, err := json.Marshal(match)
+		if err != nil {
+			http.Error(w, `{"error": "Failed to retrieve match"}`, http.StatusInternalServerError)
+			return
+		}
+		
+		log.Printf("🔍 Retrieved match %s", matchID)
+		w.Write(jsonData)
+		
+	} else if r.Method == "PUT" {
+		// Handle PUT request (update match - add players, bots, etc.)
+		var updateData map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
+			http.Error(w, `{"error": "Invalid request body"}`, http.StatusBadRequest)
+			return
+		}
+		
+		matchMutex.Lock()
+		match, exists := matchStore[matchID]
+		if !exists {
+			matchMutex.Unlock()
+			http.Error(w, fmt.Sprintf(`{"error": "Match not found", "matchId": "%s"}`, matchID), http.StatusNotFound)
+			return
+		}
+		
+		// Handle different actions
+		action, ok := updateData["action"].(string)
+		if !ok {
+			matchMutex.Unlock()
+			http.Error(w, `{"error": "Action required"}`, http.StatusBadRequest)
+			return
+		}
+		
+		if action == "join" {
+			// Add player/bot to match
+			playerId, hasPlayerId := updateData["playerId"].(string)
+			playerName, hasPlayerName := updateData["playerName"].(string)
+			playerType, _ := updateData["playerType"].(string) // optional, defaults to "player"
+			
+			if !hasPlayerId || !hasPlayerName {
+				matchMutex.Unlock()
+				http.Error(w, `{"error": "playerId and playerName required for join action"}`, http.StatusBadRequest)
+				return
+			}
+			
+			// Check if player already in match
+			for _, existingPlayer := range match.Players {
+				if existingPlayer == playerId {
+					matchMutex.Unlock()
+					http.Error(w, fmt.Sprintf(`{"error": "Player %s already in match"}`, playerId), http.StatusBadRequest)
+					return
+				}
+			}
+			
+			// Check if match has space
+			if len(match.Players) >= 2 {
+				matchMutex.Unlock()
+				http.Error(w, `{"error": "Match is full"}`, http.StatusBadRequest)
+				return
+			}
+			
+			// Add player to match
+			match.Players = append(match.Players, playerId)
+			
+			// Update match status if needed
+			if len(match.Players) >= 2 {
+				match.Status = "active"
+				match.Message = "Match is full and ready"
+			}
+			
+			matchMutex.Unlock()
+			
+			playerTypeDisplay := playerType
+			if playerTypeDisplay == "" {
+				playerTypeDisplay = "player"
+			}
+			
+			log.Printf("🤖 Added %s %s (%s) to match %s - now has %d players", playerTypeDisplay, playerName, playerId, matchID, len(match.Players))
+			
+			// Return updated match
+			response := map[string]interface{}{
+				"match": match,
+				"success": true,
+				"message": fmt.Sprintf("%s %s joined match successfully", playerTypeDisplay, playerName),
+			}
+			
+			jsonData, err := json.Marshal(response)
+			if err != nil {
+				http.Error(w, `{"error": "Failed to create response"}`, http.StatusInternalServerError)
+				return
+			}
+			
+			w.Write(jsonData)
+			
+		} else {
+			matchMutex.Unlock()
+			http.Error(w, fmt.Sprintf(`{"error": "Unsupported action: %s"}`, action), http.StatusBadRequest)
+		}
+		
 	} else {
 		http.Error(w, `{"error": "Method not allowed"}`, http.StatusMethodNotAllowed)
 	}

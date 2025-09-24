@@ -82,17 +82,13 @@ export class DashDiceAPI {
    * Get API Gateway URL based on environment
    */
   private static getApiGatewayUrl(): string {
-    // Check if we're in production
-    if (typeof window !== 'undefined' && 
-        (window.location.hostname === 'www.dashdice.gg' || 
-         window.location.hostname === 'dashdice.gg' ||
-         window.location.hostname.includes('vercel.app'))) {
-      // Use same-origin proxy to avoid CORS issues
+    // Always use proxy in browser to handle fallback logic properly
+    if (typeof window !== 'undefined') {
       return '/api/proxy';
     }
     
-    // Development or local - use direct Go backend
-    return process.env.NEXT_PUBLIC_LOCAL_API_GATEWAY_URL || 'http://localhost:8080/api/v1';
+    // Server-side - use direct Go backend URL
+    return process.env.NEXT_PUBLIC_API_GATEWAY_URL || 'https://dashdice-production.up.railway.app/api/v1';
   }
 
   /**

@@ -42,35 +42,11 @@ export class GoBackendAdapter {
         return true;
       }
 
-      const isProduction = typeof window !== 'undefined' && 
-        (window.location.hostname === 'www.dashdice.gg' || 
-         window.location.hostname === 'dashdice.gg' ||
-         window.location.hostname.includes('vercel.app'));
-      
-      if (isProduction) {
-        console.log('🌐 Production environment - using proxy for Go backend calls');
-        // In production, we use the proxy which handles fallback internally
-        this.isGoBackendAvailable = true;
-        return true;
-      }
-      
-      // Test with timeout for development or configured production
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
-      
-      try {
-        await this.apiClient.healthCheck();
-        clearTimeout(timeoutId);
-        
-        this.isGoBackendAvailable = true;
-        console.log('✅ Go backend is available');
-        return true;
-      } catch (healthError) {
-        clearTimeout(timeoutId);
-        console.warn('⚠️ Go backend health check failed, falling back to Firebase:', healthError);
-        this.isGoBackendAvailable = false;
-        return false;
-      }
+      // In browser environments, always enable Go backend adapter since we use proxy
+      // The proxy handles fallback logic internally
+      console.log('🌐 Browser environment - enabling Go backend via proxy (with automatic Firebase fallback)');
+      this.isGoBackendAvailable = true;
+      return true;
     } catch (error) {
       console.warn('⚠️ Go backend not available, using Firebase fallback:', error);
       this.isGoBackendAvailable = false;
@@ -185,7 +161,7 @@ export class GoBackendAdapter {
       console.log('🔍 Searching for existing matches waiting for players...');
       
       const existingMatchesResponse = await this.apiClient.listMatches({ 
-        status: 'waiting_for_players',
+        status: 'waiting',
         game_mode: gameMode,
         limit: 10 
       });
@@ -196,10 +172,13 @@ export class GoBackendAdapter {
           // 1. Have space for another player
           // 2. Are not created by this user (to avoid self-joining)
           // 3. Match the game mode
-          const playerCount = match.players ? match.players.length : 0;
+          
+          // Safely handle players array - ensure it's an array
+          const players = Array.isArray(match.players) ? match.players : [];
+          const playerCount = players.length;
           const maxPlayers = match.max_players || 2;
           const hasSpace = playerCount < maxPlayers;
-          const notSelfCreated = !match.players || !match.players.includes(userId);
+          const notSelfCreated = !players.includes(userId);
           const correctGameMode = !gameMode || match.game_mode === gameMode;
           
           console.log('🔍 Evaluating match:', {
@@ -209,7 +188,9 @@ export class GoBackendAdapter {
             hasSpace,
             notSelfCreated,
             correctGameMode,
-            players: match.players
+            players: players,
+            playersType: typeof match.players,
+            playersIsArray: Array.isArray(match.players)
           });
           
           return hasSpace && notSelfCreated && correctGameMode;
@@ -472,6 +453,56 @@ export class GoBackendAdapter {
       return true;
     } catch (error) {
       this.isGoBackendAvailable = false;
+      return false;
+    }
+  }
+
+  /**
+   * Clear user's stuck state when they appear to be "in game" but aren't
+   * This resolves the "Already in an active quick game" error
+   */
+  static async clearStuckUserState(userId: string): Promise<boolean> {
+    try {
+      console.log('🧹 Clearing stuck state for user:', userId);
+      
+      // Try to leave any queue the user might be stuck in
+      try {
+        await this.apiClient.leaveQueue();
+        console.log('✅ Left any existing queue');
+      } catch (error) {
+        console.log('ℹ️ No queue to leave or already left');
+      }
+      
+      // Get user's current matches and try to clean them up
+      try {
+        const matchesResponse = await this.apiClient.listMatches({ limit: 50 });
+        const userMatches = matchesResponse.data?.matches?.filter((match: any) => 
+          match.players && Array.isArray(match.players) && match.players.includes(userId)
+        ) || [];
+        
+        if (userMatches.length > 0) {
+          console.log(`🔍 Found ${userMatches.length} matches for user, attempting cleanup...`);
+          
+          for (const match of userMatches) {
+            try {
+              // If match is waiting or active, try to end it
+              if (match.status === 'waiting' || match.status === 'active') {
+                console.log(`🚪 Attempting to end match ${match.id} with status ${match.status}`);
+                await this.apiClient.endMatch(match.id);
+              }
+            } catch (error) {
+              console.log(`⚠️ Could not end match ${match.id}:`, error);
+            }
+          }
+        }
+      } catch (error) {
+        console.log('⚠️ Could not fetch user matches for cleanup:', error);
+      }
+      
+      console.log('✅ User state cleanup completed');
+      return true;
+    } catch (error) {
+      console.error('❌ Error clearing stuck user state:', error);
       return false;
     }
   }

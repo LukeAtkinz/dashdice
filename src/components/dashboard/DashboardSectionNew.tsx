@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
+import { useGuest } from '@/context/GuestContext';
 import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { MatchmakingService } from '@/services/matchmakingService';
@@ -88,6 +89,7 @@ const gameConfig = {
 
 export const DashboardSection: React.FC = () => {
   const { user } = useAuth();
+  const { isGuest } = useGuest();
   const { setCurrentSection } = useNavigation();
   const { DisplayBackgroundEquip } = useBackground();
   const [hoveredGameMode, setHoveredGameMode] = useState<string | null>(null);
@@ -96,6 +98,12 @@ export const DashboardSection: React.FC = () => {
   const [showAlreadyInMatchNotification, setShowAlreadyInMatchNotification] = useState(false);
   const [currentMatchInfo, setCurrentMatchInfo] = useState<{ gameMode: string; currentGame: string } | null>(null);
   const [skillRating, setSkillRating] = useState<{ level: number; dashNumber: number } | null>(null);
+
+  // Filter game modes for guests - only allow specific modes
+  const allowedGuestModes = ['quickfire', 'classic', 'zero-hour', 'last-line'];
+  const availableGameModes = isGuest 
+    ? Object.entries(gameConfig).filter(([mode]) => allowedGuestModes.includes(mode))
+    : Object.entries(gameConfig);
 
   // Preload user data for faster matchmaking and start cleanup service
   useEffect(() => {
@@ -357,7 +365,7 @@ export const DashboardSection: React.FC = () => {
           maxHeight: 'none' // Remove any height constraints
         }}
       >
-        {Object.entries(gameConfig).map(([mode, config]) => (
+        {availableGameModes.map(([mode, config]) => (
           <div
             key={mode}
             onMouseEnter={() => setHoveredGameMode(mode)}
@@ -416,7 +424,7 @@ export const DashboardSection: React.FC = () => {
                     >
                       <div className="flex items-center gap-2 pointer-events-none">
                         <img 
-                          src="/Design Elements/Player Profiles/Quick Match.webp" 
+                          src="/Design Elements/Player Profiles/QuickMatch.webp" 
                           alt="Quick Match" 
                           className="w-6 h-6 md:w-8 md:h-8 object-contain"
                         />

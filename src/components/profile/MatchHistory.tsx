@@ -29,7 +29,7 @@ const getMatchTypeIcon = (matchType: string): string => {
     'rematch': '/Design Elements/Player Profiles/Remtach.webp',
     'tournament': '/Design Elements/Player Profiles/Tourdement.webp',
     'casual': '/Design Elements/Player Profiles/QuickMatch.webp',
-    'friends': '/Design Elements/friends.webp'
+    'friends': '/Design Elements/Player Profiles/Vault.webp'
   };
   
   return iconMap[matchType.toLowerCase()] || '/Design Elements/Player Profiles/QuickMatch.webp';

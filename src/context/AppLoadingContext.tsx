@@ -29,7 +29,7 @@ interface AppLoadingProviderProps {
 
 export const AppLoadingProvider: React.FC<AppLoadingProviderProps> = ({ 
   children, 
-  skipSplash = false 
+  skipSplash = true  // Default to true since we use the new splash system per page
 }) => {
   const [isLoading, setIsLoading] = useState(!skipSplash);
   const [loadingProgress, setLoadingProgress] = useState(0);

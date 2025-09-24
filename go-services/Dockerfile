@@ -1,31 +1,15 @@
-# Build stage
-FROM golang:1.21-alpine AS builder
+FROM golang:1.21-alpine
 
 WORKDIR /app
 
-# Copy go mod and sum files
-COPY go.mod go.sum ./
-
-# Download dependencies
-RUN go mod download
-
-# Copy source code
+# Copy source files
 COPY . .
 
-# Build the API Gateway application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./api-gateway
-
-# Final stage
-FROM alpine:latest
-
-RUN apk --no-cache add ca-certificates
-WORKDIR /root/
-
-# Copy the binary from builder stage
-COPY --from=builder /app/main .
+# Build the application
+RUN go build -o main .
 
 # Expose port
 EXPOSE 8080
 
-# Run the binary
+# Run the application
 CMD ["./main"]
