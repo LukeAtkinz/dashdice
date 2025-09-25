@@ -34,6 +34,13 @@ export class GoBackendAdapter {
     try {
       console.log('🔄 Initializing Go backend with Redis and Railway connectivity...');
       
+      // Check if Go backend is explicitly disabled
+      if (process.env.DISABLE_GO_BACKEND === 'true' || process.env.NEXT_PUBLIC_DISABLE_GO_BACKEND === 'true') {
+        console.log('⚠️ Go backend explicitly disabled via environment variable');
+        this.isGoBackendAvailable = false;
+        return false;
+      }
+      
       // Check Go backend availability
       if (typeof window === 'undefined') {
         // Server-side - assume Go backend is available

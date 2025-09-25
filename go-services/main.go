@@ -41,12 +41,9 @@ func main() {
 		port = "8080"
 	}
 
-	// Root endpoint
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"message": "DashDice API is live on Railway!", "status": "healthy", "timestamp": %d}`, time.Now().Unix())
-	})
+	// API endpoints first (most specific routes)
+	http.HandleFunc("/api/v1/matches", handleMatches)
+	http.HandleFunc("/api/v1/matches/", handleIndividualMatch) // Handle individual match requests
 
 	// Health check
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -54,10 +51,6 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintf(w, `{"service": "DashDice API", "status": "healthy", "message": "Railway backend running! 🚂"}`)
 	})
-
-	// API endpoints your frontend expects
-	http.HandleFunc("/api/v1/matches", handleMatches)
-	http.HandleFunc("/api/v1/matches/", handleIndividualMatch) // Handle individual match requests
 
 	http.HandleFunc("/api/v1/queue/join", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -99,6 +92,13 @@ func main() {
 		}
 		
 		fmt.Fprintf(w, `{"queue_position": 1, "estimated_wait": "30s", "players_in_queue": 5, "status": "success"}`)
+	})
+
+	// Root endpoint (catch-all, must be last)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, `{"message": "DashDice API is live on Railway!", "status": "healthy", "timestamp": %d}`, time.Now().Unix())
 	})
 
 	log.Printf("🚂 DashDice Go Backend starting on port %s", port)
