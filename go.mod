@@ -1,18 +1,10 @@
-module dashdice-backendmodule dashdice-backend
+module dashdice-backend
 
+go 1.21
 
-
-go 1.21go 1.21
-
-
-
-require (require (
-
-	github.com/gorilla/websocket v1.5.0	cloud.google.com/go/firestore v1.14.0
-
-	github.com/joho/godotenv v1.4.0	firebase.google.com/go/v4 v4.13.0
-
-)	google.golang.org/api v0.149.0
+require (
+	github.com/gorilla/websocket v1.5.0
+	github.com/joho/godotenv v1.4.0
 )
 
 require (
