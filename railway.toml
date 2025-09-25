@@ -1,24 +1,22 @@
-# Railway Deployment Configuration
-# This file configures automatic deployment from GitHub to Railway
+# Railway Deployment Configuration - DashDice Unified Backend
+# Deploys single Go backend service handling all matchmaking
 
 [build]
-  command = "npm run build"
+builder = "dockerfile"
+dockerfilePath = "backend/Dockerfile"
+buildCommand = "cd backend && docker build -t dashdice-backend ."
 
-[start]
-  command = "npm run start"
+[deploy]
+startCommand = "cd backend && ./main"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
 
-[services.main]
-  build.command = "npm run build"
-  start.command = "npm run start"
-  port = 3000
-  
-  # Environment variables for Railway
-  [services.main.env]
-    NODE_ENV = "production"
-    PORT = "$PORT"
-    
+[env]
+PORT = "8080"
+ENVIRONMENT = "production"
+
 [healthcheck]
-  path = "/api/health"
-  interval = "30s"
-  timeout = "10s"
-  retries = 3
+path = "/health"
+interval = "30s"
+timeout = "10s"
+retries = 3
