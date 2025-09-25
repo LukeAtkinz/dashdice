@@ -61,6 +61,13 @@ async function tryGoBackend(url: string, options: RequestInit): Promise<Response
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+  
+  // Map frontend status names to backend status names
+  const status = searchParams.get('status');
+  if (status === 'ready' || status === 'in_progress') {
+    searchParams.set('status', 'active');
+  }
+  
   const queryString = searchParams.toString();
   
   const response = await tryGoBackend(
