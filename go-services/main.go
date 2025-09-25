@@ -41,13 +41,6 @@ func main() {
 		port = "8080"
 	}
 
-	// Root endpoint
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"message": "DashDice API is live on Railway!", "status": "healthy", "timestamp": %d}`, time.Now().Unix())
-	})
-
 	// Health check
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -70,7 +63,7 @@ func main() {
 			return
 		}
 		
-		fmt.Fprintf(w, `{"message": "Successfully joined queue via Go backend", "status": "success", "queuePosition": 1}`)
+		fmt.Fprintf(w, `{"message": "Successfully joined queue via Go backend", "status": "success", "queuePosition": 1, "estimatedWait": "30 seconds"}`)
 	})
 
 	http.HandleFunc("/api/v1/queue/leave", func(w http.ResponseWriter, r *http.Request) {
