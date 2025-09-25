@@ -1,354 +1,704 @@
-package mainpackage mainpackage main
+package mainpackage mainpackage mainpackage main
 
 
 
-// DashDice Railway Deployment Entry Point
-
-// This serves as the main entry point for Railway deployment
-
-// Routes to the unified backend service in /backend directory// DashDice Railway Deployment Entry Pointimport (
-
-
-
-import (// This serves as the main entry point for Railway deployment	"encoding/json"
+import (
 
 	"encoding/json"
 
-	"fmt"// Routes to the unified backend service in /backend directory	"fmt"
+	"fmt"// DashDice Railway Deployment Entry Point
 
 	"log"
 
-	"net/http"	"log"
+	"net/http"// This serves as the main entry point for Railway deployment
 
 	"os"
 
-	"strings"import (	"net/http"
+	"sync"// Routes to the unified backend service in /backend directory// DashDice Railway Deployment Entry Pointimport (
 
-	"sync"
-
-	"time"	"encoding/json"	"time"
+	"time"
 
 )
 
-	"fmt")
-
-// Core data structures
-
-type Match struct {	"log"
-
-	MatchID    string    `json:"matchId"`
-
-	Status     string    `json:"status"`      // waiting, active, completed	"net/http"type Player struct {
-
-	GameMode   string    `json:"gameMode"`    // quickfire, classic, ranked
-
-	Players    []Player  `json:"players"`	"os"	ID       string `json:"id"`
-
-	MaxPlayers int       `json:"maxPlayers"`
-
-	CreatedAt  time.Time `json:"createdAt"`	"strings"	Username string `json:"username"`
-
-	UpdatedAt  time.Time `json:"updatedAt"`
-
-}	"sync"	JoinedAt int64  `json:"joinedAt"`
 
 
+// Core data structuresimport (// This serves as the main entry point for Railway deployment	"encoding/json"
 
-type Player struct {	"time"}
+type Match struct {
 
-	UserID   string `json:"userId"`
+	MatchID    string    `json:"matchId"`	"encoding/json"
 
-	UserName string `json:"userName"`)
+	Status     string    `json:"status"`      // waiting, active, completed
 
-	IsBot    bool   `json:"isBot"`
+	GameMode   string    `json:"gameMode"`    // quickfire, classic, ranked	"fmt"// Routes to the unified backend service in /backend directory	"fmt"
 
-	Status   string `json:"status"` // joined, ready, disconnectedtype Match struct {
+	Players    []Player  `json:"players"`
+
+	MaxPlayers int       `json:"maxPlayers"`	"log"
+
+	CreatedAt  time.Time `json:"createdAt"`
+
+	UpdatedAt  time.Time `json:"updatedAt"`	"net/http"	"log"
 
 }
 
-// Core data structures	ID      string   `json:"id"`
+	"os"
 
-type MatchRequest struct {
+type Player struct {
 
-	GameMode string `json:"gameMode"`type Match struct {	Players []Player `json:"players"`
+	UserID   string `json:"userId"`	"strings"import (	"net/http"
 
-	UserID   string `json:"userId"`
+	UserName string `json:"userName"`
 
-	UserName string `json:"userName"`	MatchID    string    `json:"matchId"`	Status  string   `json:"status"`
-
-}
-
-	Status     string    `json:"status"`      // waiting, active, completed	Created int64    `json:"created"`
-
-type QueueRequest struct {
-
-	GameMode string `json:"gameMode"`	GameMode   string    `json:"gameMode"`    // quickfire, classic, ranked}
-
-	UserID   string `json:"userId"`
-
-	UserName string `json:"userName"`	Players    []Player  `json:"players"`
-
-}
-
-	MaxPlayers int       `json:"maxPlayers"`// Simple in-memory storage
-
-// In-memory storage (production would use Redis/Database)
-
-var (	CreatedAt  time.Time `json:"createdAt"`var matches = make(map[string]*Match)
-
-	matches      = make(map[string]*Match)
-
-	matchesMutex = sync.RWMutex{}	UpdatedAt  time.Time `json:"updatedAt"`var waitingPlayers = make([]Player, 0)
-
-	botCounter   = 0
-
-	queue        = make([]QueueRequest, 0)}
-
-	queueMutex   = sync.RWMutex{}
-
-)func enableCORS(w http.ResponseWriter) {
-
-
-
-func main() {type Player struct {	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	port := os.Getenv("PORT")
-
-	if port == "" {	UserID   string `json:"userId"`	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-
-		port = "8080"
-
-	}	UserName string `json:"userName"`	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-
-
-	log.Printf("🚀 DashDice Go Backend starting on port %s", port)	IsBot    bool   `json:"isBot"`}
-
-	log.Printf("🌍 Environment: %s", os.Getenv("ENVIRONMENT"))
+	IsBot    bool   `json:"isBot"`	"sync"
 
 	Status   string `json:"status"` // joined, ready, disconnected
 
+}	"time"	"encoding/json"	"time"
+
+
+
+type MatchRequest struct {)
+
+	GameMode string `json:"gameMode"`
+
+	UserID   string `json:"userId"`	"fmt")
+
+	UserName string `json:"userName"`
+
+}// Core data structures
+
+
+
+type QueueRequest struct {type Match struct {	"log"
+
+	GameMode string `json:"gameMode"`
+
+	UserID   string `json:"userId"`	MatchID    string    `json:"matchId"`
+
+	UserName string `json:"userName"`
+
+}	Status     string    `json:"status"`      // waiting, active, completed	"net/http"type Player struct {
+
+
+
+// In-memory storage 	GameMode   string    `json:"gameMode"`    // quickfire, classic, ranked
+
+var (
+
+	matches      = make(map[string]*Match)	Players    []Player  `json:"players"`	"os"	ID       string `json:"id"`
+
+	matchesMutex = sync.RWMutex{}
+
+	botCounter   = 0	MaxPlayers int       `json:"maxPlayers"`
+
+	queue        = make([]QueueRequest, 0)
+
+	queueMutex   = sync.RWMutex{}	CreatedAt  time.Time `json:"createdAt"`	"strings"	Username string `json:"username"`
+
+)
+
+	UpdatedAt  time.Time `json:"updatedAt"`
+
+func main() {
+
+	port := os.Getenv("PORT")}	"sync"	JoinedAt int64  `json:"joinedAt"`
+
+	if port == "" {
+
+		port = "8080"
+
+	}
+
+type Player struct {	"time"}
+
+	log.Printf("🚀 DashDice Railway Backend starting on port %s", port)
+
+	UserID   string `json:"userId"`
+
 	// Health check endpoint
 
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {}func healthHandler(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {	UserName string `json:"userName"`)
 
 		w.Header().Set("Content-Type", "application/json")
 
-		w.Header().Set("Access-Control-Allow-Origin", "*")	enableCORS(w)
+		w.Header().Set("Access-Control-Allow-Origin", "*")	IsBot    bool   `json:"isBot"`
 
 		json.NewEncoder(w).Encode(map[string]interface{}{
 
-			"status":    "healthy",type MatchRequest struct {	
+			"status":    "healthy",	Status   string `json:"status"` // joined, ready, disconnectedtype Match struct {
 
 			"timestamp": time.Now(),
 
-			"service":   "DashDice Go Backend",	GameMode string `json:"gameMode"`	response := map[string]interface{}{
+			"service":   "DashDice Railway Backend",}
 
 			"message":   "Backend is running successfully! 🎲",
 
-		})	UserID   string `json:"userId"`		"status":    "healthy",
+		})// Core data structures	ID      string   `json:"id"`
 
 	})
 
-	UserName string `json:"userName"`		"service":   "DashDice Simple Backend",
+type MatchRequest struct {
 
 	// CORS middleware
 
-	corsHandler := func(next http.HandlerFunc) http.HandlerFunc {}		"version":   "v1.0-simple",
+	corsHandler := func(next http.HandlerFunc) http.HandlerFunc {	GameMode string `json:"gameMode"`type Match struct {	Players []Player `json:"players"`
 
 		return func(w http.ResponseWriter, r *http.Request) {
 
-			w.Header().Set("Access-Control-Allow-Origin", "*")		"timestamp": time.Now().Unix(),
+			w.Header().Set("Access-Control-Allow-Origin", "*")	UserID   string `json:"userId"`
 
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")type QueueRequest struct {		"message":   "Simple matchmaking ready! 🎲",
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")	UserName string `json:"userName"`	MatchID    string    `json:"matchId"`	Status  string   `json:"status"`
 
 
 
-			if r.Method == "OPTIONS" {	GameMode string `json:"gameMode"`	}
+			if r.Method == "OPTIONS" {}
 
 				w.WriteHeader(http.StatusOK)
 
-				return	UserID   string `json:"userId"`	
+				return	Status     string    `json:"status"`      // waiting, active, completed	Created int64    `json:"created"`
 
 			}
 
-	UserName string `json:"userName"`	w.Header().Set("Content-Type", "application/json")
+type QueueRequest struct {
 
 			next(w, r)
 
-		}}	json.NewEncoder(w).Encode(response)
+		}	GameMode string `json:"gameMode"`	GameMode   string    `json:"gameMode"`    // quickfire, classic, ranked}
 
 	}
 
-}
+	UserID   string `json:"userId"`
 
-	// API Routes for matchmaking
+	// API Routes
 
-	http.HandleFunc("/api/v1/matches", corsHandler(handleMatches))// In-memory storage (production would use Redis/Database)
+	http.HandleFunc("/api/v1/matches", corsHandler(handleMatches))	UserName string `json:"userName"`	Players    []Player  `json:"players"`
 
 	http.HandleFunc("/api/v1/queue/join", corsHandler(handleQueueJoin))
 
-	http.HandleFunc("/", corsHandler(func(w http.ResponseWriter, r *http.Request) {var (func matchesHandler(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/", corsHandler(func(w http.ResponseWriter, r *http.Request) {}
 
 		w.Header().Set("Content-Type", "application/json")
 
-		json.NewEncoder(w).Encode(map[string]interface{}{	matches      = make(map[string]*Match)	enableCORS(w)
+		json.NewEncoder(w).Encode(map[string]interface{}{	MaxPlayers int       `json:"maxPlayers"`// Simple in-memory storage
 
-			"message": "DashDice Go Backend API",
+			"message": "DashDice Railway Backend API",
 
-			"status":  "running",	matchesMutex = sync.RWMutex{}	
+			"status":  "running",// In-memory storage (production would use Redis/Database)
 
 			"service": "Railway Backend",
 
-		})	botCounter   = 0	if r.Method == "OPTIONS" {
+		})var (	CreatedAt  time.Time `json:"createdAt"`var matches = make(map[string]*Match)
 
 	}))
 
-	queue        = make([]QueueRequest, 0)		return
+	matches      = make(map[string]*Match)
 
 	// Start bot automation
 
-	go startBotAutomation()	queueMutex   = sync.RWMutex{}	}
+	go startBotAutomation()	matchesMutex = sync.RWMutex{}	UpdatedAt  time.Time `json:"updatedAt"`var waitingPlayers = make([]Player, 0)
 
 
 
-	log.Printf("✅ Server ready on http://localhost:%s", port))	
+	log.Printf("✅ Server ready on http://localhost:%s", port)	botCounter   = 0
 
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 
-}	if r.Method == "POST" {
+}	queue        = make([]QueueRequest, 0)}
 
 
 
-func handleMatches(w http.ResponseWriter, r *http.Request) {func main() {		createMatch(w, r)
+func handleMatches(w http.ResponseWriter, r *http.Request) {	queueMutex   = sync.RWMutex{}
 
 	switch r.Method {
 
-	case "GET":	port := os.Getenv("PORT")		return
+	case "GET":)func enableCORS(w http.ResponseWriter) {
 
 		handleGetMatches(w, r)
 
-	case "POST":	if port == "" {	}
+	case "POST":
 
 		handleCreateMatch(w, r)
 
-	default:		port = "8080"	
+	default:func main() {type Player struct {	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 
-	}	}	// GET - return all matches
+	}	port := os.Getenv("PORT")
 
 }
 
-	matchList := make([]*Match, 0)
+	if port == "" {	UserID   string `json:"userId"`	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 
 func handleGetMatches(w http.ResponseWriter, r *http.Request) {
 
-	status := r.URL.Query().Get("status")	log.Printf("🚀 DashDice Go Backend starting on port %s", port)	for _, match := range matches {
+	status := r.URL.Query().Get("status")		port = "8080"
 
 	gameMode := r.URL.Query().Get("game_mode")
 
-	log.Printf("🌍 Environment: %s", os.Getenv("ENVIRONMENT"))		matchList = append(matchList, match)
+	}	UserName string `json:"userName"`	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 	matchesMutex.RLock()
 
-	defer matchesMutex.RUnlock()	}
+	defer matchesMutex.RUnlock()
 
 
 
-	var filteredMatches []*Match	// Health check endpoint	
+	var filteredMatches []*Match	log.Printf("🚀 DashDice Go Backend starting on port %s", port)	IsBot    bool   `json:"isBot"`}
 
 	for _, match := range matches {
 
-		if status != "" && match.Status != status {	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {	w.Header().Set("Content-Type", "application/json")
+		if status != "" && match.Status != status {	log.Printf("🌍 Environment: %s", os.Getenv("ENVIRONMENT"))
 
 			continue
 
-		}		w.Header().Set("Content-Type", "application/json")	json.NewEncoder(w).Encode(matchList)
+		}	Status   string `json:"status"` // joined, ready, disconnected
 
 		if gameMode != "" && match.GameMode != gameMode {
 
-			continue		w.Header().Set("Access-Control-Allow-Origin", "*")}
+			continue	// Health check endpoint
 
 		}
 
-		filteredMatches = append(filteredMatches, match)		json.NewEncoder(w).Encode(map[string]interface{}{
+		filteredMatches = append(filteredMatches, match)	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {}func healthHandler(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-			"status":    "ok",func createMatch(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 
 	w.Header().Set("Content-Type", "application/json")
 
-	json.NewEncoder(w).Encode(map[string]interface{}{			"timestamp": time.Now(),	var player Player
+	json.NewEncoder(w).Encode(map[string]interface{}{		w.Header().Set("Access-Control-Allow-Origin", "*")	enableCORS(w)
 
 		"success": true,
 
-		"matches": filteredMatches,			"service":   "dashdice-go-backend",	if err := json.NewDecoder(r.Body).Decode(&player); err != nil {
+		"matches": filteredMatches,		json.NewEncoder(w).Encode(map[string]interface{}{
 
 		"total":   len(filteredMatches),
 
-		"status":  "success",			"version":   "1.0.0",		http.Error(w, `{"error": "Invalid player data"}`, http.StatusBadRequest)
+		"status":  "success",			"status":    "healthy",type MatchRequest struct {	
 
-		"message": "Go backend active",
+		"message": "Railway backend active",
 
-	})		})		return
+	})			"timestamp": time.Now(),
 
 }
 
-	})	}
+			"service":   "DashDice Go Backend",	GameMode string `json:"gameMode"`	response := map[string]interface{}{
 
 func handleCreateMatch(w http.ResponseWriter, r *http.Request) {
 
-	var req MatchRequest	
+	var req MatchRequest			"message":   "Backend is running successfully! 🎲",
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 
-		http.Error(w, "Invalid request body", http.StatusBadRequest)	// CORS middleware	player.JoinedAt = time.Now().Unix()
+		http.Error(w, "Invalid request body", http.StatusBadRequest)		})	UserID   string `json:"userId"`		"status":    "healthy",
 
 		return
 
-	}	corsHandler := func(next http.HandlerFunc) http.HandlerFunc {	
+	}	})
 
 
 
-	matchesMutex.Lock()		return func(w http.ResponseWriter, r *http.Request) {	log.Printf("Player %s (%s) looking for match", player.Username, player.ID)
+	matchesMutex.Lock()	UserName string `json:"userName"`		"service":   "DashDice Simple Backend",
 
 	defer matchesMutex.Unlock()
 
-			w.Header().Set("Access-Control-Allow-Origin", "*")	
+	// CORS middleware
 
 	// Create new match
 
-	matchID := fmt.Sprintf("match_%d", time.Now().UnixNano())			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")	// Check if there's someone waiting
+	matchID := fmt.Sprintf("match_%d", time.Now().UnixNano())	corsHandler := func(next http.HandlerFunc) http.HandlerFunc {}		"version":   "v1.0-simple",
 
 	match := &Match{
 
-		MatchID:    matchID,			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")	if len(waitingPlayers) > 0 {
+		MatchID:    matchID,		return func(w http.ResponseWriter, r *http.Request) {
 
 		Status:     "waiting",
 
-		GameMode:   req.GameMode,		// Match found! Create a game with the waiting player
+		GameMode:   req.GameMode,			w.Header().Set("Access-Control-Allow-Origin", "*")		"timestamp": time.Now().Unix(),
 
-		MaxPlayers: 2, // Default for most game modes
+		MaxPlayers: 2,
 
-		CreatedAt:  time.Now(),			if r.Method == "OPTIONS" {		waitingPlayer := waitingPlayers[0]
+		CreatedAt:  time.Now(),			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 
 		UpdatedAt:  time.Now(),
 
-		Players: []Player{				w.WriteHeader(http.StatusOK)		waitingPlayers = waitingPlayers[1:] // Remove the waiting player
+		Players: []Player{			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")type QueueRequest struct {		"message":   "Simple matchmaking ready! 🎲",
 
 			{
 
-				UserID:   req.UserID,				return		
+				UserID:   req.UserID,
 
 				UserName: req.UserName,
 
-				IsBot:    false,			}		matchID := fmt.Sprintf("match_%d", time.Now().UnixNano())
+				IsBot:    false,			if r.Method == "OPTIONS" {	GameMode string `json:"gameMode"`	}
 
 				Status:   "joined",
+
+			},				w.WriteHeader(http.StatusOK)
+
+		},
+
+	}				return	UserID   string `json:"userId"`	
+
+
+
+	matches[matchID] = match			}
+
+
+
+	log.Printf("✅ Created match: %s for user %s (%s)", matchID, req.UserName, req.GameMode)	UserName string `json:"userName"`	w.Header().Set("Content-Type", "application/json")
+
+
+
+	w.Header().Set("Content-Type", "application/json")			next(w, r)
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+
+		"success": true,		}}	json.NewEncoder(w).Encode(response)
+
+		"matchId": matchID,
+
+		"match":   match,	}
+
+	})
+
+}}
+
+
+
+func handleQueueJoin(w http.ResponseWriter, r *http.Request) {	// API Routes for matchmaking
+
+	if r.Method != "POST" {
+
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)	http.HandleFunc("/api/v1/matches", corsHandler(handleMatches))// In-memory storage (production would use Redis/Database)
+
+		return
+
+	}	http.HandleFunc("/api/v1/queue/join", corsHandler(handleQueueJoin))
+
+
+
+	var req QueueRequest	http.HandleFunc("/", corsHandler(func(w http.ResponseWriter, r *http.Request) {var (func matchesHandler(w http.ResponseWriter, r *http.Request) {
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+
+		http.Error(w, "Invalid request body", http.StatusBadRequest)		w.Header().Set("Content-Type", "application/json")
+
+		return
+
+	}		json.NewEncoder(w).Encode(map[string]interface{}{	matches      = make(map[string]*Match)	enableCORS(w)
+
+
+
+	// Check for existing waiting matches first			"message": "DashDice Go Backend API",
+
+	matchesMutex.RLock()
+
+	for _, match := range matches {			"status":  "running",	matchesMutex = sync.RWMutex{}	
+
+		if match.Status == "waiting" && match.GameMode == req.GameMode && len(match.Players) < match.MaxPlayers {
+
+			matchesMutex.RUnlock()			"service": "Railway Backend",
+
+			
+
+			// Join existing match		})	botCounter   = 0	if r.Method == "OPTIONS" {
+
+			matchesMutex.Lock()
+
+			match.Players = append(match.Players, Player{	}))
+
+				UserID:   req.UserID,
+
+				UserName: req.UserName,	queue        = make([]QueueRequest, 0)		return
+
+				IsBot:    false,
+
+				Status:   "joined",	// Start bot automation
+
+			})
+
+				go startBotAutomation()	queueMutex   = sync.RWMutex{}	}
+
+			if len(match.Players) >= match.MaxPlayers {
+
+				match.Status = "active"
+
+			}
+
+			match.UpdatedAt = time.Now()	log.Printf("✅ Server ready on http://localhost:%s", port))	
+
+			matchesMutex.Unlock()
+
+	log.Fatal(http.ListenAndServe(":"+port, nil))
+
+			log.Printf("✅ User %s joined match: %s", req.UserName, match.MatchID)
+
+}	if r.Method == "POST" {
+
+			w.Header().Set("Content-Type", "application/json")
+
+			json.NewEncoder(w).Encode(map[string]interface{}{
+
+				"success": true,
+
+				"matchId": match.MatchID,func handleMatches(w http.ResponseWriter, r *http.Request) {func main() {		createMatch(w, r)
+
+				"joined":  true,
+
+				"status":  "success",	switch r.Method {
+
+				"message": "Joined existing match",
+
+			})	case "GET":	port := os.Getenv("PORT")		return
+
+			return
+
+		}		handleGetMatches(w, r)
+
+	}
+
+	matchesMutex.RUnlock()	case "POST":	if port == "" {	}
+
+
+
+	// Add to queue for new match creation		handleCreateMatch(w, r)
+
+	queueMutex.Lock()
+
+	queue = append(queue, req)	default:		port = "8080"	
+
+	queuePosition := len(queue)
+
+	queueMutex.Unlock()		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
+
+
+	log.Printf("✅ User %s added to queue for %s", req.UserName, req.GameMode)	}	}	// GET - return all matches
+
+
+
+	w.Header().Set("Content-Type", "application/json")}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+
+		"success":       true,	matchList := make([]*Match, 0)
+
+		"queued":        true,
+
+		"status":        "success",func handleGetMatches(w http.ResponseWriter, r *http.Request) {
+
+		"message":       "Successfully joined queue via Railway backend",
+
+		"queuePosition": queuePosition,	status := r.URL.Query().Get("status")	log.Printf("🚀 DashDice Go Backend starting on port %s", port)	for _, match := range matches {
+
+		"estimatedWait": "30 seconds",
+
+	})	gameMode := r.URL.Query().Get("game_mode")
+
+}
+
+	log.Printf("🌍 Environment: %s", os.Getenv("ENVIRONMENT"))		matchList = append(matchList, match)
+
+func startBotAutomation() {
+
+	ticker := time.NewTicker(30 * time.Second)	matchesMutex.RLock()
+
+	defer ticker.Stop()
+
+	defer matchesMutex.RUnlock()	}
+
+	for range ticker.C {
+
+		addBotsToWaitingMatches()
+
+		processQueue()
+
+	}	var filteredMatches []*Match	// Health check endpoint	
+
+}
+
+	for _, match := range matches {
+
+func addBotsToWaitingMatches() {
+
+	matchesMutex.Lock()		if status != "" && match.Status != status {	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {	w.Header().Set("Content-Type", "application/json")
+
+	defer matchesMutex.Unlock()
+
+			continue
+
+	for _, match := range matches {
+
+		if match.Status == "waiting" && len(match.Players) < match.MaxPlayers {		}		w.Header().Set("Content-Type", "application/json")	json.NewEncoder(w).Encode(matchList)
+
+			if time.Since(match.CreatedAt) > 30*time.Second {
+
+				botCounter++		if gameMode != "" && match.GameMode != gameMode {
+
+				botName := fmt.Sprintf("Bot_%d", botCounter)
+
+							continue		w.Header().Set("Access-Control-Allow-Origin", "*")}
+
+				match.Players = append(match.Players, Player{
+
+					UserID:   fmt.Sprintf("bot_%d", botCounter),		}
+
+					UserName: botName,
+
+					IsBot:    true,		filteredMatches = append(filteredMatches, match)		json.NewEncoder(w).Encode(map[string]interface{}{
+
+					Status:   "joined",
+
+				})	}
+
+
+
+				if len(match.Players) >= match.MaxPlayers {			"status":    "ok",func createMatch(w http.ResponseWriter, r *http.Request) {
+
+					match.Status = "active"
+
+				}	w.Header().Set("Content-Type", "application/json")
+
+				match.UpdatedAt = time.Now()
+
+	json.NewEncoder(w).Encode(map[string]interface{}{			"timestamp": time.Now(),	var player Player
+
+				log.Printf("🤖 Added bot %s to match %s", botName, match.MatchID)
+
+			}		"success": true,
+
+		}
+
+	}		"matches": filteredMatches,			"service":   "dashdice-go-backend",	if err := json.NewDecoder(r.Body).Decode(&player); err != nil {
+
+}
+
+		"total":   len(filteredMatches),
+
+func processQueue() {
+
+	queueMutex.Lock()		"status":  "success",			"version":   "1.0.0",		http.Error(w, `{"error": "Invalid player data"}`, http.StatusBadRequest)
+
+	defer queueMutex.Unlock()
+
+		"message": "Go backend active",
+
+	if len(queue) == 0 {
+
+		return	})		})		return
+
+	}
+
+}
+
+	// Group queue by game mode
+
+	gameQueues := make(map[string][]QueueRequest)	})	}
+
+	for _, req := range queue {
+
+		gameQueues[req.GameMode] = append(gameQueues[req.GameMode], req)func handleCreateMatch(w http.ResponseWriter, r *http.Request) {
+
+	}
+
+	var req MatchRequest	
+
+	// Create matches from queue
+
+	for gameMode, requests := range gameQueues {	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+
+		if len(requests) >= 2 {
+
+			matchesMutex.Lock()		http.Error(w, "Invalid request body", http.StatusBadRequest)	// CORS middleware	player.JoinedAt = time.Now().Unix()
+
+			matchID := fmt.Sprintf("match_%d", time.Now().UnixNano())
+
+			match := &Match{		return
+
+				MatchID:    matchID,
+
+				Status:     "active",	}	corsHandler := func(next http.HandlerFunc) http.HandlerFunc {	
+
+				GameMode:   gameMode,
+
+				MaxPlayers: 2,
+
+				CreatedAt:  time.Now(),
+
+				UpdatedAt:  time.Now(),	matchesMutex.Lock()		return func(w http.ResponseWriter, r *http.Request) {	log.Printf("Player %s (%s) looking for match", player.Username, player.ID)
+
+				Players: []Player{
+
+					{	defer matchesMutex.Unlock()
+
+						UserID:   requests[0].UserID,
+
+						UserName: requests[0].UserName,			w.Header().Set("Access-Control-Allow-Origin", "*")	
+
+						IsBot:    false,
+
+						Status:   "joined",	// Create new match
+
+					},
+
+					{	matchID := fmt.Sprintf("match_%d", time.Now().UnixNano())			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")	// Check if there's someone waiting
+
+						UserID:   requests[1].UserID,
+
+						UserName: requests[1].UserName,	match := &Match{
+
+						IsBot:    false,
+
+						Status:   "joined",		MatchID:    matchID,			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")	if len(waitingPlayers) > 0 {
+
+					},
+
+				},		Status:     "waiting",
+
+			}
+
+			matches[matchID] = match		GameMode:   req.GameMode,		// Match found! Create a game with the waiting player
+
+			matchesMutex.Unlock()
+
+		MaxPlayers: 2, // Default for most game modes
+
+			log.Printf("✅ Created match %s from queue with %s and %s", 
+
+				matchID, requests[0].UserName, requests[1].UserName)		CreatedAt:  time.Now(),			if r.Method == "OPTIONS" {		waitingPlayer := waitingPlayers[0]
+
+
+
+			// Remove processed requests		UpdatedAt:  time.Now(),
+
+			remainingQueue := make([]QueueRequest, 0)
+
+			for _, req := range queue {		Players: []Player{				w.WriteHeader(http.StatusOK)		waitingPlayers = waitingPlayers[1:] // Remove the waiting player
+
+				if req.GameMode != gameMode {
+
+					remainingQueue = append(remainingQueue, req)			{
+
+				} else if req.UserID != requests[0].UserID && req.UserID != requests[1].UserID {
+
+					remainingQueue = append(remainingQueue, req)				UserID:   req.UserID,				return		
+
+				}
+
+			}				UserName: req.UserName,
+
+			queue = remainingQueue
+
+		}				IsBot:    false,			}		matchID := fmt.Sprintf("match_%d", time.Now().UnixNano())
+
+	}
+
+}				Status:   "joined",
 
 			},		match := &Match{
 
