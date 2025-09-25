@@ -170,7 +170,7 @@ func handleListMatches(w http.ResponseWriter, r *http.Request) {
 	status := r.URL.Query().Get("status")
 	gameMode := r.URL.Query().Get("gameMode")
 	
-	query := firestoreClient.Collection(MATCHES_COLLECTION)
+	query := firestoreClient.Collection(MATCHES_COLLECTION).Query
 	
 	// Apply filters
 	if status != "" {
