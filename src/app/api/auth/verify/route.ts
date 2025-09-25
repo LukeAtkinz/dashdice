@@ -29,6 +29,14 @@ import { NextRequest, NextResponse } from 'next/server';
 
 
 
+
+// Static export configuration for Capacitor builds
+export const dynamic = 'force-static';
+export const revalidate = false;
+export const fetchCache = 'force-cache';
+export const runtime = 'nodejs';
+export const preferredRegion = 'auto';
+
 interface AuthRequest {
   token: string;
 }

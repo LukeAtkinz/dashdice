@@ -2,5 +2,8 @@ module dashdice-backend
 
 go 1.21
 
-// Simple unified backend for DashDice matchmaking
-// No external dependencies required - uses standard library only
+require (
+	cloud.google.com/go/firestore v1.14.0
+	firebase.google.com/go/v4 v4.13.0
+	google.golang.org/api v0.149.0
+)

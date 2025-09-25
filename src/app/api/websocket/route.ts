@@ -45,6 +45,14 @@ import { WebSocketServer, WebSocket } from 'ws';
 
 
 
+
+// Static export configuration for Capacitor builds
+export const dynamic = 'force-static';
+export const revalidate = false;
+export const fetchCache = 'force-cache';
+export const runtime = 'nodejs';
+export const preferredRegion = 'auto';
+
 interface WebSocketMessage {
   type: 'queue_joined' | 'queue_left' | 'match_found' | 'game_started' | 'game_ended' | 'error' | 'ping';
   user_id?: string;
