@@ -1,5 +1,6 @@
 package main
 
+// DEPLOYMENT TIMESTAMP: 2025-09-25 Individual Match Routing Fix
 import (
 	"encoding/json"
 	"fmt"
@@ -49,7 +50,7 @@ func main() {
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"service": "DashDice API", "status": "healthy", "message": "Railway backend running! 🚂"}`)
+		fmt.Fprintf(w, `{"service": "DashDice API v2.1 - Fixed Routing", "status": "healthy", "message": "Railway backend running! 🚂", "deployment": "2025-09-25"}`)
 	})
 
 	http.HandleFunc("/api/v1/queue/join", func(w http.ResponseWriter, r *http.Request) {
