@@ -158,6 +158,31 @@ export const InventorySection: React.FC = () => {
           display: none; /* Chrome, Safari, Opera */
         }
         
+        /* Enhanced mobile scrolling for inventory backgrounds */
+        @media (max-width: 767px) {
+          .inventory-scroll-container {
+            /* Enable smooth momentum scrolling on iOS */
+            -webkit-overflow-scrolling: touch;
+            /* Optimize for touch interactions */
+            touch-action: pan-y;
+            /* Prevent overscroll bounce */
+            overscroll-behavior: contain;
+            /* Ensure container takes full height */
+            height: 100% !important;
+            max-height: 100% !important;
+            /* Force hardware acceleration */
+            transform: translateZ(0);
+            will-change: scroll-position;
+          }
+          
+          /* Ensure parent containers don't constrain scrolling */
+          .inventory-parent-container {
+            height: 100% !important;
+            min-height: 410px !important;
+            overflow: visible !important;
+          }
+        }
+        
         .custom-scrollbar::-webkit-scrollbar {
           width: 8px;
         }
@@ -382,7 +407,7 @@ export const InventorySection: React.FC = () => {
 
       {/* Content */}
       <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4">
-        <div className="flex h-full w-full md:w-auto pl-[0.5rem] md:pl-0" style={{ maxHeight: '410px', height: '410px', maxWidth: '1600px', gap: '20px' }} data-mobile-height="410px" data-desktop-height="615px">
+        <div className="flex h-full w-full md:w-auto pl-[0.5rem] md:pl-0" style={{ maxHeight: '410px', height: '410px', maxWidth: '1600px', gap: '20px', minHeight: '410px' }} data-mobile-height="410px" data-desktop-height="615px">
           
           {/* Items List */}
           <div 
@@ -391,9 +416,9 @@ export const InventorySection: React.FC = () => {
               borderRadius: '20px'
             }}
           >
-            <div className="h-full flex flex-col">
+            <div className="h-full flex flex-col inventory-parent-container">
               <div 
-                className="flex-1 overflow-y-auto overflow-x-hidden relative" 
+                className="flex-1 overflow-y-auto overflow-x-hidden relative inventory-scroll-container" 
                 style={{ 
                   maskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)', 
                   WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)',
@@ -403,7 +428,12 @@ export const InventorySection: React.FC = () => {
                   scrollbarWidth: 'none',
                   msOverflowStyle: 'none',
                   transform: 'translateZ(0)', // Forces hardware acceleration
-                  willChange: 'scroll-position' // Optimizes for scrolling
+                  willChange: 'scroll-position', // Optimizes for scrolling
+                  // Enhanced mobile scrolling
+                  maxHeight: '100%',
+                  height: '100%',
+                  minHeight: '0',
+                  flex: '1 1 auto'
                 }}
               >
                 <div className="space-y-2.5">

@@ -80,6 +80,9 @@ const VideoSplashScreenImproved: React.FC<VideoSplashScreenProps> = ({
           '/Design Elements/Player Profiles/Tourdement.webp',
           '/Design Elements/Player Profiles/Vault.webp',
           '/images/CrownLogo.png',
+          '/icons/DashDice-iOS-Icon.png',
+          '/backgrounds/Relax.png',
+          '/backgrounds/All For Glory.jpg',
         ].map(src => 
           new Promise((resolve) => {
             const img = new Image();
@@ -89,11 +92,16 @@ const VideoSplashScreenImproved: React.FC<VideoSplashScreenProps> = ({
           })
         );
 
-        // Preload critical components
+        // Preload critical components and services
         const componentPromises = [
           import('@/components/layout/SinglePageDashboard'),
           import('@/components/dashboard/DashboardSectionNew'),
           import('@/components/ui/GameModeSelector'),
+          import('@/components/dashboard/GameWaitingRoom'),
+          import('@/components/dashboard/InventoryReference'),
+          import('@/services/userService'),
+          import('@/services/goBackendAdapter'),
+          import('@/services/botMatchingService'),
         ];
 
         // Wait for fonts

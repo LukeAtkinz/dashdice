@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Test</title>
+</head>
+<body>
+    <h1>Image Loading Test</h1>
+    
+    <h2>With spaces in path:</h2>
+    <img src="/Design Elements/CrownLogo.webp" alt="Crown Logo" style="width: 100px;">
+    
+    <h2>URL encoded path:</h2>
+    <img src="/Design%20Elements/CrownLogo.webp" alt="Crown Logo Encoded" style="width: 100px;">
+    
+    <h2>Regular path (no spaces):</h2>
+    <img src="/images/CrownLogo.png" alt="Crown Logo PNG" style="width: 100px;">
+    
+    <script>
+        // Check if images load
+        document.querySelectorAll('img').forEach((img, index) => {
+            img.onload = () => console.log(`Image ${index + 1} loaded successfully`);
+            img.onerror = () => console.error(`Image ${index + 1} failed to load: ${img.src}`);
+        });
+    </script>
+</body>
+</html>
