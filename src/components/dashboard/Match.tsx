@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { MatchService } from '@/services/matchService';
+import { BotAutomationService } from '@/services/botAutomationService';
 import { MatchData } from '@/types/match';
 import { useNavigation } from '@/context/NavigationContext';
 import { TurnDeciderPhase } from './TurnDeciderPhase';
@@ -368,10 +369,16 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       setLoading(false);
     });
 
+    // Start bot automation monitoring for this match
+    BotAutomationService.startMatchMonitoring(roomId);
+
     return () => {
       // Remove performance-impacting logs
       // console.log('🎮 Match: Unsubscribing from match:', roomId);
       unsubscribe();
+      
+      // Stop bot automation monitoring
+      BotAutomationService.stopMatchMonitoring(roomId);
     };
   }, [roomId, user]);
 

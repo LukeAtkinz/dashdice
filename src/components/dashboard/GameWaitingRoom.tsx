@@ -528,7 +528,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   hostData: {
                     playerId: user!.uid,
                     playerDisplayName: userProfile.displayName || 'Player 1',
-                    playerStats: userProfile.stats || {},
+                    playerStats: userProfile.stats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
                     displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped || null,
                     matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped || null,
                     playerScore: startingScore, // Use proper starting score
@@ -537,8 +537,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   
                   opponentData: {
                     playerId: opponentPlayerId,
-                    playerDisplayName: opponentProfile?.displayName || 'Player 2',
-                    playerStats: opponentProfile?.stats || {},
+                    playerDisplayName: opponentProfile?.displayName || (opponentPlayerId.includes('bot') ? 'AI Player' : 'Player 2'),
+                    playerStats: opponentProfile?.stats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
                     displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped || null,
                     matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped || null,
                     playerScore: startingScore, // Use proper starting score
