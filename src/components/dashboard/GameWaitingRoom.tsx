@@ -375,6 +375,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           if (ourMatch && ourMatch.status === 'ready' && ourMatch.players?.length >= 2) {
             console.log('🎉 GameWaitingRoom: Go backend match is ready!', ourMatch);
             
+            // 🤖 Cancel bot countdown since match is already ready
+            cancelBotCountdown();
+            
             // Clear polling
             clearInterval(pollInterval);
             
@@ -1228,8 +1231,11 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       console.log('🔍 Match type detected:', isGoBackendMatch ? 'Go Backend' : 'Firebase');
       
       if (isGoBackendMatch) {
-        // Handle Go backend match - use BotMatchingService directly
-        const gameMode = 'quickfire'; // Go backend matches use quickfire typically
+        // Handle Go backend match - get actual game mode from bridge data
+        const bridgeData = OptimisticMatchmakingService.getBridgeRoomData(sessionId);
+        const gameMode = bridgeData?.gameMode || 'classic'; // Use actual game mode from bridge data
+        console.log('🎯 Using game mode from Go backend:', gameMode);
+        
         const sessionType = 'quick' as 'quick' | 'ranked';
         
         const criteria = {
@@ -1241,7 +1247,14 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         };
         
         console.log('🔍 Finding suitable bot for Go backend match...');
-        const botResult = await BotMatchingService.findSuitableBot(criteria);
+        let botResult = await BotMatchingService.findSuitableBot(criteria);
+        
+        // If no bots found for specific game mode, try with 'classic' as fallback
+        if (!botResult.success && gameMode !== 'classic') {
+          console.log('🔄 No bots found for', gameMode, '- trying with classic mode as fallback');
+          const fallbackCriteria = { ...criteria, gameMode: 'classic' };
+          botResult = await BotMatchingService.findSuitableBot(fallbackCriteria);
+        }
         
         if (botResult.success && botResult.bot) {
           console.log('🎯 Selected bot for Go backend:', botResult.bot.displayName);
