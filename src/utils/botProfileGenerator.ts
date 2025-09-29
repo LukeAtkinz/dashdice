@@ -13,10 +13,10 @@ export function generateBotProfiles(): BotProfile[] {
   
   // Predefined names for variety
   const names = [
-    'Alex Chen', 'Morgan Blake', 'Riley Santos', 'Casey Kim', 'Jordan Rivera',
-    'Taylor Wu', 'Avery Johnson', 'Quinn Adams', 'Sage Thompson', 'Phoenix Lee',
-    'Hayden Wilson', 'Rowan Martinez', 'Emery Clark', 'River Davis', 'Lane Parker',
-    'Finley Cooper', 'Indigo Foster', 'Kai Rodriguez', 'Nova Hughes', 'Aspen Bell'
+    'Respawned', 'MicrowaveHero', 'Banana Shoes', 'AmongSus', 'Giga Chad69',
+    'Gary Kent', 'Grandma Slayer', 'WiFiWarlord', 'Toilet Ninja', 'MilkWizard',
+    'Login Failed', 'Dont Know', 'Big', 'Luke123', 'Agent 21',
+    'Self Storage', 'NoScopeKaren', 'AngryOtter', 'TrashBin27', 'Dark Knight 01'
   ];
   
   // Create bots across different archetypes and skill levels

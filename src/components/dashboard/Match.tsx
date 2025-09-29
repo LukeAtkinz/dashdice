@@ -165,15 +165,15 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         if (choiceMatches) {
           // The player who made the choice goes first
           winner = playerNumber === 1 ? 
-            (matchData.hostData?.playerDisplayName || 'Player 1') : 
-            (matchData.opponentData?.playerDisplayName || 'Player 2');
+            (matchData.hostData?.playerDisplayName || (matchData.hostData?.playerId?.includes('bot') ? 'AI Player' : 'Player 1')) : 
+            (matchData.opponentData?.playerDisplayName || (matchData.opponentData?.playerId?.includes('bot') ? 'AI Player' : 'Player 2'));
           isCurrentPlayerFirst = playerNumber === currentPlayerNumber;
         } else {
           // The other player goes first
           const otherPlayerNumber = playerNumber === 1 ? 2 : 1;
           winner = otherPlayerNumber === 1 ? 
-            (matchData.hostData?.playerDisplayName || 'Player 1') : 
-            (matchData.opponentData?.playerDisplayName || 'Player 2');
+            (matchData.hostData?.playerDisplayName || (matchData.hostData?.playerId?.includes('bot') ? 'AI Player' : 'Player 1')) : 
+            (matchData.opponentData?.playerDisplayName || (matchData.opponentData?.playerId?.includes('bot') ? 'AI Player' : 'Player 2'));
           isCurrentPlayerFirst = otherPlayerNumber === currentPlayerNumber;
         }
         
@@ -1022,27 +1022,44 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     transition={{ duration: 0.6, ease: "easeOut" }}
                     className="text-center py-12"
                   >
-                    <motion.h2
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2, duration: 0.5 }}
-                      className="text-4xl md:text-6xl font-bold mb-4"
-                      style={{ 
-                        fontFamily: "Audiowide",
-                        color: turnAnnouncementData.isCurrentPlayerFirst ? "#FFD700" : "#FF6B6B"
-                      }}
-                    >
-                      {turnAnnouncementData.isCurrentPlayerFirst ? "YOU GO FIRST!" : `${turnAnnouncementData.winner.toUpperCase()} GOES FIRST!`}
-                    </motion.h2>
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.4, duration: 0.5 }}
-                      className="text-xl md:text-2xl text-gray-300"
-                      style={{ fontFamily: "Audiowide" }}
-                    >
-                      GET READY!
-                    </motion.p>
+                    <div className="bg-gradient-to-br from-purple-900/50 to-blue-900/50 rounded-2xl p-8 backdrop-blur-sm border border-purple-500/30 shadow-2xl max-w-2xl mx-auto">
+                      <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2, duration: 0.5 }}
+                        className="text-4xl md:text-6xl font-bold mb-6"
+                        style={{ 
+                          fontFamily: "Audiowide",
+                          background: turnAnnouncementData.isCurrentPlayerFirst 
+                            ? "linear-gradient(45deg, #FFD700, #FFA500)" 
+                            : "linear-gradient(45deg, #FF6B6B, #FF8E8E)",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                          backgroundClip: "text",
+                          textShadow: turnAnnouncementData.isCurrentPlayerFirst 
+                            ? "0 0 20px rgba(255, 215, 0, 0.5)" 
+                            : "0 0 20px rgba(255, 107, 107, 0.5)"
+                        }}
+                      >
+                        {turnAnnouncementData.isCurrentPlayerFirst ? "YOU GO FIRST!" : `${turnAnnouncementData.winner.toUpperCase()} GOES FIRST!`}
+                      </motion.h2>
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.4, duration: 0.5 }}
+                        className="bg-white/10 rounded-xl p-4 border border-white/20"
+                      >
+                        <p
+                          className="text-xl md:text-2xl text-white font-bold"
+                          style={{ 
+                            fontFamily: "Audiowide",
+                            textShadow: "2px 2px 4px rgba(0,0,0,0.8)"
+                          }}
+                        >
+                          GET READY TO ROLL!
+                        </p>
+                      </motion.div>
+                    </div>
                   </motion.div>
                 )}
 

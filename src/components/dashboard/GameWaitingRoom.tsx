@@ -382,7 +382,6 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             clearInterval(pollInterval);
             
             // Start countdown and transition to match
-            setSearchingText('Match found! Starting game...');
             setOpponentJoined(true);
             
             // 🔥 CREATE FIREBASE MATCH for compatibility with existing Match component
@@ -986,7 +985,6 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     setBotOpponent(data.opponentData);
                     setBotFallbackActive(false);
                     setBotCountdown(null);
-                    setSearchingText('AI opponent found!');
                   } else {
                     console.log('👤 Real player joined:', data.opponentData.playerDisplayName);
                     cancelBotCountdown();
@@ -1120,7 +1118,6 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   setBotOpponent(data.opponentData);
                   setBotFallbackActive(false);
                   setBotCountdown(null);
-                  setSearchingText('AI opponent found!');
                 } else {
                   console.log('👤 Real player joined:', data.opponentData.playerDisplayName);
                   cancelBotCountdown();
@@ -1389,7 +1386,6 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             console.log('🤖 Setting bot opponent data in UI:', botOpponentData);
             setGoBackendOpponentData(botOpponentData);
             setBotOpponent(botResult.bot);
-            setSearchingText('AI opponent found!');
           } catch (addBotError) {
             console.error('❌ Failed to add bot to Go backend match:', addBotError);
             setSearchingText('Failed to add AI opponent.');
@@ -2299,8 +2295,34 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               alignItems: 'center',
               gap: '8px'
             }}>
-              {gameType === 'ranked' ? '🏆' : '⚡'} 
-              {gameType === 'ranked' ? 'Ranked Match' : 'Quick Game'}
+              {(() => {
+                // Determine the game type display based on various flags
+                if (waitingRoomEntry?.friendInvitation) {
+                  return (
+                    <>
+                      👥 Private Match
+                    </>
+                  );
+                } else if (waitingRoomEntry?.gameType === 'Private Rematch') {
+                  return (
+                    <>
+                      🔄 Rematch
+                    </>
+                  );
+                } else if (gameType === 'ranked') {
+                  return (
+                    <>
+                      🏆 Ranked Match
+                    </>
+                  );
+                } else {
+                  return (
+                    <>
+                      ⚡ Quick Game
+                    </>
+                  );
+                }
+              })()}
             </div>
           </div>
         </div>
@@ -3100,7 +3122,6 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           }}
         >
           {vsCountdown !== null ? 'Starting Game...' : 
-           opponentJoined ? 'Match Found!' : 
            isLeaving ? 'Leaving...' : 'Leave Game'}
         </button>
       </div>
