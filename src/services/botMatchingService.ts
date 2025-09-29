@@ -234,7 +234,10 @@ export class BotMatchingService {
         score,
         reason: reasons.join(', ') || 'general match'
       };
-    }).filter(item => item.score > 0.3) // Minimum threshold
+    }).filter(item => {
+      console.log(`🤖 Bot ${item.bot.displayName} scored ${item.score.toFixed(2)} (${item.reason})`);
+      return item.score > 0.1; // Lowered minimum threshold from 0.3 to 0.1
+    })
       .sort((a, b) => b.score - a.score); // Highest score first
   }
   

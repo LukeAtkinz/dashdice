@@ -1256,6 +1256,35 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           botResult = await BotMatchingService.findSuitableBot(fallbackCriteria);
         }
         
+        // If still no bots found, try to get any available bot (emergency fallback)
+        if (!botResult.success) {
+          console.log('🚨 Emergency fallback: Getting any available bot...');
+          try {
+            const { collection, query, where, getDocs, limit } = await import('firebase/firestore');
+            const { db } = await import('@/services/firebase');
+            
+            const anyBotQuery = query(
+              collection(db, 'bots'),
+              where('isActive', '==', true),
+              where('isBot', '==', true),
+              limit(1)
+            );
+            
+            const snapshot = await getDocs(anyBotQuery);
+            if (!snapshot.empty) {
+              const botData = snapshot.docs[0].data();
+              botResult = {
+                success: true,
+                bot: { ...botData, uid: snapshot.docs[0].id } as any,
+                matchingReason: 'emergency fallback'
+              };
+              console.log('🎯 Emergency bot selected:', botData.displayName);
+            }
+          } catch (error) {
+            console.error('❌ Emergency bot selection failed:', error);
+          }
+        }
+        
         if (botResult.success && botResult.bot) {
           console.log('🎯 Selected bot for Go backend:', botResult.bot.displayName);
           // The Go backend should handle bot joining automatically
