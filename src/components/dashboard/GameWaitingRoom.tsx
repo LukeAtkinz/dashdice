@@ -1287,9 +1287,19 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         
         if (botResult.success && botResult.bot) {
           console.log('🎯 Selected bot for Go backend:', botResult.bot.displayName);
-          // The Go backend should handle bot joining automatically
-          setSearchingText('AI opponent found!');
-          setBotOpponent(true);
+          
+          try {
+            // Actually add the bot to the Go backend match
+            console.log('🔗 About to call BotMatchingService.addBotToSession for Go backend');
+            await BotMatchingService.addBotToSession(sessionId, botResult.bot);
+            console.log('✅ Successfully added bot to Go backend match');
+            
+            setSearchingText('AI opponent found!');
+            setBotOpponent(true);
+          } catch (addBotError) {
+            console.error('❌ Failed to add bot to Go backend match:', addBotError);
+            setSearchingText('Failed to add AI opponent.');
+          }
         } else {
           console.error('❌ No suitable bot found for Go backend match');
           setSearchingText('No AI opponents available.');

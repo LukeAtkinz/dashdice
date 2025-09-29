@@ -510,9 +510,9 @@ export class BotMatchingService {
   }
   
   /**
-   * 🤖 Add bot to session
+   * 🤖 Add bot to session (PUBLIC METHOD)
    */
-  private static async addBotToSession(sessionId: string, bot: BotProfile): Promise<void> {
+  static async addBotToSession(sessionId: string, bot: BotProfile): Promise<void> {
     try {
       console.log(`🤖 addBotToSession called for session ${sessionId} with bot ${bot.displayName}`);
       
