@@ -37,36 +37,7 @@ export const InventorySection: React.FC = () => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Disable body scrolling when component mounts
-  useEffect(() => {
-    // Store the current scroll position
-    const scrollY = window.scrollY;
-    
-    // Disable scrolling on body and html for both mobile and desktop
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
-    document.documentElement.style.overflow = 'hidden';
-    
-    // Prevent touch scrolling on mobile
-    const preventScroll = (e: TouchEvent) => {
-      e.preventDefault();
-    };
-    
-    document.addEventListener('touchmove', preventScroll, { passive: false });
-    
-    // Re-enable scrolling when component unmounts
-    return () => {
-      document.body.style.overflow = 'unset';
-      document.body.style.position = 'unset';
-      document.body.style.top = 'unset';
-      document.body.style.width = 'unset';
-      document.documentElement.style.overflow = 'unset';
-      window.scrollTo(0, scrollY);
-      document.removeEventListener('touchmove', preventScroll);
-    };
-  }, []);
+  // Scrolling is now enabled for better user experience
 
   // Convert backgrounds to inventory format matching reference
   const ownedDisplayBackgrounds = availableBackgrounds.map((bg, index) => ({
@@ -284,43 +255,6 @@ export const InventorySection: React.FC = () => {
         >
           VAULT
         </h1>
-        
-        {/* Mobile Preview - Show instead of title when preview is active */}
-        <div className="block md:hidden mb-4">
-          {(activeTab === 'display' && selectedBackground) ? (
-            <div className="space-y-2">
-              <h1 
-                className="text-xl font-bold text-white"
-                style={{
-                  fontFamily: "Audiowide",
-                  textTransform: "uppercase",
-                  textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
-                }}
-              >
-                Dashboard Preview
-              </h1>
-              <p className="text-sm text-white/70" style={{ fontFamily: "Montserrat" }}>
-                {selectedBackground.name}
-              </p>
-            </div>
-          ) : (activeTab === 'match' && selectedBackground) ? (
-            <div className="space-y-2">
-              <h1 
-                className="text-xl font-bold text-white"
-                style={{
-                  fontFamily: "Audiowide",
-                  textTransform: "uppercase",
-                  textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
-                }}
-              >
-                Match Preview
-              </h1>
-              <p className="text-sm text-white/70" style={{ fontFamily: "Montserrat" }}>
-                {selectedBackground.name}
-              </p>
-            </div>
-          ) : null}
-        </div>
       </div>      {/* Navigation */}
       <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8 flex-shrink-0">
         <div className="flex items-center justify-center gap-2 md:gap-4">
@@ -375,10 +309,7 @@ export const InventorySection: React.FC = () => {
         </div>
       </div>
 
-      {/* Preview Components */}
-      {selectedBackground && (
-        <></>
-      )}
+
 
       {/* Content */}
       <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4">
