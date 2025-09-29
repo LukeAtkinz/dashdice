@@ -121,23 +121,16 @@ export class BotMatchingService {
         };
       }
       
-      // Score and rank bots based on criteria
-      const rankedBots = this.rankBotsByCriteria(availableBots, criteria);
+      // Simple random selection - no complex scoring needed
+      const randomIndex = Math.floor(Math.random() * availableBots.length);
+      const selectedBot = availableBots[randomIndex];
       
-      if (rankedBots.length === 0) {
-        return {
-          success: false,
-          error: 'No suitable bots match the criteria'
-        };
-      }
-      
-      // Select best bot (with some randomness to avoid always picking the same one)
-      const selectedBot = this.selectBotWithVariety(rankedBots);
+      console.log(`🎯 Randomly selected bot: ${selectedBot.displayName} (${randomIndex + 1}/${availableBots.length})`);
       
       return {
         success: true,
-        bot: selectedBot.bot,
-        matchingReason: selectedBot.reason
+        bot: selectedBot,
+        matchingReason: 'random selection'
       };
       
     } catch (error) {
@@ -162,12 +155,6 @@ export class BotMatchingService {
         limit(50) // Reasonable limit for performance
       );
       
-      // Add game mode filter if the bot supports it
-      if (criteria.gameMode) {
-        // Note: This assumes bots have a preferredGameModes array field
-        // If not available, we'll filter in memory
-      }
-      
       const snapshot = await getDocs(botQuery);
       const bots: BotProfile[] = [];
       
@@ -179,23 +166,47 @@ export class BotMatchingService {
           return;
         }
         
-        // Filter by game mode support (in memory if not in query)
-        if (criteria.gameMode && botData.preferredGameModes) {
-          if (!botData.preferredGameModes.includes(criteria.gameMode)) {
-            return;
-          }
-        }
+        // Add random match background to bot
+        const randomBackground = this.getRandomMatchBackground();
         
-        bots.push({ ...botData, uid: doc.id });
+        bots.push({ 
+          ...botData, 
+          uid: doc.id,
+          inventory: {
+            ...botData.inventory,
+            matchBackgroundEquipped: randomBackground
+          }
+        });
       });
       
-      console.log(`🤖 Found ${bots.length} available bots for matching`);
+      console.log(`🤖 Found ${bots.length} available bots for matching (with random backgrounds)`);
       return bots;
       
     } catch (error) {
       console.error('❌ Error getting available bots:', error);
       return [];
     }
+  }
+  
+  /**
+   * 🎨 Get random match background for bots
+   */
+  private static getRandomMatchBackground() {
+    const backgrounds = [
+      { name: 'New Day', file: '/backgrounds/New Day.mp4', type: 'video' },
+      { name: 'Long Road Ahead', file: '/backgrounds/Long Road Ahead.jpg', type: 'image' },
+      { name: 'All For Glory', file: '/backgrounds/All For Glory.jpg', type: 'image' },
+      { name: 'Underwater', file: '/backgrounds/Underwater.mp4', type: 'video' },
+      { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+      { name: 'Neon City', file: '/backgrounds/Neon City.jpg', type: 'image' },
+      { name: 'Classic Blue', file: '/backgrounds/Classic Blue.jpg', type: 'image' },
+      { name: 'Sunset', file: '/backgrounds/Sunset.mp4', type: 'video' },
+      { name: 'Forest', file: '/backgrounds/Forest.jpg', type: 'image' },
+      { name: 'Ocean Waves', file: '/backgrounds/Ocean Waves.mp4', type: 'video' }
+    ];
+    
+    const randomIndex = Math.floor(Math.random() * backgrounds.length);
+    return backgrounds[randomIndex];
   }
   
   /**
@@ -532,15 +543,42 @@ export class BotMatchingService {
       
       console.log(`🔗 Sending bot join request:`, updateData);
       
+      // Try the update API call
       const updateResult = await DashDiceAPI.updateMatch(sessionId, updateData);
       
       console.log(`🔗 Bot join response:`, updateResult);
       
-      if (!updateResult.success) {
-        throw new Error(`Failed to add bot to Go backend session: ${updateResult.error || 'Unknown error'}`);
+      // Check if it worked
+      if (updateResult && updateResult.success) {
+        console.log(`✅ Bot ${bot.displayName} successfully added to Go backend session ${sessionId}`);
+        return;
       }
       
-      console.log(`✅ Bot ${bot.displayName} added to Go backend session ${sessionId}`);
+      // If that failed, let's try a different approach - directly joining the match
+      console.log(`🔄 Standard join failed, trying alternative bot join method...`);
+      
+      // Alternative: Try creating a match join request similar to how regular players join
+      const joinResult = await fetch('/api/proxy/matches/' + sessionId + '/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          playerId: bot.uid,
+          playerName: bot.displayName,
+          playerType: 'bot',
+          isBot: true
+        })
+      });
+      
+      const joinResponse = await joinResult.json();
+      console.log(`🔗 Alternative bot join response:`, joinResponse);
+      
+      if (joinResult.ok && joinResponse.success) {
+        console.log(`✅ Bot ${bot.displayName} successfully joined via alternative method`);
+        return;
+      }
+      
+      // If both methods failed, throw error
+      throw new Error(`Both bot join methods failed. Update: ${updateResult?.error || 'Unknown'}, Join: ${joinResponse?.error || 'Unknown'}`);
       
     } catch (error) {
       console.error(`❌ Error adding bot to Go backend session:`, error);
