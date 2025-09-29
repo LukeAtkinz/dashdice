@@ -788,7 +788,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
   if (error || !matchData) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-900 via-purple-900 to-indigo-900">
+      <div className="flex items-center justify-center min-h-screen bg-black">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: "Audiowide" }}>
             Match Error

@@ -427,8 +427,16 @@ export class MatchService {
       }
       
       // 🎰 Generate dice values upfront for proper animation coordination
-      const dice1 = Math.floor(Math.random() * 6) + 1;
-      const dice2 = Math.floor(Math.random() * 6) + 1;
+      // Enhanced for Zero Hour: 25% chance to force doubles for more exciting gameplay
+      let dice1 = Math.floor(Math.random() * 6) + 1;
+      let dice2 = Math.floor(Math.random() * 6) + 1;
+      
+      if (matchData.gameMode === 'zero-hour' && Math.random() < 0.25) {
+        const doubleValue = Math.floor(Math.random() * 6) + 1;
+        dice1 = doubleValue;
+        dice2 = doubleValue;
+        console.log('🎲 Zero Hour Enhancement: Forced doubles rolled!', { dice1, dice2 });
+      }
       
       // 🏆 TRACK DICE ROLL ACHIEVEMENTS: Update total dice rolled count (2 dice per roll)
       try {
@@ -535,13 +543,21 @@ export class MatchService {
           newTurnScore = 0;
         }
         else {
-          // Get current multiplier status
+          // Get current multiplier status and count
           const hasMultiplier = matchData.gameData.hasDoubleMultiplier || false;
+          const currentMultiplier = matchData.gameData.multiplierLevel || 2; // Start at 2x
+          const doublesThisTurn = matchData.gameData.doublesThisTurn || 0;
           
           if (isDoubleOne) {
-            // Snake Eyes: +20 to turn score and opponent, activate multiplier
-            console.log('🎲 Zero Hour - Snake Eyes: +20 to turn score, +20 to opponent, activate multiplier');
+            // Snake Eyes: +20 to turn score and opponent, activate/increase multiplier
+            const newDoublesCount = doublesThisTurn + 1;
+            const newMultiplier = 2 + (newDoublesCount - 1); // 2x + additional doubles
+            console.log(`🎲 Zero Hour - Snake Eyes: +20 to turn score, +20 to opponent, ${newMultiplier}x multiplier active`);
             newTurnScore = currentTurnScore + 20;
+            
+            // Update multiplier tracking
+            updates['gameData.doublesThisTurn'] = newDoublesCount;
+            updates['gameData.multiplierLevel'] = newMultiplier;
             
             // Add 20 to opponent's score
             const opponentPlayer = isHost ? matchData.opponentData : matchData.hostData;
@@ -557,11 +573,17 @@ export class MatchService {
             turnOver = false;
           }
           else if (isDouble) {
-            // Any other double: add roll total to turn score, add roll total to opponent, activate multiplier
-            console.log(`🎲 Zero Hour - Double ${dice1}s: +${diceSum} to turn score, +${diceSum} to opponent, activate multiplier`);
+            // Any other double: add dice sum to turn score and opponent, activate/increase multiplier
+            const newDoublesCount = doublesThisTurn + 1;
+            const newMultiplier = 2 + (newDoublesCount - 1); // 2x + additional doubles
+            console.log(`🎲 Zero Hour - Double ${dice1}s: +${diceSum} to turn score, +${diceSum} to opponent, ${newMultiplier}x multiplier active`);
             
             // Add dice sum to turn score (not doubled yet)
             newTurnScore = currentTurnScore + diceSum;
+            
+            // Update multiplier tracking
+            updates['gameData.doublesThisTurn'] = newDoublesCount;
+            updates['gameData.multiplierLevel'] = newMultiplier;
             
             // Add dice sum to opponent's score
             const opponentPlayer = isHost ? matchData.opponentData : matchData.hostData;
@@ -577,10 +599,10 @@ export class MatchService {
             turnOver = false;
           }
           else {
-            // Normal roll: add to turn score (apply multiplier if active)
-            const scoreToAdd = hasMultiplier ? diceSum * 2 : diceSum;
+            // Normal roll: add to turn score (apply current multiplier if active)
+            const scoreToAdd = hasMultiplier ? diceSum * currentMultiplier : diceSum;
             newTurnScore = currentTurnScore + scoreToAdd;
-            console.log(`🎲 Zero Hour - Normal roll: ${dice1} + ${dice2} = ${diceSum}${hasMultiplier ? ' (x2 = ' + scoreToAdd + ')' : ''}, Turn score: ${newTurnScore}`);
+            console.log(`🎲 Zero Hour - Normal roll: ${dice1} + ${dice2} = ${diceSum}${hasMultiplier ? ` (x${currentMultiplier} = ${scoreToAdd})` : ''}, Turn score: ${newTurnScore}`);
             turnOver = false;
           }
         }
@@ -953,6 +975,8 @@ export class MatchService {
       // Clear multiplier when turn ends for any reason
       if (turnOver || eliminatePlayer) {
         updates['gameData.hasDoubleMultiplier'] = false;
+        updates['gameData.multiplierLevel'] = 2; // Reset multiplier level to default
+        updates['gameData.doublesThisTurn'] = 0; // Reset doubles count for new turn
       }
       
       // Handle turn over scenarios
@@ -1191,6 +1215,8 @@ export class MatchService {
       const updates: any = {
         'gameData.turnScore': 0, // Always reset turn score (successful bank or bust)
         'gameData.hasDoubleMultiplier': false, // Always clear multiplier when banking
+        'gameData.multiplierLevel': 2, // Reset multiplier level to default
+        'gameData.doublesThisTurn': 0, // Reset doubles count for new turn
       };
       
       // 📊 TRACK BANKING STATISTICS (only for successful banks)

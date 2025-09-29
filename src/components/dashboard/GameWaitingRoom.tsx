@@ -248,8 +248,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         const userData = {
           displayName: userProfile.displayName || user?.email?.split('@')[0] || 'Anonymous',
           stats: userProfile.stats,
-          displayBackgroundEquipped: userProfile.inventory.displayBackgroundEquipped,
-          matchBackgroundEquipped: userProfile.inventory.matchBackgroundEquipped
+          displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped || null,
+          matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped || null
         };
         // Remove performance-impacting logs
         // console.log('✅ GameWaitingRoom: Processed user data:', userData);
@@ -434,8 +434,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   playerId: opponentPlayerId,
                   playerDisplayName: opponentProfile?.displayName || 'Player 2',
                   playerStats: opponentProfile?.stats || {},
-                  displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped,
-                  matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped,
+                  displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped || null,
+                  matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped || null,
                 };
                 setGoBackendOpponentData(opponentDisplayData);
                 console.log('🎮 GameWaitingRoom: Stored Go backend opponent data:', opponentDisplayData);
@@ -529,8 +529,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     playerId: user!.uid,
                     playerDisplayName: userProfile.displayName || 'Player 1',
                     playerStats: userProfile.stats || {},
-                    displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped,
-                    matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped,
+                    displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped || null,
+                    matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped || null,
                     playerScore: startingScore, // Use proper starting score
                     turnActive: false, // Will be set by turn decider
                   },
@@ -539,8 +539,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     playerId: opponentPlayerId,
                     playerDisplayName: opponentProfile?.displayName || 'Player 2',
                     playerStats: opponentProfile?.stats || {},
-                    displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped,
-                    matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped,
+                    displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped || null,
+                    matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped || null,
                     playerScore: startingScore, // Use proper starting score
                     turnActive: false, // Will be set by turn decider
                   },
@@ -594,8 +594,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       playerId: opponentPlayerId,
                       playerDisplayName: opponentProfile?.displayName || 'Player 2',
                       playerStats: opponentProfile?.stats || {},
-                      displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped,
-                      matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped,
+                      displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped || null,
+                      matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped || null,
                     }
                   };
                   setWaitingRoomEntry(updatedWaitingRoom);

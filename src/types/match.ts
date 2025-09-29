@@ -96,6 +96,9 @@ export interface MatchData {
     gameOverReason?: string;
     hasDoubleMultiplier?: boolean; // 2x multiplier active when player rolls doubles
     trueGritMultiplier?: number; // Stacking multiplier for True Grit mode
+    // Zero Hour enhancement fields
+    multiplierLevel?: number; // Current multiplier level (2, 3, 4, etc.)
+    doublesThisTurn?: number; // Number of doubles rolled in current turn
   };
   
   // Match metadata

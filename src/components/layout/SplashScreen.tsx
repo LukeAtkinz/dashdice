@@ -108,7 +108,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             onEnded={handleVideoEnd}
             onError={handleVideoError}
             onCanPlay={() => setVideoError(false)}
-            className="w-full h-full object-cover"
+            className={`object-contain ${isMobile ? 'w-[80%] h-[60%]' : 'w-[90%] h-[80%]'} max-w-none`}
             style={{ 
               display: videoError ? 'none' : 'block'
             }}
@@ -130,7 +130,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                 console.warn('All splash videos failed, skipping splash screen');
                 handleVideoEnd();
               }}
-              className="w-full h-full object-cover"
+              className={`object-contain ${isMobile ? 'w-[80%] h-[60%]' : 'w-[90%] h-[80%]'} max-w-none`}
             >
               <source src="/Splash Screens/upscaled splash.mp4" type="video/mp4" />
               Your browser does not support the video tag.

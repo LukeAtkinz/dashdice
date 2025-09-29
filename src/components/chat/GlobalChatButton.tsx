@@ -29,14 +29,14 @@ export default function GlobalChatButton() {
 
   return (
     <>
-      {/* Floating Chat Button - Hidden when chat is open */}
+      {/* Floating Chat Button - Hidden when chat is open and hidden on mobile */}
       {!isChatOpen && (
         <motion.button
           onClick={handleToggleChat}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           className="fixed bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors
-                     bottom-24 right-4 
+                     hidden md:block
                      md:bottom-4 md:left-4"
           style={{
             width: '3rem', // 48px

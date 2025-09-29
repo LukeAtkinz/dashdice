@@ -291,8 +291,24 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               </div>
               
               {/* Multiplier Indicators - Absolutely positioned */}
-              {/* Classic/Zero Hour 2X Multiplier */}
-              {matchData.gameData.hasDoubleMultiplier && matchData.gameMode !== 'true-grit' && (
+              {/* Zero Hour Enhanced Multiplier */}
+              {matchData.gameData.hasDoubleMultiplier && matchData.gameMode === 'zero-hour' && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="absolute -right-20 md:-right-24 top-1/2 transform -translate-y-1/2 px-6 md:px-4 py-3 md:py-2 bg-purple-600/40 border-2 border-purple-400 rounded-xl backdrop-blur-sm shadow-xl"
+                >
+                  <p 
+                    className="text-xl md:text-2xl font-bold text-purple-300" 
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    {matchData.gameData.multiplierLevel || 2}X
+                  </p>
+                </motion.div>
+              )}
+              
+              {/* Classic Mode 2X Multiplier */}
+              {matchData.gameData.hasDoubleMultiplier && matchData.gameMode !== 'true-grit' && matchData.gameMode !== 'zero-hour' && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}

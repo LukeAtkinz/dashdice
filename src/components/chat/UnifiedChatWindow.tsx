@@ -103,9 +103,8 @@ export default function UnifiedChatWindow({
     const wasInMatch = isInMatch;
     const previousMatchId = currentMatchId;
     
-    // Check if user is currently in a match - more robust detection
-    const inMatch = (currentSection === 'match' && !!sectionParams.matchId) || 
-                   (currentSection === 'dashboard' && !!sectionParams.matchId);
+    // Check if user is currently in a match - only check match section to prevent race conditions
+    const inMatch = currentSection === 'match' && !!sectionParams.matchId;
     const matchId = sectionParams.matchId || null;
     
     console.log('🔍 Match detection debug:', {
