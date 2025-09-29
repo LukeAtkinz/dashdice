@@ -255,6 +255,18 @@ export const InventorySection: React.FC = () => {
         >
           VAULT
         </h1>
+        
+        {/* Mobile Title */}
+        <h1 
+          className="block md:hidden text-3xl font-bold text-white mb-4"
+          style={{
+            fontFamily: "Audiowide",
+            textTransform: "uppercase",
+            textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
+          }}
+        >
+          VAULT
+        </h1>
       </div>      {/* Navigation */}
       <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8 flex-shrink-0">
         <div className="flex items-center justify-center gap-2 md:gap-4">

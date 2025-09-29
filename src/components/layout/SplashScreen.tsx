@@ -108,7 +108,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             onEnded={handleVideoEnd}
             onError={handleVideoError}
             onCanPlay={() => setVideoError(false)}
-            className={`object-contain ${isMobile ? 'w-[90%] h-[70%]' : 'w-[90%] h-[80%]'} max-w-none`}
+            className={`object-contain ${isMobile ? 'w-[95%] h-[80%]' : 'w-[90%] h-[80%]'} max-w-none`}
             style={{ 
               display: videoError ? 'none' : 'block'
             }}

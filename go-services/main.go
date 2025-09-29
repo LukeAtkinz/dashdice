@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -50,7 +51,7 @@ func main() {
 
 	// API endpoints your frontend expects
 	http.HandleFunc("/api/v1/matches", handleMatches)
-	http.HandleFunc("/api/v1/matches/", handleMatches) // Handle both with and without trailing slash
+	http.HandleFunc("/api/v1/matches/", handleMatchRequests) // Handle both matches and sub-routes like add-bot
 
 	http.HandleFunc("/api/v1/queue/join", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -166,7 +167,7 @@ func handleMatches(w http.ResponseWriter, r *http.Request) {
 		}
 		
 		// Extract game mode and user ID from request
-		gameMode := "quickfire" // Default
+		gameMode := "classic" // Default to classic instead of quickfire
 		if gm, ok := requestData["game_mode"].(string); ok {
 			gameMode = gm
 		}
@@ -249,4 +250,97 @@ func handleMatches(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Error(w, `{"error": "Method not allowed"}`, http.StatusMethodNotAllowed)
 	}
+}
+
+// handleMatchRequests handles match-related requests including bot addition
+func handleMatchRequests(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	w.Header().Set("Content-Type", "application/json")
+	
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	
+	// Parse URL to extract match ID and action
+	path := r.URL.Path
+	log.Printf("🔗 Match request path: %s", path)
+	
+	// Handle /api/v1/matches/{matchId}/add-bot
+	if r.Method == "POST" && len(path) > 20 {
+		// Extract match ID from path like "/api/v1/matches/match_1234567/add-bot"
+		pathParts := strings.Split(path, "/")
+		if len(pathParts) >= 5 && pathParts[4] != "" && len(pathParts) >= 6 && pathParts[5] == "add-bot" {
+			matchID := pathParts[4]
+			handleAddBot(w, r, matchID)
+			return
+		}
+	}
+	
+	// Fallback to regular match handling
+	handleMatches(w, r)
+}
+
+// handleAddBot handles adding a bot to an existing match
+func handleAddBot(w http.ResponseWriter, r *http.Request, matchID string) {
+	log.Printf("🤖 Adding bot to match: %s", matchID)
+	
+	// Parse request body
+	var requestData map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
+		http.Error(w, `{"error": "Invalid request body"}`, http.StatusBadRequest)
+		return
+	}
+	
+	log.Printf("🤖 Bot request data: %+v", requestData)
+	
+	matchMutex.Lock()
+	defer matchMutex.Unlock()
+	
+	// Find the match
+	match, exists := matchStore[matchID]
+	if !exists {
+		http.Error(w, `{"error": "Match not found"}`, http.StatusNotFound)
+		return
+	}
+	
+	// Check if match is in waiting status and has space
+	if match.Status != "waiting" {
+		http.Error(w, `{"error": "Match is not in waiting status"}`, http.StatusBadRequest)
+		return
+	}
+	
+	if len(match.Players) >= 2 {
+		http.Error(w, `{"error": "Match is full"}`, http.StatusBadRequest)
+		return
+	}
+	
+	// Extract bot information
+	botID := "bot_player"
+	botName := "AI Opponent"
+	
+	if botId, ok := requestData["botId"].(string); ok && botId != "" {
+		botID = botId
+	}
+	if botNm, ok := requestData["botName"].(string); ok && botNm != "" {
+		botName = botNm
+	}
+	
+	// Add bot to the match
+	match.Players = append(match.Players, botID)
+	match.Status = "ready"
+	match.Message = fmt.Sprintf("Match ready - %s joined! (2/2)", botName)
+	
+	log.Printf("🤖 Bot %s (%s) added to match %s", botName, botID, matchID)
+	
+	// Return updated match
+	jsonData, err := json.Marshal(match)
+	if err != nil {
+		http.Error(w, `{"error": "Failed to add bot"}`, http.StatusInternalServerError)
+		return
+	}
+	
+	w.Write(jsonData)
 }

@@ -724,7 +724,7 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'profile' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/Delivery Man.webp" alt="Profile" className="w-10 h-10" />
+                <img src="/Design Elements/Delivery Man.webp" alt="Profile" className="w-12 h-12" />
                 <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PROFILE</span>
               </button>
               <button
@@ -733,7 +733,7 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'friends' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/friends.webp" alt="Friends" className="w-11 h-11" />
+                <img src="/Design Elements/friends.webp" alt="Friends" className="w-12 h-12" />
                 <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
                 <NotificationBadge count={onlinePlayerCount} />
               </button>
@@ -743,7 +743,7 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/CrownLogo.webp" alt="Play" className="w-10 h-10" />
+                <img src="/Design Elements/CrownLogo.webp" alt="Play" className="w-12 h-12" />
                 <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PLAY</span>
               </button>
               <button
@@ -755,7 +755,7 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'ranked' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/Player Profiles/Ranked.webp" alt="Ranked" className="w-10 h-10" />
+                <img src="/Design Elements/Player Profiles/Ranked.webp" alt="Ranked" className="w-12 h-12" />
                 <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>RANKED</span>
               </button>
               <button
@@ -764,7 +764,7 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'inventory' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/Player Profiles/Vault.webp" alt="Vault" className="w-10 h-10" />
+                <img src="/Design Elements/Player Profiles/Vault.webp" alt="Vault" className="w-12 h-12" />
                 <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>VAULT</span>
               </button>
             </div>

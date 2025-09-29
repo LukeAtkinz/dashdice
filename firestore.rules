@@ -569,7 +569,10 @@ service cloud.firestore {
       allow read: if request.auth != null; // Users need to read bot profiles for matchmaking
       allow write: if false; // Only server-side operations can write bot data
       allow update: if request.auth != null && 
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats.lastActiveDate', 'lastActiveDate', 'stats.lastActive', 'lastActive']); // Allow updating various lastActive field formats
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats.lastActiveDate', 'lastActiveDate', 'stats.lastActive', 'lastActive', 'stats']) && 
+        // Allow updating any stats field as long as only lastActive-related fields are changed within stats
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['stats']) || 
+         request.resource.data.stats.diff(resource.data.stats).affectedKeys().hasOnly(['lastActiveDate', 'lastActive']));
     }
   }
 }
