@@ -400,6 +400,41 @@ export class DashDiceAPI {
     }
   }
 
+  // ==================== MATCH ACTIONS ====================
+
+  /**
+   * Roll dice in a match
+   */
+  static async rollDice(matchId: string, playerId: string): Promise<ApiResponse> {
+    console.log(`🎲 Rolling dice for player ${playerId} in match ${matchId}`);
+    return this.request(`/matches/${matchId}/actions/roll`, {
+      method: 'POST',
+      body: JSON.stringify({ playerId })
+    });
+  }
+
+  /**
+   * Bank score in a match
+   */
+  static async bankScore(matchId: string, playerId: string): Promise<ApiResponse> {
+    console.log(`🏦 Banking score for player ${playerId} in match ${matchId}`);
+    return this.request(`/matches/${matchId}/actions/bank`, {
+      method: 'POST',
+      body: JSON.stringify({ playerId })
+    });
+  }
+
+  /**
+   * Make turn decider choice
+   */
+  static async makeTurnDeciderChoice(matchId: string, playerId: string, choice: 'odd' | 'even'): Promise<ApiResponse> {
+    console.log(`🎯 Making turn decider choice ${choice} for player ${playerId} in match ${matchId}`);
+    return this.request(`/matches/${matchId}/actions/turn-decider`, {
+      method: 'POST',
+      body: JSON.stringify({ playerId, choice })
+    });
+  }
+
   // ==================== HEALTH CHECK ====================
 
   /**

@@ -25,14 +25,89 @@ export class BotAutomationService {
       return;
     }
 
-    const unsubscribe = onSnapshot(doc(db, 'matches', matchId), (doc) => {
-      if (doc.exists()) {
-        const matchData = { ...doc.data(), id: doc.id } as MatchData;
-        this.handleMatchUpdate(matchData);
-      }
-    });
+    // Check if this is a Go backend match (starts with 'match_' or 'match-')
+    const isGoBackendMatch = matchId.startsWith('match_') || matchId.startsWith('match-');
+    
+    if (isGoBackendMatch) {
+      // Start polling Go backend for match updates
+      this.startGoBackendPolling(matchId);
+    } else {
+      // Use Firebase listener for traditional matches
+      const unsubscribe = onSnapshot(doc(db, 'matches', matchId), (doc) => {
+        if (doc.exists()) {
+          const matchData = { ...doc.data(), id: doc.id } as MatchData;
+          this.handleMatchUpdate(matchData);
+        }
+      });
+      this.activeListeners.set(matchId, unsubscribe);
+    }
+  }
 
-    this.activeListeners.set(matchId, unsubscribe);
+  /**
+   * Start polling Go backend matches for bot automation
+   */
+  private static startGoBackendPolling(matchId: string): void {
+    console.log(`🔄 Starting Go backend polling for bot automation: ${matchId}`);
+    
+    const pollInterval = setInterval(async () => {
+      try {
+        // Import DashDiceAPI to get match details
+        const { default: DashDiceAPI } = await import('@/services/apiClientNew');
+        
+        // Get match details from Go backend
+        const response = await DashDiceAPI.getMatch(matchId);
+        
+        if (response.success && response.data) {
+          // Convert Go backend match data to MatchData format
+          const matchData = this.convertGoBackendToMatchData(response.data);
+          await this.handleMatchUpdate(matchData);
+        } else {
+          console.log(`🔍 Go backend match ${matchId} not found or completed`);
+          // Stop polling if match doesn't exist anymore
+          clearInterval(pollInterval);
+          this.activeListeners.delete(matchId);
+        }
+      } catch (error) {
+        console.error(`❌ Error polling Go backend for match ${matchId}:`, error);
+      }
+    }, 2000); // Poll every 2 seconds
+    
+    // Store the interval ID as the "unsubscribe" function
+    this.activeListeners.set(matchId, () => clearInterval(pollInterval));
+  }
+
+  /**
+   * Convert Go backend match data to internal MatchData format
+   */
+  private static convertGoBackendToMatchData(goBackendData: any): MatchData {
+    console.log(`🔄 Converting Go backend data for bot automation:`, goBackendData);
+    
+    // Map Go backend data structure to internal MatchData format
+    return {
+      id: goBackendData.matchId || goBackendData.id,
+      status: goBackendData.status === 'in_progress' ? 'active' : goBackendData.status,
+      gameMode: goBackendData.gameMode || 'classic',
+      hostData: {
+        playerId: goBackendData.players?.[0]?.playerId || '',
+        playerDisplayName: goBackendData.players?.[0]?.displayName || '',
+        playerScore: goBackendData.players?.[0]?.score || 0,
+        turnActive: goBackendData.currentPlayer === goBackendData.players?.[0]?.playerId
+      },
+      opponentData: {
+        playerId: goBackendData.players?.[1]?.playerId || '',
+        playerDisplayName: goBackendData.players?.[1]?.displayName || '',
+        playerScore: goBackendData.players?.[1]?.score || 0,
+        turnActive: goBackendData.currentPlayer === goBackendData.players?.[1]?.playerId
+      },
+      gameData: {
+        gamePhase: goBackendData.gamePhase || 'gameplay',
+        turnScore: goBackendData.turnScore || 0,
+        isRolling: goBackendData.isRolling || false,
+        roundObjective: goBackendData.targetScore || 100,
+        turnDecider: goBackendData.turnDecider,
+        turnDeciderChoice: goBackendData.turnDeciderChoice
+      }
+    } as MatchData;
   }
 
   /**
@@ -123,7 +198,15 @@ export class BotAutomationService {
       console.log(`🤖 Bot choosing: ${choice}`);
       
       try {
-        await MatchService.makeTurnDeciderChoice(matchData.id!, botPlayer.playerId, choice);
+        // Check if this is a Go backend match
+        const isGoBackendMatch = matchData.id!.startsWith('match_') || matchData.id!.startsWith('match-');
+        
+        if (isGoBackendMatch) {
+          const { default: DashDiceAPI } = await import('@/services/apiClientNew');
+          await DashDiceAPI.makeTurnDeciderChoice(matchData.id!, botPlayer.playerId, choice);
+        } else {
+          await MatchService.makeTurnDeciderChoice(matchData.id!, botPlayer.playerId, choice);
+        }
       } catch (error) {
         console.error(`❌ Error making bot turn decider choice:`, error);
       }
@@ -184,12 +267,28 @@ export class BotAutomationService {
 
     const timeout = setTimeout(async () => {
       try {
-        if (decision.action === 'roll') {
-          console.log(`🎲 Bot ${botProfile.displayName} rolling dice`);
-          await MatchService.rollDice(matchData.id!, botPlayer.playerId);
-        } else if (decision.action === 'bank') {
-          console.log(`🏦 Bot ${botProfile.displayName} banking score`);
-          await MatchService.bankScore(matchData.id!, botPlayer.playerId);
+        // Check if this is a Go backend match
+        const isGoBackendMatch = matchData.id!.startsWith('match_') || matchData.id!.startsWith('match-');
+        
+        if (isGoBackendMatch) {
+          const { default: DashDiceAPI } = await import('@/services/apiClientNew');
+          
+          if (decision.action === 'roll') {
+            console.log(`🎲 Bot ${botProfile.displayName} rolling dice via Go backend`);
+            await DashDiceAPI.rollDice(matchData.id!, botPlayer.playerId);
+          } else if (decision.action === 'bank') {
+            console.log(`🏦 Bot ${botProfile.displayName} banking score via Go backend`);
+            await DashDiceAPI.bankScore(matchData.id!, botPlayer.playerId);
+          }
+        } else {
+          // Use Firebase MatchService for traditional matches
+          if (decision.action === 'roll') {
+            console.log(`🎲 Bot ${botProfile.displayName} rolling dice`);
+            await MatchService.rollDice(matchData.id!, botPlayer.playerId);
+          } else if (decision.action === 'bank') {
+            console.log(`🏦 Bot ${botProfile.displayName} banking score`);
+            await MatchService.bankScore(matchData.id!, botPlayer.playerId);
+          }
         }
       } catch (error) {
         console.error(`❌ Error executing bot action:`, error);
