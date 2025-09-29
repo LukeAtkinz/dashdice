@@ -211,27 +211,34 @@ export class BotMatchingService {
       
       // Skill level matching
       const skillScore = this.calculateSkillMatchScore(bot, criteria);
-      score += skillScore * 0.4; // 40% weight
-      if (skillScore > 0.7) reasons.push('skill match');
+      const safeSkillScore = isNaN(skillScore) ? 0.5 : skillScore; // Default to 0.5 if NaN
+      score += safeSkillScore * 0.4; // 40% weight
+      if (safeSkillScore > 0.7) reasons.push('skill match');
       
       // Difficulty preference
       const difficultyScore = this.calculateDifficultyScore(bot, criteria);
-      score += difficultyScore * 0.3; // 30% weight
-      if (difficultyScore > 0.8) reasons.push('difficulty fit');
+      const safeDifficultyScore = isNaN(difficultyScore) ? 0.5 : difficultyScore; // Default to 0.5 if NaN
+      score += safeDifficultyScore * 0.3; // 30% weight
+      if (safeDifficultyScore > 0.8) reasons.push('difficulty fit');
       
       // Game mode expertise
       const gameModeScore = this.calculateGameModeScore(bot, criteria);
-      score += gameModeScore * 0.2; // 20% weight
-      if (gameModeScore > 0.8) reasons.push('game mode expert');
+      const safeGameModeScore = isNaN(gameModeScore) ? 0.5 : gameModeScore; // Default to 0.5 if NaN
+      score += safeGameModeScore * 0.2; // 20% weight
+      if (safeGameModeScore > 0.8) reasons.push('game mode expert');
       
       // Activity and availability
       const availabilityScore = this.calculateAvailabilityScore(bot);
-      score += availabilityScore * 0.1; // 10% weight
-      if (availabilityScore > 0.9) reasons.push('highly available');
+      const safeAvailabilityScore = isNaN(availabilityScore) ? 0.5 : availabilityScore; // Default to 0.5 if NaN
+      score += safeAvailabilityScore * 0.1; // 10% weight
+      if (safeAvailabilityScore > 0.9) reasons.push('highly available');
+      
+      // Ensure final score is never NaN
+      const finalScore = isNaN(score) ? 0.5 : score;
       
       return {
         bot,
-        score,
+        score: finalScore,
         reason: reasons.join(', ') || 'general match'
       };
     }).filter(item => {
@@ -279,7 +286,10 @@ export class BotMatchingService {
     if (!criteria.userSkillLevel) return 0.5; // Neutral if no user skill info
     
     const userElo = criteria.userSkillLevel;
-    const botElo = bot.stats.elo;
+    const botElo = bot.stats?.elo || 1200; // Default to 1200 if undefined
+    
+    // Ensure we have valid numbers
+    if (isNaN(userElo) || isNaN(botElo)) return 0.5;
     
     // Calculate ELO difference (closer = better)
     const eloDiff = Math.abs(userElo - botElo);
@@ -331,30 +341,53 @@ export class BotMatchingService {
     const currentHour = now.getHours();
     
     // Check if it's the bot's preferred time
-    const hourDiff = Math.abs(currentHour - bot.personality.favoriteTimeToPlay);
+    const favoriteTime = bot.personality?.favoriteTimeToPlay || 12; // Default to noon if undefined
+    const hourDiff = Math.abs(currentHour - favoriteTime);
     const timeScore = Math.max(0.5, 1 - (hourDiff / 12)); // 12 hours = complete opposite
     
     // Check recent activity (prefer bots that haven't been used recently)
-    const lastActive = new Date(bot.stats.lastActiveDate);
-    const hoursSinceActive = (now.getTime() - lastActive.getTime()) / (1000 * 60 * 60);
-    const freshnessScore = Math.min(1, hoursSinceActive / 24); // Full score after 24 hours
+    const lastActiveDate = bot.stats?.lastActiveDate;
+    let freshnessScore = 1.0; // Default to full freshness
     
-    return (timeScore * 0.3 + freshnessScore * 0.7);
+    if (lastActiveDate) {
+      try {
+        const lastActive = new Date(lastActiveDate);
+        if (!isNaN(lastActive.getTime())) {
+          const hoursSinceActive = (now.getTime() - lastActive.getTime()) / (1000 * 60 * 60);
+          freshnessScore = Math.min(1, hoursSinceActive / 24); // Full score after 24 hours
+        }
+      } catch (error) {
+        // If date parsing fails, use default freshness score
+        freshnessScore = 1.0;
+      }
+    }
+    
+    const finalScore = (timeScore * 0.3 + freshnessScore * 0.7);
+    return isNaN(finalScore) ? 0.7 : finalScore; // Default to 0.7 if calculation fails
   }
   
   /**
    * 🔢 Get bot difficulty level (1-10)
    */
   private static getBotDifficultyLevel(bot: BotProfile): number {
-    return bot.difficultyRating || this.calculateDifficultyFromStats(bot);
+    const difficultyRating = bot.difficultyRating;
+    if (difficultyRating && !isNaN(difficultyRating)) {
+      return difficultyRating;
+    }
+    
+    // Fallback to calculated difficulty
+    return this.calculateDifficultyFromStats(bot);
   }
   
   /**
    * 📊 Calculate difficulty from bot stats and personality
    */
   private static calculateDifficultyFromStats(bot: BotProfile): number {
-    const elo = bot.stats.elo;
-    const winRate = bot.stats.gamesPlayed > 0 ? bot.stats.matchWins / bot.stats.gamesPlayed : 0.5;
+    const elo = bot.stats?.elo || 1200; // Default ELO
+    const gamesPlayed = bot.stats?.gamesPlayed || 0;
+    const matchWins = bot.stats?.matchWins || 0;
+    
+    const winRate = gamesPlayed > 0 ? matchWins / gamesPlayed : 0.5;
     
     // Convert ELO to 1-10 scale (assuming 800-2000 ELO range)
     const eloScore = Math.max(1, Math.min(10, (elo - 800) / 120));
@@ -363,7 +396,8 @@ export class BotMatchingService {
     const winRateScore = winRate * 10;
     
     // Combine and clamp
-    return Math.max(1, Math.min(10, (eloScore + winRateScore) / 2));
+    const difficulty = Math.max(1, Math.min(10, (eloScore + winRateScore) / 2));
+    return isNaN(difficulty) ? 5 : difficulty; // Default to medium difficulty if calculation fails
   }
   
   /**
@@ -485,17 +519,25 @@ export class BotMatchingService {
    */
   private static async addBotToGoBackendSession(sessionId: string, bot: BotProfile): Promise<void> {
     try {
+      console.log(`🔗 Attempting to add bot ${bot.displayName} to Go backend session ${sessionId}`);
+      
       const { default: DashDiceAPI } = await import('./apiClientNew');
       
-      const updateResult = await DashDiceAPI.updateMatch(sessionId, {
+      const updateData = {
         action: 'join',
         playerId: bot.uid,
         playerName: bot.displayName,
         playerType: 'bot'
-      });
+      };
+      
+      console.log(`🔗 Sending bot join request:`, updateData);
+      
+      const updateResult = await DashDiceAPI.updateMatch(sessionId, updateData);
+      
+      console.log(`🔗 Bot join response:`, updateResult);
       
       if (!updateResult.success) {
-        throw new Error(`Failed to add bot to Go backend session: ${updateResult.error}`);
+        throw new Error(`Failed to add bot to Go backend session: ${updateResult.error || 'Unknown error'}`);
       }
       
       console.log(`✅ Bot ${bot.displayName} added to Go backend session ${sessionId}`);
