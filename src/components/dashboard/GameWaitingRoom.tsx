@@ -392,7 +392,34 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               
               // Get opponent player data (second player in Go backend match)
               const opponentPlayerId = ourMatch.players.find((p: string) => p !== user!.uid);
-              const opponentProfile = opponentPlayerId ? await UserService.getUserProfile(opponentPlayerId) : null;
+              let opponentProfile = null;
+              
+              if (opponentPlayerId) {
+                // First try to get as a regular user
+                opponentProfile = await UserService.getUserProfile(opponentPlayerId);
+                
+                // If not found, it might be a bot - try the bots collection
+                if (!opponentProfile && opponentPlayerId.includes('bot')) {
+                  try {
+                    const { doc, getDoc } = await import('firebase/firestore');
+                    const { db } = await import('@/services/firebase');
+                    const botDoc = await getDoc(doc(db, 'bots', opponentPlayerId));
+                    
+                    if (botDoc.exists()) {
+                      const botData = botDoc.data();
+                      opponentProfile = {
+                        uid: opponentPlayerId,
+                        displayName: botData.displayName,
+                        stats: botData.stats,
+                        inventory: botData.inventory
+                      };
+                      console.log('🤖 Found bot opponent profile:', opponentProfile);
+                    }
+                  } catch (botError) {
+                    console.warn('⚠️ Failed to fetch bot profile:', botError);
+                  }
+                }
+              }
               
               if (opponentProfile && bridgeData && userProfile) {
                 console.log('🔄 GameWaitingRoom: Creating Firebase match from Go backend match');
@@ -1294,8 +1321,24 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             await BotMatchingService.addBotToSession(sessionId, botResult.bot);
             console.log('✅ Successfully added bot to Go backend match');
             
+            // Set bot opponent data for UI display
+            const botOpponentData = {
+              playerDisplayName: botResult.bot.displayName,
+              playerId: botResult.bot.uid,
+              displayBackgroundEquipped: botResult.bot.inventory?.displayBackgroundEquipped || null,
+              matchBackgroundEquipped: botResult.bot.inventory?.matchBackgroundEquipped || null,
+              playerStats: {
+                bestStreak: botResult.bot.stats?.bestStreak || 0,
+                currentStreak: botResult.bot.stats?.currentStreak || 0,
+                gamesPlayed: botResult.bot.stats?.gamesPlayed || 0,
+                matchWins: botResult.bot.stats?.matchWins || 0
+              }
+            };
+            
+            console.log('🤖 Setting bot opponent data in UI:', botOpponentData);
+            setGoBackendOpponentData(botOpponentData);
+            setBotOpponent(botResult.bot);
             setSearchingText('AI opponent found!');
-            setBotOpponent(true);
           } catch (addBotError) {
             console.error('❌ Failed to add bot to Go backend match:', addBotError);
             setSearchingText('Failed to add AI opponent.');

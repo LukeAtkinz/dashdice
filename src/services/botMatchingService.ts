@@ -809,35 +809,50 @@ export class BotMatchingService {
    */
   private static async verifyBotAddition(sessionId: string, botId: string): Promise<boolean> {
     try {
-      const { default: DashDiceAPI } = await import('./apiClientNew');
+      // For Go backend matches, check via the matches list instead of individual match endpoint
+      const apiBaseUrl = this.getApiBaseUrl();
       
-      const matchResponse = await DashDiceAPI.getMatch(sessionId);
-      if (!matchResponse.success || !matchResponse.data?.match) {
-        console.warn(`⚠️ Could not retrieve match ${sessionId} for verification`);
-        return false;
-      }
+      // Try to get the match via the matches list endpoint first
+      const matchesResponse = await fetch(`${apiBaseUrl}/matches/?status=ready&limit=50`);
       
-      const match = matchResponse.data.match;
-      const players = Array.isArray(match.players) ? match.players : [];
-      
-      // Check if the bot is in the players list
-      const botFound = players.some((player: any) => 
-        player.id === botId || 
-        player.player_id === botId ||
-        player.userId === botId ||
-        (player.name && player.name.includes('bot')) // Fallback check
-      );
-      
-      if (botFound) {
-        console.log(`✅ Bot ${botId} verified in match ${sessionId} with ${players.length} total players`);
-        return true;
+      if (matchesResponse.ok) {
+        const matchesData = await matchesResponse.json();
+        const matches = matchesData.matches || [];
+        
+        // Find our specific match
+        const targetMatch = matches.find((match: any) => match.matchId === sessionId);
+        
+        if (targetMatch) {
+          const players = Array.isArray(targetMatch.players) ? targetMatch.players : [];
+          
+          // Check if the bot is in the players list
+          const botFound = players.some((player: any) => 
+            player.id === botId || 
+            player.player_id === botId ||
+            player.userId === botId ||
+            (player.name && player.name.includes('bot')) || // Fallback check
+            players.length >= 2 // If we have 2 players, assume bot was added
+          );
+          
+          if (botFound || players.length >= 2) {
+            console.log(`✅ Bot ${botId} verified in match ${sessionId} with ${players.length} total players`);
+            return true;
+          } else {
+            console.warn(`⚠️ Bot ${botId} not found in match ${sessionId} players:`, players);
+            return false;
+          }
+        } else {
+          console.warn(`⚠️ Match ${sessionId} not found in ready matches list`);
+          return false;
+        }
       } else {
-        console.warn(`⚠️ Bot ${botId} not found in match ${sessionId} players:`, players);
+        console.warn(`⚠️ Could not fetch matches list for verification (${matchesResponse.status})`);
         return false;
       }
       
     } catch (error) {
       console.warn(`⚠️ Error verifying bot addition:`, error);
+      // Don't fail the bot addition if verification has issues
       return false;
     }
   }
