@@ -205,18 +205,31 @@ export class BotAutomationService {
    * Get the active bot player from match data
    */
   private static getActiveBotPlayer(matchData: MatchData): any | null {
+    console.log(`🔍 Checking for active bot in match ${matchData.id}:`, {
+      hostId: matchData.hostData?.playerId,
+      hostTurnActive: matchData.hostData?.turnActive,
+      hostIsBot: matchData.hostData?.playerId?.includes('bot'),
+      opponentId: matchData.opponentData?.playerId,
+      opponentTurnActive: matchData.opponentData?.turnActive,
+      opponentIsBot: matchData.opponentData?.playerId?.includes('bot'),
+      gamePhase: matchData.gameData?.gamePhase
+    });
+
     // Check if host is a bot and active
-    if (matchData.hostData.playerId.includes('bot') && 
+    if (matchData.hostData?.playerId?.includes('bot') && 
         (matchData.hostData.turnActive || this.isBotTurnDecider(matchData, matchData.hostData))) {
+      console.log(`🤖 Host is active bot: ${matchData.hostData.playerDisplayName}`);
       return matchData.hostData;
     }
 
     // Check if opponent is a bot and active
-    if (matchData.opponentData?.playerId.includes('bot') && 
+    if (matchData.opponentData?.playerId?.includes('bot') && 
         (matchData.opponentData.turnActive || this.isBotTurnDecider(matchData, matchData.opponentData))) {
+      console.log(`🤖 Opponent is active bot: ${matchData.opponentData.playerDisplayName}`);
       return matchData.opponentData;
     }
 
+    console.log(`🚫 No active bot found`);
     return null;
   }
 
