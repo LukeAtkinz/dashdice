@@ -31,13 +31,10 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
     }
   }, []);
 
-  // Get the appropriate video source based on device type
+  // Get the new unified splash screen video
   const getVideoSource = useCallback(() => {
-    if (isMobile) {
-      return '/Splash Screens/mobile.mp4';
-    }
-    return '/Splash Screens/desktop.mp4';
-  }, [isMobile]);
+    return '/Splash Screens/SplashScreenNew.mp4';
+  }, []);
 
   // Handle video end
   const handleVideoEnd = useCallback(() => {
@@ -135,7 +132,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
               }}
               className="w-full h-full object-cover"
             >
-              <source src="/Splash Screens/splashscreen.mp4" type="video/mp4" />
+              <source src="/Splash Screens/SplashScreenNew.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           )}
