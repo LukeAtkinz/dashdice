@@ -568,6 +568,9 @@ service cloud.firestore {
     match /bots/{botId} {
       allow read: if request.auth != null; // Users need to read bot profiles for matchmaking
       allow write: if false; // Only server-side operations can write bot data
+      allow update: if request.auth != null && 
+        resource.data.keys().hasAll(['stats']) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats.lastActiveDate']); // Allow updating lastActiveDate only
     }
   }
 }

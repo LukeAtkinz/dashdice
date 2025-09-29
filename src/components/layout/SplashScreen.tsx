@@ -33,7 +33,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
 
   // Get the new unified splash screen video
   const getVideoSource = useCallback(() => {
-    return '/Splash Screens/SplashScreenNew.mp4';
+    return '/Splash Screens/upscaled splash.mp4';
   }, []);
 
   // Handle video end
@@ -132,7 +132,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
               }}
               className="w-full h-full object-cover"
             >
-              <source src="/Splash Screens/SplashScreenNew.mp4" type="video/mp4" />
+              <source src="/Splash Screens/upscaled splash.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           )}

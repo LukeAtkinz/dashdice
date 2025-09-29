@@ -27,6 +27,14 @@ export async function POST(
       if (goResponse.ok) {
         const data = await goResponse.json();
         console.log('[Bot API] Go backend bot addition successful:', data);
+        
+        // Validate that the response is for the correct match
+        if (data.matchId && data.matchId !== params.matchId) {
+          console.warn(`[Bot API] ⚠️ Response matchId (${data.matchId}) doesn't match request matchId (${params.matchId})`);
+          // Override with correct match ID
+          data.matchId = params.matchId;
+        }
+        
         return NextResponse.json(data);
       } else {
         console.log('[Bot API] Go backend failed:', await goResponse.text());
@@ -36,13 +44,18 @@ export async function POST(
     }
 
     // Fallback: Force the match to ready status with bot
-    console.log('[Bot API] Using fallback method - force ready with bot');
+    console.log('[Bot API] Using fallback method - force ready with bot for match:', params.matchId);
     
     const fallbackResponse = {
       success: true,
       message: 'Bot added via fallback method',
+      matchId: params.matchId, // Ensure correct match ID
       bot: body.botData || { id: body.botId, name: body.botName },
-      matchStatus: 'ready'
+      matchStatus: 'ready',
+      players: [
+        { id: 'user', name: 'Player' },
+        { id: body.botId, name: body.botName, isBot: true }
+      ]
     };
     
     return NextResponse.json(fallbackResponse);

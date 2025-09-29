@@ -427,21 +427,23 @@ const ProfileSection: React.FC = () => {
         </div>
 
         {/* Content */}
-        <div className="w-full max-w-[80rem] flex-1 overflow-y-auto scrollbar-hide px-4">
+        <div className="w-full max-w-[80rem] flex-1 overflow-y-auto scrollbar-hide px-4 md:px-4">
 
           {/* Profile Tab Content */}
           {activeTab === 'profile' && (
             <div className="space-y-6">
               {/* Player Profile Card - Friends Style */}
               <motion.div 
-                className="relative overflow-hidden touch-manipulation"
+                className="relative overflow-hidden touch-manipulation w-full md:w-auto"
                 style={{
                   background: MatchBackgroundEquip?.file 
                     ? `url(${MatchBackgroundEquip.file})`
                     : 'linear-gradient(135deg, #667eea, #764ba2)',
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
-                  borderRadius: '20px'
+                  borderRadius: '20px',
+                  width: 'calc(100vw - 2rem)', // 100% viewport width minus padding on mobile
+                  maxWidth: '100%'
                 }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

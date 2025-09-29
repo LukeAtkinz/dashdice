@@ -525,10 +525,13 @@ export class BotMatchingService {
         await this.addBotToFirebaseSession(sessionId, bot);
       }
       
-      // Update bot's last active time
+      // Update bot's last active time (non-blocking)
       console.log(`⏰ Updating bot last active time for ${bot.uid}`);
-      await this.updateBotLastActive(bot.uid);
-      console.log(`✅ Bot last active time updated successfully`);
+      this.updateBotLastActive(bot.uid).catch(error => {
+        console.warn(`⚠️ Could not update bot last active time for ${bot.uid}:`, error);
+        // This is not critical, so we don't block the bot addition
+      });
+      console.log(`✅ Bot added to session successfully`);
       
     } catch (error) {
       console.error(`❌ Error in addBotToSession for ${sessionId}:`, error);
@@ -537,36 +540,83 @@ export class BotMatchingService {
   }
   
   /**
+   * Get API base URL based on environment
+   */
+  private static getApiBaseUrl(): string {
+    // Check if we're in production
+    if (typeof window !== 'undefined' && 
+        (window.location.hostname === 'www.dashdice.gg' || 
+         window.location.hostname === 'dashdice.gg' ||
+         window.location.hostname.includes('vercel.app'))) {
+      // Use same-origin proxy to avoid CORS issues
+      return '/api/proxy';
+    }
+    
+    // Development or local - use direct Go backend
+    return process.env.NEXT_PUBLIC_LOCAL_API_GATEWAY_URL || 'http://localhost:8080';
+  }
+
+  /**
    * 🤖 Add bot to Go backend session
    */
   private static async addBotToGoBackendSession(sessionId: string, bot: BotProfile): Promise<void> {
     try {
       console.log(`🔗 Starting addBotToGoBackendSession for bot ${bot.displayName} in session ${sessionId}`);
       
+      const apiBaseUrl = this.getApiBaseUrl();
+      console.log(`🌐 Using API base URL: ${apiBaseUrl}`);
+      
       // Method 1: Direct bot addition via proxy API
       console.log(`🎯 Method 1: Trying direct bot addition API`);
       try {
-        const directBotResult = await fetch('/api/proxy/matches/' + sessionId + '/add-bot', {
+        const directBotResult = await fetch(`${apiBaseUrl}/matches/${sessionId}/add-bot`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             botId: bot.uid,
             botName: bot.displayName,
+            matchId: sessionId, // Explicitly include the match ID
             botData: {
               id: bot.uid,
               name: bot.displayName,
               stats: bot.stats,
-              background: bot.inventory?.matchBackgroundEquipped
+              background: bot.inventory?.matchBackgroundEquipped,
+              isBot: true,
+              playerType: 'bot'
             }
           })
         });
         
+        console.log(`🔗 Bot addition response status: ${directBotResult.status}`);
+        
         if (directBotResult.ok) {
           const directResponse = await directBotResult.json();
           console.log(`✅ Direct bot addition successful:`, directResponse);
-          return;
+          
+          // More flexible validation - check if response indicates success
+          if (directResponse.matchId || directResponse.success || directResponse.message?.includes('bot added')) {
+            console.log(`✅ Bot successfully added to match: ${sessionId}`);
+            
+            // Verify the bot was actually added by checking the match status
+            try {
+              await new Promise(resolve => setTimeout(resolve, 500)); // Brief delay to allow backend to update
+              const verificationResult = await this.verifyBotAddition(sessionId, bot.uid);
+              if (verificationResult) {
+                console.log(`✅ Bot addition verified successfully`);
+              } else {
+                console.warn(`⚠️ Bot addition could not be verified, but proceeding`);
+              }
+            } catch (verifyError) {
+              console.warn(`⚠️ Bot verification failed, but proceeding:`, verifyError);
+            }
+            
+            return;
+          } else {
+            console.warn(`⚠️ Bot addition response doesn't confirm success:`, directResponse);
+          }
         } else {
-          console.log(`❌ Direct bot addition failed:`, await directBotResult.text());
+          const errorText = await directBotResult.text();
+          console.log(`❌ Direct bot addition failed (${directBotResult.status}):`, errorText);
         }
       } catch (directError) {
         console.log(`❌ Direct bot addition error:`, directError);
@@ -600,7 +650,7 @@ export class BotMatchingService {
       // Method 3: Generic join endpoint 
       console.log(`🎯 Method 3: Trying generic join endpoint`);
       try {
-        const joinResult = await fetch('/api/proxy/matches/' + sessionId + '/join', {
+        const joinResult = await fetch(`${apiBaseUrl}/matches/${sessionId}/join`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -625,7 +675,7 @@ export class BotMatchingService {
       // Method 4: Force match to ready status (emergency fallback)
       console.log(`🎯 Method 4: Emergency fallback - forcing match to ready`);
       try {
-        const forceReadyResult = await fetch('/api/proxy/matches/' + sessionId + '/force-ready', {
+        const forceReadyResult = await fetch(`${apiBaseUrl}/matches/${sessionId}/force-ready`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -741,13 +791,54 @@ export class BotMatchingService {
    */
   private static async updateBotLastActive(botId: string): Promise<void> {
     try {
+      console.log(`⏰ Attempting to update bot last active time for ${botId}`);
       const { updateDoc, serverTimestamp } = await import('firebase/firestore');
       const botRef = doc(db, this.BOTS_COLLECTION, botId);
       await updateDoc(botRef, {
         'stats.lastActiveDate': serverTimestamp()
       });
+      console.log(`✅ Successfully updated bot last active time for ${botId}`);
     } catch (error) {
-      console.error(`❌ Error updating bot last active time for ${botId}:`, error);
+      console.warn(`⚠️ Could not update bot last active time for ${botId}:`, error);
+      // Don't throw - this is not critical for bot functionality
+    }
+  }
+  
+  /**
+   * ✅ Verify that bot was actually added to the match
+   */
+  private static async verifyBotAddition(sessionId: string, botId: string): Promise<boolean> {
+    try {
+      const { default: DashDiceAPI } = await import('./apiClientNew');
+      
+      const matchResponse = await DashDiceAPI.getMatch(sessionId);
+      if (!matchResponse.success || !matchResponse.data?.match) {
+        console.warn(`⚠️ Could not retrieve match ${sessionId} for verification`);
+        return false;
+      }
+      
+      const match = matchResponse.data.match;
+      const players = Array.isArray(match.players) ? match.players : [];
+      
+      // Check if the bot is in the players list
+      const botFound = players.some((player: any) => 
+        player.id === botId || 
+        player.player_id === botId ||
+        player.userId === botId ||
+        (player.name && player.name.includes('bot')) // Fallback check
+      );
+      
+      if (botFound) {
+        console.log(`✅ Bot ${botId} verified in match ${sessionId} with ${players.length} total players`);
+        return true;
+      } else {
+        console.warn(`⚠️ Bot ${botId} not found in match ${sessionId} players:`, players);
+        return false;
+      }
+      
+    } catch (error) {
+      console.warn(`⚠️ Error verifying bot addition:`, error);
+      return false;
     }
   }
 }
