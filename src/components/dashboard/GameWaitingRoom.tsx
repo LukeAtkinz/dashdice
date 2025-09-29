@@ -353,8 +353,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
     console.log('🔄 GameWaitingRoom: Starting Go backend match status polling for:', roomId);
 
-    // Bot countdown disabled to hide bot presence from users
-    // startBotCountdown(roomId);
+    // Start bot countdown for fallback matching
+    startBotCountdown(roomId);
 
     const pollInterval = setInterval(async () => {
       try {
@@ -1081,10 +1081,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           const docRef = await addDoc(collection(db, 'waitingroom'), entry);
           const gameId = docRef.id;
           
-          // Bot countdown disabled to hide bot presence from users
-          // if (actionType === 'live' && !entry.friendInvitation) {
-          //   startBotCountdown(gameId);
-          // }
+          // Start bot countdown for live matches without friend invitations
+          if (actionType === 'live' && !entry.friendInvitation) {
+            startBotCountdown(gameId);
+          }
           
           // Set up listener for when opponent joins
           const unsubscribe = onSnapshot(doc(db, 'waitingroom', gameId), (doc) => {
