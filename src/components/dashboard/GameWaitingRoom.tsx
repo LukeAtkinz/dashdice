@@ -12,7 +12,7 @@ import { GameType } from '@/types/ranked';
 import { RankedMatchmakingService } from '@/services/rankedMatchmakingService';
 import { NewMatchmakingService } from '@/services/newMatchmakingService';
 import { OptimisticMatchmakingService } from '@/services/optimisticMatchmakingService';
-import { BotMatchingService } from '../../services/botMatchingService';
+import { BotMatchingService } from '@/services/botMatchingService';
 import MatchAbandonmentNotification from '@/components/notifications/MatchAbandonmentNotification';
 
 interface GameWaitingRoomProps {
@@ -352,6 +352,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     }
 
     console.log('🔄 GameWaitingRoom: Starting Go backend match status polling for:', roomId);
+
+    // 🤖 Start bot countdown for Go backend matches (7 seconds)
+    startBotCountdown(roomId);
 
     const pollInterval = setInterval(async () => {
       try {
@@ -1190,16 +1193,15 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
   // 🤖 Function to start bot fallback countdown (7 seconds)
   const startBotCountdown = (sessionId: string) => {
-    console.log('🤖 Starting bot fallback countdown (7 seconds) for session:', sessionId);
+    console.log('🤖 Starting bot fallback countdown (7 seconds)...');
     setBotFallbackActive(true);
     setBotCountdown(7);
     
     const timer = setInterval(() => {
       setBotCountdown((prev) => {
-        console.log('🤖 Bot countdown tick:', prev);
         if (prev === null || prev <= 1) {
           clearInterval(timer);
-          console.log('🤖 Bot countdown finished! Attempting bot match for session:', sessionId);
+          console.log('🤖 Bot countdown finished! Attempting bot match...');
           
           // Trigger bot matching
           setTimeout(() => {
@@ -1218,83 +1220,55 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     try {
       console.log('🤖 Attempting to add bot to session:', sessionId);
       console.log('🔐 Current user auth state:', user ? 'Authenticated' : 'Not authenticated');
-      console.log('🔐 User UID:', user?.uid);
-      console.log('🤖 Current waitingRoomEntry:', waitingRoomEntry);
       setBotFallbackActive(false);
       setSearchingText('Finding AI opponent...');
       
-      // Check if session still needs a bot (might have been filled by real player)
-      console.log('🔍 Checking if session still needs a bot...');
-      const waitingRoomDoc = await getDoc(doc(db, 'waitingroom', sessionId));
-      if (!waitingRoomDoc.exists()) {
-        console.log('❌ Session no longer exists in waiting room');
-        return;
-      }
+      // Determine if this is a Go backend match or Firebase match
+      const isGoBackendMatch = sessionId.startsWith('match_') || sessionId.startsWith('match-');
+      console.log('🔍 Match type detected:', isGoBackendMatch ? 'Go Backend' : 'Firebase');
       
-      const roomData = waitingRoomDoc.data();
-      console.log('📄 Current room data:', roomData);
-      
-      if (roomData?.opponentData) {
-        console.log('✅ Session already has opponent, skipping bot match');
-        return;
-      }
-      
-      console.log('🎯 Session needs a bot, proceeding with bot matching...');
-      
-      // Get bot matching criteria
-      const gameMode = waitingRoomEntry?.gameMode || roomData?.gameMode || 'classic';
-      const sessionType = (waitingRoomEntry?.rankedGame || roomData?.rankedGame) ? 'ranked' : 'quick' as 'quick' | 'ranked';
-      const userSkillLevel = 1200; // Default ELO, could get from user profile
-      
-      const criteria = {
-        gameMode,
-        sessionType,
-        userSkillLevel,
-        preferredDifficulty: (sessionType === 'ranked' ? 'adaptive' : 'medium') as 'easy' | 'medium' | 'hard' | 'adaptive',
-        excludeBotIds: []
-      };
-      
-      console.log('🔍 Finding suitable bot with criteria:', criteria);
-      
-      // Find suitable bot
-      console.log('🤖 Calling BotMatchingService.findSuitableBot...');
-      const botResult = await BotMatchingService.findSuitableBot(criteria);
-      console.log('🤖 Bot matching result:', botResult);
-      
-      if (!botResult.success || !botResult.bot) {
-        console.error('❌ No suitable bot found:', botResult.error);
-        setSearchingText('No AI opponents available. Please try again.');
-        return;
-      }
-      
-      console.log('🎯 Selected bot:', botResult.bot.displayName, '(', botResult.bot.personality.skillLevel, ')');
-      
-      // Add bot to waiting room
-      console.log('📝 Adding bot to waiting room...');
-      await updateDoc(doc(db, 'waitingroom', sessionId), {
-        opponentData: {
-          playerDisplayName: botResult.bot.displayName,
-          playerId: botResult.bot.uid,
-          displayBackgroundEquipped: botResult.bot.inventory?.displayBackgroundEquipped || null,
-          matchBackgroundEquipped: botResult.bot.inventory?.matchBackgroundEquipped || null,
-          playerStats: {
-            bestStreak: botResult.bot.stats.bestStreak,
-            currentStreak: botResult.bot.stats.currentStreak,
-            gamesPlayed: botResult.bot.stats.gamesPlayed,
-            matchWins: botResult.bot.stats.matchWins
-          }
+      if (isGoBackendMatch) {
+        // Handle Go backend match - use BotMatchingService directly
+        const gameMode = 'quickfire'; // Go backend matches use quickfire typically
+        const sessionType = 'quick' as 'quick' | 'ranked';
+        
+        const criteria = {
+          gameMode,
+          sessionType,
+          userSkillLevel: 1200,
+          preferredDifficulty: 'medium' as 'easy' | 'medium' | 'hard' | 'adaptive',
+          excludeBotIds: []
+        };
+        
+        console.log('🔍 Finding suitable bot for Go backend match...');
+        const botResult = await BotMatchingService.findSuitableBot(criteria);
+        
+        if (botResult.success && botResult.bot) {
+          console.log('🎯 Selected bot for Go backend:', botResult.bot.displayName);
+          // The Go backend should handle bot joining automatically
+          setSearchingText('AI opponent found!');
+          setBotOpponent(true);
+        } else {
+          console.error('❌ No suitable bot found for Go backend match');
+          setSearchingText('No AI opponents available.');
         }
-      });
-      
-      console.log('✅ Bot added to waiting room successfully!');
-      setSearchingText('AI opponent found!');
-      setBotOpponent(true);
+      } else {
+        // Handle Firebase match - use original BotMatchingService approach
+        const gameMode = waitingRoomEntry?.gameMode || 'classic';
+        const sessionType = waitingRoomEntry?.rankedGame ? 'ranked' : 'quick';
+        
+        BotMatchingService.setupBotFallback(
+          sessionId,
+          user!.uid,
+          gameMode,
+          sessionType
+        );
+      }
       
     } catch (error) {
-      console.error('❌ Failed to add bot to session:', error);
+      console.error('❌ Failed to setup bot match:', error);
       setBotFallbackActive(false);
       setBotCountdown(null);
-      setSearchingText('Failed to find AI opponent. Please try again.');
     }
   };
 
