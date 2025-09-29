@@ -42,14 +42,14 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   // Handle video end
   const handleVideoEnd = useCallback(() => {
     setIsVideoEnded(true);
-    // Start fade out animation after video ends
+    // Start fade and grow animation immediately after video ends
     setTimeout(() => {
       setIsLoading(false);
-      // Complete splash screen after fade animation
+      // Complete splash screen after animation finishes
       setTimeout(() => {
         onComplete();
-      }, 1200); // Wait for fade out animation to complete
-    }, 300); // Small delay before starting fade out
+      }, 1200); // Wait for the full 1.2s animation to complete
+    }, 100); // Very small delay to ensure smooth transition
   }, [onComplete]);
 
   // Handle video error - fallback to default video or skip splash
@@ -90,16 +90,16 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
     <AnimatePresence>
       {isLoading && (
         <motion.div
-          initial={{ opacity: 1 }}
+          initial={{ opacity: 1, scale: 1 }}
           exit={{ 
             opacity: 0,
-            scale: 1.1
+            scale: 1.15
           }}
           transition={{ 
-            duration: 1,
-            ease: "easeInOut"
+            duration: 1.2,
+            ease: [0.25, 0.46, 0.45, 0.94]
           }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black"
           style={{ pointerEvents: isVideoEnded ? 'none' : 'auto' }}
         >
           {/* Main splash video */}
@@ -107,7 +107,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             autoPlay
             muted
             playsInline
-            preload="metadata"
+            preload="auto"
             onEnded={handleVideoEnd}
             onError={handleVideoError}
             onCanPlay={() => setVideoError(false)}
@@ -120,7 +120,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             Your browser does not support the video tag.
           </video>
 
-          {/* Fallback video (existing splash screen) */}
+          {/* Fallback video */}
           {videoError && (
             <video
               id="fallback-splash-video"
@@ -135,68 +135,10 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
               }}
               className="w-full h-full object-cover"
             >
-              <source src="/Splash Screens/slapshscren.mp4" type="video/mp4" />
+              <source src="/Splash Screens/splashscreen.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           )}
-
-          {/* Loading indicator (shown if video takes time to load) */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 2 }}
-            className="absolute bottom-10 left-1/2 transform -translate-x-1/2"
-          >
-            <div className="flex space-x-2">
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  opacity: [0.5, 1, 0.5]
-                }}
-                transition={{ 
-                  duration: 1.5, 
-                  repeat: Infinity,
-                  delay: 0
-                }}
-                className="w-3 h-3 bg-white rounded-full"
-              />
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  opacity: [0.5, 1, 0.5]
-                }}
-                transition={{ 
-                  duration: 1.5, 
-                  repeat: Infinity,
-                  delay: 0.2
-                }}
-                className="w-3 h-3 bg-white rounded-full"
-              />
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  opacity: [0.5, 1, 0.5]
-                }}
-                transition={{ 
-                  duration: 1.5, 
-                  repeat: Infinity,
-                  delay: 0.4
-                }}
-                className="w-3 h-3 bg-white rounded-full"
-              />
-            </div>
-          </motion.div>
-
-          {/* Skip button (appears after 3 seconds) */}
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 3 }}
-            onClick={handleVideoEnd}
-            className="absolute top-10 right-10 text-white/70 hover:text-white transition-colors text-sm font-medium px-4 py-2 border border-white/30 rounded-lg hover:border-white/50 backdrop-blur-sm"
-          >
-            Skip
-          </motion.button>
         </motion.div>
       )}
     </AnimatePresence>

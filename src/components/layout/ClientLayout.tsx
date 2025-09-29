@@ -14,22 +14,25 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
 
   return (
     <>
-      {showSplash && (
-        <SplashScreen onComplete={completeSplash} />
-      )}
+      {/* Content Layer - Always rendered but initially invisible */}
       <div 
-        className={`transition-opacity duration-1000 ${showSplash ? 'opacity-0' : 'opacity-100'}`}
+        className={`fixed inset-0 transition-opacity duration-1000 ease-out ${
+          showSplash ? 'opacity-0' : 'opacity-100'
+        }`}
         style={{ 
-          visibility: showSplash ? 'hidden' : 'visible',
-          position: showSplash ? 'absolute' : 'static',
-          width: '100%',
-          height: '100%'
+          zIndex: 1,
+          pointerEvents: showSplash ? 'none' : 'auto'
         }}
       >
         <Providers>
           {children}
         </Providers>
       </div>
+
+      {/* Splash Screen Layer - Overlays content */}
+      {showSplash && (
+        <SplashScreen onComplete={completeSplash} />
+      )}
     </>
   );
 };
