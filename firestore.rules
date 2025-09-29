@@ -563,5 +563,11 @@ service cloud.firestore {
       allow update: if false; // No updates needed
       allow delete: if false; // Server-side cleanup only
     }
+    
+    // Bot Profiles - allow authenticated users to read bot data for matchmaking
+    match /bots/{botId} {
+      allow read: if request.auth != null; // Users need to read bot profiles for matchmaking
+      allow write: if false; // Only server-side operations can write bot data
+    }
   }
 }
