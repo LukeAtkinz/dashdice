@@ -92,12 +92,17 @@ export class BotMatchingService {
         return;
       }
       
-      console.log(`🎯 Selected bot: ${botResult.bot.displayName} (${botResult.bot.personality.skillLevel})`);
+      console.log(`🎯 Selected bot: ${botResult.bot.displayName} (${botResult.bot.personality?.skillLevel || 'unknown'})`);
       
-      // Add bot to session
-      await this.addBotToSession(sessionId, botResult.bot);
-      
-      console.log(`✅ Successfully added bot ${botResult.bot.displayName} to session ${sessionId}`);
+      // Add bot to session with detailed logging
+      console.log(`🔗 About to call addBotToSession for ${sessionId} with bot ${botResult.bot.displayName}`);
+      try {
+        await this.addBotToSession(sessionId, botResult.bot);
+        console.log(`✅ Successfully added bot ${botResult.bot.displayName} to session ${sessionId}`);
+      } catch (addBotError) {
+        console.error(`❌ Failed to add bot to session:`, addBotError);
+        throw addBotError;
+      }
       
     } catch (error) {
       console.error(`❌ Bot matching failed for session ${sessionId}:`, error);
@@ -509,18 +514,24 @@ export class BotMatchingService {
    */
   private static async addBotToSession(sessionId: string, bot: BotProfile): Promise<void> {
     try {
+      console.log(`🤖 addBotToSession called for session ${sessionId} with bot ${bot.displayName}`);
+      
       // Check session type and route to appropriate handler
       if (sessionId.startsWith('match-') || sessionId.startsWith('match_')) {
+        console.log(`🎯 Detected Go backend session, calling addBotToGoBackendSession`);
         await this.addBotToGoBackendSession(sessionId, bot);
       } else {
+        console.log(`🎯 Detected Firebase session, calling addBotToFirebaseSession`);
         await this.addBotToFirebaseSession(sessionId, bot);
       }
       
       // Update bot's last active time
+      console.log(`⏰ Updating bot last active time for ${bot.uid}`);
       await this.updateBotLastActive(bot.uid);
+      console.log(`✅ Bot last active time updated successfully`);
       
     } catch (error) {
-      console.error(`❌ Error adding bot to session ${sessionId}:`, error);
+      console.error(`❌ Error in addBotToSession for ${sessionId}:`, error);
       throw error;
     }
   }
@@ -530,58 +541,117 @@ export class BotMatchingService {
    */
   private static async addBotToGoBackendSession(sessionId: string, bot: BotProfile): Promise<void> {
     try {
-      console.log(`🔗 Attempting to add bot ${bot.displayName} to Go backend session ${sessionId}`);
+      console.log(`🔗 Starting addBotToGoBackendSession for bot ${bot.displayName} in session ${sessionId}`);
       
-      const { default: DashDiceAPI } = await import('./apiClientNew');
-      
-      const updateData = {
-        action: 'join',
-        playerId: bot.uid,
-        playerName: bot.displayName,
-        playerType: 'bot'
-      };
-      
-      console.log(`🔗 Sending bot join request:`, updateData);
-      
-      // Try the update API call
-      const updateResult = await DashDiceAPI.updateMatch(sessionId, updateData);
-      
-      console.log(`🔗 Bot join response:`, updateResult);
-      
-      // Check if it worked
-      if (updateResult && updateResult.success) {
-        console.log(`✅ Bot ${bot.displayName} successfully added to Go backend session ${sessionId}`);
-        return;
+      // Method 1: Direct bot addition via proxy API
+      console.log(`🎯 Method 1: Trying direct bot addition API`);
+      try {
+        const directBotResult = await fetch('/api/proxy/matches/' + sessionId + '/add-bot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            botId: bot.uid,
+            botName: bot.displayName,
+            botData: {
+              id: bot.uid,
+              name: bot.displayName,
+              stats: bot.stats,
+              background: bot.inventory?.matchBackgroundEquipped
+            }
+          })
+        });
+        
+        if (directBotResult.ok) {
+          const directResponse = await directBotResult.json();
+          console.log(`✅ Direct bot addition successful:`, directResponse);
+          return;
+        } else {
+          console.log(`❌ Direct bot addition failed:`, await directBotResult.text());
+        }
+      } catch (directError) {
+        console.log(`❌ Direct bot addition error:`, directError);
       }
       
-      // If that failed, let's try a different approach - directly joining the match
-      console.log(`🔄 Standard join failed, trying alternative bot join method...`);
-      
-      // Alternative: Try creating a match join request similar to how regular players join
-      const joinResult = await fetch('/api/proxy/matches/' + sessionId + '/join', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      // Method 2: Use the DashDice API updateMatch method
+      console.log(`🎯 Method 2: Trying DashDice API updateMatch`);
+      try {
+        const { default: DashDiceAPI } = await import('./apiClientNew');
+        
+        const updateData = {
+          action: 'join',
           playerId: bot.uid,
           playerName: bot.displayName,
           playerType: 'bot',
           isBot: true
-        })
-      });
-      
-      const joinResponse = await joinResult.json();
-      console.log(`🔗 Alternative bot join response:`, joinResponse);
-      
-      if (joinResult.ok && joinResponse.success) {
-        console.log(`✅ Bot ${bot.displayName} successfully joined via alternative method`);
-        return;
+        };
+        
+        console.log(`🔗 Sending updateMatch request:`, updateData);
+        const updateResult = await DashDiceAPI.updateMatch(sessionId, updateData);
+        console.log(`🔗 UpdateMatch response:`, updateResult);
+        
+        if (updateResult && updateResult.success) {
+          console.log(`✅ UpdateMatch bot addition successful`);
+          return;
+        }
+      } catch (updateError) {
+        console.log(`❌ UpdateMatch error:`, updateError);
       }
       
-      // If both methods failed, throw error
-      throw new Error(`Both bot join methods failed. Update: ${updateResult?.error || 'Unknown'}, Join: ${joinResponse?.error || 'Unknown'}`);
+      // Method 3: Generic join endpoint 
+      console.log(`🎯 Method 3: Trying generic join endpoint`);
+      try {
+        const joinResult = await fetch('/api/proxy/matches/' + sessionId + '/join', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            playerId: bot.uid,
+            playerName: bot.displayName,
+            playerType: 'bot',
+            isBot: true
+          })
+        });
+        
+        const joinResponse = await joinResult.json();
+        console.log(`🔗 Generic join response:`, joinResponse);
+        
+        if (joinResult.ok && joinResponse.success) {
+          console.log(`✅ Generic join successful`);
+          return;
+        }
+      } catch (joinError) {
+        console.log(`❌ Generic join error:`, joinError);
+      }
+      
+      // Method 4: Force match to ready status (emergency fallback)
+      console.log(`🎯 Method 4: Emergency fallback - forcing match to ready`);
+      try {
+        const forceReadyResult = await fetch('/api/proxy/matches/' + sessionId + '/force-ready', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            botPlayer: {
+              id: bot.uid,
+              name: bot.displayName,
+              isBot: true
+            }
+          })
+        });
+        
+        if (forceReadyResult.ok) {
+          const forceResponse = await forceReadyResult.json();
+          console.log(`✅ Force ready successful:`, forceResponse);
+          return;
+        }
+      } catch (forceError) {
+        console.log(`❌ Force ready error:`, forceError);
+      }
+      
+      // If all methods failed
+      console.error(`❌ All bot addition methods failed for session ${sessionId}`);
+      throw new Error(`Failed to add bot ${bot.displayName} to Go backend session ${sessionId} - all methods exhausted`);
       
     } catch (error) {
-      console.error(`❌ Error adding bot to Go backend session:`, error);
+      console.error(`❌ Fatal error in addBotToGoBackendSession:`, error);
       throw error;
     }
   }
