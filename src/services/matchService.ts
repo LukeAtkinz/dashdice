@@ -709,27 +709,32 @@ export class MatchService {
             newTurnScore = 0;
         }
       }
-      // Handle single 1 (non-elimination modes) - auto-bank turn score then end turn
+      // Handle single 1 based on game mode elimination rules
       else if (isSingleOne) {
-        // First, bank any existing turn score to player score
-        if (currentTurnScore > 0) {
-          const newPlayerScore = currentPlayerScore + currentTurnScore;
-          if (isHost) {
-            updates['hostData.playerScore'] = newPlayerScore;
+        if (gameMode.rules.eliminationRules.singleOne) {
+          // Elimination modes (like True Grit) - auto-bank turn score then end turn
+          if (currentTurnScore > 0) {
+            const newPlayerScore = currentPlayerScore + currentTurnScore;
+            if (isHost) {
+              updates['hostData.playerScore'] = newPlayerScore;
+            } else {
+              updates['opponentData.playerScore'] = newPlayerScore;
+            }
+            console.log(`💰 Single 1 rolled (elimination mode) - Auto-banked ${currentTurnScore} points, new total: ${newPlayerScore}`);
+            
+            // Update bank statistics
+            const playerStatsPath = isHost ? 'hostData.matchStats' : 'opponentData.matchStats';
+            const currentStats = currentPlayer.matchStats || { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0 };
+            updates[`${playerStatsPath}.banks`] = currentStats.banks + 1;
           } else {
-            updates['opponentData.playerScore'] = newPlayerScore;
+            console.log('🎲 Single 1 rolled (elimination mode) - Turn over, no score to bank');
           }
-          console.log(`💰 Single 1 rolled - Auto-banked ${currentTurnScore} points, new total: ${newPlayerScore}`);
-          
-          // Update bank statistics
-          const playerStatsPath = isHost ? 'hostData.matchStats' : 'opponentData.matchStats';
-          const currentStats = currentPlayer.matchStats || { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0 };
-          updates[`${playerStatsPath}.banks`] = currentStats.banks + 1;
         } else {
-          console.log('🎲 Single 1 rolled - Turn over, no score to bank');
+          // Non-elimination modes (Classic, Quickfire) - just end turn, lose the turn score
+          console.log(`🎲 Single 1 rolled - Turn over, ${currentTurnScore} points lost (no auto-banking in ${gameMode.name})`);
         }
         
-        // Then end the turn
+        // End the turn in both cases
         turnOver = true;
         newTurnScore = 0;
       }
