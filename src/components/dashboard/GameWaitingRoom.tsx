@@ -12,6 +12,7 @@ import { GameType } from '@/types/ranked';
 import { RankedMatchmakingService } from '@/services/rankedMatchmakingService';
 import { NewMatchmakingService } from '@/services/newMatchmakingService';
 import { OptimisticMatchmakingService } from '@/services/optimisticMatchmakingService';
+import { BotMatchingService } from '@/services/botMatchingService';
 import MatchAbandonmentNotification from '@/components/notifications/MatchAbandonmentNotification';
 
 interface GameWaitingRoomProps {
@@ -102,6 +103,11 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const [searchingText, setSearchingText] = useState('Searching for opponents...');
   const [countdown, setCountdown] = useState<number | null>(null);
   const [opponentJoined, setOpponentJoined] = useState(false);
+  
+  // Bot system integration
+  const [botCountdown, setBotCountdown] = useState<number | null>(null);
+  const [botFallbackActive, setBotFallbackActive] = useState(false);
+  const [botOpponent, setBotOpponent] = useState<any>(null);
   
   // Add body class for mobile scrolling control
   useEffect(() => {
@@ -624,6 +630,17 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               console.log('🎯 GameWaitingRoom: Opponent detected in bridge data');
               setOpponentJoined(true);
               
+              // 🤖 Check if opponent is a bot
+              const isBot = bridgeRoomData.opponentData.playerId?.startsWith('bot_');
+              if (isBot) {
+                console.log('🤖 Bot opponent detected in bridge data:', bridgeRoomData.opponentData.playerDisplayName);
+                setBotOpponent(bridgeRoomData.opponentData);
+                setBotFallbackActive(false);
+                setBotCountdown(null);
+              } else {
+                cancelBotCountdown();
+              }
+              
               // Only auto-start countdown for non-friend invitations
               if (!bridgeRoomData.friendInvitation && vsCountdown === null) {
                 console.log('🚀 GameWaitingRoom: Starting countdown for matched players');
@@ -878,6 +895,19 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 if (data.opponentData && !opponentJoined) {
                   setOpponentJoined(true);
                   
+                  // 🤖 Check if opponent is a bot
+                  const isBot = data.opponentData.playerId?.startsWith('bot_');
+                  if (isBot) {
+                    console.log('🤖 Bot opponent joined:', data.opponentData.playerDisplayName);
+                    setBotOpponent(data.opponentData);
+                    setBotFallbackActive(false);
+                    setBotCountdown(null);
+                    setSearchingText('AI opponent found!');
+                  } else {
+                    console.log('👤 Real player joined:', data.opponentData.playerDisplayName);
+                    cancelBotCountdown();
+                  }
+                  
                   // Only auto-start countdown for non-friend invitations
                   if (!data.friendInvitation) {
                     startVsCountdown();
@@ -967,6 +997,11 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           const docRef = await addDoc(collection(db, 'waitingroom'), entry);
           const gameId = docRef.id;
           
+          // 🤖 Start bot fallback timer (7 seconds) for live matches
+          if (actionType === 'live' && !entry.friendInvitation) {
+            startBotCountdown(gameId);
+          }
+          
           // Set up listener for when opponent joins
           const unsubscribe = onSnapshot(doc(db, 'waitingroom', gameId), (doc) => {
             if (doc.exists()) {
@@ -993,6 +1028,19 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               // Check if opponent joined - but don't auto-start countdown for friend invitations
               if (data.opponentData && !opponentJoined) {
                 setOpponentJoined(true);
+                
+                // 🤖 Check if opponent is a bot
+                const isBot = data.opponentData.playerId?.startsWith('bot_');
+                if (isBot) {
+                  console.log('🤖 Bot opponent joined:', data.opponentData.playerDisplayName);
+                  setBotOpponent(data.opponentData);
+                  setBotFallbackActive(false);
+                  setBotCountdown(null);
+                  setSearchingText('AI opponent found!');
+                } else {
+                  console.log('👤 Real player joined:', data.opponentData.playerDisplayName);
+                  cancelBotCountdown();
+                }
                 
                 // Only auto-start countdown for non-friend invitations
                 if (!data.friendInvitation) {
@@ -1138,6 +1186,65 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         return prev - 1;
       });
     }, 1000);
+  };
+
+  // 🤖 Function to start bot fallback countdown (7 seconds)
+  const startBotCountdown = (sessionId: string) => {
+    console.log('🤖 Starting bot fallback countdown (7 seconds)...');
+    setBotFallbackActive(true);
+    setBotCountdown(7);
+    
+    const timer = setInterval(() => {
+      setBotCountdown((prev) => {
+        if (prev === null || prev <= 1) {
+          clearInterval(timer);
+          console.log('🤖 Bot countdown finished! Attempting bot match...');
+          
+          // Trigger bot matching
+          setTimeout(() => {
+            attemptBotMatch(sessionId);
+          }, 500);
+          
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  // 🤖 Function to attempt bot matching
+  const attemptBotMatch = async (sessionId: string) => {
+    try {
+      console.log('🤖 Attempting to add bot to session:', sessionId);
+      setBotFallbackActive(false);
+      
+      // Use the BotMatchingService to find and add a suitable bot
+      const gameMode = waitingRoomEntry?.gameMode || 'classic';
+      const sessionType = waitingRoomEntry?.rankedGame ? 'ranked' : 'quick';
+      
+      BotMatchingService.setupBotFallback(
+        sessionId,
+        user!.uid,
+        gameMode,
+        sessionType
+      );
+      
+      setSearchingText('Finding AI opponent...');
+      
+    } catch (error) {
+      console.error('❌ Failed to setup bot match:', error);
+      setBotFallbackActive(false);
+      setBotCountdown(null);
+    }
+  };
+
+  // 🤖 Function to cancel bot countdown when real player joins
+  const cancelBotCountdown = () => {
+    if (botFallbackActive) {
+      console.log('✅ Real player joined! Cancelling bot countdown...');
+      setBotFallbackActive(false);
+      setBotCountdown(null);
+    }
   };
 
   // Function to add test computer opponent
@@ -2614,7 +2721,17 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     zIndex: 2
                   }}
                 >
-                  {getOpponentData()?.playerDisplayName || 'Unknown Player'}
+                  {botOpponent ? '🤖 ' : ''}{getOpponentData()?.playerDisplayName || 'Unknown Player'}
+                  {botOpponent && (
+                    <span style={{ 
+                      display: 'block', 
+                      fontSize: window.innerWidth < 768 ? '12px' : '16px',
+                      color: '#FFA500',
+                      marginTop: '4px'
+                    }}>
+                      AI OPPONENT
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -2645,6 +2762,28 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               }}
             >
               {searchingText}
+              
+              {/* Bot Countdown Timer */}
+              {botFallbackActive && botCountdown !== null && (
+                <div
+                  style={{
+                    color: '#FFB347',
+                    fontFamily: 'Audiowide',
+                    fontSize: window.innerWidth < 768 ? '16px' : '20px',
+                    fontWeight: 400,
+                    textAlign: 'center',
+                    marginTop: '15px',
+                    padding: '12px 20px',
+                    borderRadius: '12px',
+                    background: 'rgba(255, 179, 71, 0.1)',
+                    border: '1px solid rgba(255, 179, 71, 0.3)',
+                    textTransform: 'uppercase',
+                    animation: 'pulse 1s ease-in-out infinite'
+                  }}
+                >
+                  {botCountdown > 0 ? `AI Opponent in ${botCountdown}s` : 'Finding AI...'}
+                </div>
+              )}
               
               {/* Friend Invitation Auto-Ready Status */}
               {waitingRoomEntry?.friendInvitation && waitingRoomEntry?.opponentData && (

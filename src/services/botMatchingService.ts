@@ -504,13 +504,41 @@ export class BotMatchingService {
   }
   
   /**
-   * 🤖 Add bot to Firebase session
+   * 🤖 Add bot to Firebase session (handles both GameSessions and WaitingRoom)
    */
   private static async addBotToFirebaseSession(sessionId: string, bot: BotProfile): Promise<void> {
     try {
+      // First check if this is a waiting room entry
+      const waitingRoomDoc = await getDoc(doc(db, 'waitingroom', sessionId));
+      
+      if (waitingRoomDoc.exists()) {
+        // Update waiting room with bot opponent data
+        console.log(`🤖 Adding bot ${bot.displayName} to waiting room ${sessionId}`);
+        
+        const { updateDoc } = await import('firebase/firestore');
+        await updateDoc(doc(db, 'waitingroom', sessionId), {
+          opponentData: {
+            playerDisplayName: bot.displayName,
+            playerId: bot.uid,
+            displayBackgroundEquipped: bot.inventory?.displayBackgroundEquipped || null,
+            matchBackgroundEquipped: bot.inventory?.matchBackgroundEquipped || null,
+            playerStats: {
+              bestStreak: bot.stats.bestStreak,
+              currentStreak: bot.stats.currentStreak,
+              gamesPlayed: bot.stats.gamesPlayed,
+              matchWins: bot.stats.matchWins
+            }
+          }
+        });
+        
+        console.log(`✅ Bot ${bot.displayName} added to waiting room ${sessionId}`);
+        return;
+      }
+      
+      // If not in waiting room, try game sessions
       const { GameSessionService } = await import('./gameSessionService');
       
-      // Create bot player data
+      // Create bot player data for game sessions
       const botPlayerData: SessionPlayerData = {
         playerId: bot.uid,
         playerDisplayName: bot.displayName,
