@@ -1,7 +1,7 @@
-import { db } from '@/lib/firebase';
+import { db } from './firebase';
 import { collection, query, where, getDocs, doc, getDoc, limit, orderBy } from 'firebase/firestore';
-import { BotProfile, BotMatchingCriteria, BotMatchingResult, SkillLevel } from '@/types/bot';
-import { SessionPlayerData } from '@/types/gameSession';
+import { BotProfile, BotMatchingCriteria, BotMatchingResult, SkillLevel } from '../types/bot';
+import { SessionPlayerData } from './gameSessionService';
 
 /**
  * Bot Matching Service
@@ -413,7 +413,7 @@ export class BotMatchingService {
    */
   private static async goBackendSessionNeedsBot(sessionId: string): Promise<boolean> {
     try {
-      const { default: DashDiceAPI } = await import('../apiClientNew');
+      const { default: DashDiceAPI } = await import('./apiClientNew');
       
       const matchResponse = await DashDiceAPI.getMatch(sessionId);
       if (!matchResponse.success || !matchResponse.data?.match) {
@@ -482,7 +482,7 @@ export class BotMatchingService {
    */
   private static async addBotToGoBackendSession(sessionId: string, bot: BotProfile): Promise<void> {
     try {
-      const { default: DashDiceAPI } = await import('../apiClientNew');
+      const { default: DashDiceAPI } = await import('./apiClientNew');
       
       const updateResult = await DashDiceAPI.updateMatch(sessionId, {
         action: 'join',
@@ -508,7 +508,7 @@ export class BotMatchingService {
    */
   private static async addBotToFirebaseSession(sessionId: string, bot: BotProfile): Promise<void> {
     try {
-      const { GameSessionService } = await import('../gameSessionService');
+      const { GameSessionService } = await import('./gameSessionService');
       
       // Create bot player data
       const botPlayerData: SessionPlayerData = {
@@ -531,7 +531,7 @@ export class BotMatchingService {
       const result = await GameSessionService.joinSession(sessionId, botPlayerData);
       
       if (!result.success) {
-        throw new Error(`Failed to add bot to Firebase session: ${result.error}`);
+        throw new Error(`Failed to add bot to Firebase session`);
       }
       
       console.log(`✅ Bot ${bot.displayName} added to Firebase session ${sessionId}`);
