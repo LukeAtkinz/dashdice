@@ -5,6 +5,7 @@ import { UserService } from './userService';
 import { RematchService } from './rematchService';
 import { GameInvitationService } from './gameInvitationService';
 import { MatchmakingDeduplicationService } from './matchmakingDeduplicationService';
+import { BotMatchingService } from './botMatchingService';
 import { collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -254,7 +255,7 @@ export class MatchmakingOrchestrator {
     console.log(`🔍 ATOMIC: No available sessions found (${atomicResult.error}), creating new session`);
     
     // Create new session
-    console.log('🆕 Creating new session as no suitable sessions found after retries');
+    console.log('🆕 Creating new session as no suitable sessions found');
     const sessionId = await GameSessionService.createSession(
       'quick',
       request.gameMode,
@@ -264,6 +265,21 @@ export class MatchmakingOrchestrator {
         expirationTime: 20 // 20 minutes
       }
     );
+    
+    // 🤖 Setup bot fallback with 7-second timeout for quick matches
+    console.log('🤖 Setting up bot fallback timer (7 seconds)');
+    try {
+      BotMatchingService.setupBotFallback(
+        sessionId,
+        request.hostData.playerId,
+        request.gameMode,
+        'quick'
+      );
+      console.log(`✅ Bot fallback configured for session ${sessionId}`);
+    } catch (error) {
+      console.warn('⚠️ Failed to setup bot fallback:', error);
+      // Continue without bot fallback if service fails
+    }
     
     return {
       success: true,
@@ -322,6 +338,21 @@ export class MatchmakingOrchestrator {
         expirationTime: 20 // 20 minutes
       }
     );
+    
+    // 🤖 Setup bot fallback with 7-second timeout for ranked matches
+    console.log('🤖 Setting up bot fallback timer for ranked match (7 seconds)');
+    try {
+      BotMatchingService.setupBotFallback(
+        sessionId,
+        request.hostData.playerId,
+        request.gameMode,
+        'ranked'
+      );
+      console.log(`✅ Bot fallback configured for ranked session ${sessionId}`);
+    } catch (error) {
+      console.warn('⚠️ Failed to setup bot fallback for ranked match:', error);
+      // Continue without bot fallback if service fails
+    }
     
     return {
       success: true,

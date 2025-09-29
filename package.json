@@ -8,7 +8,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "init-achievements": "node scripts/initializeAchievements.js"
+    "init-achievements": "node scripts/initializeAchievements.js",
+    "init-bots": "node scripts/initializeBots.js",
+    "clear-bots": "node scripts/initializeBots.js clear",
+    "test-bots": "node scripts/testBots.js"
   },
   "dependencies": {
     "date-fns": "^4.1.0",
