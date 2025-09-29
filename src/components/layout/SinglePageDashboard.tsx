@@ -389,7 +389,10 @@ const DashboardContent: React.FC = () => {
 
                 {/* RANKED Button */}
                 <button
-                  onClick={() => handleSectionChange('ranked')}
+                  onClick={() => {
+                    console.log('🎯 RANKED Button clicked - Redirecting to donation page!');
+                    window.location.href = '/helpus';
+                  }}
                   disabled={currentSection === 'match' && !isGameOver}
                   className={`flex cursor-pointer transition-all duration-300 ${
                     currentSection === 'match' && !isGameOver 
@@ -744,7 +747,10 @@ const DashboardContent: React.FC = () => {
                 <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PLAY</span>
               </button>
               <button
-                onClick={() => handleSectionChange('ranked')}
+                onClick={() => {
+                  console.log('🎯 Mobile RANKED Button clicked - Redirecting to donation page!');
+                  window.location.href = '/helpus';
+                }}
                 className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
                   currentSection === 'ranked' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}

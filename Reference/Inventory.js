@@ -126,6 +126,39 @@ export default function Inventory({ onBack, onBackToDashboard, setDisplayBackgro
 
   return (
     <div className="h-full w-full flex flex-col">
+      {/* Header with Title */}
+      <div className="w-full px-8 py-4 border-b border-white/10">
+        <div className="flex items-center justify-between">
+          <h1 
+            className="text-4xl font-bold text-white uppercase tracking-wide"
+            style={{ 
+              fontFamily: 'Audiowide',
+              background: 'linear-gradient(180deg, #FF0080 0%, #7209B7 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              textShadow: '0 0 20px rgba(255, 0, 128, 0.3)'
+            }}
+          >
+            Inventory
+          </h1>
+          {/* Mobile-friendly back button */}
+          <button
+            onClick={onBack || onBackToDashboard}
+            className="flex items-center justify-center w-12 h-12 lg:w-auto lg:h-auto lg:px-6 lg:py-3 rounded-full lg:rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200"
+            style={{ 
+              minWidth: '48px',
+              minHeight: '48px'
+            }}
+          >
+            <span className="text-white text-xl lg:hidden">←</span>
+            <span className="hidden lg:inline text-white font-medium" style={{ fontFamily: 'Audiowide' }}>
+              BACK
+            </span>
+          </button>
+        </div>
+      </div>
+
       {/* Custom scrollbar styles and navigation animations */}
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
@@ -157,16 +190,16 @@ export default function Inventory({ onBack, onBackToDashboard, setDisplayBackgro
         }
       `}</style>
       {/* Navigation */}
-      <div className="w-full px-8 py-6">
-        <div className="flex items-center justify-center gap-4" style={{ gap: '20px' }}>
+      <div className="w-full px-4 lg:px-8 py-4 lg:py-6">
+        <div className="flex items-center justify-center gap-2 lg:gap-4" style={{ gap: '8px' }}>
           <button
             onClick={() => handleTabChange('display')}
             className={`nav-button ${activeTab === 'display' ? 'active' : ''}`}
             style={{
               display: 'flex',
               width: 'fit-content',
-              height: '56px',
-              padding: '4px 30px',
+              height: '48px',
+              padding: '4px 16px',
               justifyContent: 'center',
               alignItems: 'center',
               gap: '10px',
@@ -176,8 +209,14 @@ export default function Inventory({ onBack, onBackToDashboard, setDisplayBackgro
               cursor: 'pointer',
             }}
           >
-            <span style={{ color: '#FFF', fontFamily: 'Audiowide', fontSize: '32px', fontWeight: 400, textTransform: 'uppercase' }}>
-              Display Background
+            <span style={{ 
+              color: '#FFF', 
+              fontFamily: 'Audiowide', 
+              fontSize: window.innerWidth < 768 ? '14px' : '24px', 
+              fontWeight: 400, 
+              textTransform: 'uppercase' 
+            }}>
+              {window.innerWidth < 768 ? 'Display' : 'Display Background'}
             </span>
           </button>
           <button
@@ -186,8 +225,8 @@ export default function Inventory({ onBack, onBackToDashboard, setDisplayBackgro
             style={{
               display: 'flex',
               width: 'fit-content',
-              height: '56px',
-              padding: '4px 30px',
+              height: '48px',
+              padding: '4px 16px',
               justifyContent: 'center',
               alignItems: 'center',
               gap: '10px',
@@ -197,17 +236,27 @@ export default function Inventory({ onBack, onBackToDashboard, setDisplayBackgro
               cursor: 'pointer',
             }}
           >
-            <span style={{ color: '#FFF', fontFamily: 'Audiowide', fontSize: '32px', fontWeight: 400, textTransform: 'uppercase' }}>
-              Match Background
+            <span style={{ 
+              color: '#FFF', 
+              fontFamily: 'Audiowide', 
+              fontSize: window.innerWidth < 768 ? '14px' : '24px', 
+              fontWeight: 400, 
+              textTransform: 'uppercase' 
+            }}>
+              {window.innerWidth < 768 ? 'Match' : 'Match Background'}
             </span>
           </button>
         </div>
       </div>
       {/* Main Content */}
-      <div className="flex-1 px-8 flex justify-center" style={{ paddingTop: '20px' }}>
-        <div className="flex h-full" style={{ maxHeight: '410px', height: '410px', width: '1600px', gap: '20px' }}>
+      <div className="flex-1 px-4 lg:px-8 flex justify-center" style={{ paddingTop: '20px' }}>
+        <div className="flex flex-col lg:flex-row h-full w-full lg:max-w-none" style={{ maxHeight: '410px', height: '410px', gap: '20px' }}>
           {/* Items List */}
-          <div className="rounded-lg overflow-hidden" style={{ width: '50%', background: 'transparent', borderRadius: '20px', background: 'linear-gradient(243deg, #192E39 25.17%, rgba(153, 153, 153, 0.00) 109.89%)', padding: '20px' }}>
+          <div className="rounded-lg overflow-hidden flex-1" style={{ 
+            background: 'linear-gradient(243deg, #192E39 25.17%, rgba(153, 153, 153, 0.00) 109.89%)', 
+            borderRadius: '20px', 
+            padding: '16px lg:20px' 
+          }}>
             <div className="p-4 h-full flex flex-col">
               <div className="flex-1 overflow-y-auto custom-scrollbar relative" style={{ maskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)' }}>
                 {activeTab === 'display' && (
@@ -289,11 +338,26 @@ export default function Inventory({ onBack, onBackToDashboard, setDisplayBackgro
               </div>
             </div>
           </div>
-          {/* Display Panel */}
-          <div key={`display-panel-${selectedBackground?.id || 'none'}`} className="rounded-lg overflow-hidden" style={{ width: '775px', background: 'linear-gradient(180deg, rgba(25, 46, 57, 0.8) 0%, rgba(25, 46, 57, 0.4) 100%)', backdropFilter: 'blur(10px)', overflow: 'hidden', borderRadius: '20px' }}>
+          {/* Display Panel - Hidden on mobile, shown on desktop */}
+          <div 
+            key={`display-panel-${selectedBackground?.id || 'none'}`} 
+            className="hidden lg:block rounded-lg overflow-hidden flex-1" 
+            style={{ 
+              background: 'linear-gradient(180deg, rgba(25, 46, 57, 0.8) 0%, rgba(25, 46, 57, 0.4) 100%)', 
+              backdropFilter: 'blur(10px)', 
+              borderRadius: '20px' 
+            }}
+          >
             <div className="p-6 h-full flex flex-col" style={{ overflow: 'hidden', position: 'relative' }}>
               {selectedBackground ? (
-                <div className="relative" style={{ display: 'flex', width: '775px', height: '410px', alignItems: 'center', borderRadius: '20px', border: '1px solid #FFF', overflow: 'hidden', background: selectedBackground.isGradient ? selectedBackground.url : `url('${selectedBackground.url}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                <div className="relative flex-1 flex items-center justify-center" style={{ 
+                  borderRadius: '20px', 
+                  border: '1px solid #FFF', 
+                  overflow: 'hidden', 
+                  background: selectedBackground.isGradient ? selectedBackground.url : `url('${selectedBackground.url}')`, 
+                  backgroundSize: 'cover', 
+                  backgroundPosition: 'center' 
+                }}>
                   {selectedBackground.isVideo && (
                     <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover" style={{ borderRadius: '20px' }}>
                       <source src={selectedBackground.videoUrl} type="video/mp4" />
@@ -306,7 +370,11 @@ export default function Inventory({ onBack, onBackToDashboard, setDisplayBackgro
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center text-white/50" style={{ display: 'flex', width: '775px', height: '410px', padding: '20px 20px 30px 20px', alignItems: 'center', borderRadius: '20px', border: '1px solid #FFF', justifyContent: 'center', overflow: 'hidden' }}>
+                <div className="flex-1 flex items-center justify-center text-white/50" style={{ 
+                  borderRadius: '20px', 
+                  border: '1px solid #FFF',
+                  overflow: 'hidden' 
+                }}>
                   <div className="text-center">
                     <div className="text-6xl mb-4">🎨</div>
                     <p className="text-xl" style={{ fontFamily: 'Audiowide', textTransform: 'uppercase' }}>Select an item to preview</p>
@@ -315,6 +383,56 @@ export default function Inventory({ onBack, onBackToDashboard, setDisplayBackgro
               )}
             </div>
           </div>
+
+          {/* Mobile Preview Modal */}
+          {selectedBackground && (
+            <div className="lg:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="relative w-full max-w-sm bg-gray-900 rounded-2xl overflow-hidden">
+                <div className="relative h-64" style={{
+                  background: selectedBackground.isGradient ? selectedBackground.url : `url('${selectedBackground.url}')`, 
+                  backgroundSize: 'cover', 
+                  backgroundPosition: 'center'
+                }}>
+                  {selectedBackground.isVideo && (
+                    <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover">
+                      <source src={selectedBackground.videoUrl} type="video/mp4" />
+                    </video>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                  <button
+                    onClick={() => setSelectedBackground(null)}
+                    className="absolute top-4 right-4 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white"
+                  >
+                    ×
+                  </button>
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <h2 className="text-xl font-bold text-white mb-1" style={{ fontFamily: 'Audiowide' }}>
+                      {selectedBackground.name}
+                    </h2>
+                    <p className="text-white/80 text-sm" style={{ fontFamily: 'Montserrat' }}>
+                      {selectedBackground.rarity}
+                    </p>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <button 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      handleEquipBackground(selectedBackground); 
+                      setSelectedBackground(null); // Close modal after equipping
+                    }} 
+                    className="w-full py-3 rounded-lg font-bold text-white transition-all duration-200"
+                    style={{ 
+                      background: (activeTab === 'display' ? equippedPlayerBackground?.id : equippedBackground?.id) === selectedBackground.id ? '#4CAF50' : '#FF0080',
+                      fontFamily: 'Audiowide'
+                    }}
+                  >
+                    {(activeTab === 'display' ? equippedPlayerBackground?.id : equippedBackground?.id) === selectedBackground.id ? 'EQUIPPED' : 'EQUIP'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

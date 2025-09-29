@@ -439,14 +439,14 @@ export const DashboardSection: React.FC = () => {
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        console.log(`🎮 ${mode.toUpperCase()} RANKED CLICKED!`);
-                        handleGameModeAction(mode, 'ranked');
+                        console.log(`🎮 ${mode.toUpperCase()} RANKED CLICKED - Redirecting to donation page!`);
+                        window.location.href = '/helpus';
                       }}
                       onTouchEnd={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        console.log(`🎮 ${mode.toUpperCase()} RANKED TOUCH END!`);
-                        handleGameModeAction(mode, 'ranked');
+                        console.log(`🎮 ${mode.toUpperCase()} RANKED TOUCH END - Redirecting to donation page!`);
+                        window.location.href = '/helpus';
                       }}
                       className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300 pointer-events-auto"
                       style={{

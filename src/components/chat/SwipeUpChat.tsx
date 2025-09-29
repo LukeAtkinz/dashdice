@@ -35,20 +35,31 @@ export default function SwipeUpChat({ children }: SwipeUpChatProps) {
   }, []);
 
   const handlePanStart = (event: any, info: PanInfo) => {
-    // Only start drag from bottom 30% of screen (increased from 25% for easier access)
-    const bottomThreshold = screenHeight * 0.7;
+    // Only start drag from bottom 40% of screen for easier mobile access
+    const bottomThreshold = screenHeight * 0.6;
     if (info.point.y < bottomThreshold) return;
     
+    // Prevent default to avoid scroll interference on mobile
+    event.preventDefault?.();
+    
     setIsDragging(true);
-    console.log('🚀 Swipe gesture started from bottom 30%');
+    console.log('🚀 Swipe gesture started from bottom 40%', {
+      startY: info.point.y,
+      threshold: bottomThreshold,
+      screenHeight
+    });
   };
 
   const handlePan = (event: any, info: PanInfo) => {
     if (!isDragging) return;
 
+    // Prevent default to avoid interference with mobile scrolling
+    event.preventDefault?.();
+
     // Calculate drag progress (0 = closed, 1 = fully open)
-    const dragDistance = Math.abs(info.offset.y);
-    const maxDrag = screenHeight * 0.3; // Reduced from 50% to 30% for more responsive feel
+    // Only consider upward swipes (negative offset.y)
+    const dragDistance = Math.abs(Math.min(info.offset.y, 0));
+    const maxDrag = screenHeight * 0.25; // Reduced for more responsive feel
     const progress = Math.min(dragDistance / maxDrag, 1);
     
     setDragProgress(progress);
@@ -57,7 +68,7 @@ export default function SwipeUpChat({ children }: SwipeUpChatProps) {
     chatControls.start({
       y: `${100 - (progress * 100)}%`,
       opacity: progress * 0.9 + 0.1,
-      transition: { type: "tween", duration: 0.05 } // Reduced from 0.1 for instant response
+      transition: { type: "tween", duration: 0.02 } // Ultra-fast response
     });
   };
 
@@ -68,11 +79,19 @@ export default function SwipeUpChat({ children }: SwipeUpChatProps) {
     
     // Determine if we should snap to open or closed with more sensitive thresholds
     const velocity = info.velocity.y;
-    const dragDistance = Math.abs(info.offset.y);
-    const threshold = screenHeight * 0.08; // Reduced from 15% to 8% for easier trigger
+    const dragDistance = Math.abs(Math.min(info.offset.y, 0)); // Only count upward movement
+    const threshold = screenHeight * 0.05; // Much lower threshold for easier trigger
     
     // More sensitive velocity threshold for iPhone-like responsiveness
-    const shouldOpen = dragDistance > threshold || velocity < -300; // Reduced from -500
+    const shouldOpen = dragDistance > threshold || velocity < -200; // Even more sensitive
+    
+    console.log('📱 Pan end decision:', {
+      dragDistance,
+      threshold,
+      velocity,
+      shouldOpen,
+      dragProgress
+    });
     
     if (shouldOpen) {
       // Snap to open position with bouncy spring animation
@@ -83,9 +102,9 @@ export default function SwipeUpChat({ children }: SwipeUpChatProps) {
         opacity: 1,
         transition: { 
           type: "spring", 
-          damping: 20, // Reduced damping for more bounce
-          stiffness: 400, // Increased stiffness for snappier response
-          duration: 0.3 // Reduced duration
+          damping: 15, // Reduced damping for more bounce
+          stiffness: 500, // Increased stiffness for snappier response
+          duration: 0.25 // Reduced duration
         }
       });
       console.log('📱 Chat snapped open');
@@ -98,9 +117,9 @@ export default function SwipeUpChat({ children }: SwipeUpChatProps) {
         opacity: 0,
         transition: { 
           type: "spring", 
-          damping: 20, 
-          stiffness: 400,
-          duration: 0.2 // Faster close animation
+          damping: 15, 
+          stiffness: 500,
+          duration: 0.15 // Faster close animation
         }
       });
       console.log('📱 Chat snapped closed');
@@ -145,14 +164,26 @@ export default function SwipeUpChat({ children }: SwipeUpChatProps) {
         onPanStart={handlePanStart}
         onPan={handlePan}
         onPanEnd={handlePanEnd}
-        style={{ touchAction: 'pan-y' }}
+        style={{ 
+          touchAction: 'pan-y',
+          WebkitTouchCallout: 'none',
+          WebkitUserSelect: 'none',
+          userSelect: 'none'
+        }}
       >
         {children}
         
-        {/* Invisible swipe detection area in bottom 30% for easier access */}
+        {/* Enhanced swipe detection area in bottom 40% for easier mobile access */}
         <div
           className="fixed bottom-0 left-0 right-0 pointer-events-auto z-10"
-          style={{ height: '30vh' }}
+          style={{ 
+            height: '40vh',
+            background: 'transparent'
+          }}
+          onTouchStart={(e) => {
+            // Improve touch responsiveness on mobile
+            console.log('👆 Touch start detected in swipe area');
+          }}
         />
       </motion.div>
 
@@ -204,24 +235,35 @@ export default function SwipeUpChat({ children }: SwipeUpChatProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-40 pointer-events-none"
+          className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 pointer-events-none"
         >
           <motion.div
             animate={{ 
-              y: [0, -8, 0],
-              opacity: [0.5, 1, 0.5]
+              y: [0, -12, 0],
+              opacity: [0.4, 1, 0.4]
             }}
             transition={{ 
-              duration: 2,
+              duration: 2.5,
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            className="bg-blue-600/80 text-white px-4 py-2 rounded-full text-sm font-medium backdrop-blur-sm border border-blue-500/50"
+            className="bg-blue-600/90 text-white px-6 py-3 rounded-full text-sm font-medium backdrop-blur-sm border border-blue-500/60 shadow-lg"
             style={{ fontFamily: "Audiowide" }}
           >
-            ↑ Swipe up for chat
+            <div className="flex items-center space-x-2">
+              <div className="flex flex-col items-center">
+                <div className="text-lg">↑</div>
+                <div className="text-xs opacity-80">Swipe</div>
+              </div>
+              <span>Chat</span>
+            </div>
           </motion.div>
         </motion.div>
+      )}
+      
+      {/* Additional swipe area indicator (bottom edge) */}
+      {!isChatOpen && !isDragging && (
+        <div className="fixed bottom-0 left-0 right-0 h-1 bg-gradient-to-t from-blue-500/30 to-transparent z-30 pointer-events-none" />
       )}
     </>
   );

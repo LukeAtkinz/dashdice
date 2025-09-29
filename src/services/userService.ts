@@ -86,6 +86,52 @@ export class UserService {
         return profile;
       } else {
         console.log('❌ UserService: User document not found for UID:', uid);
+        
+        // Check if this is a bot user in the bots collection
+        if (uid.includes('bot')) {
+          console.log('🤖 UserService: Checking bots collection for:', uid);
+          const botRef = doc(db, 'bots', uid);
+          const botSnap = await getDoc(botRef);
+          
+          if (botSnap.exists()) {
+            const botData = botSnap.data();
+            console.log('✅ UserService: Found bot profile:', botData);
+            
+            // Convert bot profile to user profile format
+            const profile: UserProfile = {
+              uid,
+              email: botData.email || `${uid}@dashdice.ai`,
+              displayName: botData.displayName,
+              profilePicture: botData.profilePicture || null,
+              createdAt: botData.createdAt,
+              lastLoginAt: botData.updatedAt,
+              userTag: botData.displayName || 'Bot',
+              rankedStatus: 'Ranked - Active',
+              inventory: {
+                displayBackgroundEquipped: botData.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+                matchBackgroundEquipped: botData.inventory?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+                ownedBackgrounds: botData.inventory?.ownedBackgrounds || ['Relax']
+              },
+              stats: {
+                bestStreak: botData.stats?.bestStreak || 0,
+                currentStreak: botData.stats?.currentStreak || 0,
+                gamesPlayed: botData.stats?.gamesPlayed || 0,
+                matchWins: botData.stats?.matchWins || 0
+              },
+              settings: {
+                notificationsEnabled: false, // Bots don't need notifications
+                soundEnabled: false,
+                theme: 'auto'
+              },
+              updatedAt: botData.updatedAt
+            };
+            
+            console.log('✅ UserService: Converted bot to user profile format:', profile);
+            return profile;
+          } else {
+            console.log('❌ UserService: Bot document not found for UID:', uid);
+          }
+        }
       }
       
       return null;

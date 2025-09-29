@@ -327,11 +327,13 @@ const GuestDashboardContent: React.FC = () => {
                   </span>
                 </button>
 
-                {/* RANKED Button - Locked for guests */}
+                {/* RANKED Button - Redirect to donation page */}
                 <button
-                  onClick={() => {}} // Disabled for guests  
-                  disabled
-                  className="opacity-50 cursor-not-allowed flex"
+                  onClick={() => {
+                    console.log('🎯 Guest RANKED Button clicked - Redirecting to donation page!');
+                    window.location.href = '/helpus';
+                  }}
+                  className="hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer flex"
                   style={{
                     display: "flex",
                     width: "180px",
@@ -341,8 +343,9 @@ const GuestDashboardContent: React.FC = () => {
                     alignItems: "center",
                     gap: "8px",
                     borderRadius: "18px",
-                    background: "#666666",
-                    border: "none"
+                    background: "linear-gradient(135deg, #8B5CF6 0%, #A855F7 50%, #9333EA 100%)",
+                    border: "none",
+                    boxShadow: "0 4px 15px rgba(139, 92, 246, 0.4)"
                   }}
                 >
                   <div style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -487,8 +490,11 @@ const GuestDashboardContent: React.FC = () => {
                 </button>
                 
                 <button
-                  onClick={() => {}} // Locked for guests
-                  className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] opacity-50"
+                  onClick={() => {
+                    console.log('🎯 Guest Mobile RANKED Button clicked - Redirecting to donation page!');
+                    window.location.href = '/helpus';
+                  }}
+                  className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] hover:bg-white/10 cursor-pointer"
                 >
                   <img src="/Design Elements/Player Profiles/Ranked.webp" alt="Ranked" className="w-8 h-8" />
                   <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>RANKED</span>
