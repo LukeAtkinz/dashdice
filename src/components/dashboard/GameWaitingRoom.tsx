@@ -423,14 +423,19 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               
               if (opponentProfile && bridgeData && userProfile) {
                 console.log('🔄 GameWaitingRoom: Creating Firebase match from Go backend match');
+                console.log('🔍 GameWaitingRoom: Opponent profile details:', {
+                  uid: opponentProfile.uid,
+                  displayName: opponentProfile.displayName,
+                  isBot: opponentPlayerId.includes('bot')
+                });
                 
                 // 🎯 STORE OPPONENT DATA for immediate UI display
                 const opponentDisplayData = {
                   playerId: opponentPlayerId,
-                  playerDisplayName: opponentProfile.displayName || 'Player 2',
-                  playerStats: opponentProfile.stats || {},
-                  displayBackgroundEquipped: opponentProfile.inventory?.displayBackgroundEquipped,
-                  matchBackgroundEquipped: opponentProfile.inventory?.matchBackgroundEquipped,
+                  playerDisplayName: opponentProfile?.displayName || 'Player 2',
+                  playerStats: opponentProfile?.stats || {},
+                  displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped,
+                  matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped,
                 };
                 setGoBackendOpponentData(opponentDisplayData);
                 console.log('🎮 GameWaitingRoom: Stored Go backend opponent data:', opponentDisplayData);
@@ -443,6 +448,32 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     startVsCountdown();
                   }
                 }
+                
+                // Continue with Firebase match creation...
+              } else {
+                console.warn('⚠️ GameWaitingRoom: Missing data for Firebase match creation:', {
+                  opponentProfile: !!opponentProfile,
+                  bridgeData: !!bridgeData,
+                  userProfile: !!userProfile,
+                  opponentPlayerId
+                });
+                
+                // Even if opponent profile is missing, still try to create a basic Firebase match
+                if (bridgeData && userProfile) {
+                  console.log('🔄 GameWaitingRoom: Creating fallback Firebase match');
+                  const fallbackOpponentData = {
+                    playerId: opponentPlayerId,
+                    playerDisplayName: opponentPlayerId.includes('bot') ? 'AI Player' : 'Player 2',
+                    playerStats: { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
+                    displayBackgroundEquipped: null,
+                    matchBackgroundEquipped: null,
+                  };
+                  setGoBackendOpponentData(fallbackOpponentData);
+                }
+              }
+              
+              // Create Firebase match regardless (with fallback data if needed)
+              if (bridgeData && userProfile) {
                 
                 // 🎯 FIXED: Use proper game mode initialization with inline logic
                 const actualGameMode = ourMatch.gameMode || gameMode;
@@ -506,10 +537,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   
                   opponentData: {
                     playerId: opponentPlayerId,
-                    playerDisplayName: opponentProfile.displayName || 'Player 2',
-                    playerStats: opponentProfile.stats || {},
-                    displayBackgroundEquipped: opponentProfile.inventory?.displayBackgroundEquipped,
-                    matchBackgroundEquipped: opponentProfile.inventory?.matchBackgroundEquipped,
+                    playerDisplayName: opponentProfile?.displayName || 'Player 2',
+                    playerStats: opponentProfile?.stats || {},
+                    displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped,
+                    matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped,
                     playerScore: startingScore, // Use proper starting score
                     turnActive: false, // Will be set by turn decider
                   },
@@ -529,11 +560,31 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 };
                 
                 // Create Firebase match document with same ID as Go backend match
+                console.log('🔗 GameWaitingRoom: Creating Firebase match with data:', {
+                  matchId: roomId,
+                  gameMode: actualGameMode,
+                  hostPlayer: userProfile.displayName,
+                  opponentPlayer: opponentProfile?.displayName || 'Player 2',
+                  isBot: opponentPlayerId.includes('bot')
+                });
+                
                 await import('firebase/firestore').then(({ doc, setDoc }) => {
                   return setDoc(doc(db, 'matches', roomId), matchData);
                 });
                 
                 console.log('✅ GameWaitingRoom: Firebase match created successfully');
+                
+                // Verify the match was created by reading it back
+                const verifyMatch = await import('firebase/firestore').then(async ({ doc, getDoc }) => {
+                  const matchDoc = await getDoc(doc(db, 'matches', roomId));
+                  return matchDoc.exists();
+                });
+                
+                if (verifyMatch) {
+                  console.log('✅ GameWaitingRoom: Firebase match creation verified');
+                } else {
+                  console.error('❌ GameWaitingRoom: Firebase match verification failed');
+                }
                 
                 // 🎯 UPDATE WAITING ROOM ENTRY with opponent data for immediate UI display
                 if (waitingRoomEntry) {
@@ -541,10 +592,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     ...waitingRoomEntry,
                     opponentData: {
                       playerId: opponentPlayerId,
-                      playerDisplayName: opponentProfile.displayName || 'Player 2',
-                      playerStats: opponentProfile.stats || {},
-                      displayBackgroundEquipped: opponentProfile.inventory?.displayBackgroundEquipped,
-                      matchBackgroundEquipped: opponentProfile.inventory?.matchBackgroundEquipped,
+                      playerDisplayName: opponentProfile?.displayName || 'Player 2',
+                      playerStats: opponentProfile?.stats || {},
+                      displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped,
+                      matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped,
                     }
                   };
                   setWaitingRoomEntry(updatedWaitingRoom);

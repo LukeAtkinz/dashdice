@@ -427,11 +427,11 @@ const ProfileSection: React.FC = () => {
         </div>
 
         {/* Content */}
-        <div className="w-full max-w-[80rem] flex-1 overflow-y-auto scrollbar-hide px-4 md:px-4">
+        <div className="w-full max-w-[80rem] flex-1 overflow-y-auto scrollbar-hide">
 
           {/* Profile Tab Content */}
           {activeTab === 'profile' && (
-            <div className="space-y-6">
+            <div className="space-y-6 px-4 md:px-4">
               {/* Player Profile Card - Friends Style */}
               <motion.div 
                 className="relative overflow-hidden touch-manipulation w-full md:w-auto"
@@ -483,7 +483,7 @@ const ProfileSection: React.FC = () => {
                   </div>
 
                   {/* Statistics Grid - Friends Card Style */}
-                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6">
+                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 -mx-4 md:-mx-4">
                     <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Player Statistics</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
@@ -601,7 +601,7 @@ const ProfileSection: React.FC = () => {
                   </div>
                   
                   {/* Ranked Statistics Section */}
-                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
+                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
                     <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Ranked</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -665,7 +665,7 @@ const ProfileSection: React.FC = () => {
                   </div>
                   
                   {/* Tournament Statistics Section */}
-                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
+                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
                     <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Tournament</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -732,7 +732,7 @@ const ProfileSection: React.FC = () => {
                   </div>
                   
                   {/* Cosmetic Statistics Section */}
-                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
+                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
                     <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Cosmetic</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -830,7 +830,7 @@ const ProfileSection: React.FC = () => {
                   </div>
                   
                   {/* Friends Statistics Section */}
-                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
+                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
                     <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Friends</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -882,7 +882,7 @@ const ProfileSection: React.FC = () => {
 
               {/* Match History Card - Friends Style */}
               <motion.div 
-                className="relative overflow-hidden rounded-[20px] bg-black/40 backdrop-blur-sm border border-gray-700/50"
+                className="relative overflow-hidden rounded-[20px] bg-black/40 backdrop-blur-sm border border-gray-700/50 -mx-4 md:-mx-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}

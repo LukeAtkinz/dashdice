@@ -416,7 +416,7 @@ export const DashboardSection: React.FC = () => {
                     >
                       <div className="flex items-center gap-2 pointer-events-none">
                         <img 
-                          src="/Design Elements/Player Profiles/Quick Match.webp" 
+                          src="/Design Elements/Player Profiles/QuickMatch.webp" 
                           alt="Quick Match" 
                           className="w-6 h-6 md:w-8 md:h-8 object-contain"
                         />
