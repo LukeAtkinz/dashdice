@@ -34,6 +34,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
   const hasDice = !!matchData.gameData.turnDeciderDice;
   const isInTurnDeciderPhase = matchData.gameData.gamePhase === 'turnDecider';
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showDiceNumber, setShowDiceNumber] = useState(false);
+  const [showResult, setShowResult] = useState(false);
 
   // Remove performance-impacting debug logs
   // console.log('🔍 TurnDeciderPhase Debug:', {
@@ -59,6 +61,27 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
       setIsProcessing(false);
     }
   }, [isInTurnDeciderPhase, isProcessing]);
+
+  // Handle dice result display timing
+  useEffect(() => {
+    if (hasDice && !diceAnimation.isSpinning) {
+      // Show dice number immediately when dice stops spinning
+      setShowDiceNumber(true);
+      setShowResult(false);
+      
+      // After 1 second, show the result
+      const timer = setTimeout(() => {
+        setShowDiceNumber(false);
+        setShowResult(true);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    } else {
+      // Reset states when dice starts spinning or no dice yet
+      setShowDiceNumber(false);
+      setShowResult(false);
+    }
+  }, [hasDice, diceAnimation.isSpinning]);
 
   // Handle choice with processing state
   const handleChoice = async (choice: 'odd' | 'even') => {
@@ -217,38 +240,65 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
 
       {/* Show result - delayed until dice animation completes */}
       {hasDice && !diceAnimation.isSpinning && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mt-8"
-        >
-          <div className="bg-white/10 rounded-2xl p-6 backdrop-blur-sm">
-            <p 
-              className="text-lg text-gray-300 mb-2"
-              style={{ fontFamily: 'Audiowide' }}
+        <>
+          {/* Show dice number for 1 second */}
+          {showDiceNumber && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.5 }}
+              className="text-center mt-8"
             >
-              Result: {matchData.gameData.turnDeciderDice} ({matchData.gameData.turnDeciderDice! % 2 === 0 ? 'EVEN' : 'ODD'})
-            </p>
-            <p 
-              className="text-xl font-bold text-green-400"
-              style={{ fontFamily: 'Audiowide' }}
+              <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full p-8 mx-auto w-32 h-32 flex items-center justify-center shadow-2xl">
+                <p 
+                  className="text-6xl font-bold text-white"
+                  style={{ 
+                    fontFamily: 'Audiowide',
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+                  }}
+                >
+                  {matchData.gameData.turnDeciderDice}
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Show detailed result after 1 second */}
+          {showResult && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center mt-8"
             >
-              {(() => {
-                // Determine if the choice was correct
-                const choiceWasCorrect = (matchData.gameData.turnDeciderChoice === 'odd' && matchData.gameData.turnDeciderDice! % 2 === 1) ||
-                                        (matchData.gameData.turnDeciderChoice === 'even' && matchData.gameData.turnDeciderDice! % 2 === 0);
-                
-                // If choice was correct, the chooser goes first
-                // If choice was wrong, the other player goes first
-                if (choiceWasCorrect) {
-                  return `${isMyTurnToDecide ? 'YOU' : opponent.playerDisplayName} GO FIRST!`;
-                } else {
-                  return `${isMyTurnToDecide ? opponent.playerDisplayName : 'YOU'} GO FIRST!`;
-                }
-              })()}
-            </p>
-          </div>
-        </motion.div>
+              <div className="bg-white/10 rounded-2xl p-6 backdrop-blur-sm">
+                <p 
+                  className="text-lg text-gray-300 mb-2"
+                  style={{ fontFamily: 'Audiowide' }}
+                >
+                  Result: {matchData.gameData.turnDeciderDice} ({matchData.gameData.turnDeciderDice! % 2 === 0 ? 'EVEN' : 'ODD'})
+                </p>
+                <p 
+                  className="text-xl font-bold text-green-400"
+                  style={{ fontFamily: 'Audiowide' }}
+                >
+                  {(() => {
+                    // Determine if the choice was correct
+                    const choiceWasCorrect = (matchData.gameData.turnDeciderChoice === 'odd' && matchData.gameData.turnDeciderDice! % 2 === 1) ||
+                                            (matchData.gameData.turnDeciderChoice === 'even' && matchData.gameData.turnDeciderDice! % 2 === 0);
+                    
+                    // If choice was correct, the chooser goes first
+                    // If choice was wrong, the other player goes first
+                    if (choiceWasCorrect) {
+                      return `${isMyTurnToDecide ? 'YOU' : opponent.playerDisplayName} GO FIRST!`;
+                    } else {
+                      return `${isMyTurnToDecide ? opponent.playerDisplayName : 'YOU'} GO FIRST!`;
+                    }
+                  })()}
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </>
       )}
       
       {/* Show when not in turn decider phase */}

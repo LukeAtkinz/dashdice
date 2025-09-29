@@ -31,8 +31,17 @@ export class CompletedMatchService {
       
       const hostData = matchData.hostData;
       const opponentData = matchData.opponentData;
-      const matchStartTime = matchData.startedAt || matchData.gameData?.startedAt;
-      const duration = matchStartTime ? Date.now() - matchStartTime.toMillis() : undefined;
+      
+      // Calculate duration from match start time
+      const matchStartTime = matchData.startedAt || matchData.gameData?.startedAt || matchData.createdAt;
+      const duration = matchStartTime ? Date.now() - matchStartTime.toMillis() : 0;
+      
+      console.log('⏱️ Match duration calculated:', {
+        startTime: matchStartTime?.toDate(),
+        endTime: new Date(),
+        durationMs: duration,
+        durationMinutes: Math.floor(duration / 60000)
+      });
       
       // Determine winner
       const winnerId = winnerData?.playerId;

@@ -223,16 +223,15 @@ export const GameInvitationNotification: React.FC = () => {
               damping: 30,
               duration: 0.3 
             }}
-            className="bg-gradient-to-br from-slate-900/95 via-blue-900/95 to-transparent 
-                     border border-blue-400/60 rounded-2xl p-4 shadow-2xl
+            className="bg-slate-800/90 border border-slate-600/40 rounded-2xl p-4 shadow-2xl
                      backdrop-blur-lg relative overflow-hidden"
             style={{
-              background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 58, 138, 0.95) 50%, rgba(88, 28, 135, 0.95) 100%)'
+              background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.92) 0%, rgba(51, 65, 85, 0.88) 100%)'
             }}
           >
             {/* Animated background accent */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-blue-500/10 
-                          animate-pulse opacity-60"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-400/5 via-slate-300/8 to-slate-400/5 
+                          animate-pulse opacity-40"></div>
             
             <div className="relative z-10">
               {/* Header */}

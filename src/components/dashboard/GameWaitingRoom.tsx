@@ -462,10 +462,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   console.log('🔄 GameWaitingRoom: Creating fallback Firebase match');
                   const fallbackOpponentData = {
                     playerId: opponentPlayerId,
-                    playerDisplayName: opponentPlayerId.includes('bot') ? 'AI Player' : 'Player 2',
-                    playerStats: { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
-                    displayBackgroundEquipped: null,
-                    matchBackgroundEquipped: null,
+                    playerDisplayName: goBackendOpponentData?.playerDisplayName || (opponentPlayerId.includes('bot') ? 'AI Player' : 'Player 2'),
+                    playerStats: goBackendOpponentData?.playerStats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
+                    displayBackgroundEquipped: goBackendOpponentData?.displayBackgroundEquipped || null,
+                    matchBackgroundEquipped: goBackendOpponentData?.matchBackgroundEquipped || null,
                   };
                   setGoBackendOpponentData(fallbackOpponentData);
                 }
@@ -536,10 +536,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   
                   opponentData: {
                     playerId: opponentPlayerId,
-                    playerDisplayName: opponentProfile?.displayName || (opponentPlayerId.includes('bot') ? 'AI Player' : 'Player 2'),
-                    playerStats: opponentProfile?.stats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
-                    displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped || null,
-                    matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped || null,
+                    playerDisplayName: goBackendOpponentData?.playerDisplayName || opponentProfile?.displayName || (opponentPlayerId.includes('bot') ? 'AI Player' : 'Player 2'),
+                    playerStats: goBackendOpponentData?.playerStats || opponentProfile?.stats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
+                    displayBackgroundEquipped: goBackendOpponentData?.displayBackgroundEquipped || opponentProfile?.inventory?.displayBackgroundEquipped || null,
+                    matchBackgroundEquipped: goBackendOpponentData?.matchBackgroundEquipped || opponentProfile?.inventory?.matchBackgroundEquipped || null,
                     playerScore: startingScore, // Use proper starting score
                     turnActive: false, // Will be set by turn decider
                   },
@@ -563,7 +563,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   matchId: roomId,
                   gameMode: actualGameMode,
                   hostPlayer: userProfile.displayName,
-                  opponentPlayer: opponentProfile?.displayName || 'Player 2',
+                  opponentPlayer: goBackendOpponentData?.playerDisplayName || opponentProfile?.displayName || 'Player 2',
                   isBot: opponentPlayerId.includes('bot')
                 });
                 

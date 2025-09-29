@@ -159,11 +159,8 @@ export function FriendsProvider({ children }: FriendsProviderProps) {
         gameSettings?.message
       );
       
-      if (result.success) {
-        showToast?.('Game invitation sent successfully!', 'success');
-      } else {
-        showToast?.(`Failed to send invitation: ${result.error}`, 'error');
-      }
+      // Don't show toast here - FriendCard.tsx handles the notification with icon
+      // This prevents duplicate notifications
       
       return result;
     } catch (error) {

@@ -240,8 +240,19 @@ export const InventorySection: React.FC = () => {
           Inventory
         </h1>
         
-        {/* Mobile Title - Hide and show previews instead */}
+        {/* Mobile Title - Show VAULT title */}
         <div className="block md:hidden mb-4">
+          <h1 
+            className="text-3xl font-bold text-white mb-4"
+            style={{
+              fontFamily: "Audiowide",
+              textTransform: "uppercase",
+              textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
+            }}
+          >
+            VAULT
+          </h1>
+          
           {(previewBackground || previewDisplayBackground) ? (
             <div className="space-y-2">
               <h1 

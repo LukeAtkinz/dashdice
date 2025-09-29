@@ -46,7 +46,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   } = useMatchAchievements();
   
   // Track match start time for duration calculation
-  const matchStartTime = React.useRef<number>(Date.now());
+  const matchStartTime = React.useRef<number | null>(null);
   
   // Remove performance-impacting debug logs
   // console.log('🔍 DEBUG: Match component context:', {
@@ -58,6 +58,17 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showGameOverScreen, setShowGameOverScreen] = useState(false);
+  
+  // Initialize match start time when match data first loads
+  useEffect(() => {
+    if (matchData && !matchStartTime.current) {
+      const gameStartTime = matchData.gameData?.startedAt?.toMillis?.() || 
+                           matchData.startedAt?.toMillis?.() || 
+                           matchData.createdAt?.toMillis?.();
+      matchStartTime.current = gameStartTime || Date.now();
+      console.log('⏱️ Match start time initialized:', new Date(matchStartTime.current));
+    }
+  }, [matchData]);
   
   // Abandonment notification states
   const [showAbandonmentNotification, setShowAbandonmentNotification] = useState(false);
@@ -105,7 +116,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         const playerWon = matchData.gameData.winner === (isHost ? 'host' : 'opponent');
         
         // Flush all batched achievements to database (single write)
-        const matchDuration = Date.now() - matchStartTime.current;
+        const matchDuration = matchStartTime.current ? Date.now() - matchStartTime.current : 0;
         recordMatchEnd(playerWon, {
           duration: matchDuration,
           finalScore: isHost ? matchData.hostData.playerScore : matchData.opponentData?.playerScore || 0,
@@ -347,7 +358,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         // Reset achievement batch for new match
         if (data.gameData.gamePhase === 'turnDecider') {
           resetBatch();
-          matchStartTime.current = Date.now();
+          // Only set match start time if not already set (prevents resetting during game)
+          if (!matchStartTime.current) {
+            matchStartTime.current = Date.now();
+            console.log('⏱️ Match start time set for new match:', new Date(matchStartTime.current));
+          }
         }
         
         // Clear any previous errors when we receive valid data

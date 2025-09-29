@@ -577,12 +577,15 @@ export const DashboardSection: React.FC = () => {
         ))}
       </div>
       
-      {/* Mini Components Layout - Between Game Modes and Achievements */}
+      {/* Mini Components Layout - DISABLED - Not needed currently */}
+      {/* 
       <div className="w-full flex flex-col lg:flex-row justify-center items-start gap-6 mt-6 mb-4">
         
         {/* Mobile: Stack all mini components vertically */}
+        {/*
         <div className="w-full flex flex-col lg:hidden gap-6">
           {/* Leaderboard Preview Section */}
+          {/*
           <div className="w-full flex justify-center">
             <div className="w-full max-w-md">
               <CompactLeaderboard userId={user?.uid} />
@@ -590,6 +593,7 @@ export const DashboardSection: React.FC = () => {
           </div>
           
           {/* Ranked Progression Section */}
+          {/*
           <div className="w-full flex justify-center">
             <div className="w-full max-w-md">
               <CompactProgressionDisplay
@@ -602,13 +606,16 @@ export const DashboardSection: React.FC = () => {
         </div>
 
         {/* Desktop: Side by side mini components layout - 45% width each */}
+        {/*
         <div className="hidden lg:flex w-full max-w-7xl justify-center gap-6">
           {/* Leaderboard Preview - 45% width */}
+          {/*
           <div className="w-full max-w-lg">
             <CompactLeaderboard userId={user?.uid} />
           </div>
           
           {/* Ranked Progression - 45% width */}
+          {/*
           <div className="w-full max-w-lg">
             <CompactProgressionDisplay
               currentLevel={skillRating?.level || 1}
@@ -618,6 +625,7 @@ export const DashboardSection: React.FC = () => {
           </div>
         </div>
       </div>
+      */}
 
       {/* Achievements Preview Section - Full Width */}
       <div className="w-full flex justify-center mt-4">

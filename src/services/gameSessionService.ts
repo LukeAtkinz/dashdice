@@ -1760,6 +1760,15 @@ export class GameSessionService {
   }
 
   /**
+   * Format duration in milliseconds to readable format
+   */
+  private static formatDuration(duration: number): string {
+    const minutes = Math.floor(duration / 60000);
+    const seconds = Math.floor((duration % 60000) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  /**
    * Complete match
    */
   static async completeMatch(matchId: string, winnerId?: string): Promise<void> {
@@ -1773,11 +1782,22 @@ export class GameSessionService {
         }
 
         const sessionData = sessionDoc.data();
-        const startTime = sessionData?.createdAt?.toMillis?.() || sessionData?.startedAt?.toMillis?.();
+        
+        // Calculate duration from the actual session start time
+        const startTime = sessionData?.startedAt?.toMillis?.() || 
+                         sessionData?.createdAt?.toMillis?.() || 
+                         sessionData?.gameData?.startedAt?.toMillis?.();
         const currentTime = Date.now();
         
         // Calculate duration in milliseconds
         const duration = startTime ? currentTime - startTime : 0;
+        
+        console.log('⏱️ Session duration calculated:', {
+          startTime: startTime ? new Date(startTime) : 'unknown',
+          endTime: new Date(currentTime),
+          durationMs: duration,
+          durationFormatted: this.formatDuration(duration)
+        });
 
         const updateData: any = {
           status: 'completed',

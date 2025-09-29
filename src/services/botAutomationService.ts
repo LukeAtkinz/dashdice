@@ -51,18 +51,29 @@ export class BotAutomationService {
     
     const pollInterval = setInterval(async () => {
       try {
-        // Import DashDiceAPI to get match details
-        const { default: DashDiceAPI } = await import('@/services/apiClientNew');
+        // Use proxy endpoint directly instead of apiClientNew
+        const response = await fetch(`/api/proxy/matches/${matchId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
         
-        // Get match details from Go backend
-        const response = await DashDiceAPI.getMatch(matchId);
-        
-        if (response.success && response.data) {
-          // Convert Go backend match data to MatchData format
-          const matchData = this.convertGoBackendToMatchData(response.data);
-          await this.handleMatchUpdate(matchData);
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data && (data.success !== false)) {
+            // Convert Go backend match data to MatchData format
+            const matchData = this.convertGoBackendToMatchData(data);
+            await this.handleMatchUpdate(matchData);
+          } else {
+            console.log(`🔍 Go backend match ${matchId} not found or completed`);
+            // Stop polling if match doesn't exist anymore
+            clearInterval(pollInterval);
+            this.activeListeners.delete(matchId);
+          }
         } else {
-          console.log(`🔍 Go backend match ${matchId} not found or completed`);
+          console.log(`🔍 Go backend match ${matchId} not found (${response.status})`);
           // Stop polling if match doesn't exist anymore
           clearInterval(pollInterval);
           this.activeListeners.delete(matchId);
@@ -202,8 +213,21 @@ export class BotAutomationService {
         const isGoBackendMatch = matchData.id!.startsWith('match_') || matchData.id!.startsWith('match-');
         
         if (isGoBackendMatch) {
-          const { default: DashDiceAPI } = await import('@/services/apiClientNew');
-          await DashDiceAPI.makeTurnDeciderChoice(matchData.id!, botPlayer.playerId, choice);
+          // Use proxy endpoint directly for turn decider choice
+          const response = await fetch(`/api/proxy/matches/${matchData.id}/turn-decider`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              playerId: botPlayer.playerId,
+              choice: choice
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Turn decider API call failed: ${response.status}`);
+          }
         } else {
           await MatchService.makeTurnDeciderChoice(matchData.id!, botPlayer.playerId, choice);
         }
@@ -271,14 +295,38 @@ export class BotAutomationService {
         const isGoBackendMatch = matchData.id!.startsWith('match_') || matchData.id!.startsWith('match-');
         
         if (isGoBackendMatch) {
-          const { default: DashDiceAPI } = await import('@/services/apiClientNew');
+          // Use proxy endpoints directly for bot actions
           
           if (decision.action === 'roll') {
-            console.log(`🎲 Bot ${botProfile.displayName} rolling dice via Go backend`);
-            await DashDiceAPI.rollDice(matchData.id!, botPlayer.playerId);
+            console.log(`🎲 Bot ${botProfile.displayName} rolling dice via Go backend proxy`);
+            const response = await fetch(`/api/proxy/matches/${matchData.id}/roll`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                playerId: botPlayer.playerId
+              })
+            });
+            
+            if (!response.ok) {
+              throw new Error(`Roll dice API call failed: ${response.status}`);
+            }
           } else if (decision.action === 'bank') {
-            console.log(`🏦 Bot ${botProfile.displayName} banking score via Go backend`);
-            await DashDiceAPI.bankScore(matchData.id!, botPlayer.playerId);
+            console.log(`🏦 Bot ${botProfile.displayName} banking score via Go backend proxy`);
+            const response = await fetch(`/api/proxy/matches/${matchData.id}/bank`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                playerId: botPlayer.playerId
+              })
+            });
+            
+            if (!response.ok) {
+              throw new Error(`Bank score API call failed: ${response.status}`);
+            }
           }
         } else {
           // Use Firebase MatchService for traditional matches

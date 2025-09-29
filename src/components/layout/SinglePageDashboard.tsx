@@ -724,8 +724,8 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'profile' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/Delivery Man.webp" alt="Profile" className="w-8 h-8" />
-                <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PROFILE</span>
+                <img src="/Design Elements/Delivery Man.webp" alt="Profile" className="w-10 h-10" />
+                <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PROFILE</span>
               </button>
               <button
                 onClick={() => handleSectionChange('friends')}
@@ -733,8 +733,8 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'friends' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/friends.webp" alt="Friends" className="w-9 h-9" />
-                <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
+                <img src="/Design Elements/friends.webp" alt="Friends" className="w-11 h-11" />
+                <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
                 <NotificationBadge count={onlinePlayerCount} />
               </button>
               <button
@@ -743,8 +743,8 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/CrownLogo.webp" alt="Play" className="w-8 h-8" />
-                <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PLAY</span>
+                <img src="/Design Elements/CrownLogo.webp" alt="Play" className="w-10 h-10" />
+                <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PLAY</span>
               </button>
               <button
                 onClick={() => {
@@ -755,8 +755,8 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'ranked' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/Player Profiles/Ranked.webp" alt="Ranked" className="w-8 h-8" />
-                <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>RANKED</span>
+                <img src="/Design Elements/Player Profiles/Ranked.webp" alt="Ranked" className="w-10 h-10" />
+                <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>RANKED</span>
               </button>
               <button
                 onClick={() => handleSectionChange('inventory')}
@@ -764,12 +764,14 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'inventory' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/Player Profiles/Vault.webp" alt="Vault" className="w-8 h-8" />
-                <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>VAULT</span>
+                <img src="/Design Elements/Player Profiles/Vault.webp" alt="Vault" className="w-10 h-10" />
+                <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>VAULT</span>
               </button>
             </div>
           </footer>
-        )}        {/* Mobile Background Position Control */}
+        )}
+        
+        {/* Mobile Background Position Control */}
         <MobileBackgroundControl currentSection={currentSection} />
         
         {/* Achievement Notifications */}
