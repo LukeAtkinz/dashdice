@@ -353,8 +353,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
     console.log('🔄 GameWaitingRoom: Starting Go backend match status polling for:', roomId);
 
-    // 🤖 Start bot countdown for Go backend matches (7 seconds)
-    startBotCountdown(roomId);
+    // Bot countdown disabled to hide bot presence from users
+    // startBotCountdown(roomId);
 
     const pollInterval = setInterval(async () => {
       try {
@@ -1081,10 +1081,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           const docRef = await addDoc(collection(db, 'waitingroom'), entry);
           const gameId = docRef.id;
           
-          // 🤖 Start bot fallback timer (7 seconds) for live matches
-          if (actionType === 'live' && !entry.friendInvitation) {
-            startBotCountdown(gameId);
-          }
+          // Bot countdown disabled to hide bot presence from users
+          // if (actionType === 'live' && !entry.friendInvitation) {
+          //   startBotCountdown(gameId);
+          // }
           
           // Set up listener for when opponent joins
           const unsubscribe = onSnapshot(doc(db, 'waitingroom', gameId), (doc) => {
@@ -2901,7 +2901,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     zIndex: 2
                   }}
                 >
-                  {botOpponent ? '🤖 ' : ''}{getOpponentData()?.playerDisplayName || 'Unknown Player'}
+                  {getOpponentData()?.playerDisplayName || 'Unknown Player'}
                   {botOpponent && (
                     <span style={{ 
                       display: 'block', 
@@ -2961,7 +2961,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     animation: 'pulse 1s ease-in-out infinite'
                   }}
                 >
-                  {botCountdown > 0 ? `AI Opponent in ${botCountdown}s` : 'Finding AI...'}
+                  'Finding Opponent...'
                 </div>
               )}
               

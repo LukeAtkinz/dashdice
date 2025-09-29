@@ -60,15 +60,26 @@ export class BotAutomationService {
    */
   private static async handleMatchUpdate(matchData: MatchData): Promise<void> {
     try {
+      console.log(`🔍 Bot automation checking match ${matchData.id}:`, {
+        status: matchData.status,
+        gamePhase: matchData.gameData?.gamePhase,
+        hostId: matchData.hostData?.playerId,
+        opponentId: matchData.opponentData?.playerId,
+        hostTurnActive: matchData.hostData?.turnActive,
+        opponentTurnActive: matchData.opponentData?.turnActive
+      });
+
       // Only process active matches in gameplay or turnDecider phase
       if (matchData.status !== 'active' || 
           !['gameplay', 'turnDecider'].includes(matchData.gameData.gamePhase)) {
+        console.log(`🚫 Skipping match ${matchData.id} - status: ${matchData.status}, phase: ${matchData.gameData?.gamePhase}`);
         return;
       }
 
       // Check if it's a bot's turn
       const activeBot = this.getActiveBotPlayer(matchData);
       if (!activeBot) {
+        console.log(`🚫 No active bot found in match ${matchData.id}`);
         return; // No bot is active
       }
 
