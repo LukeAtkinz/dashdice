@@ -12,6 +12,7 @@ import { MatchData } from '@/types/match';
 export class BotAutomationService {
   private static activeListeners = new Map<string, () => void>();
   private static botTurnTimeouts = new Map<string, NodeJS.Timeout>();
+  private static firebaseMatches = new Set<string>(); // Track which matches are monitored via Firebase
 
   /**
    * Start monitoring a match for bot automation
@@ -33,6 +34,7 @@ export class BotAutomationService {
       this.startGoBackendPolling(matchId);
     } else {
       // Use Firebase listener for traditional matches
+      this.firebaseMatches.add(matchId); // Mark as Firebase match
       const unsubscribe = onSnapshot(doc(db, 'matches', matchId), (doc) => {
         if (doc.exists()) {
           const matchData = { ...doc.data(), id: doc.id } as MatchData;
@@ -137,6 +139,9 @@ export class BotAutomationService {
       clearTimeout(timeout);
       this.botTurnTimeouts.delete(matchId);
     }
+
+    // Remove from Firebase tracking
+    this.firebaseMatches.delete(matchId);
   }
 
   /**
@@ -154,6 +159,11 @@ export class BotAutomationService {
         
         // Stop Go backend polling
         clearInterval(goBackendPollInterval);
+        
+        // Mark as Firebase match
+        console.log(`🏷️ Marking match ${matchId} as Firebase match`);
+        this.firebaseMatches.add(matchId);
+        console.log(`🔍 Firebase matches set now contains: ${Array.from(this.firebaseMatches)}`);
         
         // Start Firebase monitoring
         const { onSnapshot } = await import('firebase/firestore');
@@ -328,51 +338,66 @@ export class BotAutomationService {
 
     const timeout = setTimeout(async () => {
       try {
-        // Check if this is a Go backend match
-        const isGoBackendMatch = matchData.id!.startsWith('match_') || matchData.id!.startsWith('match-');
+        // Check if this match is being monitored via Firebase
+        const isFirebaseMatch = this.firebaseMatches.has(matchData.id!);
+        console.log(`🔍 Bot action routing: matchId=${matchData.id}, isFirebaseMatch=${isFirebaseMatch}, firebaseMatches=${Array.from(this.firebaseMatches)}`);
         
-        if (isGoBackendMatch) {
-          // Use proxy endpoints directly for bot actions
-          
+        if (isFirebaseMatch) {
+          // Use Firebase MatchService for matches that have transitioned
           if (decision.action === 'roll') {
-            console.log(`🎲 Bot ${botProfile.displayName} rolling dice via Go backend proxy`);
-            const response = await fetch(`/api/proxy/matches/${matchData.id}/roll`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                playerId: botPlayer.playerId
-              })
-            });
-            
-            if (!response.ok) {
-              throw new Error(`Roll dice API call failed: ${response.status}`);
-            }
-          } else if (decision.action === 'bank') {
-            console.log(`🏦 Bot ${botProfile.displayName} banking score via Go backend proxy`);
-            const response = await fetch(`/api/proxy/matches/${matchData.id}/bank`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                playerId: botPlayer.playerId
-              })
-            });
-            
-            if (!response.ok) {
-              throw new Error(`Bank score API call failed: ${response.status}`);
-            }
-          }
-        } else {
-          // Use Firebase MatchService for traditional matches
-          if (decision.action === 'roll') {
-            console.log(`🎲 Bot ${botProfile.displayName} rolling dice`);
+            console.log(`🎲 Bot ${botProfile.displayName} rolling dice via Firebase`);
             await MatchService.rollDice(matchData.id!, botPlayer.playerId);
           } else if (decision.action === 'bank') {
-            console.log(`🏦 Bot ${botProfile.displayName} banking score`);
+            console.log(`🏦 Bot ${botProfile.displayName} banking score via Firebase`);
             await MatchService.bankScore(matchData.id!, botPlayer.playerId);
+          }
+        } else {
+          // Check if this is a Go backend match (still in Go backend)
+          const isGoBackendMatch = matchData.id!.startsWith('match_') || matchData.id!.startsWith('match-');
+          
+          if (isGoBackendMatch) {
+            // Use proxy endpoints for Go backend matches
+            
+            if (decision.action === 'roll') {
+              console.log(`🎲 Bot ${botProfile.displayName} rolling dice via Go backend proxy`);
+              const response = await fetch(`/api/proxy/matches/${matchData.id}/roll`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  playerId: botPlayer.playerId
+                })
+              });
+              
+              if (!response.ok) {
+                throw new Error(`Roll dice API call failed: ${response.status}`);
+              }
+            } else if (decision.action === 'bank') {
+              console.log(`🏦 Bot ${botProfile.displayName} banking score via Go backend proxy`);
+              const response = await fetch(`/api/proxy/matches/${matchData.id}/bank`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  playerId: botPlayer.playerId
+                })
+              });
+              
+              if (!response.ok) {
+                throw new Error(`Bank score API call failed: ${response.status}`);
+              }
+            }
+          } else {
+            // Use Firebase MatchService for traditional matches
+            if (decision.action === 'roll') {
+              console.log(`🎲 Bot ${botProfile.displayName} rolling dice`);
+              await MatchService.rollDice(matchData.id!, botPlayer.playerId);
+            } else if (decision.action === 'bank') {
+              console.log(`🏦 Bot ${botProfile.displayName} banking score`);
+              await MatchService.bankScore(matchData.id!, botPlayer.playerId);
+            }
           }
         }
       } catch (error) {
