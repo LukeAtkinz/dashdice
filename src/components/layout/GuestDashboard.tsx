@@ -275,57 +275,83 @@ const GuestDashboardContent: React.FC = () => {
 
               {/* Navigation Items */}
               <div className="hidden md:flex items-center gap-[20px]">
-                {/* VAULT Button - Locked for guests */}
-                <button
-                  onClick={() => {}} // Disabled for guests
-                  disabled
-                  className="opacity-50 cursor-not-allowed flex"
-                  style={{
-                    display: "flex",
-                    width: "180px",
-                    height: "48px",
-                    padding: "8px 16px",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: "8px",
-                    borderRadius: "18px",
-                    background: "#666666",
-                    border: "none"
-                  }}
-                >
-                  <div style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <img src="/Design Elements/Player Profiles/Vault.webp" alt="Vault" className="w-10 h-10" />
-                  </div>
-                  <span style={{ color: "#FFF", fontFamily: "Audiowide", fontSize: "20px", fontWeight: 400, lineHeight: "20px" }}>
-                    VAULT
-                  </span>
-                </button>
+                {/* VAULT Button - Redirects to signup for guests */}
+                <Link href="/register">
+                  <button
+                    className="hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer flex"
+                    style={{
+                      display: "flex",
+                      width: "180px",
+                      height: "48px",
+                      padding: "8px 16px",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      gap: "8px",
+                      borderRadius: "18px",
+                      background: "linear-gradient(135deg, #374151 0%, #4B5563 50%, #6B7280 100%)",
+                      border: "2px solid rgba(255, 255, 255, 0.3)"
+                    }}
+                  >
+                    <div style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <img src="/Design Elements/Player Profiles/Vault.webp" alt="Vault" className="w-10 h-10" />
+                    </div>
+                    <span style={{ color: "#FFF", fontFamily: "Audiowide", fontSize: "20px", fontWeight: 400, lineHeight: "20px" }}>
+                      VAULT
+                    </span>
+                  </button>
+                </Link>
 
-                {/* FRIENDS Button - Locked for guests */}
-                <button
-                  onClick={() => {}} // Disabled for guests
-                  disabled
-                  className="opacity-50 cursor-not-allowed flex"
-                  style={{
-                    display: "flex",
-                    width: "180px",
-                    height: "48px",
-                    padding: "8px 16px",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: "8px",
-                    borderRadius: "18px",
-                    background: "#666666",
-                    border: "none"
-                  }}
-                >
-                  <div style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <img src="/Design Elements/friends.webp" alt="Friends" className="w-10 h-10" />
-                  </div>
-                  <span style={{ color: "#FFF", fontFamily: "Audiowide", fontSize: "20px", fontWeight: 400, lineHeight: "20px" }}>
-                    FRIENDS
-                  </span>
-                </button>
+                {/* FRIENDS Button - Redirects to signup for guests */}
+                <Link href="/register">
+                  <button
+                    className="hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer flex"
+                    style={{
+                      display: "flex",
+                      width: "180px",
+                      height: "48px",
+                      padding: "8px 16px",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      gap: "8px",
+                      borderRadius: "18px",
+                      background: "linear-gradient(135deg, #374151 0%, #4B5563 50%, #6B7280 100%)",
+                      border: "2px solid rgba(255, 255, 255, 0.3)"
+                    }}
+                  >
+                    <div style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <img src="/Design Elements/friends.webp" alt="Friends" className="w-10 h-10" />
+                    </div>
+                    <span style={{ color: "#FFF", fontFamily: "Audiowide", fontSize: "20px", fontWeight: 400, lineHeight: "20px" }}>
+                      FRIENDS
+                    </span>
+                  </button>
+                </Link>
+
+                {/* CHAT Button - Redirects to signup for guests */}
+                <Link href="/register">
+                  <button
+                    className="hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer flex"
+                    style={{
+                      display: "flex",
+                      width: "180px",
+                      height: "48px",
+                      padding: "8px 16px",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      gap: "8px",
+                      borderRadius: "18px",
+                      background: "linear-gradient(135deg, #374151 0%, #4B5563 50%, #6B7280 100%)",
+                      border: "2px solid rgba(255, 255, 255, 0.3)"
+                    }}
+                  >
+                    <div style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <img src="/Design Elements/chat.webp" alt="Chat" className="w-10 h-10" />
+                    </div>
+                    <span style={{ color: "#FFF", fontFamily: "Audiowide", fontSize: "20px", fontWeight: 400, lineHeight: "20px" }}>
+                      CHAT
+                    </span>
+                  </button>
+                </Link>
 
                 {/* RANKED Button - Redirect to donation page */}
                 <button
@@ -360,13 +386,29 @@ const GuestDashboardContent: React.FC = () => {
 
             {/* Right Navigation */}
             <div className="hidden md:flex flex-row items-center justify-end gap-[1rem]">
-              {/* Sign Up Button */}
+              {/* PROFILE Button - Redirects to signup for guests */}
               <Link href="/register">
                 <button
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-bold rounded-lg transition-all"
-                  style={{ fontFamily: "Audiowide" }}
+                  className="hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer flex"
+                  style={{
+                    display: "flex",
+                    width: "180px",
+                    height: "48px",
+                    padding: "8px 16px",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: "8px",
+                    borderRadius: "18px",
+                    background: "linear-gradient(135deg, #EF4444 0%, #DC2626 50%, #B91C1C 100%)",
+                    border: "2px solid rgba(255, 255, 255, 0.3)"
+                  }}
                 >
-                  SIGN UP
+                  <div style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <img src="/Design Elements/Player Profiles/Profile.webp" alt="Profile" className="w-10 h-10" />
+                  </div>
+                  <span style={{ color: "#FFF", fontFamily: "Audiowide", fontSize: "20px", fontWeight: 400, lineHeight: "20px" }}>
+                    SIGN UP
+                  </span>
                 </button>
               </Link>
 
@@ -437,7 +479,9 @@ const GuestDashboardContent: React.FC = () => {
                   )}
                   {currentSection === 'achievements' && (
                     <LockedFeatureOverlay featureName="Achievements">
-                      <AchievementsDashboard />
+                      <div className="blur-sm pointer-events-none">
+                        <AchievementsDashboard />
+                      </div>
                     </LockedFeatureOverlay>
                   )}
                   {currentSection === 'friends' && (
@@ -469,63 +513,34 @@ const GuestDashboardContent: React.FC = () => {
           </main>
         )}
 
-        {/* Mobile Bottom Navigation - Large SIGNUP Button */}
+        {/* Mobile Bottom Navigation - SIGN IN / SIGN UP buttons */}
         {(currentSection !== 'match' && currentSection !== 'waiting-room') && (
           <footer className="md:hidden fixed bottom-0 left-0 right-0 w-[100vw] flex flex-row items-center justify-center z-50"
             style={{ paddingBottom: 'env(safe-area-inset-bottom)', padding: '0' }}>
-            <div className="flex flex-col items-center justify-center w-full px-[2vw] py-[15px] shadow-lg" style={{
+            <div className="flex flex-col items-center justify-center w-full px-[4vw] py-[20px] shadow-lg" style={{
               background: 'linear-gradient(0deg, #5a7579 0%, transparent 100%)', // NewDay theme
               borderRadius: '0'
             }}>
-              {/* Main Navigation Buttons */}
-              <div className="flex flex-row items-center justify-between w-full mb-3">
-                <button
-                  onClick={() => handleSectionChange('dashboard')}
-                  className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
-                    currentSection === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/10'
-                  }`}
-                >
-                  <img src="/Design Elements/CrownLogo.webp" alt="Play" className="w-8 h-8" />
-                  <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PLAY</span>
-                </button>
+              {/* Sign In and Sign Up Buttons */}
+              <div className="flex flex-row items-center justify-center gap-4 w-full">
+                <Link href="/login" className="flex-1">
+                  <button
+                    className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg"
+                    style={{ fontFamily: "Audiowide", fontSize: "18px" }}
+                  >
+                    SIGN IN
+                  </button>
+                </Link>
                 
-                <button
-                  onClick={() => {
-                    console.log('🎯 Guest Mobile RANKED Button clicked - Redirecting to donation page!');
-                    window.location.href = '/helpus';
-                  }}
-                  className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] hover:bg-white/10 cursor-pointer"
-                >
-                  <img src="/Design Elements/Player Profiles/Ranked.webp" alt="Ranked" className="w-8 h-8" />
-                  <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>RANKED</span>
-                </button>
-                
-                <button
-                  onClick={() => {}} // Locked for guests
-                  className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] opacity-50"
-                >
-                  <img src="/Design Elements/Player Profiles/Vault.webp" alt="Vault" className="w-8 h-8" />
-                  <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>VAULT</span>
-                </button>
-                
-                <button
-                  onClick={() => {}} // Locked for guests
-                  className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] opacity-50"
-                >
-                  <img src="/Design Elements/friends.webp" alt="Friends" className="w-9 h-9" />
-                  <span className="text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
-                </button>
+                <Link href="/register" className="flex-1">
+                  <button
+                    className="w-full py-4 px-6 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-bold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg"
+                    style={{ fontFamily: "Audiowide", fontSize: "18px" }}
+                  >
+                    SIGN UP
+                  </button>
+                </Link>
               </div>
-
-              {/* Large SIGNUP Button */}
-              <Link href="/register" className="w-full">
-                <button
-                  className="w-full py-4 px-8 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-bold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg"
-                  style={{ fontFamily: "Audiowide", fontSize: "18px" }}
-                >
-                  SIGN UP TO UNLOCK ALL FEATURES
-                </button>
-              </Link>
             </div>
           </footer>
         )}

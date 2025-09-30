@@ -386,55 +386,105 @@ export const DashboardSection: React.FC = () => {
               <div className="w-full h-full flex flex-col justify-center items-center gap-[8px] md:gap-[10px] p-[15px] md:p-[20px] animate-fade-in">
                 {config.available ? (
                   <>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        console.log(`🎮 ${mode.toUpperCase()} QUICK GAME CLICKED!`);
-                        handleGameModeAction(mode, 'live');
-                      }}
-                      onTouchEnd={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        console.log(`🎮 ${mode.toUpperCase()} QUICK GAME TOUCH END!`);
-                        handleGameModeAction(mode, 'live');
-                      }}
-                      className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300 pointer-events-auto"
-                      style={{
-                        borderRadius: '30px',
-                        background: getLivePlayButtonBackground(),
-                        height: '80px',
-                        alignContent: 'center',
-                        justifyContent: 'center',
-                        border: 0,
-                        boxShadow: '0 4px 15px rgba(25, 46, 57, 0.3)',
-                        touchAction: 'manipulation',
-                        zIndex: 10,
-                        position: 'relative',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <div className="flex items-center gap-2 pointer-events-none">
-                        <img 
-                          src="/Design Elements/Player Profiles/QuickMatch.webp" 
-                          alt="Quick Match" 
-                          className="w-8 h-8 md:w-12 md:h-12 object-contain"
-                        />
-                        <span
-                          className="text-[22px] md:text-[32px] leading-[26px] md:leading-[36px]"
+                    {/* Casual Game Button - Locked for guests */}
+                    {user ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          console.log(`🎮 ${mode.toUpperCase()} QUICK GAME CLICKED!`);
+                          handleGameModeAction(mode, 'live');
+                        }}
+                        onTouchEnd={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          console.log(`🎮 ${mode.toUpperCase()} QUICK GAME TOUCH END!`);
+                          handleGameModeAction(mode, 'live');
+                        }}
+                        className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300 pointer-events-auto"
+                        style={{
+                          borderRadius: '30px',
+                          background: getLivePlayButtonBackground(),
+                          height: '80px',
+                          alignContent: 'center',
+                          justifyContent: 'center',
+                          border: 0,
+                          boxShadow: '0 4px 15px rgba(25, 46, 57, 0.3)',
+                          touchAction: 'manipulation',
+                          zIndex: 10,
+                          position: 'relative',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <div className="flex items-center gap-2 pointer-events-none">
+                          <img 
+                            src="/Design Elements/Player Profiles/QuickMatch.webp" 
+                            alt="Quick Match" 
+                            className="w-8 h-8 md:w-12 md:h-12 object-contain"
+                          />
+                          <span
+                            className="text-[22px] md:text-[32px] leading-[26px] md:leading-[36px]"
+                            style={{
+                              color: '#E2E2E2',
+                              textAlign: 'center',
+                              fontFamily: 'Audiowide',
+                              fontStyle: 'normal',
+                              fontWeight: 400,
+                              textTransform: 'uppercase',
+                            }}
+                          >
+                            CASUAL
+                          </span>
+                        </div>
+                      </button>
+                    ) : (
+                      <div className="relative w-full">
+                        <button
+                          disabled
+                          className="w-full flex flex-col justify-center items-center opacity-50 cursor-not-allowed transition-all duration-300"
                           style={{
-                            color: '#E2E2E2',
-                            textAlign: 'center',
-                            fontFamily: 'Audiowide',
-                            fontStyle: 'normal',
-                            fontWeight: 400,
-                            textTransform: 'uppercase',
+                            borderRadius: '30px',
+                            background: '#666666',
+                            height: '80px',
+                            alignContent: 'center',
+                            justifyContent: 'center',
+                            border: 0,
+                            touchAction: 'manipulation',
+                            zIndex: 10,
+                            position: 'relative'
                           }}
                         >
-                          CASUAL
-                        </span>
+                          <div className="flex items-center gap-2 pointer-events-none">
+                            <img 
+                              src="/Design Elements/Player Profiles/QuickMatch.webp" 
+                              alt="Quick Match" 
+                              className="w-8 h-8 md:w-12 md:h-12 object-contain"
+                            />
+                            <span
+                              className="text-[22px] md:text-[32px] leading-[26px] md:leading-[36px]"
+                              style={{
+                                color: '#E2E2E2',
+                                textAlign: 'center',
+                                fontFamily: 'Audiowide',
+                                fontStyle: 'normal',
+                                fontWeight: 400,
+                                textTransform: 'uppercase',
+                              }}
+                            >
+                              CASUAL
+                            </span>
+                          </div>
+                        </button>
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-20 rounded-[30px]">
+                          <div className="text-center">
+                            <div className="text-4xl mb-2">🔒</div>
+                            <p className="text-white/80 text-sm font-bold" style={{ fontFamily: "Audiowide" }}>
+                              SIGN UP TO PLAY
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                    </button>
+                    )}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
