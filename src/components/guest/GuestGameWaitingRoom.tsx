@@ -2,9 +2,10 @@
  * Guest Game Waiting Room
  * 
  * Specialized waiting room for guest users that:
- * - Shows 3-second countdown
+ * - Shows 3-second countdown with beautiful UI matching regular waiting room
  * - Automatically matches with bots
  * - No real player interaction
+ * - Uses same professional design as GameWaitingRoom
  */
 
 'use client';
@@ -29,8 +30,37 @@ export const GuestGameWaitingRoom: React.FC<GuestGameWaitingRoomProps> = ({
 }) => {
   const [countdown, setCountdown] = useState(3);
   const [status, setStatus] = useState<'searching' | 'matched'>('searching');
+  const [searchText, setSearchText] = useState('Finding the perfect opponent...');
   const matchIdRef = useRef<string | undefined>(undefined);
   const hasStartedRef = useRef(false);
+
+  // Game mode configuration matching real waiting room
+  const gameModeConfig: Record<string, { name: string; description: string }> = {
+    classic: { name: 'Classic', description: 'Traditional dice game' },
+    quickfire: { name: 'Quick Fire', description: 'Fast-paced action' },
+    'zero-hour': { name: 'Zero Hour', description: 'Time pressure game' },
+    elimination: { name: 'Elimination', description: 'Sudden death showdown' },
+    'perfect-match': { name: 'Perfect Match', description: 'Precision gameplay' },
+    'last-stand': { name: 'Last Stand', description: 'Final battle mode' }
+  };
+
+  const currentGameMode = gameModeConfig[gameMode] || gameModeConfig.classic;
+
+  // Animated searching text
+  useEffect(() => {
+    const texts = [
+      'Finding the perfect opponent...',
+      'Searching for players...',
+      'Almost ready...',
+      'Preparing your match...'
+    ];
+    let index = 0;
+    const interval = setInterval(() => {
+      index = (index + 1) % texts.length;
+      setSearchText(texts[index]);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     // Prevent multiple initializations
@@ -89,160 +119,248 @@ export const GuestGameWaitingRoom: React.FC<GuestGameWaitingRoomProps> = ({
     onCancel();
   };
 
-  const getGameModeIcon = (mode: string) => {
-    const icons: Record<string, string> = {
-      'classic': '/Design Elements/Crown Mode.webp',
-      'quickfire': '/Design Elements/Shield.webp',
-      'zero-hour': '/Design Elements/time out.webp',
-      'elimination': '/Design Elements/Cross.webp',
-      'perfect-match': '/Design Elements/Target.webp',
-      'last-stand': '/Design Elements/Sword.webp'
-    };
-    return icons[mode] || '/Design Elements/Crown Mode.webp';
-  };
-
-  const getGameModeName = (mode: string) => {
-    const names: Record<string, string> = {
-      'classic': 'CLASSIC MODE',
-      'quickfire': 'QUICK FIRE',
-      'zero-hour': 'ZERO HOUR',
-      'elimination': 'ELIMINATION',
-      'perfect-match': 'PERFECT MATCH',
-      'last-stand': 'LAST STAND'
-    };
-    return names[mode] || mode.toUpperCase();
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="waiting-room-container" style={{ 
+      width: '100%', 
+      height: '100vh', 
+      maxHeight: '100vh',
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      padding: '0',
+      margin: '0',
+      background: 'transparent',
+      overflow: 'hidden'
+    }}>
       {/* Background Video */}
       <video
         autoPlay
         loop
         muted
         playsInline
-        className="fixed inset-0 w-full h-full object-cover"
+        className="fixed inset-0 w-full h-full object-cover -z-10"
       >
         <source src="/backgrounds/New Day.mp4" type="video/mp4" />
       </video>
-      
-      {/* Dark Overlay */}
-      <div className="fixed inset-0 bg-black/70" />
-      
-      {/* Content */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="relative z-10 w-full max-w-2xl mx-auto p-8"
+
+      {/* CSS Styles for animations */}
+      <style jsx>{`
+        @keyframes subtleGlow {
+          0% { 
+            transform: scale(1);
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+            opacity: 0.9;
+          }
+          50% { 
+            transform: scale(1.05);
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.6));
+            opacity: 1;
+          }
+          100% { 
+            transform: scale(1);
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+            opacity: 0.9;
+          }
+        }
+        
+        @keyframes buttonPulse {
+          0% { 
+            transform: translateY(0) scale(1);
+            box-shadow: 0 4px 15px rgba(255, 0, 128, 0.3);
+          }
+          50% { 
+            transform: translateY(0) scale(1.02);
+            box-shadow: 0 6px 20px rgba(255, 0, 128, 0.5);
+          }
+          100% { 
+            transform: translateY(0) scale(1);
+            box-shadow: 0 4px 15px rgba(255, 0, 128, 0.3);
+          }
+        }
+      `}</style>
+
+      {/* Main Content Container */}
+      <div
+        style={{
+          display: 'flex',
+          width: '100vw',
+          maxWidth: '100vw',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: typeof window !== 'undefined' && window.innerWidth < 768 ? '30px' : '50px',
+          background: 'transparent',
+          padding: typeof window !== 'undefined' && window.innerWidth < 768 ? '15px' : '20px',
+          paddingBottom: typeof window !== 'undefined' && window.innerWidth < 768 ? '100px' : '20px',
+          boxSizing: 'border-box'
+        }}
       >
-        <div 
-          className="backdrop-blur-lg rounded-3xl p-12 border border-white/20 shadow-2xl text-center"
+        {/* Game Mode Title */}
+        <div
           style={{
-            background: 'linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 100%)',
-            backdropFilter: 'blur(20px)'
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '10px'
           }}
         >
-          {/* Game Mode Header */}
-          <div className="flex items-center justify-center mb-8">
-            <img 
-              src={getGameModeIcon(gameMode)} 
-              alt={gameMode}
-              className="w-16 h-16 mr-4"
-            />
-            <h1 
-              className="text-4xl md:text-5xl text-white"
-              style={{ fontFamily: 'Audiowide' }}
-            >
-              {getGameModeName(gameMode)}
-            </h1>
-          </div>
-          
-          {status === 'searching' ? (
-            <>
-              {/* Searching Status */}
-              <div className="mb-8">
-                <h2 
-                  className="text-2xl text-white/90 mb-4"
-                  style={{ fontFamily: 'Audiowide' }}
-                >
-                  FINDING BOT OPPONENT
-                </h2>
-                <p className="text-white/70 text-lg">
-                  Matching you with a skilled bot player...
-                </p>
-              </div>
-              
-              {/* Countdown */}
-              <div className="mb-8">
-                <motion.div
-                  key={countdown}
-                  initial={{ scale: 1.2, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="text-8xl font-bold text-yellow-400 mb-4"
-                  style={{ fontFamily: 'Audiowide' }}
-                >
-                  {countdown}
-                </motion.div>
-                <p className="text-white/80">
-                  {countdown > 0 ? 'Searching...' : 'Match Found!'}
-                </p>
-              </div>
-              
-              {/* Loading Animation */}
-              <div className="flex justify-center mb-8">
-                <div className="relative">
-                  <div className="w-16 h-16 border-4 border-yellow-400/30 rounded-full animate-spin">
-                    <div className="absolute top-0 left-0 w-4 h-4 bg-yellow-400 rounded-full"></div>
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Match Found */}
-              <div className="mb-8">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="text-6xl mb-4"
-                >
-                  🤖
-                </motion.div>
-                <h2 
-                  className="text-3xl text-green-400 mb-4"
-                  style={{ fontFamily: 'Audiowide' }}
-                >
-                  BOT OPPONENT FOUND!
-                </h2>
-                <p className="text-white/80 text-lg">
-                  Preparing your match...
-                </p>
-              </div>
-            </>
-          )}
-          
-          {/* Cancel Button */}
-          <button
-            onClick={handleCancel}
-            className="px-8 py-3 bg-red-600/80 hover:bg-red-600 text-white font-bold rounded-xl transition-all backdrop-blur-sm"
-            style={{ fontFamily: 'Audiowide' }}
+          <h1
+            className="text-center"
+            style={{
+              color: '#E2E2E2',
+              fontFamily: 'Audiowide',
+              fontSize: typeof window !== 'undefined' && window.innerWidth < 768 ? '32px' : '64px',
+              fontStyle: 'normal',
+              fontWeight: 400,
+              lineHeight: typeof window !== 'undefined' && window.innerWidth < 768 ? '36px' : '72px',
+              textTransform: 'uppercase',
+              margin: 0,
+              textShadow: "0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4), 0 0 60px rgba(255, 215, 0, 0.2)",
+              whiteSpace: typeof window !== 'undefined' && window.innerWidth < 768 ? 'nowrap' : 'normal'
+            }}
           >
-            CANCEL
-          </button>
+            {currentGameMode.name}
+          </h1>
           
-          {/* Guest Info */}
-          <div className="mt-8 pt-6 border-t border-white/20">
-            <div className="flex items-center justify-center gap-2 text-white/60">
-              <span>👤</span>
-              <span style={{ fontFamily: 'Audiowide' }}>GUEST MODE</span>
-              <span>•</span>
-              <span>Playing vs Bots</span>
-              <span>•</span>
-              <span>No Data Saved</span>
+          {/* Game Type Badge */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginTop: '10px'
+          }}>
+            <div style={{
+              backgroundColor: 'rgba(255, 165, 0, 0.2)',
+              border: '2px solid #FFA500',
+              borderRadius: '20px',
+              padding: '8px 16px',
+              color: '#FFA500',
+              fontFamily: 'Audiowide',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              textTransform: 'uppercase',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              🤖 Bot Match
             </div>
           </div>
         </div>
-      </motion.div>
+
+        {/* VS Section with Status */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: typeof window !== 'undefined' && window.innerWidth < 768 ? '20px' : '30px'
+          }}
+        >
+          <div
+            style={{
+              color: '#E2E2E2',
+              fontFamily: 'Audiowide',
+              fontSize: typeof window !== 'undefined' && window.innerWidth < 768 ? '32px' : '48px',
+              fontWeight: 400,
+              textShadow: '0 0 20px rgba(255, 255, 255, 0.3)'
+            }}
+          >
+            GUEST VS BOT
+          </div>
+          
+          {/* Status Text */}
+          <div style={{
+            textAlign: 'center',
+            color: '#E2E2E2',
+            fontFamily: 'Audiowide',
+            fontSize: typeof window !== 'undefined' && window.innerWidth < 768 ? '14px' : '18px',
+            opacity: 0.8
+          }}>
+            {status === 'matched' ? 'Match Found!' : searchText}
+          </div>
+          
+          {/* Countdown */}
+          {countdown > 0 && (
+            <motion.div
+              style={{
+                color: '#00FF00',
+                fontFamily: 'Audiowide',
+                fontSize: typeof window !== 'undefined' && window.innerWidth < 768 ? '48px' : '72px',
+                fontWeight: 400,
+                textShadow: '0 0 30px rgba(0, 255, 0, 0.8)'
+              }}
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            >
+              {countdown}
+            </motion.div>
+          )}
+          
+          {/* Entering Arena Status */}
+          {countdown === 0 && (
+            <motion.div
+              style={{
+                color: '#FFD700',
+                fontFamily: 'Audiowide',
+                fontSize: typeof window !== 'undefined' && window.innerWidth < 768 ? '24px' : '32px',
+                fontWeight: 400,
+                textShadow: '0 0 30px rgba(255, 215, 0, 0.8)',
+                textAlign: 'center'
+              }}
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              ENTERING ARENA...
+              <br />
+              <span style={{ fontSize: typeof window !== 'undefined' && window.innerWidth < 768 ? '16px' : '20px', opacity: 0.8 }}>
+                PREPARING YOUR MATCH
+              </span>
+            </motion.div>
+          )}
+        </div>
+
+        {/* Leave Game Button */}
+        <div
+          style={{
+            position: 'fixed',
+            bottom: typeof window !== 'undefined' && window.innerWidth < 768 ? '30px' : '50px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1000
+          }}
+        >
+          <button
+            onClick={handleCancel}
+            style={{
+              padding: typeof window !== 'undefined' && window.innerWidth < 768 ? '15px 30px' : '20px 40px',
+              borderRadius: '50px',
+              background: '#FF0080',
+              border: 'none',
+              color: '#FFF',
+              fontFamily: 'Audiowide',
+              fontSize: typeof window !== 'undefined' && window.innerWidth < 768 ? '14px' : '16px',
+              fontWeight: 400,
+              textTransform: 'uppercase',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              animation: 'buttonPulse 2s infinite',
+              boxShadow: '0 4px 15px rgba(255, 0, 128, 0.3)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 6px 25px rgba(255, 0, 128, 0.5)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 0, 128, 0.3)';
+            }}
+          >
+            Leave Game
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
