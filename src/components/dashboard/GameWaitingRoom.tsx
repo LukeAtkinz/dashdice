@@ -1247,7 +1247,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           // Wait longer after showing "GO!" to ensure animation completes
           setTimeout(() => {
             moveToMatchesAndNavigate();
-          }, 2000); // Wait 2 seconds after showing "GO!" to let animation complete
+          }, 3000); // Wait 3 seconds after showing "GO!" to let animation complete
           return 0; // Show "GO!"
         }
         return prev - 1;

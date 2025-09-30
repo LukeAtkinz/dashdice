@@ -296,7 +296,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
                   <div className="text-center py-8">
                     <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-3">
                       <img 
-                        src="/backgrounds/location not found.png" 
+                        src="/Design Elements/lost connection.webp" 
                         alt="No requests" 
                         className="w-12 h-12 object-contain opacity-80"
                       />

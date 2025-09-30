@@ -80,7 +80,7 @@ const gameConfig = {
     rotation: '0deg',
     mobileRotation: '0deg',
     position: { top: '-1.5rem', left: '-5rem' },
-    mobilePosition: { top: '-1.5rem', left: '-2rem' },
+    mobilePosition: { top: '-0.5rem', left: '-2rem' },
     mobileScale: '1.0',
     available: false // Keep tag team disabled for now
   }
@@ -262,7 +262,7 @@ export const DashboardSection: React.FC = () => {
 
   return (
     <motion.div 
-      className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] md:py-[2rem] pt-[1rem] md:pt-[2rem]"
+      className="flex flex-col items-center justify-center gap-[2rem] py-[2rem] md:py-[2rem] pt-[1rem] md:pt-[2rem] mx-auto"
       initial={{ opacity: 1, scale: 1 }}
       animate={{ 
         opacity: isExiting ? 0.7 : 1, 
@@ -272,7 +272,9 @@ export const DashboardSection: React.FC = () => {
       transition={{ duration: 0.5, ease: "easeOut" }}
       style={{
         minHeight: 'auto', // Allow natural height growth
-        overflow: 'visible' // Ensure no clipping
+        overflow: 'visible', // Ensure no clipping
+        width: '95vw',
+        maxWidth: '1600px'
       }}
     >
       {/* Custom CSS for animations */}
@@ -346,15 +348,13 @@ export const DashboardSection: React.FC = () => {
         </div>
       )}
 
-      {/* Game Mode Container - Ensure proper scrolling */}
+      {/* Game Mode Container - Full width to match achievements */}
       <div 
-        className="w-[100%] flex flex-row items-center justify-center flex-wrap content-center gap-x-[0.5rem] md:gap-x-[0.687rem] gap-y-[0.5rem] md:gap-y-[0.625rem] px-[1rem] md:px-[2rem]"
+        className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 px-4 md:px-8"
         style={{
           touchAction: 'pan-y pan-x', // Allow both vertical and horizontal scrolling
           overflow: 'visible', // Ensure content is not clipped
           WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
-          minHeight: 'auto', // Allow natural height
-          maxHeight: 'none' // Remove any height constraints
         }}
       >
         {Object.entries(gameConfig).map(([mode, config]) => (
@@ -376,7 +376,7 @@ export const DashboardSection: React.FC = () => {
                 }, 5000);
               }
             }}
-            className="game-mode-card h-[12rem] md:h-[15.625rem] w-[90vw] md:w-[30rem] rounded-[30px] overflow-hidden shrink-0 flex flex-row items-center justify-start relative text-right text-[2.5rem] md:text-[4rem] text-gainsboro font-audiowide cursor-pointer transition-all duration-300"
+            className="game-mode-card h-[12rem] md:h-[15.625rem] w-full rounded-[30px] overflow-hidden flex flex-row items-center justify-start relative text-right text-[2.5rem] md:text-[4rem] text-gainsboro font-audiowide cursor-pointer transition-all duration-300"
             style={{
               background: getGameModeSelectorBackground(),
               touchAction: 'manipulation' // Prevent double-tap zoom on mobile

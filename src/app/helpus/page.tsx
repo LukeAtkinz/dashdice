@@ -22,36 +22,24 @@ const DonationPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen relative overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-pink-900/20" />
+      <div className="min-h-screen relative overflow-auto">
+        {/* Background Video */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          controls={false}
+          webkit-playsinline="true"
+          className="fixed inset-0 w-full h-full object-cover z-0"
+        >
+          <source src="/backgrounds/New Day.mp4" type="video/mp4" />
+        </video>
         
-        {/* Floating Particles */}
-        <div className="absolute inset-0 overflow-hidden">
-          {[...Array(20)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-2 h-2 bg-white/20 rounded-full"
-              initial={{ 
-                x: typeof window !== 'undefined' ? Math.random() * window.innerWidth : Math.random() * 1000, 
-                y: typeof window !== 'undefined' ? window.innerHeight + 10 : 800,
-                opacity: 0 
-              }}
-              animate={{ 
-                y: -10, 
-                opacity: [0, 1, 0],
-                scale: [0.5, 1, 0.5]
-              }}
-              transition={{
-                duration: Math.random() * 10 + 10,
-                repeat: Infinity,
-                delay: Math.random() * 5
-              }}
-            />
-          ))}
-        </div>
+        {/* Dark Overlay */}
+        <div className="fixed inset-0 bg-black/60 z-10" />
 
-        <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
+        <div className="relative z-20 container mx-auto px-4 py-8 max-w-4xl min-h-screen">
           {/* Header Section */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -79,7 +67,13 @@ const DonationPage: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="mb-12"
           >
-            <div className="bg-black/40 backdrop-blur-md border border-white/20 rounded-3xl p-8">
+            <div 
+              className="backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-2xl"
+              style={{
+                background: 'linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 100%)',
+                backdropFilter: 'blur(20px)'
+              }}
+            >
               <div className="text-center mb-6">
                 <h3 className="text-2xl md:text-3xl text-white font-bold mb-2" style={{ fontFamily: 'Audiowide' }}>
                   🎯 Our Goal
@@ -91,7 +85,7 @@ const DonationPage: React.FC = () => {
               
               {/* Progress Bar */}
               <div className="relative mb-4">
-                <div className="w-full h-6 bg-gray-800 rounded-full overflow-hidden border border-white/20">
+                <div className="w-full h-6 bg-black/40 rounded-full overflow-hidden border border-white/30">
                   <motion.div
                     className="h-full bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 relative"
                     initial={{ width: 0 }}
@@ -119,7 +113,13 @@ const DonationPage: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="mb-12"
           >
-            <div className="bg-black/40 backdrop-blur-md border border-white/20 rounded-3xl p-8">
+            <div 
+              className="backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-2xl"
+              style={{
+                background: 'linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 100%)',
+                backdropFilter: 'blur(20px)'
+              }}
+            >
               <h3 className="text-3xl text-white font-bold mb-6" style={{ fontFamily: 'Audiowide' }}>
                 🚀 Our Story
               </h3>
@@ -156,7 +156,11 @@ const DonationPage: React.FC = () => {
                   initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
-                  className="bg-black/30 backdrop-blur-md border border-white/10 rounded-2xl p-6 hover:bg-black/40 transition-all duration-300"
+                  className="backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl hover:border-white/30 transition-all duration-300"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.5) 100%)',
+                    backdropFilter: 'blur(15px)'
+                  }}
                 >
                   <div className="text-4xl mb-4">{feature.icon}</div>
                   <h4 className="text-xl text-white font-bold mb-2" style={{ fontFamily: 'Audiowide' }}>
@@ -177,7 +181,13 @@ const DonationPage: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.8 }}
             className="mb-12"
           >
-            <div className="bg-gradient-to-br from-yellow-500/20 via-orange-500/20 to-red-500/20 backdrop-blur-md border border-yellow-400/30 rounded-3xl p-8">
+            <div 
+              className="backdrop-blur-lg rounded-3xl p-8 border border-yellow-400/30 shadow-2xl"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,165,0,0.1) 50%, rgba(255,69,0,0.1) 100%)',
+                backdropFilter: 'blur(20px)'
+              }}
+            >
               <h3 className="text-3xl text-white font-bold mb-6" style={{ fontFamily: 'Audiowide' }}>
                 🎁 Perks for Supporters
               </h3>
@@ -213,7 +223,13 @@ const DonationPage: React.FC = () => {
             transition={{ duration: 0.8, delay: 1.0 }}
             className="mb-12"
           >
-            <div className="bg-black/40 backdrop-blur-md border border-white/20 rounded-3xl p-8">
+            <div 
+              className="backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-2xl"
+              style={{
+                background: 'linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 100%)',
+                backdropFilter: 'blur(20px)'
+              }}
+            >
               <h3 className="text-3xl text-white font-bold mb-6" style={{ fontFamily: 'Audiowide' }}>
                 💡 Why Donate?
               </h3>
@@ -247,21 +263,9 @@ const DonationPage: React.FC = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="group relative px-8 md:px-12 py-4 md:py-6 text-xl md:text-2xl font-bold rounded-2xl transition-all duration-300"
+              className="group relative px-8 md:px-12 py-4 md:py-6 text-xl md:text-2xl font-bold rounded-2xl transition-all duration-300 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
               style={{
-                fontFamily: 'Audiowide',
-                background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF6B35 100%)',
-                color: '#000',
-                border: '3px solid #FFD700',
-                boxShadow: '0 10px 30px rgba(255, 215, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.3)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #FFE55C 0%, #FFB84D 50%, #FF8A65 100%)';
-                e.currentTarget.style.boxShadow = '0 15px 40px rgba(255, 215, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF6B35 100%)';
-                e.currentTarget.style.boxShadow = '0 10px 30px rgba(255, 215, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.3)';
+                fontFamily: 'Audiowide'
               }}
             >
               <span className="relative z-10">

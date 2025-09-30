@@ -31,7 +31,7 @@ import { useOnlinePlayerCount } from '@/hooks/useOnlinePlayerCount';
 import NotificationBadge from '@/components/ui/NotificationBadge';
 import { MobileBackgroundControl } from '@/components/ui/MobileBackgroundControl';
 // Removed GuestContext import completely - using direct guest data creation
-import { createTestMatch, createTestMatchWithGuestData } from '@/utils/testMatchData';
+import { createTestMatch } from '@/utils/testMatchData';
 import Link from 'next/link';
 
 // Locked feature overlay component
@@ -116,27 +116,7 @@ const GuestDashboardContent: React.FC = () => {
       try {
         console.log('🧪 Creating test match for guest user (from button click)...');
         
-        // Create guest data for the match
-        const guestData = {
-          guestUser: {
-            id: `guest_${Date.now()}`,
-            displayName: 'Guest Player',
-            isGuest: true,
-            sessionId: `session_${Date.now()}`
-          },
-          displayBackground: {
-            name: 'New Day',
-            file: '/backgrounds/NewDay.mp4',
-            type: 'video' as const
-          },
-          matchBackground: {
-            name: 'Long Road Ahead',
-            file: '/backgrounds/Long Road Ahead.jpg',
-            type: 'image' as const
-          }
-        };
-        
-        const testMatchId = await createTestMatchWithGuestData(guestData);
+        const testMatchId = await createTestMatch();
         if (testMatchId) {
           setCurrentSection('match' as DashboardSection, { roomId: testMatchId, gameMode: 'classic' });
         } else {
@@ -327,31 +307,33 @@ const GuestDashboardContent: React.FC = () => {
                   </button>
                 </Link>
 
-                {/* CHAT Button - Redirects to signup for guests */}
-                <Link href="/register">
-                  <button
-                    className="hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer flex"
-                    style={{
-                      display: "flex",
-                      width: "180px",
-                      height: "48px",
-                      padding: "8px 16px",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      gap: "8px",
-                      borderRadius: "18px",
-                      background: "linear-gradient(135deg, #374151 0%, #4B5563 50%, #6B7280 100%)",
-                      border: "2px solid rgba(255, 255, 255, 0.3)"
-                    }}
-                  >
-                    <div style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <img src="/Design Elements/chat.webp" alt="Chat" className="w-10 h-10" />
-                    </div>
-                    <span style={{ color: "#FFF", fontFamily: "Audiowide", fontSize: "20px", fontWeight: 400, lineHeight: "20px" }}>
-                      CHAT
-                    </span>
-                  </button>
-                </Link>
+                {/* CHAT Button - Hidden */}
+                <div style={{ display: "none" }}>
+                  <Link href="/register">
+                    <button
+                      className="hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer flex"
+                      style={{
+                        display: "flex",
+                        width: "180px",
+                        height: "48px",
+                        padding: "8px 16px",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: "8px",
+                        borderRadius: "18px",
+                        background: "linear-gradient(135deg, #374151 0%, #4B5563 50%, #6B7280 100%)",
+                        border: "2px solid rgba(255, 255, 255, 0.3)"
+                      }}
+                    >
+                      <div style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <img src="/Design Elements/chat.webp" alt="Chat" className="w-10 h-10" />
+                      </div>
+                      <span style={{ color: "#FFF", fontFamily: "Audiowide", fontSize: "20px", fontWeight: 400, lineHeight: "20px" }}>
+                        CHAT
+                      </span>
+                    </button>
+                  </Link>
+                </div>
 
                 {/* RANKED Button - Redirect to donation page */}
                 <button
@@ -403,7 +385,7 @@ const GuestDashboardContent: React.FC = () => {
                     border: "2px solid rgba(255, 255, 255, 0.3)"
                   }}
                 >
-                  <div style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ width: "40px", height: "40px", display: "none", alignItems: "center", justifyContent: "center" }}>
                     <img src="/Design Elements/Player Profiles/Profile.webp" alt="Profile" className="w-10 h-10" />
                   </div>
                   <span style={{ color: "#FFF", fontFamily: "Audiowide", fontSize: "20px", fontWeight: 400, lineHeight: "20px" }}>

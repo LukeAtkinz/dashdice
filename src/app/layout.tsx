@@ -18,9 +18,13 @@ export const metadata: Metadata = {
   description: "Play dice games with friends online",
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/Design Elements/favicon-32x32_2.png", sizes: "32x32", type: "image/png" }
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" }
     ],
+    apple: [
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" }
+    ],
+    shortcut: "/favicon.ico"
   },
 };
 

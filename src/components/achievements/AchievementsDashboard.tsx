@@ -215,7 +215,7 @@ export default function AchievementsDashboard() {
       </div>
 
       {/* Progress Overview */}
-      <div className="px-2 md:px-4 mb-6">
+      <div className="px-2 md:px-4 mb-6 mt-8">
         <div className="bg-gray-800 rounded-lg p-4 md:p-6 mb-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
             <div className="text-center sm:text-left">

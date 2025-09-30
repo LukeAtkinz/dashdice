@@ -69,11 +69,18 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
       setShowDiceNumber(true);
       setShowResult(false);
       
-      // After 1 second, show the result
+      // After 2 seconds, show the result
       const timer = setTimeout(() => {
         setShowDiceNumber(false);
         setShowResult(true);
-      }, 1000);
+        
+        // Add additional delay to ensure user sees the result before transitioning
+        setTimeout(() => {
+          // This gives more time for users to see the turn decider result
+          // The actual phase transition will be handled by the backend/match logic
+        }, 2000); // Additional 2 seconds to show the result
+        
+      }, 2000);
       
       return () => clearTimeout(timer);
     } else {

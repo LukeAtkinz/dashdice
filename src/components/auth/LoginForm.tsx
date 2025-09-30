@@ -2,9 +2,6 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -85,44 +82,67 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   });
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>Sign In to DashDice</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={onSubmit} className="space-y-4">
-          <Input
-            label="Email"
-            type="email"
-            name="email"
-            value={values.email}
-            onChange={(e) => handleChange('email', e.target.value)}
-            error={errors.email}
-            placeholder="Enter your email"
-            required
-          />
-          
-          <Input
-            label="Password"
-            type="password"
-            name="password"
-            value={values.password}
-            onChange={(e) => handleChange('password', e.target.value)}
-            error={errors.password}
-            placeholder="Enter your password"
-            required
-          />
+    <form onSubmit={onSubmit} className="space-y-6">
+      {/* Email Input */}
+      <div className="space-y-2">
+        <label 
+          className="block text-white/90 text-sm font-medium"
+          style={{ fontFamily: "Audiowide" }}
+        >
+          EMAIL
+        </label>
+        <input
+          type="email"
+          name="email"
+          value={values.email}
+          onChange={(e) => handleChange('email', e.target.value)}
+          placeholder="Enter your email"
+          required
+          className="w-full px-4 py-3 bg-black/40 border border-white/30 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-yellow-400 focus:bg-black/60 transition-all backdrop-blur-sm"
+        />
+        {errors.email && (
+          <p className="text-red-400 text-sm">{errors.email}</p>
+        )}
+      </div>
+      
+      {/* Password Input */}
+      <div className="space-y-2">
+        <label 
+          className="block text-white/90 text-sm font-medium"
+          style={{ fontFamily: "Audiowide" }}
+        >
+          PASSWORD
+        </label>
+        <input
+          type="password"
+          name="password"
+          value={values.password}
+          onChange={(e) => handleChange('password', e.target.value)}
+          placeholder="Enter your password"
+          required
+          className="w-full px-4 py-3 bg-black/40 border border-white/30 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-yellow-400 focus:bg-black/60 transition-all backdrop-blur-sm"
+        />
+        {errors.password && (
+          <p className="text-red-400 text-sm">{errors.password}</p>
+        )}
+      </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            loading={isSubmitting}
-            disabled={!values.email || !values.password}
-          >
-            {isSubmitting ? 'Signing In...' : 'Sign In'}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      {/* Submit Button */}
+      <button
+        type="submit"
+        disabled={!values.email || !values.password || isSubmitting}
+        className="w-full py-3 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg disabled:cursor-not-allowed disabled:transform-none backdrop-blur-sm"
+        style={{ fontFamily: "Audiowide" }}
+      >
+        {isSubmitting ? (
+          <div className="flex items-center justify-center gap-2">
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+            SIGNING IN...
+          </div>
+        ) : (
+          'SIGN IN'
+        )}
+      </button>
+    </form>
   );
 };
