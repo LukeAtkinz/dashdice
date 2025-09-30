@@ -2924,16 +2924,6 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   }}
                 >
                   {getOpponentData()?.playerDisplayName || 'Unknown Player'}
-                  {botOpponent && (
-                    <span style={{ 
-                      display: 'block', 
-                      fontSize: window.innerWidth < 768 ? '12px' : '16px',
-                      color: '#FFA500',
-                      marginTop: '4px'
-                    }}>
-                      AI OPPONENT
-                    </span>
-                  )}
                 </div>
               </div>
             </div>

@@ -2,6 +2,7 @@ import { db } from './firebase';
 import { collection, query, where, getDocs, doc, getDoc, limit, orderBy } from 'firebase/firestore';
 import { BotProfile, BotMatchingCriteria, BotMatchingResult, SkillLevel } from '../types/bot';
 import { SessionPlayerData } from './gameSessionService';
+import { BotAutomationService } from './botAutomationService';
 
 /**
  * Bot Matching Service
@@ -531,7 +532,12 @@ export class BotMatchingService {
         console.warn(`⚠️ Could not update bot last active time for ${bot.uid}:`, error);
         // This is not critical, so we don't block the bot addition
       });
-      console.log(`✅ Bot added to session successfully`);
+
+      // 🤖 Start bot automation for this match
+      console.log(`🤖 Starting bot automation for match: ${sessionId}`);
+      BotAutomationService.startMatchMonitoring(sessionId);
+
+      console.log(`✅ Bot added to session successfully and automation started`);
       
     } catch (error) {
       console.error(`❌ Error in addBotToSession for ${sessionId}:`, error);
