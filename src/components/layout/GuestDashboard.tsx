@@ -32,6 +32,8 @@ import NotificationBadge from '@/components/ui/NotificationBadge';
 import { MobileBackgroundControl } from '@/components/ui/MobileBackgroundControl';
 // Removed GuestContext import completely - using direct guest data creation
 import { createTestMatch } from '@/utils/testMatchData';
+import { GuestGameWaitingRoom } from '@/components/guest/GuestGameWaitingRoom';
+import { guestBotMatchmaking, GuestMatchData } from '@/services/guestBotMatchmaking';
 import Link from 'next/link';
 
 // Locked feature overlay component
@@ -98,6 +100,11 @@ const GuestDashboardContent: React.FC = () => {
   const { DisplayBackgroundEquip } = useBackground();
   const { getBackgroundPosition } = useBackgroundPositioning();
   const onlinePlayerCount = useOnlinePlayerCount();
+  
+  // Guest-specific state
+  const [guestId] = useState(() => `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+  const [isGuestWaiting, setIsGuestWaiting] = useState(false);
+  const [waitingGameMode, setWaitingGameMode] = useState<string>();
 
   // Create button gradient style based on user's display background
   const getButtonGradientStyle = (baseColor: string) => {
@@ -113,21 +120,42 @@ const GuestDashboardContent: React.FC = () => {
 
   const handleSectionChange = async (section: string) => {
     if (section === 'match') {
-      try {
-        console.log('🧪 Creating test match for guest user (from button click)...');
-        
-        const testMatchId = await createTestMatch();
-        if (testMatchId) {
-          setCurrentSection('match' as DashboardSection, { roomId: testMatchId, gameMode: 'classic' });
-        } else {
-          console.error('Failed to create test match');
-        }
-      } catch (error) {
-        console.error('Error creating test match:', error);
-      }
+      // For guests, we don't create a real match - this shouldn't be called directly
+      // Instead, guests should go through handleGameModeAction
+      console.log('🚫 Direct match access not allowed for guests');
+      return;
     } else {
       setCurrentSection(section as DashboardSection);
     }
+  };
+  
+  // Handle game mode selection for guests (bot matchmaking)
+  const handleGameModeAction = (gameMode: string, actionType: 'live' | 'ranked') => {
+    if (!user) { // Guest user
+      console.log(`🤖 Guest starting bot matchmaking for ${gameMode}`);
+      setWaitingGameMode(gameMode);
+      setIsGuestWaiting(true);
+    }
+  };
+  
+  // Handle guest match found
+  const handleGuestMatchFound = (matchData: GuestMatchData) => {
+    console.log('🎮 Guest match ready!', matchData);
+    setIsGuestWaiting(false);
+    // Transition to match with bot data
+    setCurrentSection('match' as DashboardSection, { 
+      roomId: matchData.matchId, 
+      gameMode: matchData.gameMode,
+      isGuestMatch: true,
+      botOpponent: matchData.botOpponent
+    });
+  };
+  
+  // Handle guest matchmaking cancel
+  const handleGuestMatchCancel = () => {
+    console.log('❌ Guest matchmaking cancelled');
+    setIsGuestWaiting(false);
+    setWaitingGameMode(undefined);
   };
 
   const handleVideoLoad = (videoElement: HTMLVideoElement) => {
@@ -407,6 +435,16 @@ const GuestDashboardContent: React.FC = () => {
           </div>
         </header>
 
+        {/* Guest Bot Waiting Room */}
+        {isGuestWaiting && waitingGameMode && (
+          <GuestGameWaitingRoom
+            gameMode={waitingGameMode}
+            guestId={guestId}
+            onMatchFound={handleGuestMatchFound}
+            onCancel={handleGuestMatchCancel}
+          />
+        )}
+        
         {/* Game Match Section - Hidden unless in match or waiting room */}
         {(currentSection === 'match' || currentSection === 'waiting-room') && (
           <div className="w-full h-full overflow-hidden" style={{
@@ -453,7 +491,9 @@ const GuestDashboardContent: React.FC = () => {
                   transition={{ duration: 0.3 }}
                   className="w-full"
                 >
-                  {currentSection === 'dashboard' && <DashboardSectionComponent />}
+                  {currentSection === 'dashboard' && (
+                    <DashboardSectionComponent onGuestGameModeAction={handleGameModeAction} />
+                  )}
                   {currentSection === 'inventory' && (
                     <LockedFeatureOverlay featureName="Vault">
                       <InventorySection />

@@ -13,6 +13,8 @@ interface SectionParams {
   userId?: string; // Add userId for user profile viewing
   userName?: string; // Add userName for user profile display
   isOptimistic?: boolean; // Add flag for optimistic UI state
+  isGuestMatch?: boolean; // Add flag for guest bot matches
+  botOpponent?: any; // Add bot opponent data for guest matches
 }
 
 interface NavigationContextType {

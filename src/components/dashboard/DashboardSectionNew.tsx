@@ -17,6 +17,10 @@ import { CompactLeaderboard } from '@/components/ranked/Leaderboard';
 import { CompactProgressionDisplay } from '@/components/ranked/ProgressionDisplay';
 import { AlreadyInMatchNotification } from '@/components/notifications/AlreadyInMatchNotification';
 
+interface DashboardSectionProps {
+  onGuestGameModeAction?: (gameMode: string, actionType: 'live' | 'ranked') => void;
+}
+
 const gameConfig = {
   quickfire: { 
     name: 'QUICK\nFIRE', 
@@ -86,7 +90,9 @@ const gameConfig = {
   }
 };
 
-export const DashboardSection: React.FC = () => {
+export const DashboardSection: React.FC<DashboardSectionProps> = ({ 
+  onGuestGameModeAction 
+}) => {
   const { user } = useAuth();
   const { setCurrentSection } = useNavigation();
   const { DisplayBackgroundEquip } = useBackground();
@@ -166,6 +172,13 @@ export const DashboardSection: React.FC = () => {
 
   const handleGameModeAction = async (gameMode: string, action: string) => {
     console.log(`${gameMode} - ${action} clicked`);
+    
+    // Handle guest users with bot matchmaking
+    if (!user && onGuestGameModeAction) {
+      console.log('🤖 Guest user detected - starting bot matchmaking');
+      onGuestGameModeAction(gameMode, action as 'live' | 'ranked');
+      return;
+    }
     
     if ((action === 'live' || action === 'ranked') && user) {
       setIsExiting(true);
