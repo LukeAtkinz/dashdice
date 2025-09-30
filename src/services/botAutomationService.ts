@@ -68,15 +68,13 @@ export class BotAutomationService {
             await this.handleMatchUpdate(matchData);
           } else {
             console.log(`🔍 Go backend match ${matchId} not found or completed`);
-            // Stop polling if match doesn't exist anymore
-            clearInterval(pollInterval);
-            this.activeListeners.delete(matchId);
+            // Check if match has been moved to Firebase before stopping
+            await this.checkForFirebaseTransition(matchId, pollInterval);
           }
         } else {
           console.log(`🔍 Go backend match ${matchId} not found (${response.status})`);
-          // Stop polling if match doesn't exist anymore
-          clearInterval(pollInterval);
-          this.activeListeners.delete(matchId);
+          // Check if match has been moved to Firebase before stopping
+          await this.checkForFirebaseTransition(matchId, pollInterval);
         }
       } catch (error) {
         console.error(`❌ Error polling Go backend for match ${matchId}:`, error);
@@ -138,6 +136,45 @@ export class BotAutomationService {
     if (timeout) {
       clearTimeout(timeout);
       this.botTurnTimeouts.delete(matchId);
+    }
+  }
+
+  /**
+   * Check if a Go backend match has been moved to Firebase and switch monitoring
+   */
+  private static async checkForFirebaseTransition(matchId: string, goBackendPollInterval: NodeJS.Timeout): Promise<void> {
+    try {
+      // Check if a Firebase match exists with this ID
+      const { doc, getDoc } = await import('firebase/firestore');
+      const { db } = await import('@/services/firebase');
+      const firebaseDoc = await getDoc(doc(db, 'matches', matchId));
+      
+      if (firebaseDoc.exists()) {
+        console.log(`🔄 Bot automation: Match ${matchId} found in Firebase, switching to Firebase monitoring`);
+        
+        // Stop Go backend polling
+        clearInterval(goBackendPollInterval);
+        
+        // Start Firebase monitoring
+        const { onSnapshot } = await import('firebase/firestore');
+        const unsubscribe = onSnapshot(doc(db, 'matches', matchId), (doc) => {
+          if (doc.exists()) {
+            const matchData = { ...doc.data(), id: doc.id } as MatchData;
+            this.handleMatchUpdate(matchData);
+          }
+        });
+        this.activeListeners.set(matchId, unsubscribe);
+      } else {
+        console.log(`🚫 Bot automation: Match ${matchId} not found in Firebase either, stopping monitoring`);
+        // Stop polling completely
+        clearInterval(goBackendPollInterval);
+        this.activeListeners.delete(matchId);
+      }
+    } catch (error) {
+      console.error(`❌ Error checking Firebase transition for match ${matchId}:`, error);
+      // Stop polling on error
+      clearInterval(goBackendPollInterval);
+      this.activeListeners.delete(matchId);
     }
   }
 
