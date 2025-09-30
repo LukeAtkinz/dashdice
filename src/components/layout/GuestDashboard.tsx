@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavigationProvider, useNavigation, DashboardSection } from '@/context/NavigationContext';
 import { SectionTransition } from '@/components/layout/SectionTransition';
@@ -158,6 +158,27 @@ const GuestDashboardContent: React.FC = () => {
     setWaitingGameMode(undefined);
   };
 
+  // Prevent re-renders during guest waiting to avoid infinite loops
+  const stableGuestId = React.useMemo(() => guestId, []);
+  const stableHandleGuestMatchFound = React.useCallback((matchData: GuestMatchData) => {
+    console.log('🎮 Guest match ready!', matchData);
+    setIsGuestWaiting(false);
+    setWaitingGameMode(undefined);
+    // Transition to match with bot data
+    setCurrentSection('match' as DashboardSection, { 
+      roomId: matchData.matchId, 
+      gameMode: matchData.gameMode,
+      isGuestMatch: true,
+      botOpponent: matchData.botOpponent
+    });
+  }, [setCurrentSection]);
+
+  const stableHandleGuestMatchCancel = React.useCallback(() => {
+    console.log('❌ Guest matchmaking cancelled');
+    setIsGuestWaiting(false);
+    setWaitingGameMode(undefined);
+  }, []);
+
   const handleVideoLoad = (videoElement: HTMLVideoElement) => {
     if (videoElement) {
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -189,11 +210,9 @@ const GuestDashboardContent: React.FC = () => {
   const renderBackground = () => {
     // For guests, always use NewDay.mp4 as default display background
     if (!user) {
-      const isMobile = typeof window !== 'undefined' && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      
       return (
         <video
-          key="/backgrounds/NewDay.mp4"
+          key="/backgrounds/New Day.mp4"
           autoPlay
           loop
           muted
@@ -203,16 +222,57 @@ const GuestDashboardContent: React.FC = () => {
           className="fixed inset-0 w-full h-full object-cover z-0"
           style={{
             objectFit: 'cover',
-            objectPosition: getBackgroundPosition('NewDay').objectPosition || 'center center'
+            objectPosition: 'center center'
           }}
           onLoadedData={(e) => handleVideoLoad(e.target as HTMLVideoElement)}
         >
-          <source src="/backgrounds/NewDay.mp4" type="video/mp4" />
+          <source src="/backgrounds/New Day.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       );
     }
 
+    // For authenticated users, render their equipped background
+    if (DisplayBackgroundEquip) {
+      const positioning = getBackgroundPosition(DisplayBackgroundEquip.name);
+      
+      if (DisplayBackgroundEquip.type === 'video') {
+        return (
+          <video
+            key={DisplayBackgroundEquip.file}
+            autoPlay
+            loop
+            muted
+            playsInline
+            controls={false}
+            webkit-playsinline="true"
+            className="fixed inset-0 w-full h-full object-cover z-0"
+            style={{
+              objectFit: 'cover',
+              objectPosition: positioning.objectPosition || 'center center'
+            }}
+            onLoadedData={(e) => handleVideoLoad(e.target as HTMLVideoElement)}
+          >
+            <source src={DisplayBackgroundEquip.file} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        );
+      } else {
+        return (
+          <img
+            src={DisplayBackgroundEquip.file}
+            alt={DisplayBackgroundEquip.name}
+            className="fixed inset-0 w-full h-full object-cover z-0"
+            style={{
+              objectFit: 'cover',
+              objectPosition: positioning.objectPosition || 'center center'
+            }}
+          />
+        );
+      }
+    }
+
+    // Fallback - no background
     return null;
   };
 
@@ -423,9 +483,9 @@ const GuestDashboardContent: React.FC = () => {
         {isGuestWaiting && waitingGameMode && (
           <GuestGameWaitingRoom
             gameMode={waitingGameMode}
-            guestId={guestId}
-            onMatchFound={handleGuestMatchFound}
-            onCancel={handleGuestMatchCancel}
+            guestId={stableGuestId}
+            onMatchFound={stableHandleGuestMatchFound}
+            onCancel={stableHandleGuestMatchCancel}
           />
         )}
         

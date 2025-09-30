@@ -9,7 +9,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigation } from '@/context/NavigationContext';
 import { guestBotMatchmaking, GuestMatchData } from '@/services/guestBotMatchmaking';
@@ -29,11 +29,15 @@ export const GuestGameWaitingRoom: React.FC<GuestGameWaitingRoomProps> = ({
 }) => {
   const [countdown, setCountdown] = useState(3);
   const [status, setStatus] = useState<'searching' | 'matched'>('searching');
-  const [matchId, setMatchId] = useState<string>();
+  const matchIdRef = useRef<string | undefined>(undefined);
+  const hasStartedRef = useRef(false);
 
   useEffect(() => {
+    // Prevent multiple initializations
+    if (hasStartedRef.current) return;
+    hasStartedRef.current = true;
+
     let countdownInterval: NodeJS.Timeout;
-    let matchmakingPromise: Promise<string>;
 
     const startMatchmaking = async () => {
       try {
@@ -49,7 +53,7 @@ export const GuestGameWaitingRoom: React.FC<GuestGameWaitingRoomProps> = ({
           }
         );
         
-        setMatchId(newMatchId);
+        matchIdRef.current = newMatchId;
         
         // Start countdown
         countdownInterval = setInterval(() => {
@@ -72,14 +76,14 @@ export const GuestGameWaitingRoom: React.FC<GuestGameWaitingRoomProps> = ({
 
     return () => {
       if (countdownInterval) clearInterval(countdownInterval);
-      if (matchId) {
+      if (matchIdRef.current) {
         guestBotMatchmaking.cancelGuestMatchmaking(guestId);
       }
     };
-  }, [gameMode, guestId, onMatchFound, onCancel, matchId]);
+  }, [gameMode, guestId, onMatchFound, onCancel]);
 
   const handleCancel = () => {
-    if (matchId) {
+    if (matchIdRef.current) {
       guestBotMatchmaking.cancelGuestMatchmaking(guestId);
     }
     onCancel();
