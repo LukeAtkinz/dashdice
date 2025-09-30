@@ -28,6 +28,17 @@ export class BotAIService {
       // Apply emotional state adjustments
       const finalBankProb = this.applyEmotionalAdjustments(bot, context, modifiedBankProb);
       
+      // 🛡️ CRITICAL: Can't bank if there's no score to bank
+      if (context.turnScore === 0) {
+        return {
+          action: 'roll',
+          confidence: 0.9,
+          reasoning: 'Must roll first - no score to bank',
+          emotionalState: 'focused',
+          delayMs: 1000 + Math.random() * 2000
+        };
+      }
+      
       // Make final decision
       const shouldBank = Math.random() < finalBankProb;
       
