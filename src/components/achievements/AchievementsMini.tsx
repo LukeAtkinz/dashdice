@@ -60,13 +60,13 @@ export default function AchievementsMini({ maxDisplay = 12 }: AchievementsMiniPr
       <div className="flex items-center justify-between pb-[0.5rem] md:pb-[1rem]">
         <h3 className="text-xl font-audiowide text-white uppercase">Achievements</h3>
         <div className="text-right">
-          <div className="text-3xl font-bold text-blue-400" style={{ textShadow: '0 0 10px rgba(59, 130, 246, 0.5)' }}>{completionPercentage}%</div>
-          <div className="text-sm text-gray-400 font-montserrat">Complete</div>
+          <div className="text-xl md:text-3xl font-bold text-blue-400" style={{ textShadow: '0 0 10px rgba(59, 130, 246, 0.5)' }}>{completionPercentage}%</div>
+          <div className="text-xs md:text-sm text-gray-400 font-montserrat">Complete</div>
         </div>
       </div>
 
       {/* Achievements Display */}
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden mt-6">
         <div className="achievements-carousel overflow-hidden">
           <div className="flex gap-4 animate-carousel">
             {/* Show all achievements (duplicate for seamless loop) */}
@@ -90,8 +90,8 @@ export default function AchievementsMini({ maxDisplay = 12 }: AchievementsMiniPr
       <div className="mt-4 pt-4 border-t border-gray-700">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <span className="text-gray-300 font-montserrat text-base">Unlocked:</span>
-            <span className="text-white font-audiowide text-xl font-bold">{completedAchievements.length} / {allAchievements.length}</span>
+            <span className="text-gray-300 font-montserrat text-sm md:text-base">Unlocked:</span>
+            <span className="text-white font-audiowide text-lg md:text-xl font-bold">{completedAchievements.length} / {allAchievements.length}</span>
           </div>
           <button
             onClick={() => {

@@ -109,13 +109,13 @@ const MiniGameModeSelector: React.FC<MiniGameModeSelectorProps> = ({
                   <img 
                     src={mode.icon} 
                     alt={mode.name}
-                    className="w-8 h-8 md:w-10 md:h-10 object-contain mb-2 md:mb-3"
+                    className="w-12 h-12 md:w-16 md:h-16 object-contain mb-2 md:mb-3"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = '/Design Elements/Crown Mode.webp'; // Fallback icon
                     }}
                   />
-                  <span className="text-xs md:text-sm text-white font-medium text-center leading-tight">
+                  <span className="text-sm md:text-lg text-white font-medium text-center leading-tight">
                     {mode.name}
                   </span>
                 </motion.button>

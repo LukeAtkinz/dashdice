@@ -117,11 +117,11 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({
                   `}
                 >
                   <div className="flex items-center gap-3 md:gap-5">
-                    <div className="w-10 h-10 md:w-16 md:h-16 rounded-xl bg-gray-800/30 backdrop-blur-md border border-gray-600/50 flex items-center justify-center overflow-hidden group-hover:border-gray-400/50 transition-all">
+                    <div className="w-12 h-12 md:w-20 md:h-20 rounded-xl bg-gray-800/30 backdrop-blur-md border border-gray-600/50 flex items-center justify-center overflow-hidden group-hover:border-gray-400/50 transition-all">
                       <img 
                         src={mode.icon} 
                         alt={mode.name}
-                        className="w-8 h-8 md:w-12 md:h-12 object-contain opacity-60"
+                        className="w-10 h-10 md:w-16 md:h-16 object-contain opacity-60"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = '/Design Elements/Crown Mode.webp';
@@ -130,7 +130,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({
                     </div>
                     <div className="text-left flex-1">
                       <h3 
-                        className="text-white font-bold text-sm md:text-lg group-hover:text-blue-200 transition-colors drop-shadow-lg" 
+                        className="text-white font-bold text-lg md:text-2xl group-hover:text-blue-200 transition-colors drop-shadow-lg" 
                         style={{ 
                           fontFamily: 'Audiowide',
                           textShadow: '0 0 8px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.1)'

@@ -253,7 +253,7 @@ export const InventorySection: React.FC = () => {
             textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
           }}
         >
-          VAULT
+          Vault
         </h1>
         
         {/* Mobile Title */}
@@ -265,7 +265,7 @@ export const InventorySection: React.FC = () => {
             textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
           }}
         >
-          VAULT
+          Vault
         </h1>
       </div>      {/* Navigation */}
       <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8 flex-shrink-0">
@@ -942,7 +942,7 @@ export const InventorySection: React.FC = () => {
                               src="/Design Elements/Castle.webp"
                               style={{
                                 top: '-8px',
-                                left: '-24px',
+                                left: '-20px',
                                 transform: 'rotate(0deg)'
                               }}
                             />
@@ -995,7 +995,7 @@ export const InventorySection: React.FC = () => {
                               alt="tagteam"
                               src="/Design Elements/friends.webp"
                               style={{
-                                top: '-12px',
+                                top: '-8px',
                                 left: '-12px',
                                 transform: 'rotate(0deg)'
                               }}

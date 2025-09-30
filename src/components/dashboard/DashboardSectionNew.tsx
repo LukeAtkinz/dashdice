@@ -68,8 +68,8 @@ const gameConfig = {
     description: 'no banking,\nno mercy',
     rotation: '0deg',
     mobileRotation: '0deg',
-    position: { top: '-1rem', left: '-5rem' },
-    mobilePosition: { top: '0rem', left: '-4rem' },
+    position: { top: '-1rem', left: '-4.5rem' },
+    mobilePosition: { top: '0rem', left: '-3.5rem' },
     mobileScale: '1.0',
     available: false // Disable true grit mode - coming soon
   },
@@ -79,8 +79,8 @@ const gameConfig = {
     description: 'rise or fall\ntogether',
     rotation: '0deg',
     mobileRotation: '0deg',
-    position: { top: '-2rem', left: '-5rem' },
-    mobilePosition: { top: '-2rem', left: '-2rem' },
+    position: { top: '-1.5rem', left: '-5rem' },
+    mobilePosition: { top: '-1.5rem', left: '-2rem' },
     mobileScale: '1.0',
     available: false // Keep tag team disabled for now
   }
@@ -418,10 +418,10 @@ export const DashboardSection: React.FC = () => {
                         <img 
                           src="/Design Elements/Player Profiles/QuickMatch.webp" 
                           alt="Quick Match" 
-                          className="w-6 h-6 md:w-8 md:h-8 object-contain"
+                          className="w-8 h-8 md:w-12 md:h-12 object-contain"
                         />
                         <span
-                          className="text-[18px] md:text-[24px] leading-[22px] md:leading-[28px]"
+                          className="text-[22px] md:text-[32px] leading-[26px] md:leading-[36px]"
                           style={{
                             color: '#E2E2E2',
                             textAlign: 'center',
@@ -467,10 +467,10 @@ export const DashboardSection: React.FC = () => {
                         <img 
                           src="/Design Elements/Player Profiles/Ranked.webp" 
                           alt="Ranked" 
-                          className="w-6 h-6 md:w-8 md:h-8 object-contain"
+                          className="w-8 h-8 md:w-12 md:h-12 object-contain"
                         />
                         <span
-                          className="text-[18px] md:text-[24px] leading-[22px] md:leading-[28px]"
+                          className="text-[22px] md:text-[32px] leading-[26px] md:leading-[36px]"
                           style={{
                             color: '#E2E2E2',
                             textAlign: 'center',

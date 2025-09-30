@@ -387,17 +387,25 @@ export class MatchService {
         hostGoesFirst = !choiceCorrect;
       }
       
-      // Start gameplay phase with existing turn system
-      await updateDoc(matchRef, {
-        'gameData.gamePhase': 'gameplay',
-        'gameData.isRolling': false,
-        'gameData.turnScore': 0,
-        'hostData.turnActive': hostGoesFirst,
-        'opponentData.turnActive': !hostGoesFirst,
-      });
-      
       console.log(`🎯 Turn decider result: ${choice} on ${dice} (${isOdd ? 'odd' : 'even'}) - ${choiceCorrect ? 'Correct' : 'Incorrect'}`);
       console.log(`🎮 ${hostGoesFirst ? 'Host' : 'Opponent'} goes first`);
+      
+      // Add delay to allow turn decider animations to complete before transitioning to gameplay
+      console.log('⏰ Processing turn decider result after animation delay...');
+      setTimeout(async () => {
+        try {
+          // Transition to gameplay phase after animation completes
+          await updateDoc(matchRef, {
+            'gameData.gamePhase': 'gameplay',
+            'gameData.isRolling': false,
+            'gameData.turnScore': 0,
+            'hostData.turnActive': hostGoesFirst,
+            'opponentData.turnActive': !hostGoesFirst,
+          });
+        } catch (error) {
+          console.error('❌ Error transitioning to gameplay after turn decider:', error);
+        }
+      }, 3000); // Wait 3 seconds for animations to complete
       
     } catch (error) {
       console.error('❌ Error processing turn decider:', error);
@@ -1376,17 +1384,22 @@ export class MatchService {
         return null;
       }
       
-      // Archive the match immediately
+      // Archive the match immediately with duration calculation
       const winner = matchData.gameData.winner;
       const winnerData = matchData.hostData.playerDisplayName === winner 
         ? matchData.hostData 
         : matchData.opponentData;
       
+      // Calculate match duration
+      const matchStartTime = matchData.startedAt || matchData.gameData?.startedAt || matchData.createdAt;
+      const matchDuration = matchStartTime ? Date.now() - matchStartTime.toMillis() : 0;
+      
       try {
         await CompletedMatchService.moveMatchToCompleted(matchId, {
           playerId: winnerData.playerId,
           playerDisplayName: winnerData.playerDisplayName,
-          finalScore: winnerData.playerScore
+          finalScore: winnerData.playerScore,
+          duration: matchDuration // Pass calculated duration
         });
         console.log('✅ Match data retrieved and archived successfully');
       } catch (archiveError: any) {
@@ -1426,12 +1439,17 @@ export class MatchService {
       const winnerData = isHostWinner ? matchData.hostData : matchData.opponentData;
       const loserData = isHostWinner ? matchData.opponentData : matchData.hostData;
       
+      // Calculate match duration
+      const matchStartTime = matchData.startedAt || matchData.gameData?.startedAt || matchData.createdAt;
+      const matchDuration = matchStartTime ? Date.now() - matchStartTime.toMillis() : 0;
+      
       // Update match to completed state
       const updates = {
         'gameData.gamePhase': 'gameOver' as const,
         'gameData.status': 'completed' as const,
         'gameData.winner': winnerData.playerDisplayName,
         'gameData.gameOverReason': `${loserData.playerDisplayName} disconnected`,
+        'gameData.duration': matchDuration, // Add duration to match data
         'hostData.turnActive': false,
         'opponentData.turnActive': false,
       };
@@ -1469,6 +1487,18 @@ export class MatchService {
           finalScore: isHostWinner ? matchData.opponentData.playerScore : matchData.hostData.playerScore
         }
       );
+      
+      // 🏆 Move match to completed collection with duration
+      try {
+        await CompletedMatchService.moveMatchToCompleted(matchId, {
+          playerId: winnerData.playerId,
+          playerDisplayName: winnerData.playerDisplayName,
+          finalScore: winnerData.playerScore,
+          duration: matchDuration // Pass calculated duration
+        });
+      } catch (archiveError) {
+        console.warn('⚠️ Failed to archive completed match, but match still ended successfully:', archiveError);
+      }
       
       console.log('✅ Match ended successfully due to disconnection');
     } catch (error) {

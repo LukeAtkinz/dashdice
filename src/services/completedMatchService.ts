@@ -25,6 +25,7 @@ export class CompletedMatchService {
     playerId: string;
     playerDisplayName: string;
     finalScore: number;
+    duration?: number; // Optional duration field
   }): Promise<void> {
     try {
       console.log('📝 Creating match history entries...');
@@ -32,9 +33,10 @@ export class CompletedMatchService {
       const hostData = matchData.hostData;
       const opponentData = matchData.opponentData;
       
-      // Calculate duration from match start time
+      // Calculate duration from match start time (use provided duration or calculate)
       const matchStartTime = matchData.startedAt || matchData.gameData?.startedAt || matchData.createdAt;
-      const duration = matchStartTime ? Date.now() - matchStartTime.toMillis() : 0;
+      const calculatedDuration = matchStartTime ? Date.now() - matchStartTime.toMillis() : 0;
+      const duration = winnerData?.duration || calculatedDuration;
       
       console.log('⏱️ Match duration calculated:', {
         startTime: matchStartTime?.toDate(),
@@ -100,6 +102,7 @@ export class CompletedMatchService {
     playerId: string;
     playerDisplayName: string;
     finalScore: number;
+    duration?: number; // Optional duration field
   }) {
     try {
       console.log('🏆 Moving match to completed collection:', matchId);
@@ -181,6 +184,7 @@ export class CompletedMatchService {
     playerId: string;
     playerDisplayName: string;
     finalScore: number;
+    duration?: number; // Optional duration field
   }): Promise<void> {
     try {
       console.log('🏆 Tracking achievements for completed match...');

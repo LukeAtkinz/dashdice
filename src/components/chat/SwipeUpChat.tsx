@@ -35,15 +35,15 @@ export default function SwipeUpChat({ children }: SwipeUpChatProps) {
   }, []);
 
   const handlePanStart = (event: any, info: PanInfo) => {
-    // Only start drag from bottom 40% of screen for easier mobile access
-    const bottomThreshold = screenHeight * 0.6;
+    // Only start drag from bottom 20% of screen for better mobile UX
+    const bottomThreshold = screenHeight * 0.8;
     if (info.point.y < bottomThreshold) return;
     
     // Prevent default to avoid scroll interference on mobile
     event.preventDefault?.();
     
     setIsDragging(true);
-    console.log('🚀 Swipe gesture started from bottom 40%', {
+    console.log('🚀 Swipe gesture started from bottom 20%', {
       startY: info.point.y,
       threshold: bottomThreshold,
       screenHeight
@@ -77,13 +77,13 @@ export default function SwipeUpChat({ children }: SwipeUpChatProps) {
 
     setIsDragging(false);
     
-    // Determine if we should snap to open or closed with more sensitive thresholds
+    // Determine if we should snap to open or closed with ultra-responsive thresholds
     const velocity = info.velocity.y;
     const dragDistance = Math.abs(Math.min(info.offset.y, 0)); // Only count upward movement
-    const threshold = screenHeight * 0.05; // Much lower threshold for easier trigger
+    const threshold = screenHeight * 0.03; // Ultra-low threshold for maximum responsiveness
     
-    // More sensitive velocity threshold for iPhone-like responsiveness
-    const shouldOpen = dragDistance > threshold || velocity < -200; // Even more sensitive
+    // Ultra-sensitive velocity threshold for instant response
+    const shouldOpen = dragDistance > threshold || velocity < -100; // Maximum sensitivity
     
     console.log('📱 Pan end decision:', {
       dragDistance,
@@ -173,11 +173,11 @@ export default function SwipeUpChat({ children }: SwipeUpChatProps) {
       >
         {children}
         
-        {/* Enhanced swipe detection area in bottom 40% for easier mobile access */}
+        {/* Enhanced swipe detection area in bottom 20% for precise mobile access */}
         <div
           className="fixed bottom-0 left-0 right-0 pointer-events-auto z-10"
           style={{ 
-            height: '40vh',
+            height: '20vh',
             background: 'transparent'
           }}
           onTouchStart={(e) => {

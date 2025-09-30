@@ -1242,12 +1242,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       setVsCountdown((prev) => {
         if (prev === null || prev <= 1) {
           clearInterval(timer);
-          console.log('� Countdown finished! Starting match...');
+          console.log('🏁 Countdown finished! Starting match...');
           
-          // Move to matches collection and navigate to match
+          // Wait longer after showing "GO!" to ensure animation completes
           setTimeout(() => {
             moveToMatchesAndNavigate();
-          }, 1000); // Wait 1 second after showing "GO!"
+          }, 2000); // Wait 2 seconds after showing "GO!" to let animation complete
           return 0; // Show "GO!"
         }
         return prev - 1;
@@ -2940,8 +2940,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             >
               {searchingText}
               
-              {/* Bot Countdown Timer */}
-              {botFallbackActive && botCountdown !== null && (
+              {/* Bot Countdown Timer - Hidden from UI but logic preserved */}
+              {false && botFallbackActive && botCountdown !== null && (
                 <div
                   style={{
                     color: '#FFB347',
