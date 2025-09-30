@@ -325,11 +325,11 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         setSearchingText(optimisticRoom.searchText);
         
         // Log status changes for debugging
-        console.log(`🔄 GameWaitingRoom: Optimistic room status: ${optimisticRoom.status} - ${optimisticRoom.searchText}`);
+        // Optimistic room status updated
         
         // Check if we have a real room ID and should transition
         if (optimisticRoom.realRoomId && optimisticRoom.status === 'transitioning') {
-          console.log(`🔄 GameWaitingRoom: Real room ready, transitioning to ${optimisticRoom.realRoomId}`);
+          // Real room ready, transitioning
           
           // The parent component (DashboardSection) will handle the navigation update
           // We just need to update our local state to show the transition
@@ -351,7 +351,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       return;
     }
 
-    console.log('🔄 GameWaitingRoom: Starting Go backend match status polling for:', roomId);
+    // Starting Go backend match status polling
 
     // Start bot countdown for fallback matching
     startBotCountdown(roomId);
@@ -412,7 +412,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                         stats: botData.stats,
                         inventory: botData.inventory
                       };
-                      console.log('🤖 Found bot opponent profile:', opponentProfile);
+                      // Found bot opponent profile
                     }
                   } catch (botError) {
                     console.warn('⚠️ Failed to fetch bot profile:', botError);
@@ -421,12 +421,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               }
               
               if (opponentProfile && bridgeData && userProfile) {
-                console.log('🔄 GameWaitingRoom: Creating Firebase match from Go backend match');
-                console.log('🔍 GameWaitingRoom: Opponent profile details:', {
-                  uid: opponentProfile.uid,
-                  displayName: opponentProfile.displayName,
-                  isBot: opponentPlayerId.includes('bot')
-                });
+                // Creating Firebase match from Go backend match
+                // Opponent profile details processed
                 
                 // 🎯 STORE OPPONENT DATA for immediate UI display
                 const opponentDisplayData = {
@@ -437,13 +433,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped || null,
                 };
                 setGoBackendOpponentData(opponentDisplayData);
-                console.log('🎮 GameWaitingRoom: Stored Go backend opponent data:', opponentDisplayData);
+                // Stored Go backend opponent data
                 
                 // Set opponent joined state and start countdown if not already started
                 if (!opponentJoined) {
                   setOpponentJoined(true);
                   if (vsCountdown === null) {
-                    console.log('🚀 GameWaitingRoom: Starting countdown for Go backend match');
+                    // Starting countdown for Go backend match
                     startVsCountdown();
                   }
                 }
@@ -459,7 +455,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 
                 // Even if opponent profile is missing, still try to create a basic Firebase match
                 if (bridgeData && userProfile) {
-                  console.log('🔄 GameWaitingRoom: Creating fallback Firebase match');
+                  // Creating fallback Firebase match
                   const fallbackOpponentData = {
                     playerId: opponentPlayerId,
                     playerDisplayName: goBackendOpponentData?.playerDisplayName || (opponentPlayerId.includes('bot') ? 'AI Player' : 'Player 2'),
@@ -509,11 +505,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 const roundObjective = getRoundObjective(actualGameMode);
                 const startingScore = getStartingScore(actualGameMode);
                 
-                console.log('🎮 GameWaitingRoom: Using proper game mode settings:', {
-                  gameMode: actualGameMode,
-                  roundObjective,
-                  startingScore
-                });
+                // Using proper game mode settings
                 
                 const matchData = {
                   originalRoomId: roomId,
@@ -559,19 +551,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 };
                 
                 // Create Firebase match document with same ID as Go backend match
-                console.log('🔗 GameWaitingRoom: Creating Firebase match with data:', {
-                  matchId: roomId,
-                  gameMode: actualGameMode,
-                  hostPlayer: userProfile.displayName,
-                  opponentPlayer: goBackendOpponentData?.playerDisplayName || opponentProfile?.displayName || 'Player 2',
-                  isBot: opponentPlayerId.includes('bot')
-                });
+                // Creating Firebase match with data
                 
                 await import('firebase/firestore').then(({ doc, setDoc }) => {
                   return setDoc(doc(db, 'matches', roomId), matchData);
                 });
                 
-                console.log('✅ GameWaitingRoom: Firebase match created successfully');
+                // Firebase match created successfully
                 
                 // Verify the match was created by reading it back
                 const verifyMatch = await import('firebase/firestore').then(async ({ doc, getDoc }) => {
@@ -580,7 +566,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 });
                 
                 if (verifyMatch) {
-                  console.log('✅ GameWaitingRoom: Firebase match creation verified');
+                  // Firebase match creation verified
                 } else {
                   console.error('❌ GameWaitingRoom: Firebase match verification failed');
                 }
@@ -666,7 +652,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             setSearchingText(optimisticRoom.searchText);
             setIsLoading(false);
             
-            console.log('✅ GameWaitingRoom: Optimistic room loaded successfully');
+            // Optimistic room loaded successfully
             return; // Don't proceed with normal room loading
           } else {
             console.warn('⚠️ GameWaitingRoom: Optimistic room data not found, falling back to normal loading');
@@ -787,7 +773,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   setError(''); // Clear any previous errors
                   setIsLoading(false);
                   
-                  console.log('✅ GameWaitingRoom: Successfully using bridge data instead of database lookup');
+                  // Successfully using bridge data instead of database lookup
                   return; // Don't proceed with match checking - bridge data is sufficient
                 }
                 
@@ -1299,7 +1285,6 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       console.log('🤖 Attempting to add bot to session:', sessionId);
       console.log('🔐 Current user auth state:', user ? 'Authenticated' : 'Not authenticated');
       setBotFallbackActive(false);
-      setSearchingText('Finding AI opponent...');
       
       // Determine if this is a Go backend match or Firebase match
       const isGoBackendMatch = sessionId.startsWith('match_') || sessionId.startsWith('match-');
@@ -2973,7 +2958,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     animation: 'pulse 1s ease-in-out infinite'
                   }}
                 >
-                  'Finding Opponent...'
+                  AI Opponent in {botCountdown}s
                 </div>
               )}
               

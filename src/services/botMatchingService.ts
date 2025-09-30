@@ -24,14 +24,14 @@ export class BotMatchingService {
     gameMode: string,
     sessionType: 'quick' | 'ranked' = 'quick'
   ): void {
-    console.log(`⏰ Setting up bot fallback for session ${sessionId} (${this.BOT_FALLBACK_TIMEOUT}ms timeout)`);
+    // Setting up bot fallback for session
     
     // Clear any existing timer for this session
     this.clearBotFallbackTimer(sessionId);
     
     // Set new timer
     const timer = setTimeout(async () => {
-      console.log(`⏰ Bot fallback timer triggered for session ${sessionId}`);
+      // Bot fallback timer triggered
       try {
         await this.attemptBotMatch(sessionId, hostPlayerId, gameMode, sessionType);
       } catch (error) {
@@ -50,7 +50,7 @@ export class BotMatchingService {
     if (timer) {
       clearTimeout(timer);
       this.botFallbackTimers.delete(sessionId);
-      console.log(`✅ Cancelled bot fallback timer for session ${sessionId}`);
+      // Cancelled bot fallback timer
     }
   }
   
@@ -115,7 +115,7 @@ export class BotMatchingService {
    */
   static async findSuitableBot(criteria: BotMatchingCriteria): Promise<BotMatchingResult> {
     try {
-      console.log('🔍 Searching for suitable bot with criteria:', criteria);
+      // Searching for suitable bot with criteria
       
       // Get available bots
       const availableBots = await this.getAvailableBots(criteria);

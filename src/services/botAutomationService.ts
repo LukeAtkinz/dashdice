@@ -18,11 +18,11 @@ export class BotAutomationService {
    * Start monitoring a match for bot automation
    */
   static startMatchMonitoring(matchId: string): void {
-    console.log(`🤖 Starting bot automation monitoring for match: ${matchId}`);
+    // Bot automation monitoring started
     
     // Don't create duplicate listeners
     if (this.activeListeners.has(matchId)) {
-      console.log(`⚠️ Already monitoring match ${matchId}`);
+      // Already monitoring match
       return;
     }
 
@@ -49,7 +49,7 @@ export class BotAutomationService {
    * Start polling Go backend matches for bot automation
    */
   private static startGoBackendPolling(matchId: string): void {
-    console.log(`🔄 Starting Go backend polling for bot automation: ${matchId}`);
+    // Starting Go backend polling
     
     const pollInterval = setInterval(async () => {
       try {
@@ -74,7 +74,7 @@ export class BotAutomationService {
             await this.checkForFirebaseTransition(matchId, pollInterval);
           }
         } else {
-          console.log(`🔍 Go backend match ${matchId} not found (${response.status})`);
+          // Go backend match not found
           // Check if match has been moved to Firebase before stopping
           await this.checkForFirebaseTransition(matchId, pollInterval);
         }
@@ -125,7 +125,7 @@ export class BotAutomationService {
    * Stop monitoring a match
    */
   static stopMatchMonitoring(matchId: string): void {
-    console.log(`🛑 Stopping bot automation monitoring for match: ${matchId}`);
+    // Bot automation monitoring stopped
     
     const unsubscribe = this.activeListeners.get(matchId);
     if (unsubscribe) {
@@ -155,15 +155,15 @@ export class BotAutomationService {
       const firebaseDoc = await getDoc(doc(db, 'matches', matchId));
       
       if (firebaseDoc.exists()) {
-        console.log(`🔄 Bot automation: Match ${matchId} found in Firebase, switching to Firebase monitoring`);
+        // Switching to Firebase monitoring
         
         // Stop Go backend polling
         clearInterval(goBackendPollInterval);
         
         // Mark as Firebase match
-        console.log(`🏷️ Marking match ${matchId} as Firebase match`);
+        // Marking match as Firebase match
         this.firebaseMatches.add(matchId);
-        console.log(`🔍 Firebase matches set now contains: ${Array.from(this.firebaseMatches)}`);
+        // Firebase matches set updated
         
         // Start Firebase monitoring
         const { onSnapshot } = await import('firebase/firestore');
@@ -340,7 +340,7 @@ export class BotAutomationService {
       try {
         // Check if this match is being monitored via Firebase
         const isFirebaseMatch = this.firebaseMatches.has(matchData.id!);
-        console.log(`🔍 Bot action routing: matchId=${matchData.id}, isFirebaseMatch=${isFirebaseMatch}, firebaseMatches=${Array.from(this.firebaseMatches)}`);
+        // Bot action routing determined
         
         if (isFirebaseMatch) {
           // Use Firebase MatchService for matches that have transitioned
