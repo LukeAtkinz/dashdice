@@ -8,10 +8,11 @@ import {
   sendPasswordResetEmail,
   onAuthStateChanged,
   updateProfile,
+  signInWithPopup,
   User as FirebaseUser,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
-import { auth, db } from '@/services/firebase';
+import { auth, db, googleProvider, appleProvider } from '@/services/firebase';
 import { User, AuthContextType } from '@/types';
 import { AVAILABLE_BACKGROUNDS, getDefaultBackground } from '@/config/backgrounds';
 import { UserService } from '@/services/userService';
@@ -183,6 +184,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      await createUserDocument(result.user);
+      return result.user;
+    } catch (error) {
+      console.error('Error signing in with Google:', error);
+      throw error;
+    }
+  };
+
+  const signInWithApple = async () => {
+    try {
+      const result = await signInWithPopup(auth, appleProvider);
+      await createUserDocument(result.user);
+      return result.user;
+    } catch (error) {
+      console.error('Error signing in with Apple:', error);
+      throw error;
+    }
+  };
+
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
@@ -252,6 +275,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     loading,
     signIn,
     signUp,
+    signInWithGoogle,
+    signInWithApple,
     signOut,
     resetPassword,
     updateUserProfile,

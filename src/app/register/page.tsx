@@ -70,7 +70,7 @@ export default function RegisterPage() {
       <div className="fixed inset-0 bg-black/50 z-10" />
       
       {/* Main Content */}
-      <div className="relative z-20 w-full max-w-6xl mx-auto px-4 py-8 min-h-screen flex items-center lg:items-center">
+      <div className="relative z-20 w-full max-w-6xl mx-auto px-4 py-8 min-h-screen flex items-center lg:items-center overflow-y-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-center w-full">
           {/* Left Side - Branding */}
           <motion.div 
@@ -187,8 +187,9 @@ export default function RegisterPage() {
           transition={{ duration: 0.8, delay: 0.4 }}
         >
           <Link 
-            href="/dashboard" 
+            href="/" 
             className="text-white/60 hover:text-white/80 transition-colors underline"
+            style={{ fontFamily: "Audiowide" }}
           >
             Continue as Guest
           </Link>

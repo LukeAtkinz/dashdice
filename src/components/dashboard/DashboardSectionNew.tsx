@@ -451,52 +451,55 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
                         </div>
                       </button>
                     ) : (
-                      <div className="relative w-full">
-                        <button
-                          disabled
-                          className="w-full flex flex-col justify-center items-center opacity-50 cursor-not-allowed transition-all duration-300"
-                          style={{
-                            borderRadius: '30px',
-                            background: '#666666',
-                            height: '80px',
-                            alignContent: 'center',
-                            justifyContent: 'center',
-                            border: 0,
-                            touchAction: 'manipulation',
-                            zIndex: 10,
-                            position: 'relative'
-                          }}
-                        >
-                          <div className="flex items-center gap-2 pointer-events-none">
-                            <img 
-                              src="/Design Elements/Player Profiles/QuickMatch.webp" 
-                              alt="Quick Match" 
-                              className="w-8 h-8 md:w-12 md:h-12 object-contain"
-                            />
-                            <span
-                              className="text-[22px] md:text-[32px] leading-[26px] md:leading-[36px]"
-                              style={{
-                                color: '#E2E2E2',
-                                textAlign: 'center',
-                                fontFamily: 'Audiowide',
-                                fontStyle: 'normal',
-                                fontWeight: 400,
-                                textTransform: 'uppercase',
-                              }}
-                            >
-                              CASUAL
-                            </span>
-                          </div>
-                        </button>
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-20 rounded-[30px]">
-                          <div className="text-center">
-                            <div className="text-4xl mb-2">🔒</div>
-                            <p className="text-white/80 text-sm font-bold" style={{ fontFamily: "Audiowide" }}>
-                              SIGN UP TO PLAY
-                            </p>
-                          </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          console.log(`🤖 ${mode.toUpperCase()} GUEST BOT GAME CLICKED!`);
+                          handleGameModeAction(mode, 'live');
+                        }}
+                        onTouchEnd={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          console.log(`🤖 ${mode.toUpperCase()} GUEST BOT GAME TOUCH END!`);
+                          handleGameModeAction(mode, 'live');
+                        }}
+                        className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300 pointer-events-auto relative"
+                        style={{
+                          borderRadius: '30px',
+                          background: 'linear-gradient(135deg, #22C55E 0%, #16A34A 50%, #15803D 100%)',
+                          height: '80px',
+                          alignContent: 'center',
+                          justifyContent: 'center',
+                          border: 0,
+                          boxShadow: '0 4px 15px rgba(34, 197, 94, 0.3)',
+                          touchAction: 'manipulation',
+                          zIndex: 10,
+                          position: 'relative',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <div className="flex items-center gap-2 pointer-events-none">
+                          <span className="text-2xl">🤖</span>
+                          <span
+                            className="text-[18px] md:text-[24px] leading-[22px] md:leading-[28px]"
+                            style={{
+                              color: '#E2E2E2',
+                              textAlign: 'center',
+                              fontFamily: 'Audiowide',
+                              fontStyle: 'normal',
+                              fontWeight: 400,
+                              textTransform: 'uppercase',
+                            }}
+                          >
+                            VS BOT
+                          </span>
                         </div>
-                      </div>
+                        {/* Guest indicator */}
+                        <div className="absolute top-1 right-2 text-xs text-white/70" style={{ fontFamily: 'Audiowide' }}>
+                          GUEST
+                        </div>
+                      </button>
                     )}
                     <button
                       onClick={(e) => {

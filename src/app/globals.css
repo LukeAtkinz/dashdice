@@ -151,7 +151,8 @@ img.scrollbar-hide::-webkit-scrollbar {
   --foreground: #171717;
 }
 
-@theme inline {
+/* Custom CSS variables */
+:root {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);

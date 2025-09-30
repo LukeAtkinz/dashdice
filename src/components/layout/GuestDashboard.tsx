@@ -399,26 +399,10 @@ const GuestDashboardContent: React.FC = () => {
               {/* PROFILE Button - Redirects to signup for guests */}
               <Link href="/register">
                 <button
-                  className="hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer flex"
-                  style={{
-                    display: "flex",
-                    width: "180px",
-                    height: "48px",
-                    padding: "8px 16px",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: "8px",
-                    borderRadius: "18px",
-                    background: "linear-gradient(135deg, #EF4444 0%, #DC2626 50%, #B91C1C 100%)",
-                    border: "2px solid rgba(255, 255, 255, 0.3)"
-                  }}
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-bold rounded-lg transition-all"
+                  style={{ fontFamily: "Audiowide" }}
                 >
-                  <div style={{ width: "40px", height: "40px", display: "none", alignItems: "center", justifyContent: "center" }}>
-                    <img src="/Design Elements/Player Profiles/Profile.webp" alt="Profile" className="w-10 h-10" />
-                  </div>
-                  <span style={{ color: "#FFF", fontFamily: "Audiowide", fontSize: "20px", fontWeight: 400, lineHeight: "20px" }}>
-                    SIGN UP
-                  </span>
+                  SIGN UP
                 </button>
               </Link>
 
@@ -473,7 +457,7 @@ const GuestDashboardContent: React.FC = () => {
 
         {/* Main Content Area - Hidden during match */}
         {(currentSection !== 'match' && currentSection !== 'waiting-room') && (
-          <main className="flex-1 overflow-auto scrollbar-hide w-full" style={{
+          <main className="flex-1 overflow-auto scrollbar-hide w-full flex items-center justify-center" style={{
             paddingBottom: '120px',
             touchAction: 'pan-y',
             WebkitOverflowScrolling: 'touch'
@@ -569,9 +553,6 @@ const GuestDashboardContent: React.FC = () => {
 
         {/* Mobile Background Position Control */}
         <MobileBackgroundControl currentSection={currentSection} />
-        
-        {/* Guest Signup Button (replaces chat for guests) */}
-        <GuestSignupButton />
       </div>
     </div>
     </SwipeUpChat>

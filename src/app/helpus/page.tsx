@@ -22,7 +22,7 @@ const DonationPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen relative overflow-auto">
+      <div className="min-h-screen relative">
         {/* Background Video */}
         <video
           autoPlay
@@ -39,8 +39,9 @@ const DonationPage: React.FC = () => {
         {/* Dark Overlay */}
         <div className="fixed inset-0 bg-black/60 z-10" />
 
-        <div className="relative z-20 container mx-auto px-4 py-8 max-w-4xl min-h-screen">
-          {/* Header Section */}
+        <div className="relative z-20 min-h-screen flex flex-col overflow-y-auto">
+          <div className="container mx-auto px-4 py-8 max-w-4xl flex-1">
+            {/* Header Section */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -290,6 +291,7 @@ const DonationPage: React.FC = () => {
               "Every penny brings us closer to launch, prize pools, and the future of competitive dice."
             </p>
           </motion.div>
+          </div>
         </div>
       </div>
     </Layout>
