@@ -1,0 +1,19 @@
+# Ignore Expo-related files during Railway deployment
+.expo/
+expo-env.d.ts
+metro.config.js
+
+# Ignore React Native iOS build files
+ios/App/
+
+# Ignore large asset directories that cause conflicts
+Reference/
+ReadMes/
+Levels*/
+"Levels as building"/
+public/Design Elements/Achivements/
+public/Design Elements/PNG'S/
+
+# Ignore development files
+node_modules/.cache
+.next/cache
