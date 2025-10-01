@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
@@ -455,24 +456,24 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
                         onClick={(e) => {
                           e.stopPropagation();
                           e.preventDefault();
-                          console.log(`🤖 ${mode.toUpperCase()} GUEST BOT GAME CLICKED!`);
+                          console.log(`🎮 ${mode.toUpperCase()} GUEST CASUAL GAME CLICKED!`);
                           handleGameModeAction(mode, 'live');
                         }}
                         onTouchEnd={(e) => {
                           e.stopPropagation();
                           e.preventDefault();
-                          console.log(`🤖 ${mode.toUpperCase()} GUEST BOT GAME TOUCH END!`);
+                          console.log(`🎮 ${mode.toUpperCase()} GUEST CASUAL GAME TOUCH END!`);
                           handleGameModeAction(mode, 'live');
                         }}
                         className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300 pointer-events-auto relative"
                         style={{
                           borderRadius: '30px',
-                          background: 'linear-gradient(135deg, #22C55E 0%, #16A34A 50%, #15803D 100%)',
+                          background: getLivePlayButtonBackground(),
                           height: '80px',
                           alignContent: 'center',
                           justifyContent: 'center',
                           border: 0,
-                          boxShadow: '0 4px 15px rgba(34, 197, 94, 0.3)',
+                          boxShadow: '0 4px 15px rgba(25, 46, 57, 0.3)',
                           touchAction: 'manipulation',
                           zIndex: 10,
                           position: 'relative',
@@ -480,9 +481,13 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
                         }}
                       >
                         <div className="flex items-center gap-2 pointer-events-none">
-                          <span className="text-2xl">🤖</span>
+                          <img 
+                            src="/Design Elements/Player Profiles/QuickMatch.webp" 
+                            alt="Quick Match" 
+                            className="w-8 h-8 md:w-12 md:h-12 object-contain"
+                          />
                           <span
-                            className="text-[18px] md:text-[24px] leading-[22px] md:leading-[28px]"
+                            className="text-[22px] md:text-[32px] leading-[26px] md:leading-[36px]"
                             style={{
                               color: '#E2E2E2',
                               textAlign: 'center',
@@ -492,7 +497,7 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
                               textTransform: 'uppercase',
                             }}
                           >
-                            VS BOT
+                            CASUAL
                           </span>
                         </div>
                         {/* Guest indicator */}
@@ -694,9 +699,11 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
       */}
 
       {/* Achievements Preview Section - Full Width */}
-      <div className="w-full flex justify-center mt-4">
-        <AchievementsMini maxDisplay={3} />
-      </div>
+      {user && (
+        <div className="w-full flex justify-center mt-4">
+          <AchievementsMini maxDisplay={3} />
+        </div>
+      )}
 
       {/* Already in Match Notification */}
       {showAlreadyInMatchNotification && currentMatchInfo && user && (
