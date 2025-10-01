@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { validateDisplayName } from '@/utils/contentModeration';
-import { GoogleSignInButton } from './GoogleSignInButton';
-import { AppleSignInButton } from './AppleSignInButton';
+
+
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -215,30 +215,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
           'CREATE ACCOUNT'
         )}
       </button>
-
-      {/* Divider */}
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-white/20"></div>
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-3 bg-black/60 text-white/60 rounded-lg backdrop-blur-sm" style={{ fontFamily: "Audiowide" }}>
-            OR
-          </span>
-        </div>
-      </div>
-
-      {/* Google Sign In Button */}
-      <GoogleSignInButton 
-        text="Sign up with Google"
-        onSuccess={onSuccess}
-      />
-
-      {/* Apple Sign In Button */}
-      <AppleSignInButton 
-        text="Sign up with Apple"
-        onSuccess={onSuccess}
-      />
     </form>
   );
 };

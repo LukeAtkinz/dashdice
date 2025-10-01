@@ -122,7 +122,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                 }, 100);
               });
             }}
-            className={`object-cover ${isMobile ? 'w-full h-full' : 'w-[95%] h-[90%]'} max-w-none`}
+            className={`object-cover ${isMobile ? 'w-[85%] h-[75%]' : 'w-[95%] h-[90%]'} max-w-none`}
             style={{ 
               display: videoError ? 'none' : 'block'
             }}

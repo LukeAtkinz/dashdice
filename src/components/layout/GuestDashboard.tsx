@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { NavigationProvider, useNavigation, DashboardSection } from '@/context/NavigationContext';
 import { SectionTransition } from '@/components/layout/SectionTransition';
 import { DashboardSection as DashboardSectionComponent } from '@/components/dashboard/DashboardSectionNew';
@@ -34,6 +35,9 @@ import { MobileBackgroundControl } from '@/components/ui/MobileBackgroundControl
 import { createTestMatch } from '@/utils/testMatchData';
 import { GuestGameWaitingRoom } from '@/components/guest/GuestGameWaitingRoom';
 import { guestBotMatchmaking, GuestMatchData } from '@/services/guestBotMatchmaking';
+import { enhancedGuestMatchmaking, GuestUserData } from '@/services/enhancedGuestMatchmaking';
+import EnhancedGuestGameWaitingRoom from '@/components/guest/EnhancedGuestGameWaitingRoom';
+import GuestMatch from '@/components/guest/GuestMatch';
 import Link from 'next/link';
 
 // Locked feature overlay component
@@ -67,8 +71,12 @@ const LockedFeatureOverlay: React.FC<LockedFeatureOverlayProps> = ({ featureName
             </Link>
             <Link href="/register">
               <button 
-                className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-bold rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all"
-                style={{ fontFamily: "Audiowide" }}
+                className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-bold rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all transform hover:scale-105"
+                style={{ 
+                  fontFamily: "Audiowide",
+                  boxShadow: "0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 215, 0, 0.3)",
+                  filter: "drop-shadow(0 0 10px rgba(255, 215, 0, 0.4))"
+                }}
               >
                 SIGN UP
               </button>
@@ -85,8 +93,12 @@ const GuestSignupButton: React.FC = () => {
   return (
     <Link href="/register">
       <button
-        className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-bold px-6 py-3 rounded-full shadow-lg transition-all transform hover:scale-105"
-        style={{ fontFamily: "Audiowide" }}
+        className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-bold px-6 py-3 rounded-full transition-all transform hover:scale-105"
+        style={{ 
+          fontFamily: "Audiowide",
+          boxShadow: "0 0 30px rgba(255, 215, 0, 0.6), 0 0 60px rgba(255, 215, 0, 0.4), 0 8px 25px rgba(0, 0, 0, 0.3)",
+          filter: "drop-shadow(0 0 20px rgba(255, 215, 0, 0.5))"
+        }}
       >
         SIGN UP
       </button>
@@ -95,6 +107,7 @@ const GuestSignupButton: React.FC = () => {
 };
 
 const GuestDashboardContent: React.FC = () => {
+  const router = useRouter();
   const { currentSection, sectionParams, setCurrentSection, isGameOver } = useNavigation();
   const { user } = useAuth();
   const { DisplayBackgroundEquip } = useBackground();
@@ -102,9 +115,10 @@ const GuestDashboardContent: React.FC = () => {
   const onlinePlayerCount = useOnlinePlayerCount();
   
   // Guest-specific state
-  const [guestId] = useState(() => `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+  const [guestUser] = useState<GuestUserData>(() => enhancedGuestMatchmaking.generateGuestUser());
   const [isGuestWaiting, setIsGuestWaiting] = useState(false);
   const [waitingGameMode, setWaitingGameMode] = useState<string>();
+  const [guestMatchRoomId, setGuestMatchRoomId] = useState<string>();
 
   // Create button gradient style based on user's display background
   const getButtonGradientStyle = (baseColor: string) => {
@@ -129,20 +143,36 @@ const GuestDashboardContent: React.FC = () => {
     }
   };
   
-  // Handle game mode selection for guests (bot matchmaking)
+  // Handle game mode selection for guests - redirect to sign-up page
   const handleGameModeAction = (gameMode: string, actionType: 'live' | 'ranked') => {
-    if (!user) { // Guest user
-      console.log(`🤖 Guest starting bot matchmaking for ${gameMode}`);
-      setWaitingGameMode(gameMode);
-      setIsGuestWaiting(true);
-    }
+    console.log(`🚀 Guest user clicked ${gameMode} ${actionType} - redirecting to sign-up`);
+    router.push('/register');
   };
   
-  // Handle guest match found
-  const handleGuestMatchFound = (matchData: GuestMatchData) => {
-    console.log('🎮 Guest match ready!', matchData);
+  // Handle enhanced guest match start
+  const handleEnhancedGuestMatchStart = (roomId: string, gameMode: string) => {
+    console.log(`🎯 Enhanced guest match starting: ${roomId}`);
     setIsGuestWaiting(false);
-    // Transition to match with bot data
+    setGuestMatchRoomId(roomId);
+    setCurrentSection('match' as DashboardSection, { 
+      roomId: roomId, 
+      gameMode: gameMode,
+      isGuestMatch: true
+    });
+  };
+  
+  // Handle enhanced guest waiting room back
+  const handleEnhancedGuestWaitingBack = () => {
+    console.log('⬅️ Enhanced guest returning to dashboard');
+    setIsGuestWaiting(false);
+    setWaitingGameMode(undefined);
+    setCurrentSection('dashboard' as DashboardSection);
+  };
+
+  // Legacy guest match handlers (for fallback)
+  const handleGuestMatchFound = (matchData: GuestMatchData) => {
+    console.log('🎮 Legacy guest match ready!', matchData);
+    setIsGuestWaiting(false);
     setCurrentSection('match' as DashboardSection, { 
       roomId: matchData.matchId, 
       gameMode: matchData.gameMode,
@@ -151,20 +181,18 @@ const GuestDashboardContent: React.FC = () => {
     });
   };
   
-  // Handle guest matchmaking cancel
   const handleGuestMatchCancel = () => {
-    console.log('❌ Guest matchmaking cancelled');
+    console.log('❌ Legacy guest matchmaking cancelled');
     setIsGuestWaiting(false);
     setWaitingGameMode(undefined);
   };
 
   // Prevent re-renders during guest waiting to avoid infinite loops
-  const stableGuestId = React.useMemo(() => guestId, []);
+  const stableGuestUser = React.useMemo(() => guestUser, []);
   const stableHandleGuestMatchFound = React.useCallback((matchData: GuestMatchData) => {
     console.log('🎮 Guest match ready!', matchData);
     setIsGuestWaiting(false);
     setWaitingGameMode(undefined);
-    // Transition to match with bot data
     setCurrentSection('match' as DashboardSection, { 
       roomId: matchData.matchId, 
       gameMode: matchData.gameMode,
@@ -296,9 +324,6 @@ const GuestDashboardContent: React.FC = () => {
           overflow: 'hidden',
         }}
       >
-      {/* Background Video */}
-      {renderBackground()}
-
       {/* Notifications */}
       <AchievementNotificationDisplay />
       <GlobalRematchNotification />
@@ -306,11 +331,8 @@ const GuestDashboardContent: React.FC = () => {
       <InviteAcceptedNotification />
       <PersistentNotificationManager />
 
-      {/* Overlay for better content visibility */}
-      <div className={`${isGameOver ? 'hidden' : 'fixed inset-0 bg-black/30 z-10'}`} />
-
       {/* Main Layout */}
-      <div className="relative z-20 min-h-screen flex flex-col" style={{
+      <div className="relative z-10 min-h-screen flex flex-col" style={{
         height: '100vh',
         overflow: 'hidden'
       }}>
@@ -459,8 +481,12 @@ const GuestDashboardContent: React.FC = () => {
               {/* PROFILE Button - Redirects to signup for guests */}
               <Link href="/register">
                 <button
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-bold rounded-lg transition-all"
-                  style={{ fontFamily: "Audiowide" }}
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-bold rounded-lg transition-all transform hover:scale-105"
+                  style={{ 
+                    fontFamily: "Audiowide",
+                    boxShadow: "0 0 20px rgba(255, 215, 0, 0.4), 0 0 40px rgba(255, 215, 0, 0.2)",
+                    filter: "drop-shadow(0 0 10px rgba(255, 215, 0, 0.3))"
+                  }}
                 >
                   SIGN UP
                 </button>
@@ -479,15 +505,7 @@ const GuestDashboardContent: React.FC = () => {
           </div>
         </header>
 
-        {/* Guest Bot Waiting Room */}
-        {isGuestWaiting && waitingGameMode && (
-          <GuestGameWaitingRoom
-            gameMode={waitingGameMode}
-            guestId={stableGuestId}
-            onMatchFound={stableHandleGuestMatchFound}
-            onCancel={stableHandleGuestMatchCancel}
-          />
-        )}
+        {/* Enhanced Guest Bot Waiting Room - No longer conditional here, handled by section navigation */}
         
         {/* Game Match Section - Hidden unless in match or waiting room */}
         {(currentSection === 'match' || currentSection === 'waiting-room') && (
@@ -500,12 +518,27 @@ const GuestDashboardContent: React.FC = () => {
             zIndex: 100
           }}>
             {currentSection === 'match' && sectionParams.roomId && (
-              <Match 
-                gameMode={sectionParams.gameMode} 
-                roomId={sectionParams.roomId}
+              sectionParams.isGuestMatch ? (
+                <GuestMatch 
+                  matchId={sectionParams.roomId}
+                  onBack={() => setCurrentSection('dashboard')}
+                />
+              ) : (
+                <Match 
+                  gameMode={sectionParams.gameMode} 
+                  roomId={sectionParams.roomId}
+                />
+              )
+            )}
+            {currentSection === 'waiting-room' && !user && waitingGameMode && (
+              <EnhancedGuestGameWaitingRoom
+                gameMode={waitingGameMode}
+                guestUser={stableGuestUser}
+                onBack={handleEnhancedGuestWaitingBack}
+                onMatchStart={handleEnhancedGuestMatchStart}
               />
             )}
-            {currentSection === 'waiting-room' && (
+            {currentSection === 'waiting-room' && user && (
               <GameWaitingRoom 
                 gameMode={sectionParams.gameMode || 'classic'}
                 actionType="live"
@@ -601,7 +634,12 @@ const GuestDashboardContent: React.FC = () => {
                 <Link href="/register" className="flex-1">
                   <button
                     className="w-full py-4 px-6 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-bold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg"
-                    style={{ fontFamily: "Audiowide", fontSize: "18px" }}
+                    style={{ 
+                      fontFamily: "Audiowide", 
+                      fontSize: "18px",
+                      boxShadow: "0 0 25px rgba(255, 215, 0, 0.5), 0 0 50px rgba(255, 215, 0, 0.3), 0 4px 15px rgba(0, 0, 0, 0.3)",
+                      filter: "drop-shadow(0 0 15px rgba(255, 215, 0, 0.4))"
+                    }}
                   >
                     SIGN UP
                   </button>

@@ -44,8 +44,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased scrollbar-hide overflow-hidden`}
-        style={{ height: '100vh', overflow: 'hidden' }}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased scrollbar-hide`}
       >
         <ClientLayout>
           {children}

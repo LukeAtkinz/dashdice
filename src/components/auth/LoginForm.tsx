@@ -2,8 +2,6 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { GoogleSignInButton } from './GoogleSignInButton';
-import { AppleSignInButton } from './AppleSignInButton';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -145,30 +143,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
           'SIGN IN'
         )}
       </button>
-
-      {/* Divider */}
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-white/20"></div>
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-3 bg-black/60 text-white/60 rounded-lg backdrop-blur-sm" style={{ fontFamily: "Audiowide" }}>
-            OR
-          </span>
-        </div>
-      </div>
-
-      {/* Google Sign In Button */}
-      <GoogleSignInButton 
-        text="Sign in with Google"
-        onSuccess={onSuccess}
-      />
-
-      {/* Apple Sign In Button */}
-      <AppleSignInButton 
-        text="Sign in with Apple"
-        onSuccess={onSuccess}
-      />
     </form>
   );
 };

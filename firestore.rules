@@ -275,9 +275,9 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Global stats tracking
+    // Global stats tracking - allow public read for guest access 
     match /globalStats/{statId} {
-      allow read: if request.auth != null;
+      allow read: if true; // Allow public read access for guests
       allow write: if request.auth != null;
     }
 
@@ -309,9 +309,9 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Game Modes - Read-only for all authenticated users
+    // Game Modes - Read-only for all users (including guests)
     match /gameModes/{modeId} {
-      allow read: if request.auth != null;
+      allow read: if true; // Allow public read access for guests
       allow write: if false; // Only admin can write
     }
 
@@ -331,6 +331,11 @@ service cloud.firestore {
     // Users can read and write matches they are part of
     match /matches/{matchId} {
       allow read, write: if request.auth != null;
+    }
+    
+    // Guest Matches - public read/write for guest bot matchmaking (temporary data)
+    match /guestMatches/{matchId} {
+      allow read, write: if true; // Allow all access since these are temporary guest sessions
     }
     
     // Completed matches - users can read completed matches they were part of
@@ -436,9 +441,9 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Global online count tracking
+    // Global online count tracking - allow public read for guest access
     match /globalStats/{statId} {
-      allow read: if request.auth != null;
+      allow read: if true; // Allow public read access for guests to see online count
       allow write: if request.auth != null;
     }
     
