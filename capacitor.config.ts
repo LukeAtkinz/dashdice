@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
     iosScheme: 'https',
-    url: 'http://localhost:3001',
+    url: 'https://dashdice-1dib-lmwq4amif-dash-dice.vercel.app',
     cleartext: true
   },
   ios: {
