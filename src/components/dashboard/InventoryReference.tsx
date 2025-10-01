@@ -117,9 +117,29 @@ export const InventorySection: React.FC = () => {
   }
 
   return (
-    <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] overflow-hidden min-h-screen">
+    <div className="w-full flex flex-col items-center justify-start gap-[2rem] pt-[3rem] md:pt-[6rem] pb-[2rem] h-screen overflow-hidden"
+      style={{
+        touchAction: 'none', // Prevent touch scrolling on main container
+        overscrollBehavior: 'none', // Prevent overscroll behavior
+        position: 'fixed', // Fix position to prevent body scrolling
+        top: '80px', // Add top margin for navigation
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 10,
+        height: 'calc(100vh - 80px)' // Adjust height to account for top offset
+      }}
+    >
       {/* Custom scrollbar styles and navigation animations */}
       <style jsx global>{`
+        /* Prevent body scrolling when inventory is open */
+        body {
+          overflow: hidden;
+          position: fixed;
+          width: 100%;
+          height: 100%;
+        }
+        
         /* Hide scrollbars on desktop but allow scrolling */
         .scrollbar-hide {
           scrollbar-width: none; /* Firefox */
@@ -259,7 +279,7 @@ export const InventorySection: React.FC = () => {
         
         {/* Mobile Title */}
         <h1 
-          className="block md:hidden text-3xl font-bold text-white mb-4"
+          className="block md:hidden text-5xl font-bold text-white mb-4"
           style={{
             fontFamily: "Audiowide",
             textTransform: "uppercase",
@@ -325,7 +345,12 @@ export const InventorySection: React.FC = () => {
 
 
       {/* Content */}
-      <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4">
+      <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4"
+        style={{
+          touchAction: 'pan-y', // Only allow vertical panning within content
+          overscrollBehavior: 'contain' // Contain scrolling within this element
+        }}
+      >
         <div className="flex h-auto w-full md:w-auto pl-[0.5rem] md:pl-0" style={{ minHeight: '600px', height: 'auto', maxHeight: '80vh', maxWidth: '1600px', gap: '20px' }} data-mobile-height="410px" data-desktop-height="auto">
           
           {/* Items List */}
@@ -337,7 +362,7 @@ export const InventorySection: React.FC = () => {
           >
             <div className="h-full flex flex-col">
               <div 
-                className="flex-1 overflow-y-auto overflow-x-hidden relative" 
+                className="flex-1 overflow-y-auto overflow-x-hidden relative scrollbar-hide" 
                 style={{ 
                   touchAction: 'pan-y',
                   WebkitOverflowScrolling: 'touch',
@@ -346,10 +371,11 @@ export const InventorySection: React.FC = () => {
                   msOverflowStyle: 'none',
                   transform: 'translateZ(0)', // Forces hardware acceleration
                   willChange: 'scroll-position', // Optimizes for scrolling
-                  paddingBottom: '80px' // Add much more padding to ensure bottom content is accessible
+                  paddingBottom: '120px', // Increased padding to ensure all cards are scrollable
+                  maxHeight: '60vh' // Limit height to ensure scrolling works properly
                 }}
               >
-                <div className="space-y-2.5 pb-12 pt-4">
+                <div className="space-y-2.5 pb-20 pt-4">
                   {getCurrentBackgrounds().map((background) => (
                     <div
                       key={background.id}

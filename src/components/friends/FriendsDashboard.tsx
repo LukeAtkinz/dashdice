@@ -284,11 +284,6 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
               <div className="flex-1">
                 <h3 className="text-xl font-audiowide text-white mb-4 uppercase">
                   Friend Requests
-                  {pendingRequests.length > 0 && (
-                    <span className="ml-2 text-sm bg-red-500 text-white px-2 py-1 rounded-full">
-                      {pendingRequests.length}
-                    </span>
-                  )}
                 </h3>
                 {pendingRequests.length > 0 ? (
                   <FriendRequests />
@@ -334,14 +329,23 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       {/* Notification badges for inactive tabs */}
       {activeTab !== 'manage' && pendingRequests.length > 0 && (
         <div className="fixed top-4 right-4 z-50">
-          <div className="bg-green-500 text-white px-3 py-2 rounded-lg shadow-lg flex items-center gap-2">
-            <div className="text-lg">📬</div>
-            <span className="text-sm font-montserrat">
-              {pendingRequests.length} friend request{pendingRequests.length !== 1 ? 's' : ''}
+          <div 
+            className="backdrop-blur-lg bg-black/40 rounded-2xl p-4 border border-white/20 shadow-2xl flex items-center gap-3"
+            style={{
+              background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.8) 100%)',
+              backdropFilter: 'blur(20px)'
+            }}
+          >
+            <div className="text-xl">📬</div>
+            <span 
+              className="text-sm text-white font-bold"
+              style={{ fontFamily: "Audiowide" }}
+            >
+              FRIEND REQUESTS
             </span>
             <button
               onClick={() => setActiveTab('manage')}
-              className="ml-2 text-green-200 hover:text-white"
+              className="ml-2 text-white/70 hover:text-white transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

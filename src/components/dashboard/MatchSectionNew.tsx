@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
+import { useBackground } from '@/context/BackgroundContext';
 
 interface MatchSectionProps {
   gameMode?: string;
@@ -18,6 +19,7 @@ export const MatchSection: React.FC<MatchSectionProps> = ({
   actionType: initialActionType 
 }) => {
   const { user } = useAuth();
+  const { MatchBackgroundEquip } = useBackground(); // Get MatchBackground context
   const { setCurrentSection } = useNavigation();
   const [showWaitingRoom, setShowWaitingRoom] = useState(!!initialGameMode && !!initialActionType);
   const [selectedGameMode, setSelectedGameMode] = useState(initialGameMode || 'classic');
@@ -162,6 +164,7 @@ export const MatchSection: React.FC<MatchSectionProps> = ({
               gameMode={selectedGameMode}
               actionType={selectedActionType}
               onBack={handleBackFromWaitingRoom}
+              matchBackground={MatchBackgroundEquip} // Pass MatchBackground from context
             />
           </div>
         </motion.div>

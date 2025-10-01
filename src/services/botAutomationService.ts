@@ -281,7 +281,7 @@ export class BotAutomationService {
       } catch (error) {
         console.error(`❌ Error making bot turn decider choice:`, error);
       }
-    }, 1500 + Math.random() * 2000); // 1.5-3.5 second delay
+    }, 800 + Math.random() * 1000); // 0.8-1.8 second delay
   }
 
   /**
@@ -328,7 +328,7 @@ export class BotAutomationService {
     console.log(`🧠 Bot ${botProfile.displayName} decision:`, decision);
 
     // Execute decision with delay for realism
-    const delayMs = decision.delayMs || (2000 + Math.random() * 3000); // 2-5 seconds
+    const delayMs = decision.delayMs || (1000 + Math.random() * 1000); // 1-2 seconds
     
     // Clear any existing timeout for this match
     const existingTimeout = this.botTurnTimeouts.get(matchData.id!);

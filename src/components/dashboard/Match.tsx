@@ -290,9 +290,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       x5-playsinline="true"
       preload="metadata"
       disablePictureInPicture
-      controlsList="nodownload noplaybackrate"
+      controlsList="nodownload noplaybackrate nofullscreen"
       className={className}
-      style={{ pointerEvents: 'none' }}
+      style={{ 
+        pointerEvents: 'none',
+        WebkitAppearance: 'none',
+        outline: 'none'
+      }}
     >
       <source src={background.file} type="video/mp4" />
     </video>
@@ -684,8 +688,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       // Remove performance-impacting logs
       // console.log('🎰 Starting turn decider dice animation for result:', matchData.gameData.turnDeciderDice);
       // 🎰 Animation Durations per specification:
-      // Turn Decider Dice: 1500ms (1.5 seconds)
-      startSlotMachineAnimation('turnDecider', matchData.gameData.turnDeciderDice, 1500);
+      // Turn Decider Dice: 800ms (0.8 seconds) - reduced for faster gameplay
+      startSlotMachineAnimation('turnDecider', matchData.gameData.turnDeciderDice, 800);
     }
 
     // Gameplay dice animations - Always animate even for same values
@@ -934,7 +938,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   <div 
                     className="absolute inset-0"
                     style={{
-                      background: "radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)"
+                      background: "linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.8) 50%, rgba(30, 41, 59, 0.9) 100%)"
                     }}
                   />
                 )}
@@ -1154,7 +1158,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   <div 
                     className="absolute inset-0"
                     style={{
-                      background: "radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)"
+                      background: "linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.8) 50%, rgba(30, 41, 59, 0.9) 100%)"
                     }}
                   />
                 )}
@@ -1276,7 +1280,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     <div 
                       className="absolute inset-0"
                       style={{
-                        background: "radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)"
+                        background: "linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.8) 50%, rgba(30, 41, 59, 0.9) 100%)"
                       }}
                     />
                   )}
@@ -1368,7 +1372,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     <div 
                       className="absolute inset-0"
                       style={{
-                        background: "radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)"
+                        background: "linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.8) 50%, rgba(30, 41, 59, 0.9) 100%)"
                       }}
                     />
                   )}
@@ -1485,3 +1489,4 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     </>
   );
 };
+

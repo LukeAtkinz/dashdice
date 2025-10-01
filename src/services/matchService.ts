@@ -344,7 +344,7 @@ export class MatchService {
       setTimeout(async () => {
         console.log('⏰ Processing turn decider result after animation delay...');
         await this.processTurnDecider(matchId);
-      }, 3000); // Allow time for dice animation
+      }, 2000); // Reduced from 3000ms to 2000ms for faster gameplay
       
     } catch (error) {
       console.error('❌ Error making turn decider choice:', error);
@@ -390,8 +390,7 @@ export class MatchService {
       console.log(`🎯 Turn decider result: ${choice} on ${dice} (${isOdd ? 'odd' : 'even'}) - ${choiceCorrect ? 'Correct' : 'Incorrect'}`);
       console.log(`🎮 ${hostGoesFirst ? 'Host' : 'Opponent'} goes first`);
       
-      // Add delay to allow turn decider animations to complete before transitioning to gameplay
-      console.log('⏰ Processing turn decider result after animation delay...');
+      // Process turn decider result after animation delay
       setTimeout(async () => {
         try {
           // Transition to gameplay phase after animation completes
@@ -405,7 +404,7 @@ export class MatchService {
         } catch (error) {
           console.error('❌ Error transitioning to gameplay after turn decider:', error);
         }
-      }, 3000); // Wait 3 seconds for animations to complete
+      }, 2000); // Reduced from 3000ms to 2000ms for faster gameplay
       
     } catch (error) {
       console.error('❌ Error processing turn decider:', error);

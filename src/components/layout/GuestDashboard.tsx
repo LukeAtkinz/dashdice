@@ -17,7 +17,7 @@ import AchievementNotificationDisplay from '@/components/achievements/Achievemen
 import AchievementsDashboard from '@/components/achievements/AchievementsDashboard';
 import FriendsDashboard from '@/components/friends/FriendsDashboard';
 import { RankedDashboard } from '@/components/ranked/RankedDashboard';
-import SwipeUpChat from '@/components/chat/SwipeUpChat';
+import SwipeUpChat from '@/components/chat/ImprovedSwipeUpChat';
 import { GlobalRematchNotification } from '@/components/rematch/GlobalRematchNotification';
 import { GameInvitationNotification } from '@/components/friends/GameInvitationNotification';
 import InviteAcceptedNotification from '@/components/friends/InviteAcceptedNotification';
@@ -550,7 +550,7 @@ const GuestDashboardContent: React.FC = () => {
 
         {/* Main Content Area - Hidden during match */}
         {(currentSection !== 'match' && currentSection !== 'waiting-room') && (
-          <main className="flex-1 overflow-auto scrollbar-hide w-full flex items-center justify-center" style={{
+          <main className="flex-1 overflow-auto scrollbar-hide w-full flex items-start md:items-center justify-center" style={{
             paddingBottom: '120px',
             touchAction: 'pan-y',
             WebkitOverflowScrolling: 'touch'

@@ -70,3 +70,10 @@ export const getBackgroundUrl = (background: Background): string => {
 export const getDefaultBackground = (): Background => {
   return AVAILABLE_BACKGROUNDS[0]; // All For Glory as default
 };
+
+// Helper function to convert Background to UserProfile background format
+export const toUserBackground = (background: Background) => ({
+  name: background.name,
+  file: `/backgrounds/${background.filename}`,
+  type: background.type as 'image' | 'video'
+});

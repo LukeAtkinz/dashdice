@@ -45,6 +45,8 @@ const BackgroundDisplay: React.FC<BackgroundDisplayProps> = ({
           webkit-playsinline="true"
           x5-playsinline="true"
           preload="metadata"
+          disablePictureInPicture
+          controlsList="nodownload noplaybackrate nofullscreen"
           style={{
             position: 'absolute',
             top: 0,
@@ -52,7 +54,10 @@ const BackgroundDisplay: React.FC<BackgroundDisplayProps> = ({
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            zIndex: 0
+            zIndex: 0,
+            pointerEvents: 'none',
+            WebkitAppearance: 'none',
+            outline: 'none'
           }}
         >
           <source src={background.file} type="video/mp4" />

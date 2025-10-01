@@ -488,7 +488,14 @@ export const GuestMatch: React.FC<GuestMatchProps> = React.memo(({ matchId, onBa
             webkit-playsinline="true"
             x5-playsinline="true"
             preload="metadata"
+            disablePictureInPicture
+            controlsList="nodownload noplaybackrate nofullscreen"
             className="absolute inset-0 w-full h-full object-cover z-0"
+            style={{
+              pointerEvents: 'none',
+              WebkitAppearance: 'none',
+              outline: 'none'
+            }}
           >
             <source src={MatchBackgroundEquip.file} type="video/mp4" />
           </video>
@@ -508,7 +515,7 @@ export const GuestMatch: React.FC<GuestMatchProps> = React.memo(({ matchId, onBa
       <div 
         className="absolute inset-0 z-0"
         style={{
-          background: "radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)"
+          background: "linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.8) 50%, rgba(30, 41, 59, 0.9) 100%)"
         }}
       />
     );
@@ -582,7 +589,7 @@ export const GuestMatch: React.FC<GuestMatchProps> = React.memo(({ matchId, onBa
                 <div 
                   className="absolute inset-0"
                   style={{
-                    background: "radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)"
+                    background: "linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.8) 50%, rgba(30, 41, 59, 0.9) 100%)"
                   }}
                 />
                 
@@ -854,7 +861,7 @@ export const GuestMatch: React.FC<GuestMatchProps> = React.memo(({ matchId, onBa
                 <div 
                   className="absolute inset-0"
                   style={{
-                    background: "radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)"
+                    background: "linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.8) 50%, rgba(30, 41, 59, 0.9) 100%)"
                   }}
                 />
                 
@@ -953,7 +960,7 @@ export const GuestMatch: React.FC<GuestMatchProps> = React.memo(({ matchId, onBa
                   <div 
                     className="absolute inset-0"
                     style={{
-                      background: "radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)"
+                      background: "linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.8) 50%, rgba(30, 41, 59, 0.9) 100%)"
                     }}
                   />
                   
@@ -1005,7 +1012,7 @@ export const GuestMatch: React.FC<GuestMatchProps> = React.memo(({ matchId, onBa
                   <div 
                     className="absolute inset-0"
                     style={{
-                      background: "radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)"
+                      background: "linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.8) 50%, rgba(30, 41, 59, 0.9) 100%)"
                     }}
                   />
                   

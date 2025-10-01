@@ -214,6 +214,8 @@ const UnifiedWaitingRoom: React.FC<UnifiedWaitingRoomProps> = ({
             webkit-playsinline="true"
             x5-playsinline="true"
             preload="metadata"
+            disablePictureInPicture
+            controlsList="nodownload noplaybackrate nofullscreen"
             style={{
               position: 'fixed',
               top: 0,
@@ -221,7 +223,10 @@ const UnifiedWaitingRoom: React.FC<UnifiedWaitingRoomProps> = ({
               width: '100%',
               height: '100%',
               objectFit: 'cover',
-              zIndex: -2
+              zIndex: -2,
+              pointerEvents: 'none',
+              WebkitAppearance: 'none',
+              outline: 'none'
             }}
           >
             <source src={displayBackground.file} type="video/mp4" />

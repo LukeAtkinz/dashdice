@@ -16,6 +16,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { UserService } from './userService';
+import { toUserBackground, getBackgroundById } from '@/config/backgrounds';
 
 // Game Invitation interface
 export interface GameInvitation {
@@ -495,7 +496,8 @@ export class NewGameInvitationService {
 
   // Helper: Get default background
   private static getDefaultBackground(): any {
-    return {
+    const relaxBackground = getBackgroundById('relax');
+    return relaxBackground ? toUserBackground(relaxBackground) : {
       name: 'Relax',
       file: '/backgrounds/Relax.png',
       type: 'image'

@@ -14,7 +14,7 @@ import {
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db, googleProvider, appleProvider } from '@/services/firebase';
 import { User, AuthContextType } from '@/types';
-import { AVAILABLE_BACKGROUNDS, getDefaultBackground } from '@/config/backgrounds';
+import { AVAILABLE_BACKGROUNDS, getDefaultBackground, toUserBackground } from '@/config/backgrounds';
 import { UserService } from '@/services/userService';
 import { FriendsService } from '@/services/friendsService';
 import { validateDisplayName, formatDisplayName, generateDisplayNameFromEmail } from '@/utils/contentModeration';
@@ -46,7 +46,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!userSnap.exists()) {
       const { displayName, email, photoURL } = firebaseUser;
       const createdAt = new Date();
-      // Set "Long Road Ahead" as the default background for new users
+      // Set "New Day" as the default display background and "Long Road Ahead" as match background for new users
+      const newDayBackground = AVAILABLE_BACKGROUNDS.find(bg => bg.id === 'new-day') || getDefaultBackground();
       const longRoadAheadBackground = AVAILABLE_BACKGROUNDS.find(bg => bg.id === 'long-road-ahead') || getDefaultBackground();
 
       // Ensure displayName is never null - generate from email if needed
@@ -74,20 +75,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             showActivity: true
           },
           inventory: {
-            displayBackgroundEquipped: {
-              name: longRoadAheadBackground.name,
-              file: longRoadAheadBackground.filename,
-              type: longRoadAheadBackground.type
-            },
-            matchBackgroundEquipped: {
-              name: longRoadAheadBackground.name,
-              file: longRoadAheadBackground.filename,
-              type: longRoadAheadBackground.type
-            },
+            displayBackgroundEquipped: toUserBackground(newDayBackground),
+            matchBackgroundEquipped: toUserBackground(longRoadAheadBackground),
             ownedBackgrounds: AVAILABLE_BACKGROUNDS.map(bg => bg.id) // Grant all backgrounds to new users
           },
           ownedBackgrounds: AVAILABLE_BACKGROUNDS.map(bg => bg.id), // Grant all backgrounds to new users (legacy support)
-          equippedBackground: longRoadAheadBackground.id, // Set "Long Road Ahead" as default background
+          equippedBackground: newDayBackground.id, // Set "New Day" as default display background
           ...additionalData,
         });
       } catch (error) {

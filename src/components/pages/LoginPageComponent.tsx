@@ -17,7 +17,7 @@ export const LoginPageComponent: React.FC = () => {
           display: none;
         }
       `}</style>
-      <div className="relative z-20 w-full max-w-6xl mx-auto px-4 py-4 md:py-8 min-h-screen flex items-center">
+      <div className="relative z-20 w-full max-w-6xl mx-auto px-4 py-4 md:py-8 pt-[2rem] min-h-screen flex items-center">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 w-full lg:items-center">
         {/* Left Side - Content Container */}
         <motion.div 

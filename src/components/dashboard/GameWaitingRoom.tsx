@@ -22,6 +22,7 @@ interface GameWaitingRoomProps {
   onBack: () => void;
   roomId?: string; // Optional roomId for existing rooms
   isOptimistic?: boolean; // Add flag for optimistic UI
+  matchBackground?: any; // Add matchBackground prop for consistency
 }
 
 interface WaitingRoomEntry {
@@ -77,7 +78,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   gameType = 'quick', // Default to quick game
   onBack,
   roomId,
-  isOptimistic = false // Default to non-optimistic
+  isOptimistic = false, // Default to non-optimistic
+  matchBackground // Add matchBackground prop
 }) => {
   const { user } = useAuth();
   const { DisplayBackgroundEquip, MatchBackgroundEquip } = useBackground();
@@ -128,6 +130,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const [abandonmentTimer, setAbandonmentTimer] = useState<NodeJS.Timeout | null>(null);
   const [opponentLastSeen, setOpponentLastSeen] = useState<Date | null>(null);
   const [gameHasStarted, setGameHasStarted] = useState(false); // Track if the game has actually started
+  const [pendingMatchData, setPendingMatchData] = useState<any>(null); // Store match data during countdown
 
   // Waiting room cleanup functionality
   const { leaveWaitingRoom } = useWaitingRoomCleanup(waitingRoomEntry?.id || roomId);
@@ -592,15 +595,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               // Continue anyway - the Go backend match still exists
             }
             
-            // Start vs countdown
-            setTimeout(() => {
-              console.log('🚀 GameWaitingRoom: Transitioning to match from Go backend');
-              setCurrentSection('match', {
-                gameMode: ourMatch.gameMode || gameMode, // Go backend uses 'gameMode'
-                matchId: roomId,
-                roomId: roomId
-              });
-            }, 3000); // 3 second countdown
+            // Start vs countdown instead of direct navigation
+            startVsCountdown();
             
             return;
           }
@@ -807,12 +803,14 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       const existingMatch = matchSnapshot.docs[0];
                       const matchData = existingMatch.data();
                       
-                      console.log('✅ GameWaitingRoom: Found existing match by originalRoomId, navigating...');
-                      setCurrentSection('match', {
+                      console.log('✅ GameWaitingRoom: Found existing match by originalRoomId, starting countdown...');
+                      // Store match data for navigation after countdown
+                      setPendingMatchData({
                         gameMode: matchData.gameMode || gameMode,
                         matchId: existingMatch.id,
                         roomId: existingMatch.id
                       });
+                      startVsCountdown();
                       return;
                     }
                     
@@ -848,12 +846,14 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     
                     if (recentMatch) {
                       const matchData = recentMatch.data();
-                      console.log('✅ GameWaitingRoom: Found recent match by player ID, navigating...');
-                      setCurrentSection('match', {
+                      console.log('✅ GameWaitingRoom: Found recent match by player ID, starting countdown...');
+                      // Store match data for navigation after countdown
+                      setPendingMatchData({
                         gameMode: matchData.gameMode || gameMode,
                         matchId: recentMatch.id,
                         roomId: recentMatch.id
                       });
+                      startVsCountdown();
                       return;
                     }
                     
@@ -1465,6 +1465,14 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   // Function to move game to matches collection
   const moveToMatchesAndNavigate = async () => {
     try {
+      // Use pending match data if available (from countdown sequence)
+      if (pendingMatchData) {
+        console.log('🎮 GameWaitingRoom: Using pending match data for navigation');
+        setCurrentSection('match', pendingMatchData);
+        setPendingMatchData(null); // Clear pending data
+        return;
+      }
+      
       // Add small random delay to prevent race conditions (0-500ms)
       const delay = Math.random() * 500;
       await new Promise(resolve => setTimeout(resolve, delay));
@@ -2027,6 +2035,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           webkit-playsinline="true"
           x5-playsinline="true"
           preload="metadata"
+          disablePictureInPicture
+          controlsList="nodownload noplaybackrate nofullscreen"
           onLoadStart={() => console.log('Video: Load started')}
           onCanPlay={() => console.log('Video: Can play')}
           onError={(e) => console.error('Video: Error loading', e)}
@@ -2038,7 +2048,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            zIndex: 0
+            zIndex: 0,
+            pointerEvents: 'none',
+            WebkitAppearance: 'none',
+            outline: 'none'
           }}
         >
           <source src={background.file} type="video/mp4" />
@@ -2865,6 +2878,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     webkit-playsinline="true"
                     x5-playsinline="true"
                     preload="metadata"
+                    disablePictureInPicture
+                    controlsList="nodownload noplaybackrate nofullscreen"
                     style={{
                       position: 'absolute',
                       top: 0,
@@ -2872,7 +2887,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       width: '100%',
                       height: '100%',
                       objectFit: 'cover',
-                      zIndex: 0
+                      zIndex: 0,
+                      pointerEvents: 'none',
+                      WebkitAppearance: 'none',
+                      outline: 'none'
                     }}
                   >
                     <source src={getOpponentData()?.matchBackgroundEquipped?.file} type="video/mp4" />

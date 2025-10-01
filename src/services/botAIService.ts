@@ -35,7 +35,7 @@ export class BotAIService {
           confidence: 0.9,
           reasoning: 'Must roll first - no score to bank',
           emotionalState: 'focused',
-          delayMs: 1000 + Math.random() * 2000
+          delayMs: 600 + Math.random() * 800
         };
       }
       
@@ -349,13 +349,13 @@ export class BotAIService {
   ): number {
     // Base delay based on skill level
     const skillDelays = {
-      'beginner': [2000, 5000],   // 2-5 seconds
-      'intermediate': [1500, 3500], // 1.5-3.5 seconds
-      'advanced': [1000, 2500],   // 1-2.5 seconds
-      'expert': [800, 2000]       // 0.8-2 seconds
+      'beginner': [800, 1500],    // 0.8-1.5 seconds
+      'intermediate': [600, 1200], // 0.6-1.2 seconds
+      'advanced': [500, 1000],    // 0.5-1 seconds
+      'expert': [400, 800]        // 0.4-0.8 seconds
     };
     
-    const [minDelay, maxDelay] = skillDelays[bot.personality.skillLevel] || [1000, 3000];
+    const [minDelay, maxDelay] = skillDelays[bot.personality.skillLevel] || [600, 1200];
     
     // Uncertainty increases thinking time
     const uncertaintyMultiplier = 1 + (1 - confidence) * 0.5;

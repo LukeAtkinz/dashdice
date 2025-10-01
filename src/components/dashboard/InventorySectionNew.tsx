@@ -215,17 +215,28 @@ export const InventorySection: React.FC = () => {
           background: linear-gradient(90deg, #FFD700 0%, #FFD700 100%);
         }
         
-        /* Hide scrollbars on desktop but allow scrolling */
+        /* Disable all scrolling */
         .scrollbar-hide {
           scrollbar-width: none; /* Firefox */
           -ms-overflow-style: none; /* IE and Edge */
+          overflow: hidden !important; /* Force hidden overflow */
+          touch-action: none; /* Disable touch scrolling */
+          -webkit-overflow-scrolling: none; /* Disable iOS momentum scrolling */
         }
         .scrollbar-hide::-webkit-scrollbar {
           display: none; /* Chrome, Safari, Opera */
         }
+        
+        /* Prevent any scrolling on the inventory container */
+        .inventory-container {
+          overflow: hidden !important;
+          touch-action: none !important;
+          -webkit-overflow-scrolling: none !important;
+          overscroll-behavior: none !important;
+        }
       `}</style>
       
-      <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full md:overflow-auto md:scrollbar-hide overflow-hidden">{/* Hide scrollbars on desktop, disable scrolling on mobile */}
+      <div className="inventory-container w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full overflow-hidden">{/* Disable scrolling completely */}
       {/* Header */}
       <div className="text-center mb-8 flex-shrink-0">
         {/* Desktop Title */}
@@ -330,7 +341,7 @@ export const InventorySection: React.FC = () => {
       )}
 
       {/* Items Grid */}
-      <div className="w-full max-w-[80rem] flex flex-row items-start justify-center flex-wrap gap-[2rem] flex-1 overflow-y-auto scrollbar-hide px-4">
+      <div className="w-full max-w-[80rem] flex flex-row items-start justify-center flex-wrap gap-[2rem] flex-1 overflow-hidden px-4">{/* Disable scrolling on items grid */}
         {getCurrentItems().map((item) => (
           <motion.div
             key={item.id}

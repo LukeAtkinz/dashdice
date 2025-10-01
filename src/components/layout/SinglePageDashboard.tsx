@@ -25,6 +25,7 @@ import { GameType } from '@/types/ranked';
 import { RematchProvider } from '@/context/RematchContext';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
+import { useFriends } from '@/context/FriendsContext';
 import { useBrowserRefresh } from '@/hooks/useBrowserRefresh';
 import { useBackgroundPositioning } from '@/hooks/useBackgroundPositioning';
 import { useOnlinePlayerCount } from '@/hooks/useOnlinePlayerCount';
@@ -36,8 +37,10 @@ const DashboardContent: React.FC = () => {
   const { currentSection, sectionParams, setCurrentSection, isGameOver } = useNavigation();
   const { user } = useAuth();
   const { DisplayBackgroundEquip } = useBackground();
+  const { getOnlineFriendsCount } = useFriends();
   const { getBackgroundPosition } = useBackgroundPositioning();
   const onlinePlayerCount = useOnlinePlayerCount();
+  const onlineFriendsCount = getOnlineFriendsCount?.() || 0;
   const [userGold] = useState(1000); // Placeholder for user gold
   
   // Create button gradient style based on user's display background
@@ -206,7 +209,7 @@ const DashboardContent: React.FC = () => {
       <div 
         className="absolute inset-0 z-0"
         style={{
-          background: "radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)"
+          background: "linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.8) 50%, rgba(30, 41, 59, 0.9) 100%)"
         }}
       />
     );
@@ -382,7 +385,7 @@ const DashboardContent: React.FC = () => {
                   </span>
                   {/* Notification Badge positioned at top-right of button */}
                   <NotificationBadge 
-                    count={onlinePlayerCount} 
+                    count={onlineFriendsCount} 
                     className="absolute -top-2 -right-2"
                   />
                 </button>
@@ -735,7 +738,7 @@ const DashboardContent: React.FC = () => {
               >
                 <img src="/Design Elements/friends.webp" alt="Friends" className="w-12 h-12" />
                 <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
-                <NotificationBadge count={onlinePlayerCount} />
+                <NotificationBadge count={onlineFriendsCount} />
               </button>
               <button
                 onClick={() => handleSectionChange('dashboard')}

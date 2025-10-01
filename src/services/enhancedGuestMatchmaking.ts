@@ -10,6 +10,7 @@
 
 import { db } from '@/services/firebase';
 import { collection, doc, setDoc, onSnapshot, serverTimestamp, deleteDoc, Timestamp } from 'firebase/firestore';
+import { toUserBackground, getBackgroundById } from '@/config/backgrounds';
 
 export interface GuestUserData {
   id: string;
@@ -130,20 +131,24 @@ class EnhancedGuestMatchmakingService {
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
     const guestNumber = Math.floor(Math.random() * 9999) + 1;
     
+    // Get backgrounds using proper helper functions
+    const newDayBackground = getBackgroundById('new-day');
+    const longRoadBackground = getBackgroundById('long-road-ahead');
+    
     return {
       id: `guest_${sessionId}`,
       displayName: `Guest${guestNumber}`,
       isGuest: true,
       createdAt: Date.now(),
       sessionId,
-      displayBackgroundEquipped: {
+      displayBackgroundEquipped: newDayBackground ? toUserBackground(newDayBackground) : {
         name: 'New Day',
         file: '/backgrounds/New Day.mp4',
         type: 'video'
       },
-      matchBackgroundEquipped: {
+      matchBackgroundEquipped: longRoadBackground ? toUserBackground(longRoadBackground) : {
         name: 'Long Road Ahead',
-        file: '/backgrounds/Long Road Ahead.png',
+        file: '/backgrounds/Long Road Ahead.jpg',
         type: 'image'
       },
       playerStats: {

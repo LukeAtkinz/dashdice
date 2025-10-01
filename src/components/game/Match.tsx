@@ -152,7 +152,14 @@ export const Match: React.FC<MatchProps> = React.memo(({ matchId, onBack }) => {
             webkit-playsinline="true"
             x5-playsinline="true"
             preload="metadata"
+            disablePictureInPicture
+            controlsList="nodownload noplaybackrate nofullscreen"
             className="absolute inset-0 w-full h-full object-cover z-0"
+            style={{
+              pointerEvents: 'none',
+              WebkitAppearance: 'none',
+              outline: 'none'
+            }}
           >
             <source src={MatchBackgroundEquip.file} type="video/mp4" />
           </video>

@@ -64,35 +64,44 @@ export default function FriendRequests({ compact = false }: FriendRequestsProps)
 
   if (compact) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-3">
         {pendingRequests.slice(0, 3).map((request) => (
           <div
             key={request.id}
-            className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3"
+            className="backdrop-blur-lg bg-black/40 rounded-2xl p-4 border border-white/20 shadow-2xl"
+            style={{
+              background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.8) 100%)',
+              backdropFilter: 'blur(20px)'
+            }}
           >
             <div className="flex items-center justify-between">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-green-900 dark:text-green-100 truncate">
-                  Friend Request
+                <p 
+                  className="text-sm font-bold text-white mb-1"
+                  style={{ fontFamily: "Audiowide" }}
+                >
+                  FRIEND REQUEST
                 </p>
-                <p className="text-xs text-green-700 dark:text-green-300">
+                <p className="text-xs text-white/70">
                   {getTimeAgo(request)}
                 </p>
               </div>
-              <div className="flex gap-1">
+              <div className="flex gap-2">
                 <button
                   onClick={() => handleAcceptRequest(request.id)}
                   disabled={processingRequests.has(request.id)}
-                  className="px-2 py-1 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white text-xs rounded transition-colors"
+                  className="px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-green-400 disabled:to-green-500 text-white text-xs font-bold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg disabled:cursor-not-allowed"
+                  style={{ fontFamily: "Audiowide" }}
                 >
-                  Accept
+                  ACCEPT
                 </button>
                 <button
                   onClick={() => handleDeclineRequest(request.id)}
                   disabled={processingRequests.has(request.id)}
-                  className="px-2 py-1 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white text-xs rounded transition-colors"
+                  className="px-3 py-1.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 disabled:from-red-400 disabled:to-red-500 text-white text-xs font-bold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg disabled:cursor-not-allowed"
+                  style={{ fontFamily: "Audiowide" }}
                 >
-                  Decline
+                  DECLINE
                 </button>
               </div>
             </div>
@@ -100,8 +109,11 @@ export default function FriendRequests({ compact = false }: FriendRequestsProps)
         ))}
         
         {pendingRequests.length > 3 && (
-          <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-            +{pendingRequests.length - 3} more requests
+          <p 
+            className="text-xs text-center text-white/60"
+            style={{ fontFamily: "Audiowide" }}
+          >
+            +{pendingRequests.length - 3} MORE REQUESTS
           </p>
         )}
       </div>
@@ -111,48 +123,55 @@ export default function FriendRequests({ compact = false }: FriendRequestsProps)
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Friend Requests
+        <h3 
+          className="text-lg font-bold text-white"
+          style={{ fontFamily: "Audiowide" }}
+        >
+          FRIEND REQUESTS
         </h3>
-        <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-sm rounded-full">
-          {pendingRequests.length}
-        </span>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {pendingRequests.map((request) => (
           <div
             key={request.id}
-            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm"
+            className="backdrop-blur-lg bg-black/40 rounded-3xl p-6 border border-white/20 shadow-2xl"
+            style={{
+              background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.8) 100%)',
+              backdropFilter: 'blur(20px)'
+            }}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-4">
               {/* Avatar */}
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center overflow-hidden">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center overflow-hidden bg-white/10">
                 <img 
                   src="/Design Elements/lost connection.webp" 
                   alt="Friend Request" 
-                  className="w-full h-full object-contain opacity-80"
+                  className="w-12 h-12 object-contain opacity-80"
                 />
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-medium text-gray-900 dark:text-white">
-                    Friend Request
+                <div className="flex items-center gap-2 mb-2">
+                  <h4 
+                    className="font-bold text-white text-lg"
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    FRIEND REQUEST
                   </h4>
-                  <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-full">
+                  <span className="px-2 py-1 bg-white/10 text-white/70 text-xs rounded-full backdrop-blur-sm">
                     {getTimeAgo(request)}
                   </span>
                 </div>
                 
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                <p className="text-sm text-white/80 mb-3">
                   Someone wants to be your friend
                 </p>
 
                 {/* Message */}
                 {request.message && (
-                  <div className="mb-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
-                    <p className="text-sm text-gray-700 dark:text-gray-300">
+                  <div className="mb-4 p-3 bg-white/10 rounded-xl backdrop-blur-sm">
+                    <p className="text-sm text-white/90">
                       "{request.message}"
                     </p>
                   </div>
@@ -166,8 +185,8 @@ export default function FriendRequests({ compact = false }: FriendRequestsProps)
                   
                   if (daysLeft <= 3) {
                     return (
-                      <div className="mb-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
-                        <p className="text-xs text-yellow-800 dark:text-yellow-200">
+                      <div className="mb-4 p-3 bg-yellow-500/20 border border-yellow-400/40 rounded-xl backdrop-blur-sm">
+                        <p className="text-xs text-yellow-200 font-medium">
                           ⚠️ This request expires in {daysLeft} day{daysLeft !== 1 ? 's' : ''}
                         </p>
                       </div>
@@ -177,11 +196,12 @@ export default function FriendRequests({ compact = false }: FriendRequestsProps)
                 })()}
 
                 {/* Actions */}
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <button
                     onClick={() => handleAcceptRequest(request.id)}
                     disabled={processingRequests.has(request.id)}
-                    className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white text-sm rounded-md transition-colors flex items-center gap-1 disabled:cursor-not-allowed"
+                    className="flex-1 py-3 px-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-green-400 disabled:to-green-500 text-white font-bold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    style={{ fontFamily: "Audiowide" }}
                   >
                     {processingRequests.has(request.id) ? (
                       <>
@@ -189,14 +209,14 @@ export default function FriendRequests({ compact = false }: FriendRequestsProps)
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Accepting...
+                        ACCEPTING...
                       </>
                     ) : (
                       <>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
-                        Accept
+                        ACCEPT
                       </>
                     )}
                   </button>
@@ -204,7 +224,8 @@ export default function FriendRequests({ compact = false }: FriendRequestsProps)
                   <button
                     onClick={() => handleDeclineRequest(request.id)}
                     disabled={processingRequests.has(request.id)}
-                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white text-sm rounded-md transition-colors flex items-center gap-1 disabled:cursor-not-allowed"
+                    className="flex-1 py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 disabled:from-red-400 disabled:to-red-500 text-white font-bold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    style={{ fontFamily: "Audiowide" }}
                   >
                     {processingRequests.has(request.id) ? (
                       <>
@@ -212,14 +233,14 @@ export default function FriendRequests({ compact = false }: FriendRequestsProps)
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Declining...
+                        DECLINING...
                       </>
                     ) : (
                       <>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                        Decline
+                        DECLINE
                       </>
                     )}
                   </button>
