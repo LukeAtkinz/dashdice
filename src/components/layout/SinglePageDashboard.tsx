@@ -17,6 +17,7 @@ import AchievementsDashboard from '@/components/achievements/AchievementsDashboa
 import FriendsDashboard from '@/components/friends/FriendsDashboard';
 import { RankedDashboard } from '@/components/ranked/RankedDashboard';
 import GlobalChatButton from '@/components/chat/GlobalChatButton';
+import SwipeRightChat from '@/components/chat/SwipeRightChat';
 import { GlobalRematchNotification } from '@/components/rematch/GlobalRematchNotification';
 import { GameInvitationNotification } from '@/components/friends/GameInvitationNotification';
 import InviteAcceptedNotification from '@/components/friends/InviteAcceptedNotification';
@@ -804,7 +805,9 @@ export default function SinglePageDashboard() {
     <ProtectedRoute>
       <NavigationProvider>
         <RematchProvider>
-          <DashboardContent />
+          <SwipeRightChat>
+            <DashboardContent />
+          </SwipeRightChat>
         </RematchProvider>
       </NavigationProvider>
     </ProtectedRoute>
