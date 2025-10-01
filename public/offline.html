@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashdice - Offline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        p {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #ccc;
+            margin-bottom: 24px;
+        }
+        
+        .retry-btn {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .retry-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .offline-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.6;
+        }
+        
+        .features {
+            margin-top: 32px;
+            text-align: left;
+        }
+        
+        .feature {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #bbb;
+        }
+        
+        .feature::before {
+            content: '🎲';
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="offline-icon">📡</div>
+        <div class="logo">🎲</div>
+        
+        <h1>You're Offline</h1>
+        <p>It looks like you've lost your internet connection. Don't worry, Dashdice will be ready when you're back online!</p>
+        
+        <button class="retry-btn" onclick="retryConnection()">Try Again</button>
+        
+        <div class="features">
+            <div class="feature">Multiplayer PvP dice battles</div>
+            <div class="feature">Compete with players worldwide</div>
+            <div class="feature">Earn exclusive founder rewards</div>
+            <div class="feature">Rise through the ranks</div>
+        </div>
+    </div>
+
+    <script>
+        function retryConnection() {
+            if (navigator.onLine) {
+                window.location.href = '/';
+            } else {
+                alert('Still offline. Please check your internet connection.');
+            }
+        }
+        
+        // Auto-retry when connection is restored
+        window.addEventListener('online', () => {
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+        });
+        
+        // Show connection status
+        window.addEventListener('offline', () => {
+            console.log('Connection lost');
+        });
+        
+        window.addEventListener('online', () => {
+            console.log('Connection restored');
+        });
+    </script>
+</body>
+</html>

@@ -4,6 +4,14 @@ Levels*/
 Reference/
 ReadMes/
 
+# Expo-related files that cause Vercel conflicts
+.expo/
+expo-env.d.ts
+metro.config.js
+
+# React Native iOS build files
+ios/App/
+
 # Keep all Design Elements images - commenting out exclusions
 # public/Design Elements/Achivements/
 # public/Design Elements/PNG'S/

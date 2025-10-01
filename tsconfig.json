@@ -26,16 +26,28 @@
       "@/*": [
         "./src/*"
       ]
-    }
+    },
+    "types": [
+      "node",
+      "styled-jsx"
+    ],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types"
+    ],
+    "skipDefaultLibCheck": true
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     "next-env.d.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "src/types/**/*.d.ts"
   ],
   "exclude": [
     "node_modules",
-    "Reference/**/*"
+    "Reference/**/*",
+    "node_modules/@expo/**/*",
+    "node_modules/expo/**/*"
   ]
 }

@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "Dashdice",
+    "slug": "dashdice",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "dashdice",
+    "userInterfaceStyle": "dark",
+    "icon": "./public/App Icons/appstore.png",
+    "splash": {
+      "image": "./public/App Icons/appstore.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.dashdice.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses camera for avatar photos",
+        "NSMicrophoneUsageDescription": "This app uses microphone for voice chat",
+        "NSPhotoLibraryUsageDescription": "This app uses photo library for avatar selection",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./public/App Icons/android/mipmap-xxxhdpi/appicons.png",
+        "backgroundColor": "#000000"
+      },
+      "package": "com.dashdice.app",
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET",
+        "CAMERA",
+        "RECORD_AUDIO",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "NOTIFICATIONS"
+      ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "37e7ccfe-7aac-41ef-805f-6f695ab38214"
+      }
+    },
+    "owner": "dashdice"
+  }
+}
