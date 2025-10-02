@@ -11,11 +11,22 @@ Visit: https://appicon.co/
 - Save to: `Desktop/DashDice_Icons/`
 
 #### 2. **Required Icon Sizes for iOS:**
+
+**📱 iPhone Icons (Required):**
 - **20x20**: @2x (40x40), @3x (60x60)
 - **29x29**: @2x (58x58), @3x (87x87)  
 - **40x40**: @2x (80x80), @3x (120x120)
 - **60x60**: @2x (120x120), @3x (180x180)
 - **1024x1024**: App Store icon
+
+**📱 iPad Icons (CRITICAL - Missing causes upload errors!):**
+- **20x20**: @1x (20x20), @2x (40x40)
+- **29x29**: @1x (29x29), @2x (58x58)
+- **40x40**: @1x (40x40), @2x (80x80)
+- **76x76**: @1x (76x76), @2x (152x152) ← **YOU'RE MISSING THIS!**
+- **83.5x83.5**: @2x (167x167) ← **YOU'RE MISSING THIS!**
+
+**🚨 CRITICAL:** If you don't include ALL iPad icons, your app upload will FAIL with the exact error you're seeing!
 
 ---
 
@@ -326,8 +337,142 @@ git clone https://github.com/LukeAtkinz/dashdice.git
 - Ensure 1024x1024 icon is in App Store slot
 
 #### **2. Configure App Settings:**
-**General Tab:**
-- **Display Name:** DashDice
+
+## 📱 **How to Change App Name in Xcode**
+
+### **🎯 Two Types of Names You Can Change:**
+
+**1. Display Name** - What users see on their iPhone home screen
+**2. Product Name** - Internal bundle name (usually keep same as display name)
+
+---
+
+### **📍 Step-by-Step: Change Display Name**
+
+**🖥️ In Xcode, follow these steps:**
+
+**Step 1: Select Your Project**
+```
+Left Sidebar → Click "App" (the blue project icon at the top)
+```
+
+**Step 2: Select the App Target**
+```
+In the main area, under "TARGETS" → Click "App"
+```
+
+**Step 3: Go to General Tab**
+```
+Top tabs → Click "General" (should be selected by default)
+```
+
+**Step 4: Find Display Name Field**
+```
+┌─────────────────────────────────────────┐
+│ Identity                                │
+├─────────────────────────────────────────┤
+│ Display Name: [DashDice        ] 📝     │ ← EDIT THIS!
+│ Bundle Identifier: com.dashdice.app     │
+│ Version: 1.0.0                          │
+│ Build: 1                                │
+└─────────────────────────────────────────┘
+```
+
+**✏️ Click in the "Display Name" field and change it to:**
+- `DashDice` (current)
+- `Dash Dice` 
+- `DashDice Game`
+- `DashDice: Multiplayer`
+- Or whatever you prefer!
+
+**Visual Guide:**
+```
+🖥️ Xcode Window Layout:
+┌─────────────────────────────────────────────────────────┐
+│ [File] [Edit] [View] ...                                │
+├─────────────────────────────────────────────────────────┤
+│ [📁App]     │ General  Signing  Resource Tags  Info     │
+│ ├─App       │                                           │
+│ ├─Pods      │ 📱 Identity                              │
+│             │ Display Name: [Your New Name Here] 📝     │
+│             │ Bundle Identifier: com.dashdice.app       │
+│             │ Version: 1.0.0                            │
+│             │ Build: 1                                  │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+### **🎨 Display Name Examples & Guidelines:**
+
+**✅ Good Display Names:**
+- `DashDice` (current - short & clean)
+- `Dash Dice` (with space)
+- `DashDice Game` (descriptive)
+- `DashDice: Roll & Win` (with tagline)
+
+**❌ Avoid These:**
+- Names longer than 15 characters (get truncated)
+- Special characters: `@#$%^&*()`
+- All caps: `DASHDICE`
+- Emoji in the name (use in description instead)
+
+**📏 Character Limits:**
+- **iPhone Home Screen:** ~12 characters before truncation
+- **App Store:** 30 characters max
+- **Recommendation:** Keep it under 10 characters
+
+---
+
+### **⚙️ Advanced: Change Product Name (Optional)**
+
+**If you also want to change the internal product name:**
+
+**Step 1: Go to Build Settings**
+```
+Target "App" → Click "Build Settings" tab
+```
+
+**Step 2: Search for "Product Name"**
+```
+Search box: Type "product name" 
+```
+
+**Step 3: Edit Product Name**
+```
+Product Name: [Change from "App" to "DashDice"]
+```
+
+**⚠️ Note:** Usually you don't need to change this unless you want the bundle to have a different internal name.
+
+---
+
+### **📱 How to Verify the Change:**
+
+**Method 1: Build and Run**
+1. Press `⌘+R` or click the Play button ▶️
+2. Wait for simulator to load
+3. Look at the app icon on the simulator home screen
+4. The name under the icon should show your new display name
+
+**Method 2: Check Info.plist**
+1. In left sidebar → Expand "App" → Click "Info.plist"
+2. Look for `CFBundleDisplayName` 
+3. Should show your new name
+
+**Visual Confirmation:**
+```
+📱 iPhone Simulator Home Screen:
+┌─────────────────┐
+│  [🎲]           │  ← Your app icon
+│ Your New Name   │  ← This should show your display name
+└─────────────────┘
+```
+
+---
+
+**General Tab Configuration:**
+- **Display Name:** [Your Choice - e.g., "DashDice"]
 - **Bundle Identifier:** com.dashdice.app
 - **Version:** 1.0.0
 - **Build:** 1
@@ -347,13 +492,205 @@ git clone https://github.com/LukeAtkinz/dashdice.git
 - Test key functionality
 
 #### **2. Archive for App Store:**
+
+## 🏗️ **Step-by-Step Archive Process with Visual Guide**
+
+### **BEFORE Starting - Make Sure App Runs:**
+```bash
+# In Xcode, first test the app:
+# Press ⌘+R or click the Play button ▶️
+# Wait for "DashDice loading..." screen to appear in simulator
+# Once confirmed working, stop the simulator
 ```
-1. Product → Archive (wait for build)
-2. Organizer window opens
-3. "Distribute App"
-4. "App Store Connect"
-5. Follow prompts to upload
+
+---
+
+### **Step 1: Change Target Device (CRITICAL!)**
+
+**🖥️ Look at the TOP-LEFT of Xcode window:**
 ```
+┌─────────────────────────────────────────────────────────┐
+│ ▶️ [App >] [iPhone 15 Pro Simulator ▼] [   Build   ]   │ ← This bar
+└─────────────────────────────────────────────────────────┘
+```
+
+**📍 Find the Device Dropdown:**
+- Look for text like "iPhone 15 Pro Simulator" or "iPhone SE Simulator"
+- It's RIGHT NEXT to the Play button ▶️
+- Click the **dropdown arrow ▼** next to the device name
+
+**🖥️ Device Selection Menu Opens:**
+```
+┌─────────────────────────────────────┐
+│ iOS Simulators                      │
+├─────────────────────────────────────┤
+│ iPhone 15 Pro                      │
+│ iPhone 15                          │  
+│ iPad Air                           │
+├─────────────────────────────────────┤
+│ iOS Devices                        │ ← Look for this section
+├─────────────────────────────────────┤
+│ ● Any iOS Device (arm64)           │ ← SELECT THIS ONE!
+└─────────────────────────────────────┘
+```
+
+**✅ CLICK "Any iOS Device (arm64)"** - This is REQUIRED for App Store archive!
+
+**Visual Confirmation:**
+After selection, top-left should show:
+```
+▶️ [App >] [Any iOS Device (arm64) ▼] [   Build   ]
+```
+
+---
+
+### **Step 2: Go to Product Menu**
+
+**🖥️ Look at the TOP MENU BAR of your Mac:**
+```
+🍎 File  Edit  View  Navigate  Editor  Product  Debug  Source Control  Window  Help
+                                       ↑
+                                   CLICK HERE
+```
+
+**📍 Click "Product" in the menu bar** (NOT inside Xcode, but at the very top of your screen)
+
+**🖥️ Product Menu Drops Down:**
+```
+┌─────────────────────────────────────┐
+│ Run                            ⌘R   │
+│ Test                           ⌘U   │  
+│ Profile                        ⌘I   │
+│ Analyze                             │
+│ ─────────────────────────────────── │
+│ Build                          ⌘B   │
+│ Build For                      >    │
+│ Clean Build Folder        ⇧⌘K      │
+│ ─────────────────────────────────── │
+│ Archive                             │ ← CLICK THIS!
+│ ─────────────────────────────────── │
+│ Destination                    >    │
+└─────────────────────────────────────┘
+```
+
+**✅ CLICK "Archive"** (near the bottom of the menu)
+
+---
+
+### **Step 3: Archive Build Process**
+
+**🖥️ After clicking Archive, you'll see:**
+
+**Build Progress (3-5 minutes):**
+```
+┌─────────────────────────────────────────┐
+│ Building "DashDice"... ████████▒▒▒ 80% │ ← Progress bar
+├─────────────────────────────────────────┤
+│ Build Log (you can ignore this):       │
+│ > CompileC                              │
+│ > Ld                                    │
+│ > CodeSign                              │
+│ > Archive                               │
+└─────────────────────────────────────────┘
+```
+
+**During this time:**
+- ✅ **Don't close Xcode** - Let it finish
+- ✅ **Don't use the computer** - Avoid interfering  
+- ✅ **Wait patiently** - 3-5 minutes is normal
+- ⚠️ **If it fails** - See troubleshooting below
+
+---
+
+### **Step 4: Organizer Window Automatically Opens**
+
+**🖥️ When build succeeds, this window appears:**
+```
+┌─────────────────────────────────────────┐
+│ 📦 Organizer                            │
+├─────────────────────────────────────────┤
+│ Archives  Crashes  Device Logs  Energy │ ← Tabs
+├─────────────────────────────────────────┤
+│ 📱 DashDice                            │ ← Your app!
+│    Version 1.0.0 (1)                  │
+│    Today 2:34 PM                      │
+│    ✅ Valid for App Store              │ ← Success!
+├─────────────────────────────────────────┤
+│                                         │
+│  [🔵 Distribute App]  [Show Package]   │ ← Blue button
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+**✅ Success Indicators:**
+- Green checkmark ✅ "Valid for App Store"
+- Your app name "DashDice" appears
+- No red error messages
+
+**✅ CLICK the BLUE "Distribute App" button**
+
+---
+
+## 🚨 **Troubleshooting Archive Issues**
+
+### **"Archive" is Grayed Out / Disabled:**
+**Problem:** You didn't select "Any iOS Device (arm64)"
+**Solution:** 
+1. Go back to Step 1
+2. Click device dropdown again  
+3. Select "Any iOS Device (arm64)"
+4. Try Product → Archive again
+
+### **Build Fails with Signing Error:**
+```
+❌ Error: "No iOS Distribution signing identity found"
+```
+**Solution:**
+1. **Xcode → Preferences** (in top menu)
+2. **Accounts tab**
+3. **Add Apple ID** if not present
+4. **Download Manual Profiles**
+5. Try archive again
+
+### **"Missing Bundle Identifier" Error:**
+**Solution:**
+1. Click **"App"** project in left sidebar
+2. Select **"App"** target
+3. **General tab**
+4. Verify **Bundle Identifier:** `com.dashdice.app`
+5. Try archive again
+
+### **Build Takes Too Long (>10 minutes):**
+**Solution:**
+1. **Product → Clean Build Folder** (⇧⌘K)
+2. Wait for it to finish
+3. Try **Product → Archive** again
+
+---
+
+## 🎯 **What You Should See vs. Problems**
+
+### **✅ CORRECT - Archive Success:**
+```
+✅ Build completed successfully
+✅ Organizer window opens automatically  
+✅ "Valid for App Store" appears
+✅ Blue "Distribute App" button is clickable
+```
+
+### **❌ WRONG - Common Problems:**
+```
+❌ "Archive" menu item is grayed out
+   → Need to select "Any iOS Device (arm64)"
+
+❌ Build fails with red errors
+   → Check signing certificates
+
+❌ "Not eligible for App Store"  
+   → Wrong target device selected
+```
+
+**Once you see the Organizer with "Valid for App Store" ✅, you're ready to continue with the upload process!**
 
 #### **3. Troubleshooting:**
 - **Build errors:** Check signing certificates
@@ -494,6 +831,20 @@ Keywords: dice, multiplayer, strategy, games, friends, achievement, board game, 
 - Check all icons are present
 - Verify signing settings
 - Try "Clean Build Folder" (⌘+Shift+K)
+
+### **"Missing Required Icon Files" (167x167 & 152x152):**
+```
+❌ Error: "Missing required icon file. The bundle does not contain an app icon for iPad"
+❌ Missing: 152x152 icon for iPad Pro
+❌ Missing: 167x167 icon for iPad Pro
+```
+**Solution:**
+1. **Go back to appicon.co** and generate a COMPLETE iOS icon set
+2. **Make sure to select "iPad" when generating icons**
+3. **Download the complete pack with ALL sizes**
+4. **In Xcode**: Assets.xcassets → AppIcon → Add the missing iPad icons
+5. **Critical sizes**: 152x152 and 167x167 are REQUIRED for iPad support
+6. Try archive again
 
 ### **"Upload Failed"**
 - Check internet connection
