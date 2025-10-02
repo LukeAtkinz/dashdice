@@ -30,6 +30,25 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   output: 'standalone',
+  headers: async () => {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          // Allow embedding in Capacitor iOS app
+          {
+            key: 'X-Frame-Options',
+            value: 'ALLOWALL',
+          },
+          // Allow embedding from capacitor:// and file:// origins
+          {
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors 'self' capacitor: file: ionic: http: https:;",
+          },
+        ],
+      },
+    ];
+  },
   images: {
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 31536000,
