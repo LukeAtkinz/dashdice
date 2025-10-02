@@ -7,12 +7,21 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
     iosScheme: 'https',
-    url: 'https://dashdice-1dib-lmwq4amif-dash-dice.vercel.app',
+    url: 'https://dashdice.gg',
     cleartext: true
   },
   ios: {
     contentInset: 'automatic',
-    scheme: 'App'
+    scheme: 'App',
+    allowsLinkPreview: false,
+    scrollEnabled: true,
+    overrideUserAgent: 'DashDice Mobile App',
+    limitsNavigationsToAppBoundDomains: true
+  },
+  plugins: {
+    CapacitorHttp: {
+      enabled: true
+    }
   }
 };
 
