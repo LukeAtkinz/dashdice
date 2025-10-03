@@ -6,14 +6,16 @@ const config: CapacitorConfig = {
   webDir: 'capacitor-public',
   server: {
     androidScheme: 'https',
-    iosScheme: 'https'
+    iosScheme: 'https',
+    allowNavigation: ['dashdice.gg', '*.dashdice.gg']
   },
   ios: {
     contentInset: 'automatic',
     scheme: 'App',
     allowsLinkPreview: false,
     scrollEnabled: true,
-    overrideUserAgent: 'DashDice Mobile App'
+    overrideUserAgent: 'DashDice Mobile App',
+    limitsNavigationsToAppBoundDomains: true
   },
   plugins: {
     CapacitorHttp: {
