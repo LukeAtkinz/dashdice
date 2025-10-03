@@ -1,15 +1,32 @@
 {
+  "id": "/",
   "name": "Dashdice",
   "short_name": "Dashdice",
   "description": "Who will take the crown? Play PvP dice battles, earn founder rewards, and compete!",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["tabbed", "window-controls-overlay", "standalone", "minimal-ui"],
   "background_color": "#000000",
   "theme_color": "#ffd700",
   "orientation": "portrait",
   "scope": "/",
+  "scope_extensions": [
+    {"origin": "https://dashdice.gg"},
+    {"origin": "https://www.dashdice.gg"},
+    {"origin": "https://*.dashdice.gg"}
+  ],
   "lang": "en",
+  "dir": "ltr",
   "categories": ["games", "entertainment"],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "file_handlers": [
+    {
+      "action": "/",
+      "accept": {
+        "text/plain": [".txt"]
+      }
+    }
+  ],
   "icons": [
     {
       "src": "/App Icons/android/mipmap-mdpi/appicons.png",
@@ -50,18 +67,46 @@
   ],
   "screenshots": [
     {
-      "src": "/screenshots/mobile-1.png",
-      "sizes": "375x812",
-      "type": "image/png",
+      "src": "/Screenshots/WhatsApp%20Image%202025-10-02%20at%2013.24.21_663b2de9.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
       "form_factor": "narrow",
       "label": "Main game interface"
     },
     {
-      "src": "/screenshots/desktop-1.png", 
-      "sizes": "1920x1080",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Desktop game view"
+      "src": "/Screenshots/WhatsApp%20Image%202025-10-02%20at%2013.24.21_a28192d4.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Zero Hour mode gameplay"
+    },
+    {
+      "src": "/Screenshots/WhatsApp%20Image%202025-10-02%20at%2013.24.21_b3e45ed6.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Last Line tug-of-war mode"
+    },
+    {
+      "src": "/Screenshots/WhatsApp%20Image%202025-10-02%20at%2013.24.22_03065654.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Multiplayer match in progress"
+    },
+    {
+      "src": "/Screenshots/WhatsApp%20Image%202025-10-02%20at%2013.24.22_4c98fddc.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Achievement and progress screen"
+    },
+    {
+      "src": "/Screenshots/WhatsApp%20Image%202025-10-02%20at%2013.24.22_57124689.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Friends and social features"
     }
   ],
   "shortcuts": [

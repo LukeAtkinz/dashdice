@@ -1,0 +1,59 @@
+{
+  "packageId": "gg.dashdice.twa",
+  "host": "dashdice.gg",
+  "name": "Dashdice",
+  "launcherName": "Dashdice",
+  "display": "standalone",
+  "themeColor": "#FFD700",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#000000",
+  "enableNotifications": true,
+  "startUrl": "https://dashdice.gg",
+  "iconUrl": "https://dashdice.gg/App%20Icons/playstore.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "C:\\Users\\david\\Documents\\dashdice\\dashdice-twa\\android.keystore",
+    "alias": "android"
+  },
+  "appVersionName": "1",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Quick Match",
+      "shortName": "Play",
+      "url": "https://dashdice.gg/match/quick",
+      "chosenIconUrl": "https://dashdice.gg/App%20Icons/android/mipmap-xxhdpi/appicons.png"
+    },
+    {
+      "name": "Friends",
+      "shortName": "Friends",
+      "url": "https://dashdice.gg/friends",
+      "chosenIconUrl": "https://dashdice.gg/App%20Icons/android/mipmap-xxhdpi/appicons.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://dashdice.gg/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://dashdice.gg/",
+  "minSdkVersion": 21,
+  "orientation": "portrait",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "navigate-existing",
+  "displayOverride": [],
+  "appVersion": "1"
+}
