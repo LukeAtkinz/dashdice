@@ -5,6 +5,7 @@ const config: CapacitorConfig = {
   appName: 'DashDice',
   webDir: 'capacitor-public',
   server: {
+    url: 'https://dashdice.gg',
     androidScheme: 'https',
     iosScheme: 'https',
     allowNavigation: ['dashdice.gg', '*.dashdice.gg']
