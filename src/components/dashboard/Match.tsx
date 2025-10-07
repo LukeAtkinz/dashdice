@@ -263,6 +263,26 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     }
   }, [matchData, user?.uid]);
 
+  const handleAbilityUsed = useCallback((effect: any) => {
+    if (!matchData || !user) return;
+    
+    try {
+      console.log('🔮 Ability effect applied:', { effect, matchId: matchData.id });
+      
+      // Here you would integrate with AbilitiesService to:
+      // 1. Apply effect to match state  
+      // 2. Update aura pools
+      // 3. Track cooldowns
+      // For now, just log the usage
+      
+      // TODO: Apply the effect to the match state
+      // This could involve updating dice values, scores, turn state, etc.
+      
+    } catch (error) {
+      console.error('❌ Error applying ability effect:', error);
+    }
+  }, [matchData, user]);
+
   const getValidBackgroundObject = useCallback((background: any) => {
     if (!background) {
       return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
@@ -1099,6 +1119,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       dice2Animation={dice2Animation}
                       onRollDice={handleRollDice}
                       onBankScore={handleBankScore}
+                      onAbilityUsed={handleAbilityUsed}
                     />
                   </motion.div>
                 )}
@@ -1477,6 +1498,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       dice2Animation={dice2Animation}
                       onRollDice={handleRollDice}
                       onBankScore={handleBankScore}
+                      onAbilityUsed={handleAbilityUsed}
                     />
                   </motion.div>
                 )}

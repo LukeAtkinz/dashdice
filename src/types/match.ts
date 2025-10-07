@@ -1,4 +1,5 @@
 import { Timestamp } from 'firebase/firestore';
+import { AbilityMatchData } from './abilities';
 
 /**
  * Match data structure - Compatible with existing matchmaking system
@@ -99,11 +100,81 @@ export interface MatchData {
     // Zero Hour enhancement fields
     multiplierLevel?: number; // Current multiplier level (2, 3, 4, etc.)
     doublesThisTurn?: number; // Number of doubles rolled in current turn
+    
+    // NEW: Abilities and Aura System
+    // Aura pools per player
+    playerAura?: {
+      [playerId: string]: number; // current aura available
+    };
+    
+    // Ability cooldowns (server-managed timestamps)
+    abilityCooldowns?: {
+      [playerId: string]: { 
+        [abilityId: string]: Timestamp; // expiry timestamp
+      };
+    };
+    
+    // Revealed abilities tracking
+    revealedAbilities?: {
+      [playerId: string]: {
+        [targetPlayerId: string]: {
+          abilityIds: string[];
+          revealedAt: Timestamp;
+          expiresAt?: Timestamp; // auto-hide after duration
+        };
+      };
+    };
+    
+    // Active ability effects
+    activeEffects?: {
+      [playerId: string]: {
+        effectId: string;
+        abilityId: string;
+        type: string;
+        value?: number;
+        expiresAt: Timestamp;
+        metadata?: any;
+      }[];
+    };
+    
+    // Temporary stolen abilities (for match duration only)
+    tempStolenAbilities?: {
+      [playerId: string]: {
+        abilityId: string;
+        stolenFrom: string;
+        stolenAt: Timestamp;
+      }[];
+    };
+    
+    // Match-specific ability usage counts
+    abilityUsageCounts?: {
+      [playerId: string]: {
+        [abilityId: string]: number;
+      };
+    };
   };
   
   // Match metadata
   status?: 'active' | 'completed' | 'abandoned';
   startedAt?: Timestamp;
+  
+  // NEW: Abilities metadata (attached on match creation)
+  meta?: {
+    loadouts?: {
+      [playerId: string]: {
+        id: string;
+        name: string;
+        abilities: {
+          tactical?: string;
+          attack?: string;
+          defense?: string;
+          utility?: string;
+          gamechanger?: string;
+        };
+        totalStarCost: number;
+      };
+    };
+  };
 }
 
 /**

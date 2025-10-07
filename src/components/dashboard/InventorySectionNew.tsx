@@ -6,12 +6,14 @@ import { useInventory } from '@/context/InventoryContext';
 import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { MobileBackgroundPreview } from '@/components/ui/MobileBackgroundPreview';
+import PowerTab from '@/components/vault/PowerTab';
 
 const inventoryCategories = [
   { key: 'backgrounds', name: 'Backgrounds', icon: '🖼️', color: 'linear-gradient(135deg, #667eea, #764ba2)' },
   { key: 'dice', name: 'Dice Sets', icon: '🎲', color: 'linear-gradient(135deg, #FF0080, #FF4DB8)' },
   { key: 'avatars', name: 'Avatars', icon: '👤', color: 'linear-gradient(135deg, #00FF80, #00A855)' },
-  { key: 'effects', name: 'Effects', icon: '✨', color: 'linear-gradient(135deg, #FFD700, #FFA500)' }
+  { key: 'effects', name: 'Effects', icon: '✨', color: 'linear-gradient(135deg, #FFD700, #FFA500)' },
+  { key: 'power', name: 'Power', icon: '🔮', color: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' }
 ];
 
 const mockItems = {
@@ -340,9 +342,15 @@ export const InventorySection: React.FC = () => {
         />
       )}
 
-      {/* Items Grid */}
-      <div className="w-full max-w-[80rem] flex flex-row items-start justify-center flex-wrap gap-[2rem] flex-1 overflow-hidden px-4">{/* Disable scrolling on items grid */}
-        {getCurrentItems().map((item) => (
+      {/* Power Tab - Show when power category is selected */}
+      {selectedCategory === 'power' && (
+        <PowerTab />
+      )}
+
+      {/* Items Grid - Show for other categories */}
+      {selectedCategory !== 'power' && (
+        <div className="w-full max-w-[80rem] flex flex-row items-start justify-center flex-wrap gap-[2rem] flex-1 overflow-hidden px-4">{/* Disable scrolling on items grid */}
+          {getCurrentItems().map((item) => (
           <motion.div
             key={item.id}
             className="flex flex-col items-center justify-start gap-4 p-6 rounded-[20px] transition-all duration-300"
@@ -525,7 +533,8 @@ export const InventorySection: React.FC = () => {
             )}
           </motion.div>
         ))}
-      </div>
+        </div>
+      )}
 
       {/* Back Button */}
       <motion.button

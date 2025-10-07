@@ -17,7 +17,7 @@ import AchievementNotificationDisplay from '@/components/achievements/Achievemen
 import AchievementsDashboard from '@/components/achievements/AchievementsDashboard';
 import FriendsDashboard from '@/components/friends/FriendsDashboard';
 import { RankedDashboard } from '@/components/ranked/RankedDashboard';
-import SwipeUpChat from '@/components/chat/SwipeRightChat';
+import SwipeRightChat from '@/components/chat/SwipeRightChat';
 import { GlobalRematchNotification } from '@/components/rematch/GlobalRematchNotification';
 import { GameInvitationNotification } from '@/components/friends/GameInvitationNotification';
 import InviteAcceptedNotification from '@/components/friends/InviteAcceptedNotification';
@@ -314,7 +314,7 @@ const GuestDashboardContent: React.FC = () => {
   };
 
   return (
-    <SwipeUpChat>
+    <SwipeRightChat>
       <div 
         className="guest-dashboard-container"
         style={{
@@ -653,7 +653,7 @@ const GuestDashboardContent: React.FC = () => {
         <MobileBackgroundControl currentSection={currentSection} />
       </div>
     </div>
-    </SwipeUpChat>
+    </SwipeRightChat>
   );
 };
 

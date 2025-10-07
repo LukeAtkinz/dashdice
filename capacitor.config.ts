@@ -16,7 +16,8 @@ const config: CapacitorConfig = {
     allowsLinkPreview: false,
     scrollEnabled: true,
     overrideUserAgent: 'DashDice Mobile App',
-    limitsNavigationsToAppBoundDomains: true
+    limitsNavigationsToAppBoundDomains: true,
+    backgroundColor: '#000000'
   },
   plugins: {
     CapacitorHttp: {

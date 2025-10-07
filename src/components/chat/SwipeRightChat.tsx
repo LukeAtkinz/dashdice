@@ -15,6 +15,7 @@ export default function SwipeRightChat({ children }: SwipeRightChatProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragProgress, setDragProgress] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [showIndicator, setShowIndicator] = useState(true);
   const chatControls = useAnimation();
   const overlayRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
@@ -24,6 +25,15 @@ export default function SwipeRightChat({ children }: SwipeRightChatProps) {
   if (!user) {
     return <>{children}</>;
   }
+
+  // Hide indicator after 5 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowIndicator(false);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Mobile detection
   useEffect(() => {
@@ -209,7 +219,7 @@ export default function SwipeRightChat({ children }: SwipeRightChatProps) {
       </div>
 
       {/* Mobile Swipe Indicator - Show in bottom left corner */}
-      {isMobile && !isChatOpen && !isDragging && (
+      {isMobile && !isChatOpen && !isDragging && showIndicator && (
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}

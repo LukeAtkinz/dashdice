@@ -68,9 +68,6 @@ export default function GoServicesTest() {
     addTestResult('🔄 Testing authentication...');
     
     try {
-      // Set a dummy token for testing
-      DashDiceAPI.setAuthToken('test_token_12345');
-      
       const result = await DashDiceAPI.verifyAuth();
       if (result.valid) {
         addTestResult('✅ Auth verification passed');
@@ -114,7 +111,7 @@ export default function GoServicesTest() {
       const newMatch = await DashDiceAPI.createMatch({
         game_mode: 'classic',
         max_players: 2,
-        private: false,
+        is_private: false,
       });
       
       if (newMatch.match) {
@@ -132,7 +129,7 @@ export default function GoServicesTest() {
       // Join queue
       await DashDiceAPI.joinQueue({
         game_mode: 'classic',
-        preference: 'casual',
+        preferences: 'casual',
       });
       addTestResult('✅ Joined matchmaking queue');
       

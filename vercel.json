@@ -1,6 +1,20 @@
 {
   "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "npm run build",
+  "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "development": true
+    }
+  },
+  "env": {
+    "NEXT_PUBLIC_ENV": "production"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_ENV": "production"
+    }
+  },
   "functions": {
     "src/app/api/**/*.ts": {
       "maxDuration": 30

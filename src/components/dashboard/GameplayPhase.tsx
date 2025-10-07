@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { MatchData } from '@/types/match';
 import { SlotMachineDice } from './SlotMachineDice';
 import { useBackground } from '@/context/BackgroundContext';
+import { useAuth } from '@/context/AuthContext';
+import AbilitiesPanel from '@/components/match/AbilitiesPanel';
 
 interface GameplayPhaseProps {
   matchData: MatchData;
@@ -23,6 +25,7 @@ interface GameplayPhaseProps {
   };
   onRollDice: () => void;
   onBankScore: () => void;
+  onAbilityUsed?: (effect: any) => void;
 }
 
 export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
@@ -33,9 +36,11 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   dice1Animation,
   dice2Animation,
   onRollDice,
-  onBankScore
+  onBankScore,
+  onAbilityUsed
 }) => {
   const { DisplayBackgroundEquip } = useBackground();
+  const { user } = useAuth();
   const isMyTurn = currentPlayer.turnActive;
   const canRoll = isMyTurn && !matchData.gameData.isRolling;
   const canBank = isMyTurn && !matchData.gameData.isRolling && matchData.gameData.turnScore > 0;
@@ -354,8 +359,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           </div>
         </div>
 
-        {/* Action Buttons - Desktop Only */}
-        <div className="hidden md:flex gap-4 mb-8">
+        {/* Action Buttons - Desktop Only - Moved further down */}
+        <div className="hidden md:flex gap-4 mb-8 mt-12">
           {isMyTurn ? (
             <>
               <button
@@ -486,6 +491,16 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           </div>
         )}
       </div>
+
+      {/* Abilities Panel - Only show for authenticated users */}
+      {user && onAbilityUsed && (
+        <AbilitiesPanel
+          matchData={matchData}
+          onAbilityUsed={onAbilityUsed}
+          isPlayerTurn={isMyTurn}
+          playerId={user.uid}
+        />
+      )}
     </>
   );
 };
