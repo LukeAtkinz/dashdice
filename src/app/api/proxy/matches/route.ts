@@ -6,7 +6,28 @@ const GO_BACKEND_URL = process.env.GO_BACKEND_URL || 'http://localhost:8080';
 let backendUnavailableUntil = 0;
 const BACKEND_RETRY_DELAY = 5 * 60 * 1000; // 5 minutes
 
+// Cache reset mechanism - force retry if environment changed
+const CACHE_RESET_MARKER = process.env.GO_BACKEND_URL || 'default';
+let lastEnvironmentMarker = CACHE_RESET_MARKER;
+
+function checkAndResetCache() {
+  if (lastEnvironmentMarker !== CACHE_RESET_MARKER) {
+    console.log('[Proxy] Environment changed - resetting backend cache');
+    backendUnavailableUntil = 0;
+    lastEnvironmentMarker = CACHE_RESET_MARKER;
+  }
+}
+
 async function tryGoBackend(url: string, options: RequestInit): Promise<Response | null> {
+  // Check for environment changes and reset cache if needed
+  checkAndResetCache();
+  
+  // Force cache reset if GO_BACKEND_URL contains Railway (our fix)
+  if (GO_BACKEND_URL.includes('railway.app') && backendUnavailableUntil > 0) {
+    console.log('[Proxy] Railway backend detected - forcing cache reset');
+    backendUnavailableUntil = 0;
+  }
+  
   // If backend is marked as unavailable and we're still in the retry delay, skip
   if (Date.now() < backendUnavailableUntil) {
     console.log('[Proxy] Skipping Go backend - marked unavailable');
