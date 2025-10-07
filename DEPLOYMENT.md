@@ -36,7 +36,7 @@ npm run deploy:production:bash
 | Environment | URL | Branch | Purpose |
 |-------------|-----|--------|---------|
 | **Local Dev** | `http://localhost:3000` | `development` | Development |
-| **Staging** | `https://dashdice-git-development.vercel.app` | `development` | Testing |
+| **Staging** | `https://dashdice-1dib-git-development-dash-dice.vercel.app` | `development` | Testing |
 | **Production** | `https://dashdice.gg` | `main` | Live users |
 
 ---
