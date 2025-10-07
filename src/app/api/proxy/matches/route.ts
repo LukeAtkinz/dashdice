@@ -19,12 +19,25 @@ function checkAndResetCache() {
 }
 
 async function tryGoBackend(url: string, options: RequestInit): Promise<Response | null> {
+  // TEMPORARY: Completely bypass cache for Railway backend
+  const isRailway = GO_BACKEND_URL.includes('railway.app');
+  if (isRailway) {
+    console.log('[Proxy] Railway backend detected - BYPASSING ALL CACHE');
+    backendUnavailableUntil = 0; // Force reset
+  }
+  
   // Check for environment changes and reset cache if needed
   checkAndResetCache();
   
   // Force cache reset if GO_BACKEND_URL contains Railway (our fix)
   if (GO_BACKEND_URL.includes('railway.app') && backendUnavailableUntil > 0) {
     console.log('[Proxy] Railway backend detected - forcing cache reset');
+    backendUnavailableUntil = 0;
+  }
+  
+  // EMERGENCY: If still cached as unavailable for Railway, force override
+  if (Date.now() < backendUnavailableUntil && isRailway) {
+    console.log('[Proxy] EMERGENCY: Forcing Railway backend attempt despite cache');
     backendUnavailableUntil = 0;
   }
   

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Connection Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #1a1a1a; 
+            color: #fff;
+        }
+        .container { background: #2a2a2a; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .button { 
+            background: #4CAF50; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px;
+            font-size: 14px;
+        }
+        .button:hover { background: #45a049; }
+        .dangerous { background: #f44336; }
+        .dangerous:hover { background: #d32f2f; }
+        .output { 
+            background: #1a1a1a; 
+            padding: 15px; 
+            border-radius: 4px; 
+            font-family: monospace; 
+            max-height: 400px; 
+            overflow-y: auto;
+            border: 1px solid #444;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Railway Backend Connection Test</h1>
+    
+    <div class="container">
+        <h2>Direct Backend Test</h2>
+        <p>Test Railway backend directly (bypasses proxy cache):</p>
+        <button class="button" onclick="testRailwayDirect()">Test Railway Direct</button>
+        <div id="railwayOutput" class="output"></div>
+    </div>
+
+    <div class="container">
+        <h2>Proxy Backend Test</h2>
+        <p>Test through staging proxy routes:</p>
+        <button class="button" onclick="testProxyMatches()">Test /api/proxy/matches</button>
+        <button class="button" onclick="testProxyQueue()">Test /api/proxy/queue/join</button>
+        <button class="button dangerous" onclick="forceProxyCacheReset()">Force Cache Reset</button>
+        <div id="proxyOutput" class="output"></div>
+    </div>
+
+    <div class="container">
+        <h2>Environment Check</h2>
+        <p>Check if environment variables are properly set:</p>
+        <button class="button" onclick="checkEnvironment()">Check Environment</button>
+        <div id="envOutput" class="output"></div>
+    </div>
+
+    <script>
+        function log(elementId, message, type = 'info') {
+            const output = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            output.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        async function testRailwayDirect() {
+            clearLog('railwayOutput');
+            log('railwayOutput', 'Testing Railway backend directly...', 'info');
+            
+            try {
+                const response = await fetch('https://go-backend-production-448a.up.railway.app/health');
+                const data = await response.text();
+                
+                if (response.ok) {
+                    log('railwayOutput', `✅ SUCCESS: Railway backend is healthy`, 'success');
+                    log('railwayOutput', `Status: ${response.status}`, 'info');
+                    log('railwayOutput', `Response: ${data}`, 'info');
+                } else {
+                    log('railwayOutput', `❌ ERROR: Railway returned ${response.status}`, 'error');
+                    log('railwayOutput', `Response: ${data}`, 'error');
+                }
+            } catch (error) {
+                log('railwayOutput', `❌ ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        async function testProxyMatches() {
+            clearLog('proxyOutput');
+            log('proxyOutput', 'Testing proxy matches endpoint...', 'info');
+            
+            try {
+                const response = await fetch('/api/proxy/matches/?status=active&limit=10');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('proxyOutput', `✅ SUCCESS: Proxy matches working`, 'success');
+                    log('proxyOutput', `Found ${data.matches?.length || 0} matches`, 'info');
+                } else {
+                    log('proxyOutput', `❌ ERROR: ${response.status} - ${data.error || 'Unknown error'}`, 'error');
+                    if (data.error === 'Go backend unavailable') {
+                        log('proxyOutput', '🔄 Cache issue detected - try Force Cache Reset', 'error');
+                    }
+                }
+            } catch (error) {
+                log('proxyOutput', `❌ ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        async function testProxyQueue() {
+            log('proxyOutput', 'Testing proxy queue endpoint...', 'info');
+            
+            try {
+                const response = await fetch('/api/proxy/queue/join', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        gameMode: 'test',
+                        userId: 'test-user'
+                    })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('proxyOutput', `✅ SUCCESS: Proxy queue working`, 'success');
+                } else {
+                    log('proxyOutput', `❌ ERROR: ${response.status} - ${data.error || 'Unknown error'}`, 'error');
+                    if (data.error === 'Go backend unavailable') {
+                        log('proxyOutput', '🔄 Cache issue detected - try Force Cache Reset', 'error');
+                    }
+                }
+            } catch (error) {
+                log('proxyOutput', `❌ ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        async function forceProxyCacheReset() {
+            log('proxyOutput', '🔄 Attempting to force cache reset...', 'info');
+            
+            // Try multiple proxy endpoints to trigger cache refresh
+            const endpoints = [
+                '/api/proxy/matches',
+                '/api/proxy/queue/join',
+                '/api/proxy/matches/?refresh=true'
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    log('proxyOutput', `Testing ${endpoint}...`, 'info');
+                    const response = await fetch(endpoint, {
+                        method: endpoint.includes('queue') ? 'POST' : 'GET',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: endpoint.includes('queue') ? JSON.stringify({
+                            gameMode: 'cache-reset',
+                            userId: 'cache-reset-test'
+                        }) : undefined
+                    });
+                    
+                    log('proxyOutput', `${endpoint}: ${response.status}`, 'info');
+                } catch (error) {
+                    log('proxyOutput', `${endpoint}: ${error.message}`, 'error');
+                }
+            }
+            
+            log('proxyOutput', '✅ Cache reset attempt complete', 'success');
+        }
+
+        async function checkEnvironment() {
+            clearLog('envOutput');
+            log('envOutput', 'Checking environment variables...', 'info');
+            
+            try {
+                const response = await fetch('/api/debug/backend-status');
+                if (response.ok) {
+                    const data = await response.json();
+                    log('envOutput', `✅ Environment check successful`, 'success');
+                    log('envOutput', `GO_BACKEND_URL: ${data.environment?.GO_BACKEND_URL || 'Not set'}`, 'info');
+                    log('envOutput', `NODE_ENV: ${data.environment?.NODE_ENV || 'Not set'}`, 'info');
+                    
+                    if (data.railway_test) {
+                        log('envOutput', `Railway Test: ${data.railway_test.status}`, 'success');
+                    }
+                } else {
+                    log('envOutput', `❌ Environment check failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log('envOutput', `❌ ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            testRailwayDirect();
+            setTimeout(() => {
+                testProxyMatches();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

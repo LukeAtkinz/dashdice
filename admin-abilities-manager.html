@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DashDice Abilities System Admin</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #1a1a1a; 
+            color: #fff;
+        }
+        .container { background: #2a2a2a; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .button { 
+            background: #4CAF50; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px;
+            font-size: 14px;
+        }
+        .button:hover { background: #45a049; }
+        .button:disabled { background: #666; cursor: not-allowed; }
+        .dangerous { background: #f44336; }
+        .dangerous:hover { background: #d32f2f; }
+        .warning { background: #ff9800; }
+        .warning:hover { background: #f57c00; }
+        .output { 
+            background: #1a1a1a; 
+            padding: 15px; 
+            border-radius: 4px; 
+            font-family: monospace; 
+            max-height: 400px; 
+            overflow-y: auto;
+            border: 1px solid #444;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .warning-text { color: #ff9800; }
+        .info { color: #2196F3; }
+        input, select { 
+            padding: 8px; 
+            margin: 5px; 
+            border: 1px solid #666; 
+            border-radius: 4px; 
+            background: #333; 
+            color: #fff;
+        }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        h2 { color: #4CAF50; border-bottom: 2px solid #4CAF50; padding-bottom: 5px; }
+        .status-badge { 
+            display: inline-block; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 12px; 
+            margin: 2px;
+        }
+        .badge-success { background: #4CAF50; }
+        .badge-error { background: #f44336; }
+        .badge-warning { background: #ff9800; }
+        .badge-info { background: #2196F3; }
+    </style>
+</head>
+<body>
+    <h1>🎮 DashDice Abilities System Admin</h1>
+    
+    <div class="container">
+        <h2>🔧 System Status</h2>
+        <div id="status">Loading...</div>
+        <button class="button" onclick="checkSystemStatus()">Refresh Status</button>
+    </div>
+
+    <div class="grid">
+        <div class="container">
+            <h2>⚡ Initialize Abilities Database</h2>
+            <p>This will create all 28 abilities in Firebase Firestore.</p>
+            <div>
+                <label>Environment:</label>
+                <select id="envSelect">
+                    <option value="local">Local (localhost:3000)</option>
+                    <option value="staging">Staging (Vercel)</option>
+                </select>
+            </div>
+            <button class="button warning" onclick="initializeAbilities()">Initialize All Abilities</button>
+            <button class="button" onclick="checkAbilitiesStatus()">Check Abilities Status</button>
+            <div id="abilitiesOutput" class="output" style="margin-top: 10px;"></div>
+        </div>
+
+        <div class="container">
+            <h2>👑 Hero1 Unlock System</h2>
+            <p>Unlock all abilities for Hero1 user testing.</p>
+            <div>
+                <label>Hero1 User ID:</label>
+                <input type="text" id="heroUserId" value="8W4olQr8LbM7PsXSRiWh7Vw5OiA2" style="width: 250px;">
+            </div>
+            <button class="button" onclick="unlockHero1()">Unlock All Abilities for Hero1</button>
+            <button class="button" onclick="checkHero1Status()">Check Hero1 Status</button>
+            <div id="heroOutput" class="output" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🚀 Backend Connection Test</h2>
+        <p>Test Railway backend connectivity and reset proxy cache.</p>
+        <button class="button" onclick="testBackend()">Test Backend Connection</button>
+        <button class="button warning" onclick="resetCache()">Reset Proxy Cache</button>
+        <div id="backendOutput" class="output" style="margin-top: 10px;"></div>
+    </div>
+
+    <div class="container">
+        <h2>⚠️ Dangerous Operations</h2>
+        <p style="color: #ff9800;">Use with caution! These operations modify or delete data.</p>
+        <button class="button dangerous" onclick="clearAllUserAbilities()" disabled>Clear All User Abilities</button>
+        <button class="button dangerous" onclick="resetAllProgression()" disabled>Reset All Progression</button>
+        <div id="dangerousOutput" class="output" style="margin-top: 10px;"></div>
+    </div>
+
+    <script>
+        let baseUrl = 'http://localhost:3000';
+        
+        function updateBaseUrl() {
+            const env = document.getElementById('envSelect').value;
+            baseUrl = env === 'staging' 
+                ? 'https://dashdice-1dib-git-development-dash-dice.vercel.app'
+                : 'http://localhost:3000';
+        }
+
+        document.getElementById('envSelect').addEventListener('change', updateBaseUrl);
+
+        function log(elementId, message, type = 'info') {
+            const output = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 
+                             type === 'warning' ? 'warning-text' : 'info';
+            output.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            updateBaseUrl();
+            try {
+                const options = {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                };
+                if (body) options.body = JSON.stringify(body);
+                
+                const response = await fetch(`${baseUrl}${endpoint}`, options);
+                const data = await response.json();
+                return { success: response.ok, data, status: response.status };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function checkSystemStatus() {
+            document.getElementById('status').innerHTML = 'Checking...';
+            
+            const backendTest = await apiCall('/api/debug/backend-status');
+            const abilitiesTest = await apiCall('/api/abilities');
+            
+            let statusHtml = '';
+            
+            if (backendTest.success) {
+                statusHtml += '<span class="status-badge badge-success">Backend Connected</span>';
+            } else {
+                statusHtml += '<span class="status-badge badge-error">Backend Disconnected</span>';
+            }
+            
+            if (abilitiesTest.success) {
+                statusHtml += '<span class="status-badge badge-success">Abilities API Working</span>';
+            } else {
+                statusHtml += '<span class="status-badge badge-error">Abilities API Error</span>';
+            }
+            
+            document.getElementById('status').innerHTML = statusHtml;
+        }
+
+        async function initializeAbilities() {
+            clearLog('abilitiesOutput');
+            log('abilitiesOutput', 'Starting abilities initialization...', 'info');
+            
+            const result = await apiCall('/api/admin/initialize-abilities', 'POST');
+            
+            if (result.success) {
+                log('abilitiesOutput', `✅ Success: ${result.data.message}`, 'success');
+                if (result.data.created) {
+                    log('abilitiesOutput', `Created ${result.data.created} abilities`, 'success');
+                }
+            } else {
+                log('abilitiesOutput', `❌ Error: ${result.error || result.data?.message || 'Unknown error'}`, 'error');
+            }
+        }
+
+        async function checkAbilitiesStatus() {
+            clearLog('abilitiesOutput');
+            log('abilitiesOutput', 'Checking abilities status...', 'info');
+            
+            const result = await apiCall('/api/abilities');
+            
+            if (result.success) {
+                log('abilitiesOutput', `✅ Found ${result.data.abilities?.length || 0} abilities`, 'success');
+                if (result.data.abilities) {
+                    result.data.abilities.forEach(ability => {
+                        log('abilitiesOutput', `  • ${ability.name} (${ability.rarity})`, 'info');
+                    });
+                }
+            } else {
+                log('abilitiesOutput', `❌ Error: ${result.error || 'Could not load abilities'}`, 'error');
+            }
+        }
+
+        async function unlockHero1() {
+            const userId = document.getElementById('heroUserId').value;
+            if (!userId) {
+                log('heroOutput', '❌ Please enter Hero1 User ID', 'error');
+                return;
+            }
+            
+            clearLog('heroOutput');
+            log('heroOutput', `Unlocking all abilities for user: ${userId}`, 'info');
+            
+            const result = await apiCall('/api/admin/unlock-abilities', 'POST', { userId });
+            
+            if (result.success) {
+                log('heroOutput', `✅ Success: ${result.data.message}`, 'success');
+                if (result.data.unlockedCount) {
+                    log('heroOutput', `Unlocked ${result.data.unlockedCount} abilities`, 'success');
+                }
+            } else {
+                log('heroOutput', `❌ Error: ${result.error || result.data?.message || 'Unknown error'}`, 'error');
+            }
+        }
+
+        async function checkHero1Status() {
+            const userId = document.getElementById('heroUserId').value;
+            if (!userId) {
+                log('heroOutput', '❌ Please enter Hero1 User ID', 'error');
+                return;
+            }
+            
+            clearLog('heroOutput');
+            log('heroOutput', `Checking Hero1 status for: ${userId}`, 'info');
+            
+            const result = await apiCall(`/api/user-abilities/${userId}`);
+            
+            if (result.success) {
+                const unlocked = result.data.abilities?.filter(a => a.unlocked)?.length || 0;
+                const total = result.data.abilities?.length || 0;
+                log('heroOutput', `✅ Hero1 has ${unlocked}/${total} abilities unlocked`, 'success');
+                
+                if (result.data.abilities) {
+                    result.data.abilities.forEach(ability => {
+                        const status = ability.unlocked ? '🔓' : '🔒';
+                        log('heroOutput', `  ${status} ${ability.name}`, ability.unlocked ? 'success' : 'warning');
+                    });
+                }
+            } else {
+                log('heroOutput', `❌ Error: ${result.error || 'Could not load Hero1 status'}`, 'error');
+            }
+        }
+
+        async function testBackend() {
+            clearLog('backendOutput');
+            log('backendOutput', 'Testing backend connection...', 'info');
+            
+            const result = await apiCall('/api/debug/backend-status');
+            
+            if (result.success) {
+                log('backendOutput', '✅ Backend connection successful', 'success');
+                log('backendOutput', `Environment: ${result.data.environment?.NODE_ENV || 'unknown'}`, 'info');
+                log('backendOutput', `Backend URL: ${result.data.environment?.GO_BACKEND_URL || 'not set'}`, 'info');
+                if (result.data.railway_test) {
+                    log('backendOutput', `Railway Status: ${result.data.railway_test.status}`, 'success');
+                }
+            } else {
+                log('backendOutput', `❌ Backend test failed: ${result.error || 'Unknown error'}`, 'error');
+            }
+        }
+
+        async function resetCache() {
+            clearLog('backendOutput');
+            log('backendOutput', 'Resetting proxy cache...', 'info');
+            
+            const result = await apiCall('/api/debug/reset-cache', 'POST');
+            
+            if (result.success) {
+                log('backendOutput', '✅ Cache reset successful', 'success');
+                log('backendOutput', result.data.message, 'info');
+            } else {
+                log('backendOutput', `❌ Cache reset failed: ${result.error || 'Unknown error'}`, 'error');
+            }
+        }
+
+        // Initialize status check on load
+        checkSystemStatus();
+    </script>
+</body>
+</html>
