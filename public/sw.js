@@ -193,7 +193,8 @@ async function handleOtherRequest(request) {
     const response = await fetch(request);
     
     // Cache successful responses for eligible requests
-    if (response.ok && shouldCacheRequest(request)) {
+    // Skip partial responses (206) and only cache complete responses (200)
+    if (response.ok && response.status === 200 && shouldCacheRequest(request)) {
       const cache = await caches.open(RUNTIME_CACHE);
       cache.put(request, response.clone());
     }

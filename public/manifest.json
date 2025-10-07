@@ -11,9 +11,18 @@
   "orientation": "portrait",
   "scope": "/",
   "scope_extensions": [
-    {"origin": "https://dashdice.gg"},
-    {"origin": "https://www.dashdice.gg"},
-    {"origin": "https://*.dashdice.gg"}
+    {
+      "origin": "https://dashdice.gg",
+      "type": "url"
+    },
+    {
+      "origin": "https://www.dashdice.gg", 
+      "type": "url"
+    },
+    {
+      "origin": "https://dashdice-1dib-git-development-dash-dice.vercel.app",
+      "type": "url"
+    }
   ],
   "lang": "en",
   "dir": "ltr",
