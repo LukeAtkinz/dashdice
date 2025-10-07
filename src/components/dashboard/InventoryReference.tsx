@@ -8,6 +8,7 @@ import { useBackground } from '@/context/BackgroundContext';
 import { useAuth } from '@/context/AuthContext';
 import { MatchPreview } from '@/components/ui/MatchPreview';
 import { FriendCardPreview } from '@/components/ui/FriendCardPreview';
+import PowerTab from '@/components/vault/PowerTab';
 
 export const InventorySection: React.FC = () => {
   const { setCurrentSection } = useNavigation();
@@ -20,7 +21,7 @@ export const InventorySection: React.FC = () => {
     setMatchBackgroundEquip
   } = useBackground();
 
-  const [activeTab, setActiveTab] = useState('display'); // 'display' or 'match'
+  const [activeTab, setActiveTab] = useState('display'); // 'display', 'match', or 'power'
   const [selectedBackground, setSelectedBackground] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
@@ -339,185 +340,215 @@ export const InventorySection: React.FC = () => {
               Flexin
             </span>
           </button>
+          <button
+            onClick={() => handleTabChange('power')}
+            className={`tab-button nav-button ${activeTab === 'power' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] transition-all duration-300 h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px]`}
+            style={{
+              display: 'flex',
+              width: 'fit-content',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '10px',
+              border: activeTab === 'power' ? '2px solid #FFD700' : '2px solid transparent',
+              borderRadius: '18px',
+              background: 'transparent',
+              cursor: 'pointer',
+            }}
+          >
+            <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
+              color: activeTab === 'power' ? '#FFF' : '#FFF', 
+              fontFamily: 'Audiowide', 
+              fontWeight: 400, 
+              textTransform: 'uppercase' 
+            }}>
+              Power
+            </span>
+          </button>
         </div>
       </div>
 
 
 
       {/* Content */}
-      <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4"
-        style={{
-          touchAction: 'pan-y', // Only allow vertical panning within content
-          overscrollBehavior: 'contain' // Contain scrolling within this element
-        }}
-      >
-        <div className="flex h-auto w-full md:w-auto pl-[0.5rem] md:pl-0" style={{ minHeight: '600px', height: 'auto', maxHeight: '80vh', maxWidth: '1600px', gap: '20px' }} data-mobile-height="410px" data-desktop-height="auto">
-          
-          {/* Items List */}
-          <div 
-            className="w-full rounded-lg overflow-hidden card-fade-in" 
-            style={{ 
-              borderRadius: '20px'
-            }}
-          >
-            <div className="h-full flex flex-col">
-              <div 
-                className="flex-1 overflow-y-auto overflow-x-hidden relative scrollbar-hide" 
-                style={{ 
-                  touchAction: 'pan-y',
-                  WebkitOverflowScrolling: 'touch',
-                  overscrollBehavior: 'contain',
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none',
-                  transform: 'translateZ(0)', // Forces hardware acceleration
-                  willChange: 'scroll-position', // Optimizes for scrolling
-                  paddingBottom: '120px', // Increased padding to ensure all cards are scrollable
-                  maxHeight: '60vh' // Limit height to ensure scrolling works properly
-                }}
-              >
-                <div className="space-y-2.5 pb-20 pt-4">
-                  {getCurrentBackgrounds().map((background) => (
-                    <div
-                      key={background.id}
-                      onClick={() => handleItemSelect(background)}
-                      className="relative rounded-lg cursor-pointer transition-all duration-200 overflow-hidden w-full"
-                      style={{ 
-                        height: '150px', 
-                        borderRadius: '20px', 
-                        border: selectedBackground?.id === background.id ? '2px solid #FF0080' : '1px solid rgba(255, 255, 255, 0.1)', 
-                        background: background.isGradient ? background.url : `url('${background.url}')`, 
-                        backgroundSize: 'cover', 
-                        backgroundPosition: 'center', 
-                        backgroundRepeat: 'no-repeat', 
-                        marginBottom: '10px' 
-                      }}
-                    >
-                      {background.isVideo && background.videoUrl && (
-                        <video 
-                          key={`video-${background.id}-${background.videoUrl}`} // Force re-render when video changes
-                          autoPlay 
-                          loop 
-                          muted 
-                          playsInline 
-                          controls={false}
-                          webkit-playsinline="true"
-                          x5-playsinline="true"
-                          preload="metadata"
-                          className="absolute inset-0 w-full h-full object-cover" 
-                          style={{ borderRadius: '20px' }}
-                        >
-                          <source src={background.videoUrl} type="video/mp4" />
-                        </video>
-                      )}
-                      <div 
-                        className="absolute inset-0 rounded-lg z-5" 
+      {activeTab === 'power' ? (
+        <div className="w-full max-w-[80rem] flex-1 px-4">
+          <PowerTab />
+        </div>
+      ) : (
+        <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4"
+          style={{
+            touchAction: 'pan-y', // Only allow vertical panning within content
+            overscrollBehavior: 'contain' // Contain scrolling within this element
+          }}
+        >
+          <div className="flex h-auto w-full md:w-auto pl-[0.5rem] md:pl-0" style={{ minHeight: '600px', height: 'auto', maxHeight: '80vh', maxWidth: '1600px', gap: '20px' }} data-mobile-height="410px" data-desktop-height="auto">
+            
+            {/* Items List */}
+            <div 
+              className="w-full rounded-lg overflow-hidden card-fade-in" 
+              style={{ 
+                borderRadius: '20px'
+              }}
+            >
+              <div className="h-full flex flex-col">
+                <div 
+                  className="flex-1 overflow-y-auto overflow-x-hidden relative scrollbar-hide" 
+                  style={{ 
+                    touchAction: 'pan-y',
+                    WebkitOverflowScrolling: 'touch',
+                    overscrollBehavior: 'contain',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                    transform: 'translateZ(0)', // Forces hardware acceleration
+                    willChange: 'scroll-position', // Optimizes for scrolling
+                    paddingBottom: '120px', // Increased padding to ensure all cards are scrollable
+                    maxHeight: '60vh' // Limit height to ensure scrolling works properly
+                  }}
+                >
+                  <div className="space-y-2.5 pb-20 pt-4">
+                    {getCurrentBackgrounds().map((background) => (
+                      <div
+                        key={background.id}
+                        onClick={() => handleItemSelect(background)}
+                        className="relative rounded-lg cursor-pointer transition-all duration-200 overflow-hidden w-full"
                         style={{ 
+                          height: '150px', 
                           borderRadius: '20px', 
-                          background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)' 
-                        }}
-                      ></div>
-                      <div 
-                        className="relative z-10" 
-                        style={{ 
-                          display: 'flex', 
-                          padding: '24px', 
-                          alignItems: 'center', 
-                          gap: '10px', 
-                          alignSelf: 'stretch', 
-                          height: '100%' 
+                          border: selectedBackground?.id === background.id ? '2px solid #FF0080' : '1px solid rgba(255, 255, 255, 0.1)', 
+                          background: background.isGradient ? background.url : `url('${background.url}')`, 
+                          backgroundSize: 'cover', 
+                          backgroundPosition: 'center', 
+                          backgroundRepeat: 'no-repeat', 
+                          marginBottom: '10px' 
                         }}
                       >
-                        <div className="flex items-center gap-3 flex-1">
-                          <div className="flex flex-col" style={{ gap: '4px' }}>
-                            <h4 className="inventory-item-title" style={{ 
-                              color: '#E2E2E2', 
-                              fontFamily: 'Audiowide', 
-                              fontWeight: 400, 
-                              textTransform: 'uppercase', 
-                              textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' 
-                            }}>
-                              {background.name}
-                            </h4>
-                            <p className="inventory-item-rarity" style={{ 
-                              color: 'rgba(255, 255, 255, 0.9)', 
-                              fontFamily: 'Montserrat', 
-                              fontWeight: 400, 
-                              textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' 
-                            }}>
-                              {background.rarity}
-                            </p>
+                        {background.isVideo && background.videoUrl && (
+                          <video 
+                            key={`video-${background.id}-${background.videoUrl}`} // Force re-render when video changes
+                            autoPlay 
+                            loop 
+                            muted 
+                            playsInline 
+                            controls={false}
+                            webkit-playsinline="true"
+                            x5-playsinline="true"
+                            preload="metadata"
+                            className="absolute inset-0 w-full h-full object-cover" 
+                            style={{ borderRadius: '20px' }}
+                          >
+                            <source src={background.videoUrl} type="video/mp4" />
+                          </video>
+                        )}
+                        <div 
+                          className="absolute inset-0 rounded-lg z-5" 
+                          style={{ 
+                            borderRadius: '20px', 
+                            background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)' 
+                          }}
+                        ></div>
+                        <div 
+                          className="relative z-10" 
+                          style={{ 
+                            display: 'flex', 
+                            padding: '24px', 
+                            alignItems: 'center', 
+                            gap: '10px', 
+                            alignSelf: 'stretch', 
+                            height: '100%' 
+                          }}
+                        >
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className="flex flex-col" style={{ gap: '4px' }}>
+                              <h4 className="inventory-item-title" style={{ 
+                                color: '#E2E2E2', 
+                                fontFamily: 'Audiowide', 
+                                fontWeight: 400, 
+                                textTransform: 'uppercase', 
+                                textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' 
+                              }}>
+                                {background.name}
+                              </h4>
+                              <p className="inventory-item-rarity" style={{ 
+                                color: 'rgba(255, 255, 255, 0.9)', 
+                                fontFamily: 'Montserrat', 
+                                fontWeight: 400, 
+                                textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' 
+                              }}>
+                                {background.rarity}
+                              </p>
+                            </div>
                           </div>
+                          
+                          {selectedBackground?.id === background.id && (
+                            <button 
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                handleEquipBackground(background); 
+                              }} 
+                              className="inventory-button relative transition-all duration-300 hover:scale-105" 
+                              style={{ 
+                                display: 'flex', 
+                                width: 'fit-content', 
+                                justifyContent: 'center', 
+                                alignItems: 'center', 
+                                gap: '10px', 
+                                borderRadius: '18px', 
+                                background: isBackgroundEquipped(background) ? '#4CAF50' : 'var(--ui-button-bg)', 
+                                border: 'none', 
+                                cursor: 'pointer' 
+                              }}
+                            >
+                              <span className="inventory-button-text" style={{ 
+                                color: 'var(--ui-button-text)', 
+                                fontFamily: 'Audiowide', 
+                                fontWeight: 400, 
+                                textTransform: 'uppercase' 
+                              }}>
+                                {isBackgroundEquipped(background) ? 'EQUIPPED' : 'EQUIP'}
+                              </span>
+                            </button>
+                          )}
+                          
+                          {isBackgroundEquipped(background) && selectedBackground?.id !== background.id && (
+                            <div 
+                              className="inventory-button relative transition-all duration-300" 
+                              style={{ 
+                                display: 'flex', 
+                                width: 'fit-content', 
+                                justifyContent: 'center', 
+                                alignItems: 'center', 
+                                gap: '10px', 
+                                borderRadius: '18px', 
+                                background: '#4CAF50', 
+                                border: 'none'
+                              }}
+                            >
+                              <span className="inventory-button-text" style={{ 
+                                color: 'var(--ui-button-text)', 
+                                fontFamily: 'Audiowide', 
+                                fontWeight: 400, 
+                                textTransform: 'uppercase' 
+                              }}>
+                                EQUIPPED
+                              </span>
+                            </div>
+                          )}
                         </div>
-                        
-                        {selectedBackground?.id === background.id && (
-                          <button 
-                            onClick={(e) => { 
-                              e.stopPropagation(); 
-                              handleEquipBackground(background); 
-                            }} 
-                            className="inventory-button relative transition-all duration-300 hover:scale-105" 
-                            style={{ 
-                              display: 'flex', 
-                              width: 'fit-content', 
-                              justifyContent: 'center', 
-                              alignItems: 'center', 
-                              gap: '10px', 
-                              borderRadius: '18px', 
-                              background: isBackgroundEquipped(background) ? '#4CAF50' : 'var(--ui-button-bg)', 
-                              border: 'none', 
-                              cursor: 'pointer' 
-                            }}
-                          >
-                            <span className="inventory-button-text" style={{ 
-                              color: 'var(--ui-button-text)', 
-                              fontFamily: 'Audiowide', 
-                              fontWeight: 400, 
-                              textTransform: 'uppercase' 
-                            }}>
-                              {isBackgroundEquipped(background) ? 'EQUIPPED' : 'EQUIP'}
-                            </span>
-                          </button>
-                        )}
-                        
-                        {isBackgroundEquipped(background) && selectedBackground?.id !== background.id && (
-                          <div 
-                            className="inventory-button relative transition-all duration-300" 
-                            style={{ 
-                              display: 'flex', 
-                              width: 'fit-content', 
-                              justifyContent: 'center', 
-                              alignItems: 'center', 
-                              gap: '10px', 
-                              borderRadius: '18px', 
-                              background: '#4CAF50', 
-                              border: 'none'
-                            }}
-                          >
-                            <span className="inventory-button-text" style={{ 
-                              color: 'var(--ui-button-text)', 
-                              fontFamily: 'Audiowide', 
-                              fontWeight: 400, 
-                              textTransform: 'uppercase' 
-                            }}>
-                              EQUIPPED
-                            </span>
-                          </div>
-                        )}
                       </div>
-                    </div>
-                  ))}
-                  {getCurrentBackgrounds().length === 0 && (
-                    <div className="text-center text-white/70 py-8">
-                      <div className="text-4xl mb-2">📦</div>
-                      <p>No backgrounds owned</p>
-                    </div>
-                  )}
+                    ))}
+                    {getCurrentBackgrounds().length === 0 && (
+                      <div className="text-center text-white/70 py-8">
+                        <div className="text-4xl mb-2">📦</div>
+                        <p>No backgrounds owned</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

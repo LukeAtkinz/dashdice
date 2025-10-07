@@ -5,9 +5,9 @@ const RUNTIME_CACHE = 'dashdice-runtime-v1.0.0';
 const STATIC_CACHE_URLS = [
   '/',
   '/manifest.json',
-  '/App Icons/android/mipmap-xxxhdpi/appicons.png',
-  '/App Icons/playstore.png',
-  '/App Icons/appstore.png',
+  '/icons/android/mipmap-xxxhdpi/appicons.png',
+  '/icons/playstore.png',
+  '/icons/appstore.png',
   '/Design Elements/CrownLogo.webp',
   // Add other critical assets
   '/offline.html'
@@ -152,7 +152,7 @@ async function handleStaticAssetRequest(request) {
     
     // Return a fallback for images
     if (request.destination === 'image') {
-      return caches.match('/App Icons/android/mipmap-hdpi/appicons.png');
+      return caches.match('/icons/android/mipmap-hdpi/appicons.png');
     }
     
     throw error;
@@ -260,8 +260,8 @@ self.addEventListener('push', (event) => {
   
   const options = {
     body: event.data ? event.data.text() : 'New notification from Dashdice!',
-    icon: '/App Icons/android/mipmap-hdpi/appicons.png',
-    badge: '/App Icons/android/mipmap-hdpi/appicons.png',
+    icon: '/icons/android/mipmap-hdpi/appicons.png',
+    badge: '/icons/android/mipmap-hdpi/appicons.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -271,12 +271,12 @@ self.addEventListener('push', (event) => {
       {
         action: 'explore',
         title: 'Play Now',
-        icon: '/App Icons/android/mipmap-hdpi/appicons.png'
+        icon: '/icons/android/mipmap-hdpi/appicons.png'
       },
       {
         action: 'close',
         title: 'Close',
-        icon: '/App Icons/android/mipmap-hdpi/appicons.png'
+        icon: '/icons/android/mipmap-hdpi/appicons.png'
       }
     ]
   };

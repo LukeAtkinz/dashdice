@@ -22,7 +22,7 @@ export const PerformanceOptimizer = () => {
       // Preload critical images
       const criticalImages = [
         '/Design Elements/CrownLogo.webp',
-        '/App Icons/android/mipmap-xxxhdpi/appicons.png'
+        '/icons/android/mipmap-xxxhdpi/appicons.png'
       ];
 
       criticalImages.forEach(src => {

@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     title: "Dashdice",
     startupImage: [
       {
-        url: "/App Icons/appstore.png",
+        url: "/icons/appstore.png",
         media: "(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)"
       }
     ]
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     siteName: "Dashdice",
     images: [
       {
-        url: "/App Icons/playstore.png",
+        url: "/icons/playstore.png",
         width: 512,
         height: 512,
         alt: "Dashdice"
@@ -51,20 +51,20 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Dashdice", 
     description: "Who will take the crown? Play PvP dice battles, earn founder rewards, and compete!",
-    images: ["/App Icons/playstore.png"]
+    images: ["/icons/playstore.png"]
   },
   icons: {
     icon: [
-      { url: "/App Icons/android/mipmap-mdpi/appicons.png", sizes: "48x48", type: "image/png" },
-      { url: "/App Icons/android/mipmap-hdpi/appicons.png", sizes: "72x72", type: "image/png" },
-      { url: "/App Icons/android/mipmap-xhdpi/appicons.png", sizes: "96x96", type: "image/png" },
-      { url: "/App Icons/android/mipmap-xxhdpi/appicons.png", sizes: "144x144", type: "image/png" },
-      { url: "/App Icons/android/mipmap-xxxhdpi/appicons.png", sizes: "192x192", type: "image/png" }
+      { url: "/icons/android/mipmap-mdpi/appicons.png", sizes: "48x48", type: "image/png" },
+      { url: "/icons/android/mipmap-hdpi/appicons.png", sizes: "72x72", type: "image/png" },
+      { url: "/icons/android/mipmap-xhdpi/appicons.png", sizes: "96x96", type: "image/png" },
+      { url: "/icons/android/mipmap-xxhdpi/appicons.png", sizes: "144x144", type: "image/png" },
+      { url: "/icons/android/mipmap-xxxhdpi/appicons.png", sizes: "192x192", type: "image/png" }
     ],
     apple: [
-      { url: "/App Icons/appstore.png", sizes: "180x180", type: "image/png" }
+      { url: "/icons/appstore.png", sizes: "180x180", type: "image/png" }
     ],
-    shortcut: "/App Icons/android/mipmap-xxxhdpi/appicons.png"
+    shortcut: "/icons/android/mipmap-xxxhdpi/appicons.png"
   },
 };
 
