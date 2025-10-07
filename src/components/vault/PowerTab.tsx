@@ -60,7 +60,7 @@ export default function PowerTab() {
   ];
 
   return (
-    <div className="w-full max-w-[80rem] mx-auto space-y-6 px-4">
+    <div className="w-full space-y-6">
       {/* Header with Stats */}
       <div className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">

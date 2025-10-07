@@ -371,8 +371,43 @@ export const InventorySection: React.FC = () => {
 
       {/* Content */}
       {activeTab === 'power' ? (
-        <div className="w-full max-w-[80rem] flex-1 px-4">
-          <PowerTab />
+        <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4"
+          style={{
+            touchAction: 'pan-y', // Only allow vertical panning within content
+            overscrollBehavior: 'contain' // Contain scrolling within this element
+          }}
+        >
+          <div className="flex h-auto w-full md:w-auto pl-[0.5rem] md:pl-0" style={{ minHeight: '600px', height: 'auto', maxHeight: '80vh', maxWidth: '1600px', gap: '20px' }} data-mobile-height="410px" data-desktop-height="auto">
+            
+            {/* Power Tab Content */}
+            <div 
+              className="w-full rounded-lg overflow-hidden card-fade-in" 
+              style={{ 
+                borderRadius: '20px'
+              }}
+            >
+              <div className="h-full flex flex-col">
+                <div 
+                  className="flex-1 overflow-y-auto overflow-x-hidden relative scrollbar-hide" 
+                  style={{ 
+                    touchAction: 'pan-y',
+                    WebkitOverflowScrolling: 'touch',
+                    overscrollBehavior: 'contain',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                    transform: 'translateZ(0)', // Forces hardware acceleration
+                    willChange: 'scroll-position', // Optimizes for scrolling
+                    paddingBottom: '120px', // Increased padding to ensure all cards are scrollable
+                    maxHeight: '60vh' // Limit height to ensure scrolling works properly
+                  }}
+                >
+                  <div className="space-y-2.5 pb-20 pt-4">
+                    <PowerTab />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4"
