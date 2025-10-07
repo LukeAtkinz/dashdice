@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error unlocking abilities:', error);
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
