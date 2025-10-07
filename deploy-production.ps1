@@ -34,7 +34,7 @@ git pull origin main
 
 # Merge development into main
 Write-Host "🔄 Merging development into main..." -ForegroundColor Blue
-$mergeResult = git merge development
+git merge development
 if ($LASTEXITCODE -eq 0) {
     Write-Host "✅ Merge successful" -ForegroundColor Green
 } else {
@@ -44,7 +44,7 @@ if ($LASTEXITCODE -eq 0) {
 
 # Push to production
 Write-Host "🚀 Deploying to production..." -ForegroundColor Blue
-$pushResult = git push origin main
+git push origin main
 if ($LASTEXITCODE -eq 0) {
     Write-Host "✅ Production deployment initiated!" -ForegroundColor Green
     Write-Host ""
