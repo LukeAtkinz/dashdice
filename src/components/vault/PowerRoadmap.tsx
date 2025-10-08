@@ -161,7 +161,7 @@ export default function PowerRoadmap({
 
                         {/* Category Icon */}
                         <div className="flex items-center gap-2 mb-2">
-                          <div className="text-lg">{categoryInfo.icon}</div>
+                          <div className="text-lg">{categoryInfo?.icon || '❓'}</div>
                           <span 
                             className="px-2 py-1 rounded text-xs font-bold uppercase text-white"
                             style={{ backgroundColor: rarityColors.border }}
