@@ -62,7 +62,13 @@ export default function PowerTab() {
   return (
     <div className="w-full space-y-6">
       {/* Header with Stats */}
-      <div className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm">
+      <div 
+        className="rounded-xl p-6 backdrop-blur-sm"
+        style={{
+          background: 'linear-gradient(135deg, #1F2937 0%, transparent 100%)',
+          border: '2px solid rgba(255, 255, 255, 0.3)'
+        }}
+      >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
             <h2 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: 'Audiowide' }}>
@@ -84,12 +90,17 @@ export default function PowerTab() {
               <button
                 key={view.key}
                 onClick={() => setActiveView(view.key as any)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-                  activeView === view.key
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
-                }`}
-                style={{ fontFamily: 'Montserrat' }}
+                className="px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center gap-2"
+                style={{
+                  fontFamily: 'Montserrat',
+                  background: activeView === view.key
+                    ? 'linear-gradient(135deg, #3B82F6 0%, transparent 100%)'
+                    : 'linear-gradient(135deg, #6B7280 0%, transparent 100%)',
+                  backdropFilter: 'blur(6px)',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  color: '#FFF',
+                  boxShadow: activeView === view.key ? '0 4px 15px rgba(59, 130, 246, 0.3)' : 'none'
+                }}
               >
                 <span>{view.icon}</span>
                 <span className="hidden sm:inline">{view.name}</span>
@@ -136,14 +147,16 @@ export default function PowerTab() {
               <button
                 key={category.key}
                 onClick={() => setSelectedCategory(category.key)}
-                className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all duration-200 flex items-center gap-2 ${
-                  selectedCategory === category.key
-                    ? 'text-white shadow-lg'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}
+                className="px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all duration-200 flex items-center gap-2"
                 style={{
-                  backgroundColor: selectedCategory === category.key ? category.color : undefined,
-                  fontFamily: 'Montserrat'
+                  fontFamily: 'Montserrat',
+                  background: selectedCategory === category.key
+                    ? `linear-gradient(135deg, ${category.color} 0%, transparent 100%)`
+                    : 'linear-gradient(135deg, #6B7280 0%, transparent 100%)',
+                  backdropFilter: 'blur(6px)',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  color: '#FFF',
+                  boxShadow: selectedCategory === category.key ? `0 4px 15px ${category.color}40` : 'none'
                 }}
               >
                 <span>{category.icon}</span>

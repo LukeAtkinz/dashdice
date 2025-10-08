@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Ability, UserAbility, UserLoadout, ABILITY_CATEGORIES } from '@/types/abilities';
 import { CATEGORY_COLORS, RARITY_COLORS } from '@/data/predefinedAbilities';
+import { CATEGORY_ICONS, RARITY_BACKGROUNDS } from '@/data/categoryIcons';
 import { useAbilities } from '@/context/AbilitiesContext';
 
 interface PowerCardProps {
@@ -70,12 +71,14 @@ export default function PowerCard({
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      className={`relative rounded-xl border-2 p-4 transition-all duration-300 ${
-        !isUnlocked ? 'opacity-60' : 'hover:scale-105'
+      className={`relative rounded-xl p-6 transition-all duration-300 ${
+        !isUnlocked ? 'opacity-60' : 'hover:scale-105 hover:shadow-xl'
       }`}
       style={{
-        borderColor: rarityColors.border,
-        background: `linear-gradient(135deg, ${rarityColors.background}88, ${rarityColors.background}44)`
+        border: '2px solid rgba(255, 255, 255, 0.3)',
+        background: `linear-gradient(135deg, ${rarityColors.background} 0%, transparent 100%)`,
+        backdropFilter: 'blur(6px)',
+        boxShadow: isUnlocked ? `0 4px 15px ${rarityColors.background}40` : undefined
       }}
     >
       {/* Lock Overlay for Locked Abilities */}
@@ -179,8 +182,14 @@ export default function PowerCard({
         <div className="flex gap-2">
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm transition-colors"
-            style={{ fontFamily: 'Montserrat' }}
+            className="flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+            style={{ 
+              fontFamily: 'Montserrat',
+              background: 'linear-gradient(135deg, #6B7280 0%, transparent 100%)',
+              backdropFilter: 'blur(6px)',
+              border: '2px solid rgba(255, 255, 255, 0.3)',
+              color: '#FFF'
+            }}
           >
             {showDetails ? 'Hide' : 'Details'}
           </button>
@@ -189,14 +198,24 @@ export default function PowerCard({
             <button
               onClick={handleEquip}
               disabled={isEquipping || isEquipped}
-              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isEquipped
-                  ? 'bg-green-600 text-white cursor-default'
+              className="flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+              style={{ 
+                fontFamily: 'Montserrat',
+                background: isEquipped 
+                  ? 'linear-gradient(135deg, #22C55E 0%, transparent 100%)'
                   : canEquip
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-              }`}
-              style={{ fontFamily: 'Montserrat' }}
+                  ? 'linear-gradient(135deg, #3B82F6 0%, transparent 100%)'
+                  : 'linear-gradient(135deg, #6B7280 0%, transparent 100%)',
+                backdropFilter: 'blur(6px)',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                color: isEquipped || canEquip ? '#FFF' : '#9CA3AF',
+                boxShadow: isEquipped 
+                  ? '0 4px 15px rgba(34, 197, 94, 0.3)'
+                  : canEquip
+                  ? '0 4px 15px rgba(59, 130, 246, 0.3)'
+                  : 'none',
+                cursor: isEquipped || !canEquip ? 'default' : 'pointer'
+              }}
             >
               {isEquipping ? 'Equipping...' : isEquipped ? 'Equipped' : 'Equip'}
             </button>

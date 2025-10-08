@@ -14,9 +14,10 @@ export interface Ability {
   category: 'tactical' | 'attack' | 'defense' | 'utility' | 'gamechanger';
   cooldown: number; // seconds
   maxUses?: number; // per match, undefined = unlimited
-  auraCost: number; // NEW — total aura required to activate
+  auraCost: number; // total aura required to activate
   hidden?: boolean; // default true — hidden from other player
   unlockLevel: number;
+  timing?: 'any_turn' | 'own_turn' | 'opponent_turn'; // NEW - when ability can be used
   iconUrl?: string;
   animationUrl?: string;
   sounds?: {
@@ -32,10 +33,10 @@ export interface Ability {
  * Defines what happens when an ability is activated
  */
 export interface AbilityEffect {
-  type: 'dice_reroll' | 'score_multiply' | 'shield' | 'combo_chain' | 'time_freeze' | 'steal_turn' | 'bonus_roll' | 'reveal_abilities' | 'steal_ability' | 'aura_gain' | 'aura_drain';
+  type: 'dice_reroll' | 'score_multiply' | 'shield' | 'combo_chain' | 'time_freeze' | 'steal_turn' | 'bonus_roll' | 'reveal_abilities' | 'steal_ability' | 'aura_gain' | 'aura_drain' | 'steal_points';
   value?: number; // Numeric value for the effect
   duration?: number; // Duration in seconds
-  condition?: string; // Special condition for activation
+  condition?: string; // Special condition for activation ('on_bank', 'on_bust', etc.)
   target?: 'self' | 'opponent' | 'both';
   metadata?: { [key: string]: any }; // Additional effect data
 }

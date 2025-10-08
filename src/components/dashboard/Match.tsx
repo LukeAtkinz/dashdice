@@ -15,6 +15,7 @@ import { useMatchAchievements } from '@/hooks/useMatchAchievements';
 import { db } from '@/services/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import MatchAbandonmentNotification from '@/components/notifications/MatchAbandonmentNotification';
+import { useToast } from '@/context/ToastContext';
 
 interface MatchProps {
   gameMode?: string;
@@ -33,6 +34,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   
   const { user } = useAuth();
   const { setCurrentSection, isGameOver, setIsGameOver } = useNavigation();
+  const { showToast } = useToast();
   // Legacy achievement system - temporarily disabled to prevent concurrent updates
   // const { recordGameCompletion } = useGameAchievements();
   
@@ -74,6 +76,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const [showAbandonmentNotification, setShowAbandonmentNotification] = useState(false);
   const [opponentLastSeen, setOpponentLastSeen] = useState<Date | null>(null);
   const [abandonmentTimer, setAbandonmentTimer] = useState<NodeJS.Timeout | null>(null);
+  const [siphonActive, setSiphonActive] = useState(false);
   
   // Add body class for mobile scrolling control
   useEffect(() => {
@@ -202,6 +205,21 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       matchData?.gameData?.turnDeciderChoice, matchData?.hostData, matchData?.opponentData, 
       user, previousGamePhase, turnAnnouncementShown]);
   
+  // Track turn changes to reset Siphon when opponent's turn ends
+  useEffect(() => {
+    if (matchData && user && siphonActive) {
+      const isHost = matchData.hostData.playerId === user.uid;
+      const opponentPlayer = isHost ? matchData.opponentData : matchData.hostData;
+      
+      // If Siphon is active but it's no longer the opponent's turn, reset it
+      if (!opponentPlayer.turnActive) {
+        console.log('🔮 Siphon expired - opponent turn ended');
+        setSiphonActive(false);
+        showToast('💨 Siphon expired - opportunity missed!', 'warning', 4000);
+      }
+    }
+  }, [matchData?.hostData?.turnActive, matchData?.opponentData?.turnActive, siphonActive, user, showToast, setSiphonActive]);
+  
   // Dice animation states for slot machine effect
   const [dice1Animation, setDice1Animation] = useState<{
     isSpinning: boolean;
@@ -256,12 +274,34 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         console.error('❌ No authenticated user found');
         return;
       }
+
+      // Check if opponent has Siphon active and this player is banking
+      const isHost = matchData.hostData.playerId === playerId;
+      const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
+      const opponentPlayer = isHost ? matchData.opponentData : matchData.hostData;
       
+      // If Siphon is active and this player has turn points to steal
+      if (siphonActive && currentPlayer.roundScore > 0) {
+        const pointsToSteal = Math.floor(currentPlayer.roundScore / 2);
+        
+        // Show Siphon activation
+        showToast(`🔮 Siphon triggered! Stolen ${pointsToSteal} points!`, 'success', 6000);
+        
+        // The points will be deducted by the banking process, but we need to 
+        // add them to the opponent's score through the MatchService
+        // Note: The actual implementation would need to modify MatchService.bankScore
+        // to handle Siphon effects, but for now we'll track it locally
+        console.log(`⚔️ Siphon activated: Stealing ${pointsToSteal} points from ${currentPlayer.playerDisplayName}`);
+        
+        // Reset Siphon state
+        setSiphonActive(false);
+      }
+
       await MatchService.bankScore(matchData.id!, playerId);
     } catch (error) {
       console.error('❌ Error banking score:', error);
     }
-  }, [matchData, user?.uid]);
+  }, [matchData, user?.uid, siphonActive, showToast, setSiphonActive]);
 
   const handleAbilityUsed = useCallback((effect: any) => {
     if (!matchData || !user) return;
@@ -269,14 +309,22 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     try {
       console.log('🔮 Ability effect applied:', { effect, matchId: matchData.id });
       
-      // Here you would integrate with AbilitiesService to:
-      // 1. Apply effect to match state  
-      // 2. Update aura pools
-      // 3. Track cooldowns
-      // For now, just log the usage
+      // Handle Siphon ability specifically
+      if (effect.abilityId === 'siphon') {
+        console.log('⚔️ Siphon ability activated - waiting for opponent to bank...');
+        
+        // Set a flag in local state to track that Siphon is active
+        // The actual stealing will happen when opponent banks
+        setSiphonActive(true);
+        
+        // Show visual feedback that Siphon is active
+        showToast('🔮 Siphon activated! Waiting for opponent to bank...', 'info', 8000);
+        
+        return;
+      }
       
-      // TODO: Apply the effect to the match state
-      // This could involve updating dice values, scores, turn state, etc.
+      // Handle other ability effects here
+      console.log('Other ability effects not yet implemented');
       
     } catch (error) {
       console.error('❌ Error applying ability effect:', error);

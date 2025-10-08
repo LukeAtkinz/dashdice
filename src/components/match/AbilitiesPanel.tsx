@@ -158,29 +158,43 @@ export default function AbilitiesPanel({
       return { disabled: true, reason: `${usageCount}/${ability.maxUses}` };
     }
     if (!canUse.canUse) return { disabled: true, reason: canUse.reason || 'Cannot use' };
-    if (!isPlayerTurn) return { disabled: true, reason: 'Wait' };
+    
+    // Special timing check for Siphon (opponent_turn timing)
+    if (ability.timing === 'opponent_turn') {
+      if (isPlayerTurn) return { disabled: true, reason: 'Opponent turn only' };
+    } else {
+      // Normal abilities require player turn
+      if (!isPlayerTurn) return { disabled: true, reason: 'Wait' };
+    }
     
     return { disabled: false, reason: '' };
   };
 
   return (
-    <div className={`fixed bottom-4 left-4 bg-gray-800/90 rounded-lg shadow-xl border border-gray-600 backdrop-blur-sm transition-all duration-300 ${
-      isExpanded ? 'w-96' : 'w-16'
-    }`}>
+    <div 
+      className={`fixed bottom-4 left-4 rounded-xl shadow-xl transition-all duration-300 ${
+        isExpanded ? 'w-96' : 'w-16'
+      }`}
+      style={{
+        background: 'linear-gradient(135deg, #1F2937 0%, transparent 100%)',
+        backdropFilter: 'blur(6px)',
+        border: '2px solid rgba(255, 255, 255, 0.3)'
+      }}
+    >
       {/* Aura Display & Toggle Button */}
       <div
-        className="p-3 cursor-pointer hover:bg-gray-700/50 rounded-lg transition-colors"
+        className="p-4 cursor-pointer hover:bg-white/10 rounded-xl transition-all duration-200"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         {isExpanded ? (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-purple-400 text-lg">🔮</span>
-              <span className="text-purple-400 font-bold">{playerAura}</span>
-              <span className="text-gray-400 text-sm">aura</span>
+              <span className="text-purple-400 font-bold" style={{ fontFamily: 'Audiowide' }}>{playerAura}</span>
+              <span className="text-gray-300 text-sm" style={{ fontFamily: 'Montserrat' }}>aura</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-medium text-white text-sm">Abilities</span>
+              <span className="font-medium text-white text-sm" style={{ fontFamily: 'Audiowide' }}>ABILITIES</span>
               <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
@@ -189,7 +203,7 @@ export default function AbilitiesPanel({
         ) : (
           <div className="flex flex-col items-center">
             <span className="text-purple-400 text-lg">🔮</span>
-            <span className="text-purple-400 text-xs font-bold">{playerAura}</span>
+            <span className="text-purple-400 text-xs font-bold" style={{ fontFamily: 'Audiowide' }}>{playerAura}</span>
           </div>
         )}
       </div>
@@ -201,7 +215,7 @@ export default function AbilitiesPanel({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="px-3 pb-3 space-y-2 max-h-64 overflow-y-auto"
+            className="px-4 pb-4 space-y-3 max-h-64 overflow-y-auto"
           >
             {equippedAbilities.map(({ category, ability }) => {
               const status = getAbilityStatus(ability);
@@ -213,13 +227,18 @@ export default function AbilitiesPanel({
                   key={ability.id}
                   onClick={() => handleAbilityClick(ability)}
                   disabled={status.disabled || isUsing === ability.id}
-                  className={`w-full p-3 rounded-lg border-2 transition-all text-left ${
+                  className={`w-full p-4 rounded-xl transition-all text-left ${
                     status.disabled || isUsing === ability.id
-                      ? 'opacity-50 cursor-not-allowed bg-gray-700/30 border-gray-600' 
-                      : 'hover:bg-gray-700/50 bg-gray-800/50 hover:scale-105 active:scale-95'
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : 'hover:scale-105 active:scale-95'
                   }`}
                   style={{
-                    borderColor: status.disabled ? '#6B7280' : categoryColors.primary
+                    background: status.disabled 
+                      ? 'linear-gradient(135deg, #6B7280 0%, transparent 100%)'
+                      : `linear-gradient(135deg, ${categoryColors.primary} 0%, transparent 100%)`,
+                    backdropFilter: 'blur(6px)',
+                    border: '2px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: !status.disabled ? `0 4px 15px ${categoryColors.primary}40` : 'none'
                   }}
                   whileHover={!status.disabled ? { y: -2 } : {}}
                   whileTap={!status.disabled ? { scale: 0.98 } : {}}
@@ -233,8 +252,12 @@ export default function AbilitiesPanel({
                         {categoryInfo.icon}
                       </div>
                       <div>
-                        <div className="font-medium text-white text-sm">{ability.name}</div>
-                        <div className="text-xs text-gray-400">{ability.description}</div>
+                        <div className="font-medium text-white text-sm" style={{ fontFamily: 'Audiowide' }}>
+                          {ability.name}
+                        </div>
+                        <div className="text-xs text-gray-300" style={{ fontFamily: 'Montserrat' }}>
+                          {ability.description}
+                        </div>
                       </div>
                     </div>
                     
