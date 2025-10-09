@@ -37,6 +37,8 @@ import { createTestMatch } from '@/utils/testMatchData';
 const DashboardContent: React.FC = () => {
   const { currentSection, sectionParams, setCurrentSection, isGameOver } = useNavigation();
   const { user } = useAuth();
+  
+  console.log('🎯 DASHBOARD CONTENT: currentSection is:', currentSection);
   const { DisplayBackgroundEquip } = useBackground();
   const { getOnlineFriendsCount } = useFriends();
   const { getBackgroundPosition } = useBackgroundPositioning();

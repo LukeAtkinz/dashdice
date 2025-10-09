@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { useAbilities } from '@/context/AbilitiesContext';
 import PowerCard from './PowerCard';
 import LoadoutByCategoryEditor from './LoadoutByCategoryEditor';
-import PowerRoadmap from './PowerRoadmap';
 import { ABILITY_CATEGORIES, CATEGORY_COLORS } from '@/types/abilities';
 
 export default function PowerTab() {
@@ -19,11 +18,11 @@ export default function PowerTab() {
     isInitialized
   } = useAbilities();
   
-  const [activeView, setActiveView] = useState<'collection' | 'loadouts' | 'progression' | 'roadmap'>('collection');
+  const [activeView, setActiveView] = useState<'collection' | 'loadouts'>('collection');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  // Debug logging
-  console.log('PowerTab Render:', {
+  console.log('🚨 PowerTab: Component starting to render!!!');
+  console.log('PowerTab Debug:', {
     allAbilitiesCount: allAbilities?.length || 0,
     userAbilitiesCount: userAbilities?.length || 0,
     isLoading,
@@ -75,7 +74,7 @@ export default function PowerTab() {
               POWER
             </h2>
             <p className="text-gray-300 text-sm" style={{ fontFamily: 'Montserrat' }}>
-              Manage abilities, loadouts, and progression
+              Manage abilities and loadouts
             </p>
           </div>
           
@@ -83,9 +82,7 @@ export default function PowerTab() {
           <div className="flex gap-2 flex-wrap">
             {[
               { key: 'collection', name: 'Collection', icon: '📚' },
-              { key: 'loadouts', name: 'Loadouts', icon: '⚔️' },
-              { key: 'progression', name: 'Progress', icon: '📈' },
-              { key: 'roadmap', name: 'Roadmap', icon: '🗺️' }
+              { key: 'loadouts', name: 'Loadouts', icon: '⚔️' }
             ].map(view => (
               <button
                 key={view.key}
@@ -159,7 +156,7 @@ export default function PowerTab() {
                   boxShadow: selectedCategory === category.key ? `0 4px 15px ${category.color}40` : 'none'
                 }}
               >
-                <span>{category.icon}</span>
+                <span>{category.key === 'all' ? '🌟' : category.key === 'unlocked' ? '🔓' : '⚡'}</span>
                 <span>{category.name}</span>
               </button>
             ))}
@@ -207,66 +204,6 @@ export default function PowerTab() {
           loadouts={loadouts}
           activeLoadout={activeLoadout}
           maxStarPoints={progressionSummary?.starPoints || 5}
-        />
-      )}
-
-      {activeView === 'progression' && (
-        <div className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm">
-          <h3 className="text-2xl font-bold text-white mb-6" style={{ fontFamily: 'Audiowide' }}>
-            PROGRESSION
-          </h3>
-          
-          {/* Level Progress */}
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-white font-semibold">Level {progressionSummary?.currentLevel || 1}</span>
-              <span className="text-gray-400 text-sm">
-                {progressionSummary?.xpProgress || 0} / {progressionSummary?.nextLevelXP || 500} XP
-              </span>
-            </div>
-            <div className="w-full bg-gray-700 rounded-full h-3">
-              <div 
-                className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500"
-                style={{ 
-                  width: `${Math.min(100, ((progressionSummary?.xpProgress || 0) / (progressionSummary?.nextLevelXP || 500)) * 100)}%` 
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Recent Unlocks */}
-          <div>
-            <h4 className="text-lg font-semibold text-white mb-4" style={{ fontFamily: 'Audiowide' }}>
-              RECENT UNLOCKS
-            </h4>
-            <div className="space-y-2">
-              {userAbilities.slice(-5).map(userAbility => {
-                const ability = allAbilities.find(a => a.id === userAbility.abilityId);
-                if (!ability) return null;
-                
-                return (
-                  <div key={userAbility.id} className="flex items-center gap-3 p-3 bg-gray-700/50 rounded-lg">
-                    <div className="text-2xl">{ABILITY_CATEGORIES[ability.category]?.icon}</div>
-                    <div>
-                      <p className="text-white font-medium">{ability.name}</p>
-                      <p className="text-gray-400 text-sm capitalize">{ability.category} • {ability.rarity}</p>
-                    </div>
-                  </div>
-                );
-              })}
-              {userAbilities.length === 0 && (
-                <p className="text-gray-400 text-center py-4">No abilities unlocked yet</p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeView === 'roadmap' && (
-        <PowerRoadmap
-          progression={progressionSummary}
-          allAbilities={allAbilities}
-          userAbilities={userAbilities}
         />
       )}
     </div>

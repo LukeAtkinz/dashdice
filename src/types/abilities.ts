@@ -212,31 +212,31 @@ export interface AuraEvent {
 export const ABILITY_CATEGORIES = {
   tactical: {
     name: 'Tactical',
-    icon: '🎯',
+    icon: '/Abilities/Catagories/Tactical/Tactical.webp',
     color: 'blue',
     description: 'Information and strategic advantages'
   },
   attack: {
     name: 'Attack',
-    icon: '⚔️',
+    icon: '/Abilities/Catagories/Attack/Attack.webp',
     color: 'red',
     description: 'Offensive abilities that affect opponents'
   },
   defense: {
     name: 'Defense',
-    icon: '🛡️',
+    icon: '/Abilities/Catagories/Defense/Defense.webp',
     color: 'green',
     description: 'Protective abilities and counters'
   },
   utility: {
     name: 'Utility',
-    icon: '⚡',
+    icon: '/Abilities/Catagories/Utility/Utility.webp',
     color: 'yellow',
     description: 'Dice manipulation and turn control'
   },
   gamechanger: {
     name: 'Game Changer',
-    icon: '💫',
+    icon: '/Abilities/Catagories/Game Changer/Game Changer.webp',
     color: 'purple',
     description: 'Powerful abilities that can change the match'
   }

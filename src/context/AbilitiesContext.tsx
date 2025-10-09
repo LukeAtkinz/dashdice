@@ -60,6 +60,8 @@ interface AbilitiesContextType {
 const AbilitiesContext = createContext<AbilitiesContextType | undefined>(undefined);
 
 export function AbilitiesProvider({ children }: { children: ReactNode }) {
+  console.log('🚨 ABILITIES PROVIDER: STARTING TO RENDER!!!');
+  
   const { user } = useAuth();
   
   // Core State
@@ -76,10 +78,12 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
 
   // Initialize data when user changes
   useEffect(() => {
+    console.log('🔄 AbilitiesContext: useEffect triggered, user:', user ? 'authenticated' : 'guest');
     if (user) {
       initializeAbilitiesData();
     } else {
       // For guest users, provide read-only access to predefined abilities
+      console.log('🔄 AbilitiesContext: Setting up guest mode with predefined abilities');
       setAllAbilities(ALL_PREDEFINED_ABILITIES);
       setProgressionSummary({
         currentLevel: 1,
@@ -90,6 +94,7 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
       });
       setIsLoading(false);
       setIsInitialized(true);
+      console.log('✅ AbilitiesContext: Guest mode initialized');
     }
   }, [user]);
 
@@ -107,25 +112,34 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
   const initializeAbilitiesData = async () => {
     if (!user) return;
     
+    console.log('🔄 AbilitiesContext: Starting initialization for user:', user.uid);
     setIsLoading(true);
+    
     try {
-      // Load all data in parallel
+      console.log('🔄 AbilitiesContext: Trying Firebase services...');
+      // Try to load Firebase data with a simple timeout
+      const abilities = await Promise.race([
+        AbilitiesService.getAllAbilities(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
+      ]) as Ability[];
+      
+      console.log('✅ AbilitiesContext: Got abilities from Firebase:', abilities.length);
+      
+      // If we get here, Firebase is working, continue with full initialization
       const [
-        abilities,
         userAbils,
         userLoadouts,
         userProgression,
         summary
       ] = await Promise.all([
-        AbilitiesService.getAllAbilities(),
         AbilitiesService.getUserAbilities(user.uid),
         AbilitiesService.getUserLoadouts(user.uid),
         AbilitiesService.getUserProgression(user.uid),
         AbilitiesService.getProgressionSummary(user.uid)
       ]);
 
-      // If no abilities in database, use predefined ones for development
-      const finalAbilities = abilities.length > 0 ? abilities : ALL_PREDEFINED_ABILITIES;
+      // If no abilities in database, use predefined ones for development  
+      const finalAbilities = abilities && abilities.length > 0 ? abilities : ALL_PREDEFINED_ABILITIES;
       setAllAbilities(finalAbilities);
       
       // If no user abilities, create some mock ones for development
@@ -166,7 +180,7 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
         setActiveLoadoutState(mockLoadout);
       } else {
         setLoadouts(userLoadouts);
-        const active = userLoadouts.find(l => l.isActive);
+        const active = userLoadouts.find((l: UserLoadout) => l.isActive);
         setActiveLoadoutState(active || null);
       }
       
@@ -205,18 +219,55 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
       };
       setProgressionSummary(finalSummary);
       
+      console.log('✅ AbilitiesContext: Initialization completed successfully');
       setIsInitialized(true);
     } catch (error) {
-      console.error('Error initializing abilities data:', error);
-      // Fallback to just predefined abilities if everything fails
+      console.error('❌ AbilitiesContext: Error initializing abilities data:', error);
+      console.log('🔄 AbilitiesContext: Falling back to predefined abilities');
+      
+      // Fallback to predefined abilities - this should always work
       setAllAbilities(ALL_PREDEFINED_ABILITIES);
+      
+      // Create mock user abilities 
+      const mockUserAbilities: UserAbility[] = [
+        {
+          id: 'user_ability_1',
+          userId: user.uid,
+          abilityId: 'siphon',
+          unlockedAt: new Date() as any,
+          timesUsed: 0,
+          successRate: 0,
+          isEquipped: false,
+          equippedSlot: undefined
+        }
+      ];
+      setUserAbilities(mockUserAbilities);
+      
+      // Create mock loadout
+      const mockLoadout: UserLoadout = {
+        id: 'loadout_1',
+        userId: user.uid,
+        name: 'Default Loadout',
+        abilities: {
+          attack: 'siphon'
+        },
+        totalStarCost: 3,
+        maxStarPoints: 15,
+        isActive: true,
+        createdAt: new Date() as any,
+        lastUsed: new Date() as any
+      };
+      setLoadouts([mockLoadout]);
+      setActiveLoadoutState(mockLoadout);
+      
       setProgressionSummary({
         currentLevel: 1,
-        unlockedAbilities: 0,
+        unlockedAbilities: 1,
         totalAbilities: ALL_PREDEFINED_ABILITIES.length,
         starPoints: 5,
         maxStarPoints: 15
       });
+      console.log('✅ AbilitiesContext: Fallback initialization completed');
       setIsInitialized(true);
     } finally {
       setIsLoading(false);

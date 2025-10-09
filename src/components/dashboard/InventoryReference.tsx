@@ -11,8 +11,12 @@ import { FriendCardPreview } from '@/components/ui/FriendCardPreview';
 import PowerTab from '@/components/vault/PowerTab';
 
 export const InventorySection: React.FC = () => {
+  console.log('🚨 INVENTORY SECTION: COMPONENT IS STARTING TO RENDER!!!');
+  
   const { setCurrentSection } = useNavigation();
   const { user } = useAuth();
+  
+  console.log('🏪 InventoryReference: Component rendering, user:', user ? 'authenticated' : 'not authenticated');
   const { 
     availableBackgrounds, 
     DisplayBackgroundEquip, 
@@ -23,8 +27,15 @@ export const InventorySection: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState('power'); // 'display', 'match', or 'power' - Start with power for testing
   const [selectedBackground, setSelectedBackground] = useState<any>(null);
+  
+  console.log('🏪 InventoryReference: activeTab is:', activeTab);
+  if (activeTab === 'power') {
+    console.log('🚨 INVENTORY: About to render PowerTab - activeTab is power!');
+  }
   const [loading, setLoading] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+
+  // Component tracking (cleaned up)
 
   // Detect screen size
   useEffect(() => {
