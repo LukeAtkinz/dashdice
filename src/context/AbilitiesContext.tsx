@@ -134,21 +134,12 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
           {
             id: 'user_ability_1',
             userId: user.uid,
-            abilityId: finalAbilities[0]?.id || 'lucky_reroll',
+            abilityId: finalAbilities[0]?.id || 'siphon',
             unlockedAt: new Date() as any,
             timesUsed: 5,
             successRate: 80,
             isEquipped: true,
-            equippedSlot: 'tactical'
-          },
-          {
-            id: 'user_ability_2', 
-            userId: user.uid,
-            abilityId: finalAbilities[1]?.id || 'focus_shot',
-            unlockedAt: new Date() as any,
-            timesUsed: 3,
-            successRate: 75,
-            isEquipped: false
+            equippedSlot: 'attack'
           }
         ];
         setUserAbilities(mockUserAbilities);
@@ -163,9 +154,9 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
           userId: user.uid,
           name: 'Default Loadout',
           abilities: {
-            tactical: finalAbilities[0]?.id || 'lucky_reroll'
+            attack: finalAbilities[0]?.id || 'siphon'
           },
-          totalStarCost: 1,
+          totalStarCost: 3,
           maxStarPoints: 5,
           isActive: true,
           createdAt: new Date() as any,
@@ -193,8 +184,8 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
           unlockedAbilities: [finalAbilities[0]?.id || 'lucky_reroll', finalAbilities[1]?.id || 'focus_shot'],
           stats: {
             abilitiesUsed: 8,
-            mostUsedAbility: finalAbilities[0]?.id || 'lucky_reroll',
-            favoriteCategory: 'tactical',
+            mostUsedAbility: finalAbilities[0]?.id || 'siphon',
+            favoriteCategory: 'attack',
             averageMatchXP: 45
           },
           milestones: []
@@ -207,7 +198,7 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
       // Set progression summary or mock data
       const finalSummary = summary || {
         currentLevel: 1,
-        unlockedAbilities: 2,
+        unlockedAbilities: 1,
         totalAbilities: finalAbilities.length,
         starPoints: 5,
         maxStarPoints: 15
