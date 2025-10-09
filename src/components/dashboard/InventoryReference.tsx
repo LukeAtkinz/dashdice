@@ -21,7 +21,7 @@ export const InventorySection: React.FC = () => {
     setMatchBackgroundEquip
   } = useBackground();
 
-  const [activeTab, setActiveTab] = useState('display'); // 'display', 'match', or 'power'
+  const [activeTab, setActiveTab] = useState('power'); // 'display', 'match', or 'power' - Start with power for testing
   const [selectedBackground, setSelectedBackground] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
