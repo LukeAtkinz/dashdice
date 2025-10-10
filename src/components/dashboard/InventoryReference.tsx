@@ -289,9 +289,9 @@ export const InventorySection: React.FC = () => {
           Vault
         </h1>
         
-        {/* Mobile Title */}
+        {/* Mobile Title - Hidden when Power tab is active */}
         <h1 
-          className="block md:hidden text-5xl font-bold text-white mb-4"
+          className={`block md:hidden text-5xl font-bold text-white mb-4 ${activeTab === 'power' ? 'hidden' : ''}`}
           style={{
             fontFamily: "Audiowide",
             textTransform: "uppercase",
@@ -300,9 +300,40 @@ export const InventorySection: React.FC = () => {
         >
           Vault
         </h1>
-      </div>      {/* Navigation */}
+      </div>
+      
+      {/* Mobile Power Tab Loadout Card - Positioned tightly above navigation */}
+      <div className="block md:hidden w-full max-w-[60rem] px-4 mb-1">
+        {activeTab === 'power' && <PowerTab mobileHeaderOnly={true} />}
+      </div>
+      
+      {/* Navigation */}
       <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8 flex-shrink-0">
         <div className="flex items-center justify-center gap-2 md:gap-4">
+          <button
+            onClick={() => handleTabChange('power')}
+            className={`tab-button nav-button ${activeTab === 'power' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] transition-all duration-300 h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px]`}
+            style={{
+              display: 'flex',
+              width: 'fit-content',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '10px',
+              border: activeTab === 'power' ? '2px solid #FFD700' : '2px solid transparent',
+              borderRadius: '18px',
+              background: 'transparent',
+              cursor: 'pointer',
+            }}
+          >
+            <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
+              color: activeTab === 'power' ? '#FFF' : '#FFF', 
+              fontFamily: 'Audiowide', 
+              fontWeight: 400, 
+              textTransform: 'uppercase' 
+            }}>
+              Power
+            </span>
+          </button>
           <button
             onClick={() => handleTabChange('display')}
             className={`tab-button nav-button ${activeTab === 'display' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] transition-all duration-300 h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px]`}
@@ -351,30 +382,6 @@ export const InventorySection: React.FC = () => {
               Flexin
             </span>
           </button>
-          <button
-            onClick={() => handleTabChange('power')}
-            className={`tab-button nav-button ${activeTab === 'power' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] transition-all duration-300 h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px]`}
-            style={{
-              display: 'flex',
-              width: 'fit-content',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: '10px',
-              border: activeTab === 'power' ? '2px solid #FFD700' : '2px solid transparent',
-              borderRadius: '18px',
-              background: 'transparent',
-              cursor: 'pointer',
-            }}
-          >
-            <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
-              color: activeTab === 'power' ? '#FFF' : '#FFF', 
-              fontFamily: 'Audiowide', 
-              fontWeight: 400, 
-              textTransform: 'uppercase' 
-            }}>
-              Power
-            </span>
-          </button>
         </div>
       </div>
 
@@ -413,7 +420,7 @@ export const InventorySection: React.FC = () => {
                   }}
                 >
                   <div className="space-y-2.5 pb-20 pt-4">
-                    <PowerTab />
+                    <PowerTab mobileHeaderOnly={false} />
                   </div>
                 </div>
               </div>

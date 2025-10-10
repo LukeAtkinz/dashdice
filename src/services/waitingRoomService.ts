@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { WaitingRoom, WaitingRoomPlayer } from '../types';
+import { UserService } from './userService';
 
 export class WaitingRoomService {
   private static readonly COLLECTION_NAME = 'waitingroom';
@@ -88,6 +89,14 @@ export class WaitingRoomService {
     }
   ): Promise<string> {
     try {
+      // Load the user's power loadouts for the specific game mode
+      const gameModePowerLoadout = await UserService.getPowerLoadoutForGameMode(
+        hostData.uid, 
+        gameMode as keyof import('./userService').UserPowerLoadouts
+      );
+      
+      console.log(`🔮 WaitingRoomService: Loaded power loadout for ${gameMode}:`, gameModePowerLoadout);
+
       const roomData = {
         gameMode,
         status: 'waiting',
@@ -99,7 +108,10 @@ export class WaitingRoomService {
           type: gameMode,
           settings: this.getGameModeSettings(gameMode)
         },
-        hostData,
+        hostData: {
+          ...hostData,
+          powerLoadout: gameModePowerLoadout // Add power loadout to host data
+        },
         players: [{
           uid: hostData.uid,
           displayName: hostData.displayName,
@@ -156,6 +168,14 @@ export class WaitingRoomService {
         throw new Error('Room is full');
       }
 
+      // Load the user's power loadouts for the game mode
+      const gameModePowerLoadout = await UserService.getPowerLoadoutForGameMode(
+        playerData.uid, 
+        roomData.gameMode as keyof import('./userService').UserPowerLoadouts
+      );
+      
+      console.log(`🔮 WaitingRoomService: Loaded opponent power loadout for ${roomData.gameMode}:`, gameModePowerLoadout);
+
       const newPlayer: WaitingRoomPlayer = {
         uid: playerData.uid,
         displayName: playerData.displayName,
@@ -165,9 +185,16 @@ export class WaitingRoomService {
         ready: false
       };
 
+      // Add opponent data with power loadout to the room
+      const opponentData = {
+        ...playerData,
+        powerLoadout: gameModePowerLoadout
+      };
+
       await updateDoc(roomRef, {
         players: [...currentPlayers, newPlayer],
         currentPlayers: currentPlayers.length + 1,
+        opponentData, // Add opponent data with power loadout
         updatedAt: serverTimestamp()
       });
 

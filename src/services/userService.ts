@@ -9,6 +9,23 @@ interface Background {
   type: 'image' | 'video' | 'gradient';
 }
 
+// Power Loadout interface for game mode specific ability loadouts
+export interface PowerLoadout {
+  tactical?: string;
+  attack?: string;
+  defense?: string;
+  utility?: string;
+  gamechanger?: string;
+}
+
+export interface UserPowerLoadouts {
+  'quick-fire': PowerLoadout;
+  'classic': PowerLoadout;
+  'zero-hour': PowerLoadout;
+  'last-line': PowerLoadout;
+  defaultLoadout?: PowerLoadout;
+}
+
 export interface UserProfile {
   uid: string;
   email: string;
@@ -24,6 +41,7 @@ export interface UserProfile {
     matchBackgroundEquipped: Background;
     ownedBackgrounds: string[];
   };
+  powerLoadouts?: UserPowerLoadouts;
   stats: {
     bestStreak: number;
     currentStreak: number;
@@ -74,6 +92,13 @@ export class UserService {
             displayBackgroundEquipped: userData.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
             matchBackgroundEquipped: userData.inventory?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
             ownedBackgrounds: userData.inventory?.ownedBackgrounds || userData.ownedBackgrounds || ['Relax']
+          },
+          powerLoadouts: userData.powerLoadouts || {
+            'quick-fire': {},
+            'classic': {},
+            'zero-hour': {},
+            'last-line': {},
+            defaultLoadout: {}
           },
           stats: {
             bestStreak: userData.stats?.bestStreak || 0,
@@ -428,6 +453,97 @@ export class UserService {
       console.log(`✅ Successfully updated profile picture`);
     } catch (error) {
       console.error('❌ Error updating profile picture:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get user's power loadouts
+   */
+  static async getUserPowerLoadouts(uid: string): Promise<UserPowerLoadouts | null> {
+    try {
+      console.log('⚡ UserService: Fetching power loadouts for UID:', uid);
+      
+      const userRef = doc(db, 'users', uid);
+      const userSnap = await getDoc(userRef);
+      
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        return userData.powerLoadouts || {
+          'quick-fire': {},
+          'classic': {},
+          'zero-hour': {},
+          'last-line': {},
+          defaultLoadout: {}
+        };
+      } else {
+        console.log('❌ UserService: User document not found for power loadouts:', uid);
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ UserService: Error fetching power loadouts:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update power loadout for a specific game mode
+   */
+  static async updatePowerLoadout(
+    uid: string, 
+    gameMode: keyof UserPowerLoadouts, 
+    loadout: PowerLoadout
+  ): Promise<void> {
+    try {
+      console.log(`⚡ UserService: Updating ${gameMode} loadout for user:`, uid, loadout);
+      
+      const userRef = doc(db, 'users', uid);
+      
+      // Create the update object with nested field update
+      const updateData = {
+        [`powerLoadouts.${gameMode}`]: loadout,
+        updatedAt: new Date()
+      };
+      
+      await updateDoc(userRef, updateData);
+      
+      console.log(`✅ UserService: Successfully updated ${gameMode} loadout`);
+    } catch (error: any) {
+      console.error(`❌ UserService: Error updating ${gameMode} loadout:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update all power loadouts at once
+   */
+  static async updateAllPowerLoadouts(uid: string, loadouts: UserPowerLoadouts): Promise<void> {
+    try {
+      console.log('⚡ UserService: Updating all power loadouts for user:', uid);
+      
+      const userRef = doc(db, 'users', uid);
+      
+      await updateDoc(userRef, {
+        powerLoadouts: loadouts,
+        updatedAt: new Date()
+      });
+      
+      console.log('✅ UserService: Successfully updated all power loadouts');
+    } catch (error: any) {
+      console.error('❌ UserService: Error updating all power loadouts:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get power loadout for a specific game mode
+   */
+  static async getPowerLoadoutForGameMode(uid: string, gameMode: keyof UserPowerLoadouts): Promise<PowerLoadout | null> {
+    try {
+      const loadouts = await this.getUserPowerLoadouts(uid);
+      return loadouts ? (loadouts[gameMode] || {}) : null;
+    } catch (error) {
+      console.error(`❌ UserService: Error fetching ${gameMode} loadout:`, error);
       throw error;
     }
   }

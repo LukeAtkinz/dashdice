@@ -21,7 +21,6 @@ export default function AbilitiesPanel({
   playerId
 }: AbilitiesPanelProps) {
   const { 
-    activeLoadout, 
     allAbilities, 
     useAbility, 
     canUseAbilityInMatch
@@ -30,6 +29,11 @@ export default function AbilitiesPanel({
   const [isExpanded, setIsExpanded] = useState(false);
   const [cooldowns, setCooldowns] = useState<{ [key: string]: number }>({});
   const [isUsing, setIsUsing] = useState<string | null>(null);
+
+  // Get player's power loadout from match metadata
+  const playerPowerLoadout = (matchData.gameData as any).powerLoadouts?.[playerId] || 
+                           (matchData.hostData.playerId === playerId ? (matchData.hostData as any).powerLoadout : (matchData.opponentData as any)?.powerLoadout) ||
+                           null;
 
   // Get player's current aura from match data
   const playerAura = matchData.gameData.playerAura?.[playerId] || 0;
@@ -82,18 +86,18 @@ export default function AbilitiesPanel({
     return () => clearInterval(interval);
   }, []);
 
-  if (!activeLoadout) {
+  if (!playerPowerLoadout) {
     return (
       <div className="fixed bottom-4 left-4 bg-gray-800/90 rounded-lg p-4 border border-gray-600 backdrop-blur-sm">
         <div className="text-center text-gray-400">
           <div className="text-2xl mb-2">🔮</div>
-          <p className="text-sm">No active loadout</p>
+          <p className="text-sm">No power loadout</p>
         </div>
       </div>
     );
   }
 
-  const equippedAbilities = Object.entries(activeLoadout.abilities)
+  const equippedAbilities = Object.entries(playerPowerLoadout.abilities || {})
     .filter(([_, abilityId]) => abilityId)
     .map(([category, abilityId]) => {
       const ability = allAbilities.find(a => a.id === abilityId);

@@ -1,211 +1,981 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAbilities } from '@/context/AbilitiesContext';
+import { useAuth } from '@/context/AuthContext';
+import { UserService, PowerLoadout } from '@/services/userService';
 import PowerCard from './PowerCard';
-import LoadoutByCategoryEditor from './LoadoutByCategoryEditor';
 import { ABILITY_CATEGORIES, CATEGORY_COLORS } from '@/types/abilities';
 
-export default function PowerTab() {
+// Game modes configuration
+const GAME_MODES = [
+  {
+    id: 'quick-fire',
+    name: 'Quick Fire',
+    color: '#FF6B35',
+    gradient: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)',
+    maxAbilities: 5
+  },
+  {
+    id: 'classic',
+    name: 'Classic Mode', 
+    color: '#4F46E5',
+    gradient: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
+    maxAbilities: 5
+  },
+  {
+    id: 'zero-hour',
+    name: 'Zero Hour',
+    color: '#DC2626',
+    gradient: 'linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)',
+    maxAbilities: 5
+  },
+  {
+    id: 'last-line',
+    name: 'Last Line',
+    color: '#059669',
+    gradient: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+    maxAbilities: 5
+  }
+];
+
+// Category slot configuration - one slot per category
+const CATEGORY_SLOTS = [
+  { key: 'tactical', name: 'Tactical', icon: '/Abilities/Catagories/Tactical/Tactical.webp' },
+  { key: 'attack', name: 'Attack', icon: '/Abilities/Catagories/Attack/Attack.webp' },
+  { key: 'defense', name: 'Defense', icon: '/Abilities/Catagories/Defense/Defense.webp' },
+  { key: 'utility', name: 'Utility', icon: '/Abilities/Catagories/Utility/Utility.webp' },
+  { key: 'gamechanger', name: 'Game Changer', icon: '/Abilities/Catagories/Game Changer/Game Changer.webp' }
+];
+
+export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnly?: boolean }) {
   const {
     allAbilities,
     userAbilities,
-    activeLoadout,
-    loadouts,
-    progressionSummary,
     isLoading,
     isInitialized
   } = useAbilities();
   
-  const [activeView, setActiveView] = useState<'collection' | 'loadouts'>('collection');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const { user } = useAuth();
+  
+  const [currentGameModeIndex, setCurrentGameModeIndex] = useState(0);
+  const [gameModeLoadouts, setGameModeLoadouts] = useState<Record<string, Record<string, string>>>({
+    'quick-fire': {},
+    'classic': {},
+    'zero-hour': {},
+    'last-line': {}
+  });
+  const [isLoadingLoadouts, setIsLoadingLoadouts] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Load loadouts from Firebase when user is available
+  useEffect(() => {
+    if (user && isInitialized) {
+      loadUserLoadouts();
+    }
+  }, [user, isInitialized]);
+
+  const loadUserLoadouts = async () => {
+    if (!user) return;
+    
+    try {
+      setIsLoadingLoadouts(true);
+      console.log('🔄 PowerTab: Loading user loadouts from Firebase');
+      
+      const powerLoadouts = await UserService.getUserPowerLoadouts(user.uid);
+      
+      if (powerLoadouts) {
+        // Convert Firebase format to component format
+        const loadouts: Record<string, Record<string, string>> = {
+          'quick-fire': {},
+          'classic': {},
+          'zero-hour': {},
+          'last-line': {}
+        };
+
+        // Convert PowerLoadout to Record<string, string> format
+        Object.keys(loadouts).forEach(gameMode => {
+          const powerLoadout = powerLoadouts[gameMode as keyof typeof powerLoadouts];
+          if (powerLoadout) {
+            loadouts[gameMode] = {
+              tactical: powerLoadout.tactical || '',
+              attack: powerLoadout.attack || '',
+              defense: powerLoadout.defense || '',
+              utility: powerLoadout.utility || '',
+              gamechanger: powerLoadout.gamechanger || ''
+            };
+            // Remove empty strings
+            Object.keys(loadouts[gameMode]).forEach(key => {
+              if (!loadouts[gameMode][key]) {
+                delete loadouts[gameMode][key];
+              }
+            });
+          }
+        });
+        
+        setGameModeLoadouts(loadouts);
+        console.log('✅ PowerTab: Loaded loadouts from Firebase:', loadouts);
+      } else {
+        console.log('📝 PowerTab: No existing loadouts found, using defaults');
+      }
+    } catch (error) {
+      console.error('❌ PowerTab: Error loading loadouts:', error);
+    } finally {
+      setIsLoadingLoadouts(false);
+    }
+  };
+
+  const saveLoadoutToFirebase = async (gameMode: string, loadout: Record<string, string>) => {
+    if (!user) return;
+
+    try {
+      setIsSaving(true);
+      console.log(`💾 PowerTab: Saving ${gameMode} loadout to Firebase:`, loadout);
+      
+      // Convert component format to Firebase format
+      const powerLoadout: PowerLoadout = {
+        tactical: loadout.tactical || undefined,
+        attack: loadout.attack || undefined,
+        defense: loadout.defense || undefined,
+        utility: loadout.utility || undefined,
+        gamechanger: loadout.gamechanger || undefined
+      };
+
+      // Remove undefined values
+      Object.keys(powerLoadout).forEach(key => {
+        if (powerLoadout[key as keyof PowerLoadout] === undefined) {
+          delete powerLoadout[key as keyof PowerLoadout];
+        }
+      });
+
+      await UserService.updatePowerLoadout(
+        user.uid, 
+        gameMode as 'quick-fire' | 'classic' | 'zero-hour' | 'last-line', 
+        powerLoadout
+      );
+      
+      console.log(`✅ PowerTab: Successfully saved ${gameMode} loadout to Firebase`);
+    } catch (error) {
+      console.error(`❌ PowerTab: Error saving ${gameMode} loadout:`, error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   console.log('🚨 PowerTab: Component starting to render!!!');
   console.log('PowerTab Debug:', {
     allAbilitiesCount: allAbilities?.length || 0,
     userAbilitiesCount: userAbilities?.length || 0,
     isLoading,
-    isInitialized,
-    progressionSummary
+    isInitialized
   });
 
-  if (!isInitialized || isLoading) {
+  if (!isInitialized || isLoading || isLoadingLoadouts) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        <span className="ml-3 text-white font-medium">Loading abilities...</span>
+        <span className="ml-3 text-white font-medium">
+          {isLoadingLoadouts ? 'Loading loadouts...' : 'Loading abilities...'}
+        </span>
       </div>
     );
   }
 
-  const filteredAbilities = allAbilities.filter(ability => {
-    if (selectedCategory === 'all') return true;
-    if (selectedCategory === 'unlocked') {
-      return userAbilities.some(ua => ua.abilityId === ability.id);
-    }
-    return ability.category === selectedCategory;
-  });
+  const currentGameMode = GAME_MODES[currentGameModeIndex];
+  const currentLoadout = gameModeLoadouts[currentGameMode.id] || {};
 
-  const categoryOptions = [
-    { key: 'all', name: 'All', icon: '🌟', color: '#6B7280' },
-    { key: 'unlocked', name: 'Unlocked', icon: '🔓', color: '#10B981' },
-    ...Object.entries(ABILITY_CATEGORIES).map(([key, cat]) => ({
-      key,
-      name: cat.name,
-      icon: cat.icon,
-      color: CATEGORY_COLORS[key as keyof typeof CATEGORY_COLORS]?.primary || '#6B7280'
-    }))
+  // Helper functions
+  const nextGameMode = () => {
+    setCurrentGameModeIndex((prev) => (prev + 1) % GAME_MODES.length);
+  };
+
+  const prevGameMode = () => {
+    setCurrentGameModeIndex((prev) => (prev - 1 + GAME_MODES.length) % GAME_MODES.length);
+  };
+
+  const assignAbilityToCategory = (abilityId: string, category: string) => {
+    const newLoadouts = {
+      ...gameModeLoadouts,
+      [currentGameMode.id]: {
+        ...gameModeLoadouts[currentGameMode.id],
+        [category]: abilityId
+      }
+    };
+    
+    setGameModeLoadouts(newLoadouts);
+    
+    // Save to Firebase
+    saveLoadoutToFirebase(currentGameMode.id, newLoadouts[currentGameMode.id]);
+  };
+
+  const removeAbilityFromCategory = (category: string) => {
+    const newLoadout = { ...gameModeLoadouts[currentGameMode.id] };
+    delete newLoadout[category];
+    
+    const newLoadouts = {
+      ...gameModeLoadouts,
+      [currentGameMode.id]: newLoadout
+    };
+    
+    setGameModeLoadouts(newLoadouts);
+    
+    // Save to Firebase
+    saveLoadoutToFirebase(currentGameMode.id, newLoadout);
+  };
+
+  // Get abilities by category for placeholders
+  const getAbilitiesByCategory = () => {
+    const categories = Object.keys(ABILITY_CATEGORIES);
+    return categories.map(category => {
+      const categoryInfo = ABILITY_CATEGORIES[category as keyof typeof ABILITY_CATEGORIES];
+      const abilities = allAbilities.filter(ability => ability.category === category);
+      return { category, categoryInfo, abilities };
+    });
+  };
+
+  const categoryGroups = getAbilitiesByCategory();
+
+  // Random icons for "Coming Soon" abilities
+  const comingSoonIcons = [
+    '/Abilities/hand holding light bulb.png',
+    '/Abilities/hand holding axe.png',
+    '/Abilities/hand holding book.png',
+    '/Abilities/hand holding briefcase.png',
+    '/Abilities/hand holding camera.png',
+    '/Abilities/hand holding drill machine.png',
+    '/Abilities/hand holding gamepad.png',
+    '/Abilities/hand holding hammer.png',
+    '/Abilities/hand holding helmet.png',
+    '/Abilities/hand holding key.png',
+    '/Abilities/hand holding keyboard.png',
+    '/Abilities/hand holding magnifying glass.png',
+    '/Abilities/hand holding megaphone.png',
+    '/Abilities/hand holding paint brush.png',
+    '/Abilities/hand holding puzzle.png',
+    '/Abilities/hand holding saw.png',
+    '/Abilities/hand holding screwdriver.png',
+    '/Abilities/hand holding stopwatch.png',
+    '/Abilities/hand holding wrench.png',
+    '/Abilities/medicine donation.png'
   ];
 
-  return (
-    <div className="w-full space-y-6">
-      {/* Header with Stats */}
-      <div 
-        className="rounded-xl p-6 backdrop-blur-sm"
+  const getRandomIcon = (categoryIndex: number, abilityIndex: number) => {
+    // Create unique index based on category and ability position to avoid repeats
+    const uniqueIndex = (categoryIndex * 10) + abilityIndex;
+    return comingSoonIcons[uniqueIndex % comingSoonIcons.length];
+  };
+
+  // If mobile header only, return just the header card
+  if (mobileHeaderOnly) {
+    return (
+      <motion.div 
+        className="rounded-2xl p-3 backdrop-blur-sm overflow-hidden relative"
         style={{
-          background: 'linear-gradient(135deg, #1F2937 0%, transparent 100%)',
-          border: '2px solid rgba(255, 255, 255, 0.3)'
+          background: currentGameMode.gradient,
+          border: '2px solid rgba(255, 255, 255, 0.2)',
+          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+          backdropFilter: 'blur(8px)'
         }}
       >
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div>
-            <h2 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: 'Audiowide' }}>
-              POWER
-            </h2>
-            <p className="text-gray-300 text-sm" style={{ fontFamily: 'Montserrat' }}>
-              Manage abilities and loadouts
-            </p>
-          </div>
-          
-          {/* View Tabs */}
-          <div className="flex gap-2 flex-wrap">
-            {[
-              { key: 'collection', name: 'Collection', icon: '📚' },
-              { key: 'loadouts', name: 'Loadouts', icon: '⚔️' }
-            ].map(view => (
-              <button
-                key={view.key}
-                onClick={() => setActiveView(view.key as any)}
-                className="px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center gap-2"
-                style={{
-                  fontFamily: 'Montserrat',
-                  background: activeView === view.key
-                    ? 'linear-gradient(135deg, #3B82F6 0%, transparent 100%)'
-                    : 'linear-gradient(135deg, #6B7280 0%, transparent 100%)',
-                  backdropFilter: 'blur(6px)',
-                  border: '2px solid rgba(255, 255, 255, 0.3)',
-                  color: '#FFF',
-                  boxShadow: activeView === view.key ? '0 4px 15px rgba(59, 130, 246, 0.3)' : 'none'
-                }}
+        {/* Background Pattern */}
+        <div 
+          className="absolute inset-0 opacity-20 backdrop-blur-sm"
+          style={{
+            backgroundImage: `radial-gradient(circle at 20% 80%, ${currentGameMode.color} 0%, transparent 50%), 
+                             radial-gradient(circle at 80% 20%, ${currentGameMode.color} 0%, transparent 50%)`,
+          }}
+        />
+        
+        <div className="relative z-10">
+          {/* Navigation */}
+          <div className="flex items-center justify-between mb-3">
+            <motion.button
+              onClick={prevGameMode}
+              className="p-1 rounded-full bg-black/20 hover:bg-black/30 transition-colors"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </motion.button>
+
+            <div className="text-center">
+              <motion.h1 
+                key={currentGameMode.id}
+                className="text-lg font-bold text-white" 
+                style={{ fontFamily: 'Audiowide' }}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.3 }}
               >
-                <span>{view.icon}</span>
-                <span className="hidden sm:inline">{view.name}</span>
-              </button>
-            ))}
+                {currentGameMode.name}
+              </motion.h1>
+              {isSaving && (
+                <div className="text-xs text-yellow-300 mt-1">
+                  Saving...
+                </div>
+              )}
+            </div>
+
+            <motion.button
+              onClick={nextGameMode}
+              className="p-1 rounded-full bg-black/20 hover:bg-black/30 transition-colors"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </motion.button>
+          </div>
+
+          {/* Category-Based Loadout Slots Grid - Mobile Compact */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentGameMode.id}
+              className="grid grid-cols-5 gap-2"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3 }}
+            >
+              {CATEGORY_SLOTS.map((categorySlot, index) => {
+                const assignedAbilityId = currentLoadout[categorySlot.key];
+                const assignedAbility = assignedAbilityId ? allAbilities.find(a => a.id === assignedAbilityId) : null;
+                const isAssigned = !!assignedAbility;
+
+                return (
+                  <motion.div
+                    key={`${currentGameMode.id}-slot-${categorySlot.key}`}
+                    className="relative group"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                  >
+                    <div
+                      className="aspect-square rounded-lg p-2 border-2 backdrop-blur-sm transition-all duration-300 cursor-pointer overflow-hidden relative"
+                      style={{
+                        borderColor: isAssigned ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.3)',
+                        borderStyle: 'solid',
+                        background: isAssigned ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                      }}
+                    >
+                      {isAssigned && assignedAbility ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-center">
+                          <div className="w-8 h-8 relative">
+                            <img
+                              src={assignedAbility.iconUrl || '/Abilities/placeholder.webp'}
+                              alt={assignedAbility.name}
+                              className="w-full h-full object-contain"
+                              style={{
+                                filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5))'
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-lg">${assignedAbility.category === 'tactical' ? '🎯' : assignedAbility.category === 'attack' ? '⚔️' : assignedAbility.category === 'defense' ? '🛡️' : assignedAbility.category === 'utility' ? '🔧' : '💫'}</div>`;
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-center">
+                          <div className="w-8 h-8 relative">
+                            <img
+                              src={categorySlot.icon}
+                              alt={categorySlot.name}
+                              className="w-full h-full object-contain opacity-60"
+                              style={{
+                                filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) brightness(1.2)'
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-lg">${categorySlot.key === 'tactical' ? '🎯' : categorySlot.key === 'attack' ? '⚔️' : categorySlot.key === 'defense' ? '🛡️' : categorySlot.key === 'utility' ? '🔧' : '💫'}</div>`;
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <div className="w-full space-y-8">
+      {/* Unified Game Mode and Abilities Card - Desktop Only */}
+      <motion.div 
+        className="hidden md:block rounded-2xl p-8 backdrop-blur-sm overflow-hidden relative"
+        style={{
+          background: currentGameMode.gradient,
+          border: '2px solid rgba(255, 255, 255, 0.2)',
+          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+          backdropFilter: 'blur(8px)'
+        }}
+        layout
+      >
+        {/* Background Pattern */}
+        <div 
+          className="absolute inset-0 opacity-20 backdrop-blur-sm"
+          style={{
+            backgroundImage: `radial-gradient(circle at 20% 80%, ${currentGameMode.color} 0%, transparent 50%), 
+                             radial-gradient(circle at 80% 20%, ${currentGameMode.color} 0%, transparent 50%)`,
+          }}
+        />
+        
+        <div className="relative z-10">
+          {/* Navigation */}
+          <div className="flex items-center justify-between mb-6">
+            <motion.button
+              onClick={prevGameMode}
+              className="p-2 rounded-full bg-black/20 hover:bg-black/30 transition-colors"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </motion.button>
+
+            <div className="text-center">
+              <motion.h1 
+                key={currentGameMode.id}
+                className="text-4xl font-bold text-white mb-2" 
+                style={{ fontFamily: 'Audiowide' }}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {currentGameMode.name}
+              </motion.h1>
+              {isSaving && (
+                <div className="text-sm text-yellow-300">
+                  💾 Saving loadout...
+                </div>
+              )}
+            </div>
+
+            <motion.button
+              onClick={nextGameMode}
+              className="p-2 rounded-full bg-black/20 hover:bg-black/30 transition-colors"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </motion.button>
+          </div>
+
+          {/* Category-Based Loadout Slots Grid - Integrated */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentGameMode.id}
+              className="grid grid-cols-5 gap-2 md:gap-4 mb-8"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3 }}
+            >
+              {CATEGORY_SLOTS.map((categorySlot, index) => {
+                const assignedAbilityId = currentLoadout[categorySlot.key];
+                const assignedAbility = assignedAbilityId ? allAbilities.find(a => a.id === assignedAbilityId) : null;
+                const isAssigned = !!assignedAbility;
+
+                return (
+                  <motion.div
+                    key={`${currentGameMode.id}-slot-${categorySlot.key}`}
+                    className="relative group"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                  >
+                    <div
+                      className="aspect-square rounded-lg p-2 border-2 backdrop-blur-sm transition-all duration-300 cursor-pointer overflow-hidden relative"
+                      style={{
+                        borderColor: isAssigned ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.3)',
+                        borderStyle: 'solid',
+                        background: isAssigned ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                      }}
+                    >
+                      {isAssigned && assignedAbility ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-center">
+                          <div className="w-8 h-8 relative">
+                            <img
+                              src={assignedAbility.iconUrl || '/Abilities/placeholder.webp'}
+                              alt={assignedAbility.name}
+                              className="w-full h-full object-contain"
+                              style={{
+                                filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5))'
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-lg">${assignedAbility.category === 'tactical' ? '🎯' : assignedAbility.category === 'attack' ? '⚔️' : assignedAbility.category === 'defense' ? '🛡️' : assignedAbility.category === 'utility' ? '🔧' : '💫'}</div>`;
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-center">
+                          <div className="w-10 h-10 md:w-24 md:h-24 mb-1 md:mb-2 relative">
+                            <img
+                              src={categorySlot.icon}
+                              alt={categorySlot.name}
+                              className="w-full h-full object-contain opacity-60"
+                              style={{
+                                filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) brightness(1.2)'
+                              }}
+                              onError={(e) => {
+                                console.log(`Failed to load category icon: ${categorySlot.icon}`);
+                                // Fallback to emoji
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-2xl md:text-6xl">${categorySlot.key === 'tactical' ? '🎯' : categorySlot.key === 'attack' ? '⚔️' : categorySlot.key === 'defense' ? '🛡️' : categorySlot.key === 'utility' ? '🔧' : '💫'}</div>`;
+                                }
+                              }}
+                            />
+                          </div>
+                          <p className="text-white/60 text-xs font-medium" style={{ fontFamily: 'Audiowide' }}>
+                            {categorySlot.name}
+                          </p>
+                          <p className="text-white/40 text-xs md:hidden">
+                            Empty
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Available Abilities by Category - Integrated */}
+          <div className="space-y-6">
+            <div>
+              {categoryGroups.map(({ category, categoryInfo, abilities }, categoryIndex) => {
+                const userCategoryAbilities = abilities.filter(ability => 
+                  userAbilities.some(ua => ua.abilityId === ability.id)
+                );
+                
+                return (
+                  <motion.div
+                    key={category}
+                    className="rounded-xl p-6 backdrop-blur-sm mb-6"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, transparent 100%)',
+                      border: '2px solid rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(8px)'
+                    }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <img
+                        src={categoryInfo.icon}
+                        alt={categoryInfo.name}
+                        className="w-8 h-8 object-contain"
+                        style={{
+                          filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))'
+                        }}
+                      />
+                      <h4 className="text-xl font-semibold text-white" style={{ fontFamily: 'Audiowide' }}>
+                        {categoryInfo.name}
+                      </h4>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                      {userCategoryAbilities.map(ability => {
+                        const isInCurrentLoadout = Object.values(currentLoadout).includes(ability.id);
+                        
+                        return (
+                          <motion.div
+                            key={ability.id}
+                            className="relative group cursor-pointer"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => {
+                              if (!isInCurrentLoadout) {
+                                // Check if the ability's category slot is empty
+                                if (!currentLoadout[ability.category]) {
+                                  assignAbilityToCategory(ability.id, ability.category);
+                                }
+                              } else {
+                                // Find and remove the ability from its current category
+                                const currentCategory = Object.keys(currentLoadout).find(cat => currentLoadout[cat] === ability.id);
+                                if (currentCategory) {
+                                  removeAbilityFromCategory(currentCategory);
+                                }
+                              }
+                            }}
+                          >
+                            <div
+                              className="aspect-square rounded-lg p-3 border transition-all duration-300 backdrop-blur-sm overflow-hidden"
+                              style={{
+                                background: isInCurrentLoadout 
+                                  ? `linear-gradient(135deg, ${currentGameMode.color}40 0%, transparent 100%)`
+                                  : 'linear-gradient(135deg, #4B5563 0%, transparent 100%)',
+                                borderColor: isInCurrentLoadout ? currentGameMode.color : 'rgba(255, 255, 255, 0.2)',
+                                opacity: isInCurrentLoadout ? 0.5 : 1
+                              }}
+                            >
+                              <div className="w-full h-full flex flex-col items-center justify-center text-center">
+                                <div className="w-10 h-10 mb-2 relative">
+                                  <img
+                                    src={ability.iconUrl || '/Abilities/placeholder.webp'}
+                                    alt={ability.name}
+                                    className="w-full h-full object-contain"
+                                    style={{
+                                      filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))'
+                                    }}
+                                    onError={(e) => {
+                                      console.log(`Failed to load ability icon: ${ability.iconUrl}`);
+                                      // Fallback to category emoji
+                                      const target = e.target as HTMLImageElement;
+                                      target.style.display = 'none';
+                                      const parent = target.parentElement;
+                                      if (parent) {
+                                        parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-lg">${ability.category === 'tactical' ? '🎯' : ability.category === 'attack' ? '⚔️' : ability.category === 'defense' ? '🛡️' : ability.category === 'utility' ? '🔧' : '💫'}</div>`;
+                                      }
+                                    }}
+                                  />
+                                </div>
+                                <h5 className="text-white text-xs font-medium truncate" style={{ fontFamily: 'Audiowide' }}>
+                                  {ability.name}
+                                </h5>
+                              </div>
+                              
+                              {isInCurrentLoadout && (
+                                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                  <div className="bg-green-500 rounded-full p-1">
+                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                      
+                      {/* Coming Soon Abilities */}
+                      <>
+                        {/* Coming Soon Ability 1 */}
+                        <motion.div
+                          className="relative group"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: userCategoryAbilities.length * 0.1 }}
+                        >
+                            <div
+                              className="aspect-square rounded-lg p-3 border transition-all duration-300 backdrop-blur-sm overflow-hidden relative"
+                              style={{
+                                background: 'linear-gradient(135deg, #374151 0%, transparent 100%)',
+                                borderColor: 'rgba(255, 255, 255, 0.1)',
+                                opacity: 0.6
+                              }}
+                            >
+                              <div className="w-full h-full flex flex-col items-center justify-center text-center relative">
+                                <div className="w-24 h-24 mb-2 relative z-30">
+                                  <img
+                                    src={getRandomIcon(categoryIndex, 0)}
+                                    alt="Coming Soon"
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement;
+                                      target.style.display = 'none';
+                                      const parent = target.parentElement;
+                                      if (parent) {
+                                        parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-4xl">${category === 'attack' ? '⚔️' : category === 'defense' ? '🛡️' : category === 'utility' ? '🔧' : '💫'}</div>`;
+                                      }
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                              
+                              <div className="absolute bottom-0 left-0 right-0 bg-black/70 flex items-center justify-center py-2 z-20">
+                                <span className="text-white text-xs font-bold" style={{ fontFamily: 'Audiowide' }}>
+                                  COMING SOON!
+                                </span>
+                              </div>
+                            </div>
+                          </motion.div>
+                          
+                          {/* Coming Soon Ability 2 */}
+                          <motion.div
+                            className="relative group"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: (userCategoryAbilities.length + 1) * 0.1 }}
+                          >
+                            <div
+                              className="aspect-square rounded-lg p-3 border transition-all duration-300 backdrop-blur-sm overflow-hidden relative"
+                              style={{
+                                background: 'linear-gradient(135deg, #374151 0%, transparent 100%)',
+                                borderColor: 'rgba(255, 255, 255, 0.1)',
+                                opacity: 0.6
+                              }}
+                            >
+                              <div className="w-full h-full flex flex-col items-center justify-center text-center relative">
+                                <div className="w-24 h-24 mb-2 relative z-30">
+                                  <img
+                                    src={getRandomIcon(categoryIndex, 1)}
+                                    alt="Coming Soon"
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement;
+                                      target.style.display = 'none';
+                                      const parent = target.parentElement;
+                                      if (parent) {
+                                        parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-4xl">${category === 'attack' ? '⚔️' : category === 'defense' ? '🛡️' : category === 'utility' ? '🔧' : '💫'}</div>`;
+                                      }
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                              
+                              <div className="absolute bottom-0 left-0 right-0 bg-black/70 flex items-center justify-center py-2 z-20">
+                                <span className="text-white text-xs font-bold" style={{ fontFamily: 'Audiowide' }}>
+                                  COMING SOON!
+                                </span>
+                              </div>
+                            </div>
+                          </motion.div>
+                        </>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
         </div>
+      </motion.div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center bg-gray-700/50 rounded-lg p-3">
-            <p className="text-2xl font-bold text-blue-400 mb-1">
-              {progressionSummary?.currentLevel || 1}
-            </p>
-            <p className="text-xs text-gray-400" style={{ fontFamily: 'Montserrat' }}>Level</p>
-          </div>
-          <div className="text-center bg-gray-700/50 rounded-lg p-3">
-            <p className="text-2xl font-bold text-green-400 mb-1">
-              {progressionSummary?.unlockedAbilities || 0}/{progressionSummary?.totalAbilities || 0}
-            </p>
-            <p className="text-xs text-gray-400" style={{ fontFamily: 'Montserrat' }}>Abilities</p>
-          </div>
-          <div className="text-center bg-gray-700/50 rounded-lg p-3">
-            <p className="text-2xl font-bold text-yellow-400 mb-1">
-              {progressionSummary?.starPoints || 5}/{progressionSummary?.maxStarPoints || 15}
-            </p>
-            <p className="text-xs text-gray-400" style={{ fontFamily: 'Montserrat' }}>Star Points</p>
-          </div>
-          <div className="text-center bg-gray-700/50 rounded-lg p-3">
-            <p className="text-2xl font-bold text-purple-400 mb-1">
-              {loadouts?.length || 0}
-            </p>
-            <p className="text-xs text-gray-400" style={{ fontFamily: 'Montserrat' }}>Loadouts</p>
-          </div>
+      {/* Mobile Available Abilities by Category - Separate for mobile */}
+      <div className="block md:hidden space-y-6">
+        <div>
+          {categoryGroups.map(({ category, categoryInfo, abilities }, categoryIndex) => {
+            const userCategoryAbilities = abilities.filter(ability => 
+              userAbilities.some(ua => ua.abilityId === ability.id)
+            );
+            
+            return (
+              <motion.div
+                key={category}
+                className="rounded-xl p-6 backdrop-blur-sm"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, transparent 100%)',
+                  border: '2px solid rgba(255, 255, 255, 0.1)',
+                  backdropFilter: 'blur(8px)'
+                }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <img
+                    src={categoryInfo.icon}
+                    alt={categoryInfo.name}
+                    className="w-8 h-8 object-contain"
+                    style={{
+                      filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))'
+                    }}
+                  />
+                  <h4 className="text-xl font-semibold text-white" style={{ fontFamily: 'Audiowide' }}>
+                    {categoryInfo.name}
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {userCategoryAbilities.map(ability => {
+                    const isInCurrentLoadout = Object.values(currentLoadout).includes(ability.id);
+                    
+                    return (
+                      <motion.div
+                        key={ability.id}
+                        className="relative group cursor-pointer"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => {
+                          if (!isInCurrentLoadout) {
+                            // Check if the ability's category slot is empty
+                            if (!currentLoadout[ability.category]) {
+                              assignAbilityToCategory(ability.id, ability.category);
+                            }
+                          } else {
+                            // Find and remove the ability from its current category
+                            const currentCategory = Object.keys(currentLoadout).find(cat => currentLoadout[cat] === ability.id);
+                            if (currentCategory) {
+                              removeAbilityFromCategory(currentCategory);
+                            }
+                          }
+                        }}
+                      >
+                        <div
+                          className="aspect-square rounded-lg p-3 border transition-all duration-300 backdrop-blur-sm overflow-hidden"
+                          style={{
+                            background: isInCurrentLoadout 
+                              ? `linear-gradient(135deg, ${currentGameMode.color}40 0%, transparent 100%)`
+                              : 'linear-gradient(135deg, #4B5563 0%, transparent 100%)',
+                            borderColor: isInCurrentLoadout ? currentGameMode.color : 'rgba(255, 255, 255, 0.2)',
+                            opacity: isInCurrentLoadout ? 0.5 : 1
+                          }}
+                        >
+                          <div className="w-full h-full flex flex-col items-center justify-center text-center">
+                            <div className="w-10 h-10 mb-2 relative">
+                              <img
+                                src={ability.iconUrl || '/Abilities/placeholder.webp'}
+                                alt={ability.name}
+                                className="w-full h-full object-contain"
+                                style={{
+                                  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))'
+                                }}
+                                onError={(e) => {
+                                  console.log(`Failed to load ability icon: ${ability.iconUrl}`);
+                                  // Fallback to category emoji
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  const parent = target.parentElement;
+                                  if (parent) {
+                                    parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-lg">${ability.category === 'tactical' ? '🎯' : ability.category === 'attack' ? '⚔️' : ability.category === 'defense' ? '🛡️' : ability.category === 'utility' ? '🔧' : '💫'}</div>`;
+                                  }
+                                }}
+                              />
+                            </div>
+                            <h5 className="text-white text-xs font-medium truncate" style={{ fontFamily: 'Audiowide' }}>
+                              {ability.name}
+                            </h5>
+                          </div>
+                          
+                          {isInCurrentLoadout && (
+                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                              <div className="bg-green-500 rounded-full p-1">
+                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                  
+                  {/* Coming Soon Abilities */}
+                  <>
+                    {/* Coming Soon Ability 1 */}
+                    <motion.div
+                      className="relative group"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: userCategoryAbilities.length * 0.1 }}
+                    >
+                        <div
+                          className="aspect-square rounded-lg p-3 border transition-all duration-300 backdrop-blur-sm overflow-hidden relative"
+                          style={{
+                            background: 'linear-gradient(135deg, #374151 0%, transparent 100%)',
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            opacity: 0.6
+                          }}
+                        >
+                          <div className="w-full h-full flex flex-col items-center justify-center text-center relative">
+                            <div className="w-20 h-20 mb-2 relative z-30">
+                              <img
+                                src={getRandomIcon(categoryIndex, 0)}
+                                alt="Coming Soon"
+                                className="w-full h-full object-contain"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  const parent = target.parentElement;
+                                  if (parent) {
+                                    parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-3xl">${category === 'attack' ? '⚔️' : category === 'defense' ? '🛡️' : category === 'utility' ? '🔧' : '💫'}</div>`;
+                                  }
+                                }}
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/70 flex items-center justify-center py-1 z-20">
+                            <span className="text-white text-xs font-bold" style={{ fontFamily: 'Audiowide' }}>
+                              COMING SOON!
+                            </span>
+                          </div>
+                        </div>
+                      </motion.div>
+                      
+                      {/* Coming Soon Ability 2 */}
+                      <motion.div
+                        className="relative group"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: (userCategoryAbilities.length + 1) * 0.1 }}
+                      >
+                        <div
+                          className="aspect-square rounded-lg p-3 border transition-all duration-300 backdrop-blur-sm overflow-hidden relative"
+                          style={{
+                            background: 'linear-gradient(135deg, #374151 0%, transparent 100%)',
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            opacity: 0.6
+                          }}
+                        >
+                          <div className="w-full h-full flex flex-col items-center justify-center text-center relative">
+                            <div className="w-20 h-20 mb-2 relative z-30">
+                              <img
+                                src={getRandomIcon(categoryIndex, 1)}
+                                alt="Coming Soon"
+                                className="w-full h-full object-contain"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  const parent = target.parentElement;
+                                  if (parent) {
+                                    parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-3xl">${category === 'attack' ? '⚔️' : category === 'defense' ? '🛡️' : category === 'utility' ? '🔧' : '💫'}</div>`;
+                                  }
+                                }}
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/70 flex items-center justify-center py-1 z-20">
+                            <span className="text-white text-xs font-bold" style={{ fontFamily: 'Audiowide' }}>
+                              COMING SOON!
+                            </span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
-
-      {/* Content based on active view */}
-      {activeView === 'collection' && (
-        <div>
-          {/* Category Filter */}
-          <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-            {categoryOptions.map(category => (
-              <button
-                key={category.key}
-                onClick={() => setSelectedCategory(category.key)}
-                className="px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all duration-200 flex items-center gap-2"
-                style={{
-                  fontFamily: 'Montserrat',
-                  background: selectedCategory === category.key
-                    ? `linear-gradient(135deg, ${category.color} 0%, transparent 100%)`
-                    : 'linear-gradient(135deg, #6B7280 0%, transparent 100%)',
-                  backdropFilter: 'blur(6px)',
-                  border: '2px solid rgba(255, 255, 255, 0.3)',
-                  color: '#FFF',
-                  boxShadow: selectedCategory === category.key ? `0 4px 15px ${category.color}40` : 'none'
-                }}
-              >
-                <span>{category.key === 'all' ? '🌟' : category.key === 'unlocked' ? '🔓' : '⚡'}</span>
-                <span>{category.name}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Abilities Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredAbilities.map(ability => {
-              const userAbility = userAbilities.find(ua => ua.abilityId === ability.id);
-              const isUnlocked = !!userAbility;
-              
-              return (
-                <PowerCard
-                  key={ability.id}
-                  ability={ability}
-                  userAbility={userAbility}
-                  isUnlocked={isUnlocked}
-                  activeLoadout={activeLoadout}
-                />
-              );
-            })}
-          </div>
-
-          {filteredAbilities.length === 0 && (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">🔮</div>
-              <h3 className="text-xl font-semibold text-white mb-2" style={{ fontFamily: 'Audiowide' }}>
-                No Abilities Found
-              </h3>
-              <p className="text-gray-400" style={{ fontFamily: 'Montserrat' }}>
-                {selectedCategory === 'unlocked' 
-                  ? 'You haven\'t unlocked any abilities yet. Keep playing to level up!'
-                  : 'No abilities match your current filter.'
-                }
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeView === 'loadouts' && (
-        <LoadoutByCategoryEditor
-          allAbilities={allAbilities}
-          userAbilities={userAbilities}
-          loadouts={loadouts}
-          activeLoadout={activeLoadout}
-          maxStarPoints={progressionSummary?.starPoints || 5}
-        />
-      )}
     </div>
   );
 }

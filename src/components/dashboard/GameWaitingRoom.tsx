@@ -1723,7 +1723,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           ...roomData.hostData,
           turnActive: false, // Will be set by turn decider
           playerScore: getStartingScore(roomData.gameMode),
-          roundScore: 0
+          roundScore: 0,
+          // Include power loadout for abilities
+          powerLoadout: (roomData.hostData as any)?.powerLoadout || null
         },
         
         // Initialize opponent data with game-specific fields
@@ -1731,7 +1733,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           ...roomData.opponentData,
           turnActive: false, // Will be set by turn decider
           playerScore: getStartingScore(roomData.gameMode),
-          roundScore: 0
+          roundScore: 0,
+          // Include power loadout for abilities
+          powerLoadout: (roomData.opponentData as any)?.powerLoadout || null
         } : undefined,
         
         gameData: {
@@ -1749,7 +1753,18 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           startedAt: serverTimestamp(),
           // Start with turn decider phase so players can choose who goes first
           gamePhase: 'turnDecider' as const,
-          isRolling: false
+          isRolling: false,
+          // Add power loadouts for easy access during gameplay
+          powerLoadouts: (() => {
+            const loadouts: Record<string, any> = {};
+            if (roomData.hostData?.playerId) {
+              loadouts[roomData.hostData.playerId] = (roomData.hostData as any)?.powerLoadout || null;
+            }
+            if (roomData.opponentData?.playerId) {
+              loadouts[roomData.opponentData.playerId] = (roomData.opponentData as any)?.powerLoadout || null;
+            }
+            return loadouts;
+          })()
           // Don't include undefined optional fields
         }
       };
