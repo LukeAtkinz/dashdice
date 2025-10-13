@@ -16,6 +16,7 @@ import AchievementNotificationDisplay from '@/components/achievements/Achievemen
 import AchievementsDashboard from '@/components/achievements/AchievementsDashboard';
 import FriendsDashboard from '@/components/friends/FriendsDashboard';
 import { RankedDashboard } from '@/components/ranked/RankedDashboard';
+import { SoftRankedLeaderboard } from '@/components/ranked/SoftRankedLeaderboard';
 import GlobalChatButton from '@/components/chat/GlobalChatButton';
 import SwipeRightChat from '@/components/chat/SwipeRightChat';
 import { GlobalRematchNotification } from '@/components/rematch/GlobalRematchNotification';
@@ -395,10 +396,7 @@ const DashboardContent: React.FC = () => {
 
                 {/* RANKED Button */}
                 <button
-                  onClick={() => {
-                    console.log('🎯 RANKED Button clicked - Redirecting to donation page!');
-                    window.location.href = '/helpus';
-                  }}
+                  onClick={() => handleSectionChange('ranked')}
                   disabled={currentSection === 'match' && !isGameOver}
                   className={`flex cursor-pointer transition-all duration-300 ${
                     currentSection === 'match' && !isGameOver 
@@ -683,10 +681,7 @@ const DashboardContent: React.FC = () => {
                   {currentSection === 'achievements' && <AchievementsDashboard />}
                   {currentSection === 'friends' && <FriendsDashboard />}
                   {currentSection === 'ranked' && (
-                    <RankedDashboard 
-                      userId={user?.uid || ''} 
-                      userDisplayName={user?.displayName || user?.email || 'Player'} 
-                    />
+                    <SoftRankedLeaderboard />
                   )}
                   {currentSection === 'profile' && <ProfileSection />}
                   {currentSection === 'settings' && <ProfileSection />}
@@ -753,10 +748,7 @@ const DashboardContent: React.FC = () => {
                 <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PLAY</span>
               </button>
               <button
-                onClick={() => {
-                  console.log('🎯 Mobile RANKED Button clicked - Redirecting to donation page!');
-                  window.location.href = '/helpus';
-                }}
+                onClick={() => handleSectionChange('ranked')}
                 className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
                   currentSection === 'ranked' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}

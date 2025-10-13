@@ -4,7 +4,7 @@ import { MatchData } from '@/types/match';
 import { SlotMachineDice } from './SlotMachineDice';
 import { useBackground } from '@/context/BackgroundContext';
 import { useAuth } from '@/context/AuthContext';
-import InlineAbilitiesDisplay from '@/components/match/InlineAbilitiesDisplay';
+import SimpleAbilitiesDisplay from '@/components/match/SimpleAbilitiesDisplay';
 
 interface GameplayPhaseProps {
   matchData: MatchData;
@@ -359,11 +359,11 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           </div>
         </div>
 
-        {/* Desktop Abilities Display - Match dice container width */}
+        {/* Desktop Abilities Display - Using simplified component */}
         {user && onAbilityUsed && (
           <div className="hidden md:block mb-6 mt-8 w-full flex justify-center">
             <div className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" style={{ width: 'min(600px, 70vw)' }}>
-              <InlineAbilitiesDisplay
+              <SimpleAbilitiesDisplay
                 matchData={matchData}
                 onAbilityUsed={onAbilityUsed}
                 isPlayerTurn={isMyTurn}
@@ -429,7 +429,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         </div>
       </div>
 
-      {/* Mobile Abilities Display - Above navigation buttons */}
+      {/* Mobile Abilities Display - Using simplified component */}
       {user && onAbilityUsed && (
         <div 
           className="md:hidden fixed bottom-0 left-0 right-0 w-full z-40 px-2 py-3"
@@ -440,7 +440,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             borderTop: '1px solid rgba(255, 255, 255, 0.1)'
           }}
         >
-          <InlineAbilitiesDisplay
+          <SimpleAbilitiesDisplay
             matchData={matchData}
             onAbilityUsed={onAbilityUsed}
             isPlayerTurn={isMyTurn}

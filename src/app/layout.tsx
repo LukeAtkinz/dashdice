@@ -18,10 +18,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('http://localhost:3000'),
   title: "Dashdice",
   description: "Who will take the crown? Play PvP dice battles, earn founder rewards, and compete!",
   manifest: "/manifest.json",
-  themeColor: "#ffd700",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

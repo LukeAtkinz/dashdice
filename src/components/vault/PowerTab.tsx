@@ -13,6 +13,7 @@ const GAME_MODES = [
   {
     id: 'quick-fire',
     name: 'Quick Fire',
+    icon: '/Design Elements/Shield.webp',
     color: '#FF6B35',
     gradient: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)',
     maxAbilities: 5
@@ -20,6 +21,7 @@ const GAME_MODES = [
   {
     id: 'classic',
     name: 'Classic Mode', 
+    icon: '/Design Elements/Crown Mode.webp',
     color: '#4F46E5',
     gradient: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
     maxAbilities: 5
@@ -27,6 +29,7 @@ const GAME_MODES = [
   {
     id: 'zero-hour',
     name: 'Zero Hour',
+    icon: '/Design Elements/time out.webp',
     color: '#DC2626',
     gradient: 'linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)',
     maxAbilities: 5
@@ -34,6 +37,7 @@ const GAME_MODES = [
   {
     id: 'last-line',
     name: 'Last Line',
+    icon: '/Design Elements/skull.webp',
     color: '#059669',
     gradient: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
     maxAbilities: 5
@@ -279,63 +283,76 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
   if (mobileHeaderOnly) {
     return (
       <motion.div 
-        className="rounded-2xl p-3 backdrop-blur-sm overflow-hidden relative"
-        style={{
-          background: currentGameMode.gradient,
-          border: '2px solid rgba(255, 255, 255, 0.2)',
-          backgroundColor: 'rgba(0, 0, 0, 0.2)',
-          backdropFilter: 'blur(8px)'
-        }}
+        className="rounded-2xl p-3 overflow-hidden relative"
       >
-        {/* Background Pattern */}
-        <div 
-          className="absolute inset-0 opacity-20 backdrop-blur-sm"
-          style={{
-            backgroundImage: `radial-gradient(circle at 20% 80%, ${currentGameMode.color} 0%, transparent 50%), 
-                             radial-gradient(circle at 80% 20%, ${currentGameMode.color} 0%, transparent 50%)`,
-          }}
-        />
-        
         <div className="relative z-10">
           {/* Navigation */}
-          <div className="flex items-center justify-between mb-3">
+          <div className="relative flex items-center justify-center mb-3">
+            {/* Left Arrow */}
             <motion.button
               onClick={prevGameMode}
-              className="p-1 rounded-full bg-black/20 hover:bg-black/30 transition-colors"
+              className="absolute left-0 p-2 rounded-full hover:bg-black/30 transition-colors"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
-              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </motion.button>
 
-            <div className="text-center">
-              <motion.h1 
+            {/* Game Mode Display */}
+            <div className="text-center flex flex-col items-center">
+              <motion.div
                 key={currentGameMode.id}
-                className="text-lg font-bold text-white" 
-                style={{ fontFamily: 'Audiowide' }}
+                className="flex flex-col items-center mb-2"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ duration: 0.3 }}
               >
-                {currentGameMode.name}
-              </motion.h1>
+                <img
+                  src={currentGameMode.icon}
+                  alt={currentGameMode.name}
+                  className="w-8 h-8 mb-2 object-contain"
+                  style={{
+                    filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))'
+                  }}
+                  onError={(e) => {
+                    console.log(`Failed to load game mode icon: ${currentGameMode.icon}`);
+                    // Fallback to emoji
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      parent.innerHTML = parent.innerHTML.replace(target.outerHTML, `<div class="w-8 h-8 mb-2 flex items-center justify-center text-2xl">${currentGameMode.id === 'quick-fire' ? '🛡️' : currentGameMode.id === 'classic' ? '👑' : currentGameMode.id === 'zero-hour' ? '⏰' : '💀'}</div>`);
+                    }
+                  }}
+                  onLoad={() => {
+                    console.log(`Successfully loaded game mode icon: ${currentGameMode.icon}`);
+                  }}
+                />
+                <h1 
+                  className="text-2xl font-bold text-white" 
+                  style={{ fontFamily: 'Audiowide' }}
+                >
+                  {currentGameMode.name}
+                </h1>
+              </motion.div>
               {isSaving && (
-                <div className="text-xs text-yellow-300 mt-1">
+                <div className="text-xs text-yellow-300">
                   Saving...
                 </div>
               )}
             </div>
 
+            {/* Right Arrow */}
             <motion.button
               onClick={nextGameMode}
-              className="p-1 rounded-full bg-black/20 hover:bg-black/30 transition-colors"
+              className="absolute right-0 p-2 rounded-full hover:bg-black/30 transition-colors"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
-              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </motion.button>
@@ -430,50 +447,62 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
     <div className="w-full space-y-8">
       {/* Unified Game Mode and Abilities Card - Desktop Only */}
       <motion.div 
-        className="hidden md:block rounded-2xl p-8 backdrop-blur-sm overflow-hidden relative"
-        style={{
-          background: currentGameMode.gradient,
-          border: '2px solid rgba(255, 255, 255, 0.2)',
-          backgroundColor: 'rgba(0, 0, 0, 0.2)',
-          backdropFilter: 'blur(8px)'
-        }}
+        className="hidden md:block rounded-2xl p-8 overflow-hidden relative"
         layout
       >
-        {/* Background Pattern */}
-        <div 
-          className="absolute inset-0 opacity-20 backdrop-blur-sm"
-          style={{
-            backgroundImage: `radial-gradient(circle at 20% 80%, ${currentGameMode.color} 0%, transparent 50%), 
-                             radial-gradient(circle at 80% 20%, ${currentGameMode.color} 0%, transparent 50%)`,
-          }}
-        />
-        
         <div className="relative z-10">
           {/* Navigation */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="relative flex items-center justify-center mb-6">
+            {/* Left Arrow */}
             <motion.button
               onClick={prevGameMode}
-              className="p-2 rounded-full bg-black/20 hover:bg-black/30 transition-colors"
+              className="absolute left-0 p-3 rounded-full hover:bg-black/30 transition-colors"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </motion.button>
 
-            <div className="text-center">
-              <motion.h1 
+            {/* Game Mode Display */}
+            <div className="text-center flex flex-col items-center">
+              <motion.div
                 key={currentGameMode.id}
-                className="text-4xl font-bold text-white mb-2" 
-                style={{ fontFamily: 'Audiowide' }}
+                className="flex flex-col items-center mb-2"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ duration: 0.3 }}
               >
-                {currentGameMode.name}
-              </motion.h1>
+                <img
+                  src={currentGameMode.icon}
+                  alt={currentGameMode.name}
+                  className="w-12 h-12 mb-3 object-contain"
+                  style={{
+                    filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5))'
+                  }}
+                  onError={(e) => {
+                    console.log(`Failed to load game mode icon: ${currentGameMode.icon}`);
+                    // Fallback to emoji
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      parent.innerHTML = parent.innerHTML.replace(target.outerHTML, `<div class="w-12 h-12 mb-3 flex items-center justify-center text-5xl">${currentGameMode.id === 'quick-fire' ? '🛡️' : currentGameMode.id === 'classic' ? '👑' : currentGameMode.id === 'zero-hour' ? '⏰' : '💀'}</div>`);
+                    }
+                  }}
+                  onLoad={() => {
+                    console.log(`Successfully loaded game mode icon: ${currentGameMode.icon}`);
+                  }}
+                />
+                <h1 
+                  className="text-5xl font-bold text-white" 
+                  style={{ fontFamily: 'Audiowide' }}
+                >
+                  {currentGameMode.name}
+                </h1>
+              </motion.div>
               {isSaving && (
                 <div className="text-sm text-yellow-300">
                   💾 Saving loadout...
@@ -481,13 +510,14 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
               )}
             </div>
 
+            {/* Right Arrow */}
             <motion.button
               onClick={nextGameMode}
-              className="p-2 rounded-full bg-black/20 hover:bg-black/30 transition-colors"
+              className="absolute right-0 p-3 rounded-full hover:bg-black/30 transition-colors"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </motion.button>
@@ -593,12 +623,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                 return (
                   <motion.div
                     key={category}
-                    className="rounded-xl p-6 backdrop-blur-sm mb-6"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, transparent 100%)',
-                      border: '2px solid rgba(255, 255, 255, 0.1)',
-                      backdropFilter: 'blur(8px)'
-                    }}
+                    className="rounded-xl p-6 mb-6"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
@@ -798,12 +823,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
             return (
               <motion.div
                 key={category}
-                className="rounded-xl p-6 backdrop-blur-sm"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, transparent 100%)',
-                  border: '2px solid rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(8px)'
-                }}
+                className="rounded-xl p-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
