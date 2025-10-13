@@ -195,7 +195,7 @@ export default function InlineAbilitiesDisplay({
           return (
             <div
               key={`slot-${index}`}
-              className="w-12 h-12 md:w-16 md:h-16 rounded-xl border-2 border-gray-600/50 bg-gray-800/30 backdrop-blur-sm flex items-center justify-center"
+              className="w-16 h-16 md:w-16 md:h-16 rounded-xl border-2 border-gray-600/50 bg-gray-800/30 backdrop-blur-sm flex items-center justify-center"
             >
               <div className="text-gray-500 text-sm md:text-base">+</div>
             </div>
@@ -212,7 +212,7 @@ export default function InlineAbilitiesDisplay({
             key={ability.id}
             onClick={() => handleAbilityClick(ability)}
             disabled={status.disabled || isUsing === ability.id}
-            className={`w-12 h-12 md:w-16 md:h-16 rounded-xl border-2 backdrop-blur-sm transition-all relative overflow-hidden ${
+            className={`w-16 h-16 md:w-16 md:h-16 rounded-xl border-2 backdrop-blur-sm transition-all relative overflow-hidden ${
               status.disabled || isUsing === ability.id
                 ? 'opacity-50 cursor-not-allowed' 
                 : 'hover:scale-105 active:scale-95 hover:border-white/60'
@@ -233,7 +233,7 @@ export default function InlineAbilitiesDisplay({
                 <img
                   src={ability.iconUrl}
                   alt={ability.name}
-                  className="w-6 h-6 md:w-8 md:h-8 object-contain"
+                  className="w-8 h-8 md:w-8 md:h-8 object-contain"
                   style={{
                     filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))'
                   }}
@@ -247,7 +247,7 @@ export default function InlineAbilitiesDisplay({
                   }}
                 />
               ) : (
-                <div className="text-lg md:text-xl">{categoryInfo.icon}</div>
+                <div className="text-xl md:text-xl">{categoryInfo.icon}</div>
               )}
             </div>
 

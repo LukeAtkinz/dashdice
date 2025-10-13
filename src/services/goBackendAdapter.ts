@@ -226,6 +226,28 @@ export class GoBackendAdapter {
       if (matchId) {
         console.log(`✅ Go backend match created with ID: ${matchId}`);
         
+        // 🔮 CRITICAL: Fetch user's power loadout for this game mode
+        let userPowerLoadout = null;
+        try {
+          const { UserService } = await import('./userService');
+          
+          // Map gameMode to the correct key format for UserPowerLoadouts
+          // Dashboard uses: 'quickfire', 'classic', 'zero-hour', 'last-line'
+          // UserPowerLoadouts uses: 'quick-fire', 'classic', 'zero-hour', 'last-line'
+          let gameModeKey: keyof import('./userService').UserPowerLoadouts;
+          if (gameMode === 'quickfire') {
+            gameModeKey = 'quick-fire';
+          } else {
+            gameModeKey = gameMode as keyof import('./userService').UserPowerLoadouts;
+          }
+          
+          userPowerLoadout = await UserService.getPowerLoadoutForGameMode(userId, gameModeKey);
+          
+          console.log(`🔮 GoBackendAdapter: Loaded power loadout for ${gameMode} (mapped to ${gameModeKey}):`, userPowerLoadout);
+        } catch (error) {
+          console.error('⚠️ GoBackendAdapter: Failed to load power loadout:', error);
+        }
+        
         // Set up bridge data for the waiting room component
         const { OptimisticMatchmakingService } = await import('./optimisticMatchmakingService');
         
@@ -246,6 +268,7 @@ export class GoBackendAdapter {
               file: 'backgrounds/Relax.png',
               type: 'image'
             },
+            powerLoadout: userPowerLoadout, // 🔮 CRITICAL: Attach power loadout for abilities
             ready: false,
             joinedAt: new Date()
           },

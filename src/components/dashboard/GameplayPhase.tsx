@@ -432,7 +432,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
       {/* Mobile Abilities Display - Above navigation buttons */}
       {user && onAbilityUsed && (
         <div 
-          className="md:hidden fixed bottom-0 left-0 right-0 w-full z-40 p-3"
+          className="md:hidden fixed bottom-0 left-0 right-0 w-full z-40 px-2 py-3"
           style={{ 
             bottom: 'max(70px, env(safe-area-inset-bottom) + 70px)',
             background: 'rgba(0, 0, 0, 0.4)',
@@ -445,7 +445,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             onAbilityUsed={onAbilityUsed}
             isPlayerTurn={isMyTurn}
             playerId={user.uid}
-            className="justify-end flex-row-reverse"
+            className="justify-between w-full"
           />
         </div>
       )}

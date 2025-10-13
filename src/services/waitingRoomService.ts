@@ -90,9 +90,17 @@ export class WaitingRoomService {
   ): Promise<string> {
     try {
       // Load the user's power loadouts for the specific game mode
+      // Map gameMode to the correct key format for UserPowerLoadouts
+      let gameModeKey: keyof import('./userService').UserPowerLoadouts;
+      if (gameMode === 'quickfire') {
+        gameModeKey = 'quick-fire';
+      } else {
+        gameModeKey = gameMode as keyof import('./userService').UserPowerLoadouts;
+      }
+      
       const gameModePowerLoadout = await UserService.getPowerLoadoutForGameMode(
         hostData.uid, 
-        gameMode as keyof import('./userService').UserPowerLoadouts
+        gameModeKey
       );
       
       console.log(`🔮 WaitingRoomService: Loaded power loadout for ${gameMode}:`, gameModePowerLoadout);
@@ -169,9 +177,17 @@ export class WaitingRoomService {
       }
 
       // Load the user's power loadouts for the game mode
+      // Map gameMode to the correct key format for UserPowerLoadouts
+      let gameModeKey: keyof import('./userService').UserPowerLoadouts;
+      if (roomData.gameMode === 'quickfire') {
+        gameModeKey = 'quick-fire';
+      } else {
+        gameModeKey = roomData.gameMode as keyof import('./userService').UserPowerLoadouts;
+      }
+      
       const gameModePowerLoadout = await UserService.getPowerLoadoutForGameMode(
         playerData.uid, 
-        roomData.gameMode as keyof import('./userService').UserPowerLoadouts
+        gameModeKey
       );
       
       console.log(`🔮 WaitingRoomService: Loaded opponent power loadout for ${roomData.gameMode}:`, gameModePowerLoadout);
