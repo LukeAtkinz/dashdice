@@ -243,7 +243,16 @@ export class GoBackendAdapter {
           
           userPowerLoadout = await UserService.getPowerLoadoutForGameMode(userId, gameModeKey);
           
+          // 🔍 DEBUG: Log the loaded power loadout structure
           console.log(`🔮 GoBackendAdapter: Loaded power loadout for ${gameMode} (mapped to ${gameModeKey}):`, userPowerLoadout);
+          if (userPowerLoadout) {
+            console.log('🔮 DEBUG - Loadout breakdown:', userPowerLoadout);
+            Object.entries(userPowerLoadout).forEach(([category, abilityId]) => {
+              if (abilityId === 'siphon') {
+                console.log(`🔮 DEBUG - Siphon found in category: ${category}`);
+              }
+            });
+          }
         } catch (error) {
           console.error('⚠️ GoBackendAdapter: Failed to load power loadout:', error);
         }

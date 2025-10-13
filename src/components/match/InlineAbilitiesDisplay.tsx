@@ -104,10 +104,23 @@ export default function InlineAbilitiesDisplay({
   }
 
   // Get equipped abilities (max 5 slots)
-  const equippedAbilities = Object.entries(playerPowerLoadout.abilities || {})
+  // PowerLoadout structure: { tactical?: string, attack?: string, defense?: string, utility?: string, gamechanger?: string }
+  const equippedAbilities = Object.entries(playerPowerLoadout || {})
     .filter(([_, abilityId]) => abilityId)
     .map(([category, abilityId]) => {
       const ability = allAbilities.find(a => a.id === abilityId);
+      
+      // 🔍 DEBUG: Log ability categorization
+      if (ability?.id === 'siphon') {
+        console.log('🔮 DEBUG - Siphon categorization:', {
+          loadoutCategory: category,
+          abilityCategory: ability.category,
+          abilityData: ability,
+          powerLoadout: playerPowerLoadout,
+          isMobile: window.innerWidth < 768
+        });
+      }
+      
       return ability ? { category: category as keyof typeof ABILITY_CATEGORIES, ability } : null;
     })
     .filter(Boolean) as Array<{ category: keyof typeof ABILITY_CATEGORIES; ability: Ability }>;

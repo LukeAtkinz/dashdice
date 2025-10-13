@@ -97,7 +97,7 @@ export default function AbilitiesPanel({
     );
   }
 
-  const equippedAbilities = Object.entries(playerPowerLoadout.abilities || {})
+  const equippedAbilities = Object.entries(playerPowerLoadout || {})
     .filter(([_, abilityId]) => abilityId)
     .map(([category, abilityId]) => {
       const ability = allAbilities.find(a => a.id === abilityId);
