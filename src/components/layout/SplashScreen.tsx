@@ -13,6 +13,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [isPWA, setIsPWA] = useState(false);
+  const [videoInitialized, setVideoInitialized] = useState(false);
 
   // Detect mobile device and PWA
   useEffect(() => {
@@ -57,6 +58,11 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
 
   // Force video playback for mobile/PWA with enhanced retry logic
   const forceVideoPlay = useCallback(async (video: HTMLVideoElement) => {
+    if (videoInitialized) {
+      console.log('⏭️ Video already initialized, skipping...');
+      return;
+    }
+    
     try {
       // Ensure video is muted for autoplay (critical for mobile)
       video.muted = true;
@@ -80,6 +86,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       if (playPromise !== undefined) {
         await playPromise;
         console.log('✅ Splash video autoplay successful');
+        setVideoInitialized(true);
       }
     } catch (error) {
       console.warn('📱 Video autoplay failed, attempting mobile-specific retry:', error);
@@ -119,6 +126,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
           await new Promise(resolve => setTimeout(resolve, 200 * (i + 1))); // Increasing delay
           await retryStrategies[i]();
           console.log(`✅ Splash video retry strategy ${i + 1} successful`);
+          setVideoInitialized(true);
           return;
         } catch (retryError) {
           console.warn(`❌ Splash video retry strategy ${i + 1} failed:`, retryError);
@@ -129,7 +137,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       console.warn('❌ All splash video strategies failed, skipping splash screen');
       handleVideoEnd();
     }
-  }, [handleVideoEnd]);
+  }, [handleVideoEnd, videoInitialized]);
 
   // Handle video error - fallback to secondary video or skip splash
   const handleVideoError = useCallback(() => {
@@ -155,10 +163,12 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
 
   // Aggressive video initialization for all devices
   useEffect(() => {
+    if (videoInitialized) return; // Skip if already initialized
+
     const initVideoPlayback = async () => {
       // Always try to start video, especially critical for mobile
       const mainVideo = document.getElementById('main-splash-video') as HTMLVideoElement;
-      if (mainVideo) {
+      if (mainVideo && !videoInitialized) {
         console.log('🎬 Initializing splash video playback...');
         await forceVideoPlay(mainVideo);
       }
@@ -174,11 +184,13 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
     return () => {
       timers.forEach(timer => clearTimeout(timer));
     };
-  }, [forceVideoPlay]);
+  }, [forceVideoPlay, videoInitialized]);
 
   // Handle user interaction to start video (PWA/mobile fallback)
   useEffect(() => {
     const handleUserInteraction = () => {
+      if (videoInitialized) return; // Skip if already initialized
+      
       const mainVideo = document.getElementById('main-splash-video') as HTMLVideoElement;
       const fallbackVideo = document.getElementById('fallback-splash-video') as HTMLVideoElement;
       
@@ -201,7 +213,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       document.removeEventListener('touchstart', handleUserInteraction);
       document.removeEventListener('click', handleUserInteraction);
     };
-  }, [forceVideoPlay]);
+  }, [forceVideoPlay, videoInitialized]);
 
   // Skip splash screen after maximum time (safety fallback)
   useEffect(() => {
