@@ -37,7 +37,7 @@ const VSCountdown: React.FC<VSCountdownProps> = ({
             textShadow: isGo 
               ? '0 0 20px rgba(0, 255, 0, 0.8), 0 0 40px rgba(0, 255, 0, 0.4)' 
               : '0 0 15px rgba(255, 255, 255, 0.4)',
-            animation: isGo ? 'goGlow 1s infinite' : 'subtleGlow 1.5s infinite'
+            animation: isGo ? 'goGlow 1s ease-in-out' : 'subtleGlow 1.5s infinite'
           }}
         >
           {isGo ? 'GO!' : countdown}

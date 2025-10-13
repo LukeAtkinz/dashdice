@@ -14,6 +14,8 @@ import { NewMatchmakingService } from '@/services/newMatchmakingService';
 import { OptimisticMatchmakingService } from '@/services/optimisticMatchmakingService';
 import { BotMatchingService } from '@/services/botMatchingService';
 import MatchAbandonmentNotification from '@/components/notifications/MatchAbandonmentNotification';
+import { MatchTransition } from '@/components/match/MatchTransition';
+import { MatchLifecycleService } from '@/services/matchLifecycleService';
 
 interface GameWaitingRoomProps {
   gameMode: string;
@@ -128,6 +130,37 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const [opponentLastSeen, setOpponentLastSeen] = useState<Date | null>(null);
   const [gameHasStarted, setGameHasStarted] = useState(false); // Track if the game has actually started
   const [pendingMatchData, setPendingMatchData] = useState<any>(null); // Store match data during countdown
+  
+  // Opponent display readiness states
+  const [opponentDisplayReady, setOpponentDisplayReady] = useState(false); // Track if opponent background has loaded
+  const [opponentDisplayLoading, setOpponentDisplayLoading] = useState(false); // Track loading state
+  const [readyToStartCountdown, setReadyToStartCountdown] = useState(false); // Track overall readiness
+  
+  // Match transition state
+  const [showMatchTransition, setShowMatchTransition] = useState(false);
+  const [transitionMatchData, setTransitionMatchData] = useState<any>(null);
+  
+  // Handle transition completion
+  const handleTransitionComplete = () => {
+    console.log('🎬 GameWaitingRoom: Transition completed, navigating to match...');
+    setShowMatchTransition(false);
+    setTransitionMatchData(null);
+    moveToMatchesAndNavigate();
+  };
+
+  // Emergency escape from transition (fallback safety)
+  useEffect(() => {
+    if (showMatchTransition) {
+      console.log('🎬 GameWaitingRoom: Match transition started');
+      // Safety timeout to ensure transition doesn't get stuck
+      const safetyTimeout = setTimeout(() => {
+        console.log('⚠️ GameWaitingRoom: Transition safety timeout - forcing completion');
+        handleTransitionComplete();
+      }, 8000); // 8 seconds max
+
+      return () => clearTimeout(safetyTimeout);
+    }
+  }, [showMatchTransition]);
 
   // Add body class for mobile scrolling control and cleanup timers on unmount
   useEffect(() => {
@@ -311,6 +344,107 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     return null;
   };
 
+  // Function to verify opponent display assets are fully loaded
+  const checkOpponentDisplayReady = (opponentData: any) => {
+    if (!opponentData) {
+      console.log('🔍 Display Check: No opponent data available');
+      setOpponentDisplayReady(false);
+      setOpponentDisplayLoading(false);
+      return false;
+    }
+
+    console.log('🔍 Display Check: Starting opponent display readiness check', {
+      opponentName: opponentData.playerDisplayName,
+      hasDisplayBackground: !!opponentData.displayBackgroundEquipped,
+      hasMatchBackground: !!opponentData.matchBackgroundEquipped
+    });
+
+    // Set loading state to true
+    setOpponentDisplayLoading(true);
+    setOpponentDisplayReady(false);
+
+    const background = opponentData.matchBackgroundEquipped || opponentData.displayBackgroundEquipped;
+    
+    if (!background || !background.file) {
+      console.log('✅ Display Check: No background to load, opponent ready');
+      setOpponentDisplayReady(true);
+      setOpponentDisplayLoading(false);
+      return true;
+    }
+
+    // Check if it's a video or image
+    if (background.type === 'video') {
+      console.log('🎥 Display Check: Checking video background readiness');
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.muted = true;
+      
+      const handleVideoReady = () => {
+        console.log('✅ Display Check: Video background loaded successfully');
+        setOpponentDisplayReady(true);
+        setOpponentDisplayLoading(false);
+        video.removeEventListener('loadeddata', handleVideoReady);
+        video.removeEventListener('error', handleVideoError);
+      };
+      
+      const handleVideoError = () => {
+        console.log('⚠️ Display Check: Video background failed to load, proceeding anyway');
+        setOpponentDisplayReady(true);
+        setOpponentDisplayLoading(false);
+        video.removeEventListener('loadeddata', handleVideoReady);
+        video.removeEventListener('error', handleVideoError);
+      };
+      
+      video.addEventListener('loadeddata', handleVideoReady);
+      video.addEventListener('error', handleVideoError);
+      video.src = background.file;
+      
+      // Timeout fallback after 5 seconds
+      setTimeout(() => {
+        if (!opponentDisplayReady) {
+          console.log('⏰ Display Check: Video loading timeout, proceeding anyway');
+          setOpponentDisplayReady(true);
+          setOpponentDisplayLoading(false);
+        }
+      }, 5000);
+      
+    } else {
+      console.log('🖼️ Display Check: Checking image background readiness');
+      const img = new Image();
+      
+      const handleImageReady = () => {
+        console.log('✅ Display Check: Image background loaded successfully');
+        setOpponentDisplayReady(true);
+        setOpponentDisplayLoading(false);
+        img.removeEventListener('load', handleImageReady);
+        img.removeEventListener('error', handleImageError);
+      };
+      
+      const handleImageError = () => {
+        console.log('⚠️ Display Check: Image background failed to load, proceeding anyway');
+        setOpponentDisplayReady(true);
+        setOpponentDisplayLoading(false);
+        img.removeEventListener('load', handleImageReady);
+        img.removeEventListener('error', handleImageError);
+      };
+      
+      img.addEventListener('load', handleImageReady);
+      img.addEventListener('error', handleImageError);
+      img.src = background.file;
+      
+      // Timeout fallback after 5 seconds
+      setTimeout(() => {
+        if (!opponentDisplayReady) {
+          console.log('⏰ Display Check: Image loading timeout, proceeding anyway');
+          setOpponentDisplayReady(true);
+          setOpponentDisplayLoading(false);
+        }
+      }, 5000);
+    }
+
+    return false; // Not ready yet, will be set to true via callbacks
+  };
+
   // Animated searching text
   useEffect(() => {
     if (actionType === 'live') {
@@ -458,8 +592,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 if (!opponentJoined) {
                   setOpponentJoined(true);
                   if (vsCountdown === null) {
-                    // Starting countdown for Go backend match
-                    startVsCountdown();
+                    // Starting countdown for Go backend match (with readiness check)
+                    startVsCountdownWhenReady();
                   }
                 }
                 
@@ -526,6 +660,31 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 
                 // Using proper game mode settings
                 
+                // 🔮 Load power loadouts for both players
+                console.log('🔮 Loading power loadouts for Go backend match...');
+                let hostPowerLoadout = null;
+                let opponentPowerLoadout = null;
+                
+                try {
+                  // Map gameMode to the correct key format for UserPowerLoadouts
+                  let gameModeKey: any = actualGameMode;
+                  if (actualGameMode === 'quickfire') {
+                    gameModeKey = 'quick-fire';
+                  }
+                  
+                  // Load host power loadout
+                  hostPowerLoadout = await UserService.getPowerLoadoutForGameMode(user!.uid, gameModeKey);
+                  console.log('🔮 Host power loadout loaded:', hostPowerLoadout);
+                  
+                  // Load opponent power loadout (only for real users, not bots)
+                  if (opponentPlayerId && !opponentPlayerId.includes('bot')) {
+                    opponentPowerLoadout = await UserService.getPowerLoadoutForGameMode(opponentPlayerId, gameModeKey);
+                    console.log('🔮 Opponent power loadout loaded:', opponentPowerLoadout);
+                  }
+                } catch (error) {
+                  console.error('❌ Error loading power loadouts:', error);
+                }
+
                 const matchData = {
                   originalRoomId: roomId,
                   gameMode: actualGameMode,
@@ -543,6 +702,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped || null,
                     playerScore: startingScore, // Use proper starting score
                     turnActive: false, // Will be set by turn decider
+                    powerLoadout: hostPowerLoadout // Add power loadout for abilities
                   },
                   
                   opponentData: {
@@ -553,6 +713,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     matchBackgroundEquipped: goBackendOpponentData?.matchBackgroundEquipped || opponentProfile?.inventory?.matchBackgroundEquipped || null,
                     playerScore: startingScore, // Use proper starting score
                     turnActive: false, // Will be set by turn decider
+                    powerLoadout: opponentPowerLoadout // Add power loadout for abilities
                   },
                   
                   gameData: {
@@ -565,7 +726,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     diceTwo: 0,
                     roundObjective: roundObjective, // Use proper objective
                     startingScore: startingScore, // Use proper starting score
-                    isRolling: false
+                    isRolling: false,
+                    // Add power loadouts for easy access during gameplay
+                    powerLoadouts: {
+                      [user!.uid]: hostPowerLoadout,
+                      [opponentPlayerId]: opponentPowerLoadout
+                    }
                   }
                 };
                 
@@ -611,8 +777,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               // Continue anyway - the Go backend match still exists
             }
             
-            // Start vs countdown instead of direct navigation
-            startVsCountdown();
+            // Start vs countdown instead of direct navigation (with readiness check)
+            startVsCountdownWhenReady();
             
             return;
           }
@@ -630,6 +796,43 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     };
   }, [roomId, gameMode, setCurrentSection]);
 
+  // Monitor opponent data changes and check display readiness
+  useEffect(() => {
+    const opponentData = getOpponentData();
+    
+    if (opponentData && !opponentDisplayReady && !opponentDisplayLoading) {
+      console.log('🔍 New opponent data detected, checking display readiness');
+      checkOpponentDisplayReady(opponentData);
+    } else if (!opponentData) {
+      // Reset states when opponent leaves
+      setOpponentDisplayReady(false);
+      setOpponentDisplayLoading(false);
+      setReadyToStartCountdown(false);
+    }
+  }, [waitingRoomEntry?.opponentData, goBackendOpponentData, opponentDisplayReady, opponentDisplayLoading]);
+
+  // Monitor overall readiness to start countdown
+  useEffect(() => {
+    const opponentData = getOpponentData();
+    const shouldBeReady = opponentData && opponentDisplayReady && !vsCountdown;
+    
+    if (shouldBeReady && !readyToStartCountdown) {
+      console.log('✅ All conditions met, ready to start countdown');
+      setReadyToStartCountdown(true);
+    } else if (!shouldBeReady && readyToStartCountdown) {
+      console.log('⏸️ Conditions no longer met, not ready for countdown');
+      setReadyToStartCountdown(false);
+    }
+  }, [opponentDisplayReady, vsCountdown, waitingRoomEntry?.opponentData, goBackendOpponentData, readyToStartCountdown]);
+
+  // Start countdown automatically when ready
+  useEffect(() => {
+    if (readyToStartCountdown && vsCountdown === null) {
+      console.log('🚀 Auto-starting countdown now that opponent display is ready');
+      startVsCountdown();
+    }
+  }, [readyToStartCountdown, vsCountdown]);
+
   // Create waiting room entry when component mounts
   useEffect(() => {
     const handleMatchmaking = async () => {
@@ -640,6 +843,18 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         if (!user?.uid) {
           setError('You must be signed in to create a game');
           return;
+        }
+
+        // STEP 0: Clean up any existing matches for this user to prevent conflicts
+        console.log('🧹 Cleaning up existing matches before creating new one...');
+        try {
+          const cleanedCount = await MatchLifecycleService.cleanupUserMatches(user.uid, 'new_match_created');
+          if (cleanedCount > 0) {
+            console.log(`✅ Cleaned up ${cleanedCount} existing matches for user`);
+          }
+        } catch (cleanupError) {
+          console.error('⚠️ Error during match cleanup (continuing anyway):', cleanupError);
+          // Continue with match creation even if cleanup fails
         }
 
         // STEP 1: Handle optimistic rooms first
@@ -702,7 +917,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               
               // Check if both players are ready
               if (bridgeRoomData.hostData && bridgeRoomData.opponentData && bridgeRoomData.readyPlayers.length === 2) {
-                startVsCountdown();
+                startVsCountdownWhenReady();
               }
             }
             
@@ -725,7 +940,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               // Only auto-start countdown for non-friend invitations
               if (!bridgeRoomData.friendInvitation && vsCountdown === null) {
                 console.log('🚀 GameWaitingRoom: Starting countdown for matched players');
-                startVsCountdown();
+                startVsCountdownWhenReady();
               }
             }
           }
@@ -749,7 +964,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   
                   // Check if both players are ready
                   if (data.hostData && data.opponentData && data.readyPlayers.length === 2) {
-                    startVsCountdown();
+                    startVsCountdownWhenReady();
                   }
                 }
                 
@@ -763,7 +978,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   // Only auto-start countdown for non-friend invitations
                   if (!data.friendInvitation && vsCountdown === null) {
                     console.log('🚀 GameWaitingRoom: Starting countdown for matched players');
-                    startVsCountdown();
+                    startVsCountdownWhenReady();
                   }
                 } else {
                   // Reset opponent joined state if opponent is no longer present
@@ -826,7 +1041,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                         matchId: existingMatch.id,
                         roomId: existingMatch.id
                       });
-                      startVsCountdown();
+                      startVsCountdownWhenReady();
                       return;
                     }
                     
@@ -869,7 +1084,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                         matchId: recentMatch.id,
                         roomId: recentMatch.id
                       });
-                      startVsCountdown();
+                      startVsCountdownWhenReady();
                       return;
                     }
                     
@@ -1249,6 +1464,35 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     };
   }, [waitingRoomEntry, goBackendOpponentData, opponentJoined, opponentLastSeen, abandonmentTimer, showAbandonmentNotification, gameHasStarted]);
 
+  // Safe function to start countdown only after opponent display is ready
+  const startVsCountdownWhenReady = () => {
+    const opponentData = getOpponentData();
+    
+    if (!opponentData) {
+      console.log('🔍 Cannot start countdown: No opponent data available');
+      return;
+    }
+
+    if (vsCountdown !== null) {
+      console.log('🔍 Cannot start countdown: Countdown already in progress');
+      return;
+    }
+
+    if (opponentDisplayLoading) {
+      console.log('🔍 Cannot start countdown: Opponent display still loading, will start when ready');
+      return;
+    }
+
+    if (!opponentDisplayReady) {
+      console.log('🔍 Starting opponent display check before countdown');
+      checkOpponentDisplayReady(opponentData);
+      return;
+    }
+
+    console.log('✅ All checks passed, starting countdown now');
+    startVsCountdown();
+  };
+
   // Function to start 5-second countdown for VS section
   const startVsCountdown = () => {
     console.log('🕐 Starting VS countdown...');
@@ -1267,10 +1511,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           setVsCountdownTimer(null);
           console.log('🏁 Countdown finished! Starting match...');
           
-          // Wait longer after showing "GO!" to ensure animation completes
+          // Wait 1 second after showing "GO!" then navigate directly to match
           setTimeout(() => {
             moveToMatchesAndNavigate();
-          }, 3000); // Wait 3 seconds after showing "GO!" to let animation complete
+          }, 1000); // Wait 1 second after showing "GO!" before match loads
           return 0; // Show "GO!"
         }
         return prev - 1;
@@ -2203,6 +2447,17 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       background: 'transparent',
       overflow: 'hidden'
     }}>
+      {/* Match Transition Animation */}
+      {showMatchTransition && transitionMatchData && (
+        <MatchTransition
+          hostData={transitionMatchData.hostData}
+          opponentData={transitionMatchData.opponentData}
+          gameMode={transitionMatchData.gameMode}
+          onTransitionComplete={handleTransitionComplete}
+          isVisible={showMatchTransition}
+        />
+      )}
+
       {/* Match Abandonment Notification */}
       {showAbandonmentNotification && (
         <MatchAbandonmentNotification
@@ -2282,6 +2537,11 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             transform: translateY(0) scale(1);
             box-shadow: 0 4px 15px rgba(255, 0, 128, 0.3);
           }
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
       `}</style>
 
@@ -2675,10 +2935,38 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   textShadow: vsCountdown === 0 
                     ? '0 0 20px rgba(0, 255, 0, 0.8), 0 0 40px rgba(0, 255, 0, 0.4)' 
                     : '0 0 15px rgba(255, 255, 255, 0.4)',
-                  animation: vsCountdown === 0 ? 'goGlow 1s infinite' : 'subtleGlow 1.5s infinite'
+                  animation: vsCountdown === 0 ? 'goGlow 1s ease-in-out' : 'subtleGlow 1.5s infinite'
                 }}
               >
                 {vsCountdown === 0 ? 'GO!' : vsCountdown}
+              </div>
+            ) : opponentDisplayLoading ? (
+              <div
+                style={{
+                  color: '#FFB347',
+                  fontFamily: 'Audiowide',
+                  fontSize: window.innerWidth < 768 ? '20px' : '32px',
+                  fontStyle: 'normal',
+                  fontWeight: 400,
+                  lineHeight: window.innerWidth < 768 ? '24px' : '36px',
+                  textTransform: 'uppercase',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}
+              >
+                <div>PREPARING MATCH</div>
+                <div
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    border: '2px solid rgba(255, 179, 71, 0.3)',
+                    borderTop: '2px solid #FFB347',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }}
+                />
               </div>
             ) : (
               <div
@@ -2923,6 +3211,48 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     : '#332A63'
                 }}
               >
+                {/* Loading overlay while opponent display is loading */}
+                {opponentDisplayLoading && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      zIndex: 10,
+                      backdropFilter: 'blur(4px)'
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        border: '3px solid rgba(255, 255, 255, 0.3)',
+                        borderTop: '3px solid #00ff66',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite',
+                        marginBottom: '15px'
+                      }}
+                    />
+                    <div
+                      style={{
+                        color: '#E2E2E2',
+                        fontFamily: 'Audiowide',
+                        fontSize: '14px',
+                        textAlign: 'center',
+                        textTransform: 'uppercase'
+                      }}
+                    >
+                      Loading Display...
+                    </div>
+                  </div>
+                )}
                 {/* Render opponent video background if it's a video */}
                 {getOpponentData()?.matchBackgroundEquipped?.type === 'video' && (
                   <video

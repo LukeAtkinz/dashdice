@@ -12,6 +12,7 @@ import { ChatProvider } from './ChatContext';
 import { ToastProvider } from './ToastContext';
 import { AbilitiesProvider } from './AbilitiesContext';
 import { CleanupService } from '@/services/cleanupService';
+import { MatchLifecycleService } from '@/services/matchLifecycleService';
 import { GameInvitationService } from '@/services/gameInvitationService';
 import { RematchService } from '@/services/rematchService';
 
@@ -20,13 +21,18 @@ interface ProvidersProps {
 }
 
 export const Providers: React.FC<ProvidersProps> = ({ children }) => {
-  // Initialize database cleanup on app start - TEMPORARILY DISABLED
+  // Initialize match lifecycle management on app start
   useEffect(() => {
     // Only run on the client side to avoid SSR issues
     if (typeof window === 'undefined') return;
     
-    // CleanupService.initializeCleanupScheduler(); // Disabled to prevent matchmaking issues
-    console.log('🚫 Database cleanup temporarily disabled to prevent matchmaking issues');
+    // Initialize the new match lifecycle service (10-minute cleanup cycle)
+    try {
+      MatchLifecycleService.initialize();
+      console.log('✅ Match Lifecycle Service initialized with 10-minute cleanup cycle');
+    } catch (error) {
+      console.error('❌ Error initializing Match Lifecycle Service:', error);
+    }
     
     // Start invitation and rematch cleanup timers to keep database clean
     try {

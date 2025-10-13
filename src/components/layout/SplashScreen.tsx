@@ -37,9 +37,9 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
     }
   }, []);
 
-  // Get the new unified splash screen video
+  // Get splash video source
   const getVideoSource = useCallback(() => {
-    return '/Splash Screens/upscaled splash.mp4';
+    return '/splash.mp4';
   }, []);
 
   // Handle video end
@@ -55,46 +55,88 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
     }, 100); // Very small delay to ensure smooth transition
   }, [onComplete]);
 
-  // Force video playback for mobile/PWA
+  // Force video playback for mobile/PWA with enhanced retry logic
   const forceVideoPlay = useCallback(async (video: HTMLVideoElement) => {
     try {
-      // Ensure video is muted for autoplay
+      // Ensure video is muted for autoplay (critical for mobile)
       video.muted = true;
       video.volume = 0;
+      video.defaultMuted = true;
       
-      // Set additional mobile-friendly properties
+      // Set comprehensive mobile-friendly properties
       video.setAttribute('playsinline', 'true');
       video.setAttribute('webkit-playsinline', 'true');
       video.setAttribute('x5-video-player-type', 'h5-page');
       video.setAttribute('x5-video-player-fullscreen', 'false');
+      video.setAttribute('x5-video-orientation', 'portrait');
+      video.setAttribute('preload', 'auto');
+      video.setAttribute('autoplay', 'true');
       
-      await video.play();
-    } catch (error) {
-      console.warn('Video autoplay failed, attempting forced play:', error);
+      // Force load the video
+      video.load();
       
-      // For PWA or mobile, try alternative approaches
-      if (isPWA || isMobile) {
-        setTimeout(async () => {
-          try {
-            await video.play();
-          } catch (retryError) {
-            console.warn('Retry video play failed:', retryError);
-            // Skip to end if video won't play
-            handleVideoEnd();
-          }
-        }, 200);
-      } else {
-        handleVideoEnd();
+      // Wait for metadata and then play
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        await playPromise;
+        console.log('✅ Splash video autoplay successful');
       }
+    } catch (error) {
+      console.warn('📱 Video autoplay failed, attempting mobile-specific retry:', error);
+      
+      // Multiple retry strategies for mobile
+      const retryStrategies = [
+        // Strategy 1: Immediate retry with fresh load
+        async () => {
+          video.load();
+          video.muted = true;
+          await new Promise(resolve => setTimeout(resolve, 100));
+          return video.play();
+        },
+        
+        // Strategy 2: Force properties and retry
+        async () => {
+          video.muted = true;
+          video.volume = 0;
+          video.autoplay = true;
+          return video.play();
+        },
+        
+        // Strategy 3: Create new video element (last resort)
+        async () => {
+          const newVideo = video.cloneNode(true) as HTMLVideoElement;
+          newVideo.muted = true;
+          newVideo.autoplay = true;
+          newVideo.setAttribute('playsinline', 'true');
+          video.parentNode?.replaceChild(newVideo, video);
+          return newVideo.play();
+        }
+      ];
+      
+      // Try each strategy with delays
+      for (let i = 0; i < retryStrategies.length; i++) {
+        try {
+          await new Promise(resolve => setTimeout(resolve, 200 * (i + 1))); // Increasing delay
+          await retryStrategies[i]();
+          console.log(`✅ Splash video retry strategy ${i + 1} successful`);
+          return;
+        } catch (retryError) {
+          console.warn(`❌ Splash video retry strategy ${i + 1} failed:`, retryError);
+        }
+      }
+      
+      // All strategies failed - skip splash screen
+      console.warn('❌ All splash video strategies failed, skipping splash screen');
+      handleVideoEnd();
     }
-  }, [isPWA, isMobile, handleVideoEnd]);
+  }, [handleVideoEnd]);
 
-  // Handle video error - fallback to default video or skip splash
+  // Handle video error - fallback to secondary video or skip splash
   const handleVideoError = useCallback(() => {
     console.warn('Splash video failed to load, trying fallback...');
     setVideoError(true);
     
-    // Try to load the fallback video (existing splashscreen.mp4)
+    // Try to load the fallback video
     setTimeout(() => {
       const fallbackVideo = document.getElementById('fallback-splash-video') as HTMLVideoElement;
       if (fallbackVideo) {
@@ -111,47 +153,55 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
     }, 100);
   }, [handleVideoEnd, forceVideoPlay]);
 
-  // Force video play on mount for PWA/mobile (aggressive approach)
+  // Aggressive video initialization for all devices
   useEffect(() => {
-    if (isPWA || isMobile) {
-      const timer = setTimeout(() => {
-        const mainVideo = document.getElementById('main-splash-video') as HTMLVideoElement;
-        if (mainVideo) {
-          forceVideoPlay(mainVideo);
-        }
-      }, 100);
+    const initVideoPlayback = async () => {
+      // Always try to start video, especially critical for mobile
+      const mainVideo = document.getElementById('main-splash-video') as HTMLVideoElement;
+      if (mainVideo) {
+        console.log('🎬 Initializing splash video playback...');
+        await forceVideoPlay(mainVideo);
+      }
+    };
 
-      return () => clearTimeout(timer);
-    }
-  }, [isPWA, isMobile, forceVideoPlay]);
+    // Multiple attempts with different timing for maximum mobile compatibility
+    const timers = [
+      setTimeout(initVideoPlayback, 50),   // Immediate attempt
+      setTimeout(initVideoPlayback, 200),  // Quick retry
+      setTimeout(initVideoPlayback, 500),  // Fallback attempt
+    ];
 
-  // Handle any potential user interaction to start video (PWA fallback)
+    return () => {
+      timers.forEach(timer => clearTimeout(timer));
+    };
+  }, [forceVideoPlay]);
+
+  // Handle user interaction to start video (PWA/mobile fallback)
   useEffect(() => {
-    if (isPWA || isMobile) {
-      const handleUserInteraction = () => {
-        const mainVideo = document.getElementById('main-splash-video') as HTMLVideoElement;
-        const fallbackVideo = document.getElementById('fallback-splash-video') as HTMLVideoElement;
-        
-        if (mainVideo && !mainVideo.played.length) {
-          forceVideoPlay(mainVideo);
-        } else if (fallbackVideo && !fallbackVideo.played.length) {
-          forceVideoPlay(fallbackVideo);
-        }
-        
-        // Remove event listeners after first interaction
-        document.removeEventListener('touchStart', handleUserInteraction);
-        document.removeEventListener('click', handleUserInteraction);
-      };
+    const handleUserInteraction = () => {
+      const mainVideo = document.getElementById('main-splash-video') as HTMLVideoElement;
+      const fallbackVideo = document.getElementById('fallback-splash-video') as HTMLVideoElement;
+      
+      if (mainVideo && !mainVideo.played.length) {
+        forceVideoPlay(mainVideo);
+      } else if (fallbackVideo && !fallbackVideo.played.length) {
+        forceVideoPlay(fallbackVideo);
+      }
+      
+      // Remove event listeners after first interaction
+      document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('click', handleUserInteraction);
+    };
 
-      document.addEventListener('touchstart', handleUserInteraction, { passive: true });
-      document.addEventListener('click', handleUserInteraction, { passive: true });
+    // Add interaction listeners for mobile devices
+    document.addEventListener('touchstart', handleUserInteraction, { passive: true });
+    document.addEventListener('click', handleUserInteraction, { passive: true });
 
-      return () => {
-        document.removeEventListener('touchstart', handleUserInteraction);
-        document.removeEventListener('click', handleUserInteraction);
-      };
-    }
-  }, [isPWA, isMobile, forceVideoPlay]);
+    return () => {
+      document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('click', handleUserInteraction);
+    };
+  }, [forceVideoPlay]);
 
   // Skip splash screen after maximum time (safety fallback)
   useEffect(() => {
@@ -196,6 +246,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             x5-video-player-type="h5-page"
             x5-video-player-fullscreen="false"
             x5-video-orientation="portrait"
+            loop={false}
             onEnded={handleVideoEnd}
             onError={handleVideoError}
             onCanPlay={() => setVideoError(false)}
@@ -205,10 +256,8 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             }}
             onLoadedMetadata={(e) => {
               const video = e.target as HTMLVideoElement;
-              // Additional attempt for PWA/mobile
-              if (isPWA || isMobile) {
-                forceVideoPlay(video);
-              }
+              // Additional attempt for mobile devices
+              forceVideoPlay(video);
             }}
             className={`object-cover ${isMobile ? 'w-[85%] h-[75%]' : 'w-[95%] h-[90%]'} max-w-none`}
             style={{ 
@@ -235,6 +284,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
               x5-video-player-type="h5-page"
               x5-video-player-fullscreen="false"
               x5-video-orientation="portrait"
+              loop={false}
               onEnded={handleVideoEnd}
               onError={() => {
                 console.warn('All splash videos failed, skipping splash screen');
@@ -246,16 +296,14 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
               }}
               onLoadedMetadata={(e) => {
                 const video = e.target as HTMLVideoElement;
-                if (isPWA || isMobile) {
-                  forceVideoPlay(video);
-                }
+                forceVideoPlay(video);
               }}
               className={`object-cover ${isMobile ? 'w-full h-full' : 'w-[95%] h-[90%]'} max-w-none`}
               style={{ 
                 pointerEvents: 'none' // Prevent any clicks that might show controls
               }}
             >
-              <source src="/Splash Screens/upscaled splash.mp4" type="video/mp4" />
+              <source src="/Splash Screens/splashscreen.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           )}

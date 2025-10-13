@@ -36,6 +36,20 @@ export default function InlineAbilitiesDisplay({
                            (matchData.hostData.playerId === playerId ? (matchData.hostData as any).powerLoadout : (matchData.opponentData as any)?.powerLoadout) ||
                            null;
 
+  // DEBUG: Log powerLoadout loading
+  useEffect(() => {
+    console.log('🔮 InlineAbilitiesDisplay DEBUG:', {
+      playerId,
+      isHost: matchData.hostData.playerId === playerId,
+      gameDataPowerLoadouts: (matchData.gameData as any).powerLoadouts,
+      gameDataPlayerLoadout: (matchData.gameData as any).powerLoadouts?.[playerId],
+      hostDataPowerLoadout: (matchData.hostData as any).powerLoadout,
+      opponentDataPowerLoadout: (matchData.opponentData as any)?.powerLoadout,
+      finalPlayerPowerLoadout: playerPowerLoadout,
+      allAbilitiesCount: allAbilities.length
+    });
+  }, [playerId, playerPowerLoadout, allAbilities.length, matchData]);
+
   // Get player's current aura from match data
   const playerAura = matchData.gameData.playerAura?.[playerId] || 0;
 
@@ -87,16 +101,17 @@ export default function InlineAbilitiesDisplay({
     return () => clearInterval(interval);
   }, []);
 
-  if (!playerPowerLoadout) {
+  if (!playerPowerLoadout || Object.keys(playerPowerLoadout).length === 0) {
+    console.log('🔮 DEBUG: No powerLoadout or empty powerLoadout, showing empty slots');
     // Show 5 empty slots when no loadout
     return (
       <div className={`flex justify-center gap-2 md:gap-3 ${className}`}>
         {Array.from({ length: 5 }).map((_, index) => (
           <div
             key={`empty-${index}`}
-            className="w-12 h-12 md:w-16 md:h-16 rounded-xl border-2 border-gray-600/50 bg-gray-800/30 backdrop-blur-sm flex items-center justify-center"
+            className="w-16 h-16 md:w-20 md:h-20 rounded-xl border-2 border-gray-600/50 bg-gray-800/30 backdrop-blur-sm flex items-center justify-center"
           >
-            <div className="text-gray-500 text-lg md:text-2xl">🔒</div>
+            <div className="text-gray-500 text-2xl md:text-3xl">🔒</div>
           </div>
         ))}
       </div>
@@ -105,10 +120,16 @@ export default function InlineAbilitiesDisplay({
 
   // Get equipped abilities (max 5 slots)
   // PowerLoadout structure: { tactical?: string, attack?: string, defense?: string, utility?: string, gamechanger?: string }
+  console.log('🔮 DEBUG: Processing powerLoadout entries:', Object.entries(playerPowerLoadout || {}));
+  
   const equippedAbilities = Object.entries(playerPowerLoadout || {})
-    .filter(([_, abilityId]) => abilityId)
+    .filter(([_, abilityId]) => {
+      console.log('🔮 DEBUG: Filtering ability:', { abilityId, hasAbilityId: !!abilityId });
+      return abilityId;
+    })
     .map(([category, abilityId]) => {
       const ability = allAbilities.find(a => a.id === abilityId);
+      console.log('🔮 DEBUG: Looking for ability:', { category, abilityId, foundAbility: !!ability, ability });
       
       // 🔍 DEBUG: Log ability categorization
       if (ability?.id === 'siphon') {
@@ -208,9 +229,9 @@ export default function InlineAbilitiesDisplay({
           return (
             <div
               key={`slot-${index}`}
-              className="w-16 h-16 md:w-16 md:h-16 rounded-xl border-2 border-gray-600/50 bg-gray-800/30 backdrop-blur-sm flex items-center justify-center"
+              className="w-20 h-20 md:w-24 md:h-24 rounded-xl border-2 border-gray-600/50 bg-gray-800/30 backdrop-blur-sm flex items-center justify-center"
             >
-              <div className="text-gray-500 text-sm md:text-base">+</div>
+              <div className="text-gray-500 text-xl md:text-2xl">+</div>
             </div>
           );
         }
@@ -225,7 +246,7 @@ export default function InlineAbilitiesDisplay({
             key={ability.id}
             onClick={() => handleAbilityClick(ability)}
             disabled={status.disabled || isUsing === ability.id}
-            className={`w-16 h-16 md:w-16 md:h-16 rounded-xl border-2 backdrop-blur-sm transition-all relative overflow-hidden ${
+            className={`w-20 h-20 md:w-24 md:h-24 rounded-xl border-2 backdrop-blur-sm transition-all relative overflow-hidden ${
               status.disabled || isUsing === ability.id
                 ? 'opacity-50 cursor-not-allowed' 
                 : 'hover:scale-105 active:scale-95 hover:border-white/60'
@@ -255,7 +276,7 @@ export default function InlineAbilitiesDisplay({
                     target.style.display = 'none';
                     const parent = target.parentElement;
                     if (parent) {
-                      parent.innerHTML = `<div class="text-lg md:text-xl">${categoryInfo.icon}</div>`;
+                      parent.innerHTML = `<div class="text-2xl md:text-3xl">${categoryInfo.icon}</div>`;
                     }
                   }}
                 />
@@ -267,7 +288,7 @@ export default function InlineAbilitiesDisplay({
             {/* Cooldown Overlay */}
             {cooldowns[ability.id] && (
               <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                <span className="text-white text-xs md:text-sm font-bold">
+                <span className="text-white text-sm md:text-base font-bold">
                   {cooldowns[ability.id]}s
                 </span>
               </div>

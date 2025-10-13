@@ -541,7 +541,17 @@ export class UserService {
   static async getPowerLoadoutForGameMode(uid: string, gameMode: keyof UserPowerLoadouts): Promise<PowerLoadout | null> {
     try {
       const loadouts = await this.getUserPowerLoadouts(uid);
-      return loadouts ? (loadouts[gameMode] || {}) : null;
+      if (!loadouts) return null;
+      
+      const gameLoadout = loadouts[gameMode];
+      // Return null if the loadout is empty or doesn't exist
+      if (!gameLoadout || Object.keys(gameLoadout).length === 0) {
+        console.log(`🔮 UserService: No ${gameMode} loadout found for user ${uid}, returning null`);
+        return null;
+      }
+      
+      console.log(`🔮 UserService: Found ${gameMode} loadout for user ${uid}:`, gameLoadout);
+      return gameLoadout;
     } catch (error) {
       console.error(`❌ UserService: Error fetching ${gameMode} loadout:`, error);
       throw error;

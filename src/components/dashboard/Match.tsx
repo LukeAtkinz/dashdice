@@ -1036,7 +1036,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       {/* Game Arena */}
       <div className="flex items-center justify-center p-2 md:p-4" style={{ width: '90vw' }}>
           {/* Desktop Layout */}
-          <div className="hidden md:flex items-center justify-between gap-16" style={{ width: '100%' }}>
+          <div 
+            className="hidden md:flex items-center justify-between gap-16" 
+            style={{ 
+              width: '100%',
+              display: matchData?.gameData?.gamePhase === 'turnDecider' ? 'none' : ''
+            }}
+          >
             
             {/* Player 1 (Current User - Left Side) */}
             <div className="flex-1">
@@ -1390,7 +1396,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           </div>
 
           {/* Mobile Layout - Stacked */}
-          <div className="md:hidden flex flex-col items-center w-full" style={{ width: '100vw', paddingTop: '0px' }}>
+          <div 
+            className="md:hidden flex flex-col items-center w-full" 
+            style={{ 
+              width: '100vw', 
+              paddingTop: '0px',
+              display: matchData?.gameData?.gamePhase === 'turnDecider' ? 'none' : ''
+            }}
+          >
             
             {/* User Profiles Section - Top */}
             <div className="w-full flex justify-between mb-3" style={{ paddingLeft: '10px', paddingRight: '10px', gap: '10px' }}>
