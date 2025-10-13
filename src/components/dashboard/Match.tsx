@@ -971,21 +971,41 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             {/* Player 1 (Current User - Left Side) */}
             <div className="flex-1">
               {/* Player Name Above Container - Left Aligned */}
-              <h2 
-                className="text-3xl font-bold text-white mb-4 text-left"
+              <motion.h2 
+                className="text-3xl font-bold mb-4 text-left"
                 style={{ 
                   fontFamily: 'Audiowide',
                   textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
                 }}
+                animate={{
+                  color: currentPlayer.turnActive ? '#00ff66' : '#ffffff',
+                  textShadow: currentPlayer.turnActive 
+                    ? '2px 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(0, 255, 102, 0.5)'
+                    : '2px 2px 4px rgba(0,0,0,0.8)'
+                }}
+                transition={{ 
+                  duration: 0.5,
+                  ease: "easeInOut"
+                }}
               >
                 {currentPlayer.playerDisplayName}
-              </h2>
+              </motion.h2>
               
-              <div
+              <motion.div
                 className="relative rounded-3xl overflow-hidden shadow-2xl border-4 z-20"
                 style={{ 
                   borderColor: currentPlayer.turnActive ? '#00ff00' : '#ffffff',
                   height: '500px'
+                }}
+                animate={{
+                  borderColor: currentPlayer.turnActive ? '#00ff00' : '#ffffff',
+                  boxShadow: currentPlayer.turnActive 
+                    ? '0 0 25px rgba(0, 255, 0, 0.6), 0 0 50px rgba(0, 255, 0, 0.3)'
+                    : '0 0 15px rgba(255, 255, 255, 0.2)'
+                }}
+                transition={{ 
+                  duration: 0.5,
+                  ease: "easeInOut"
                 }}
               >
                 {/* Player Background */}
@@ -1042,7 +1062,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     })()}
                   </div>
                 )}
-              </div>
+              </motion.div>
               
               {/* Background Rarity Display - Below Container, Left Aligned */}
               <div 
@@ -1177,21 +1197,41 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             {/* Player 2 (Opponent - Right Side) */}
             <div className="flex-1">
               {/* Player Name Above Container - Right Aligned */}
-              <h2 
-                className="text-3xl font-bold text-white mb-4 text-right"
+              <motion.h2 
+                className="text-3xl font-bold mb-4 text-right"
                 style={{ 
                   fontFamily: 'Audiowide',
                   textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
                 }}
+                animate={{
+                  color: opponent.turnActive ? '#00ff66' : '#ffffff',
+                  textShadow: opponent.turnActive 
+                    ? '2px 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(0, 255, 102, 0.5)'
+                    : '2px 2px 4px rgba(0,0,0,0.8)'
+                }}
+                transition={{ 
+                  duration: 0.5,
+                  ease: "easeInOut"
+                }}
               >
                 {opponent.playerDisplayName}
-              </h2>
+              </motion.h2>
               
-              <div
+              <motion.div
                 className="relative rounded-3xl overflow-hidden shadow-2xl border-4 z-20"
                 style={{ 
                   borderColor: opponent.turnActive ? '#00ff00' : '#ffffff',
                   height: '500px'
+                }}
+                animate={{
+                  borderColor: opponent.turnActive ? '#00ff00' : '#ffffff',
+                  boxShadow: opponent.turnActive 
+                    ? '0 0 25px rgba(0, 255, 0, 0.6), 0 0 50px rgba(0, 255, 0, 0.3)'
+                    : '0 0 15px rgba(255, 255, 255, 0.2)'
+                }}
+                transition={{ 
+                  duration: 0.5,
+                  ease: "easeInOut"
                 }}
               >
                 {/* Player Background */}
@@ -1244,7 +1284,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     {opponent.playerScore}
                   </div>
                 </div>
-              </div>
+              </motion.div>
               
               {/* Background Rarity Display - Below Container, Right Aligned */}
               <div 
@@ -1305,12 +1345,22 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   {currentPlayer.playerDisplayName}
                 </h3>
                 
-                <div
+                <motion.div
                   className="relative rounded-xl overflow-hidden shadow-lg border-2"
                   style={{ 
                     borderColor: currentPlayer.turnActive ? '#00ff00' : '#ffffff',
                     height: '120px',
                     width: '100%'
+                  }}
+                  animate={{
+                    borderColor: currentPlayer.turnActive ? '#00ff00' : '#ffffff',
+                    boxShadow: currentPlayer.turnActive 
+                      ? '0 0 15px rgba(0, 255, 0, 0.6), 0 0 30px rgba(0, 255, 0, 0.3)'
+                      : '0 0 8px rgba(255, 255, 255, 0.2)'
+                  }}
+                  transition={{ 
+                    duration: 0.5,
+                    ease: "easeInOut"
                   }}
                 >
                   {/* Player Background */}
@@ -1373,7 +1423,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       YOU
                     </div>
                   )} */}
-                </div>
+                </motion.div>
               </div>
 
               {/* Opponent Profile - Right */}
@@ -1397,12 +1447,22 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   {opponent.playerDisplayName}
                 </h3>
                 
-                <div
+                <motion.div
                   className="relative rounded-xl overflow-hidden shadow-lg border-2"
                   style={{ 
                     borderColor: opponent.turnActive ? '#00ff00' : '#ffffff',
                     height: '120px',
                     width: '100%'
+                  }}
+                  animate={{
+                    borderColor: opponent.turnActive ? '#00ff00' : '#ffffff',
+                    boxShadow: opponent.turnActive 
+                      ? '0 0 15px rgba(0, 255, 0, 0.6), 0 0 30px rgba(0, 255, 0, 0.3)'
+                      : '0 0 8px rgba(255, 255, 255, 0.2)'
+                  }}
+                  transition={{ 
+                    duration: 0.5,
+                    ease: "easeInOut"
                   }}
                 >
                   {/* Player Background */}
@@ -1465,7 +1525,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       THEM
                     </div>
                   )} */}
-                </div>
+                </motion.div>
               </div>
             </div>
 

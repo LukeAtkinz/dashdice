@@ -111,13 +111,6 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const [botFallbackActive, setBotFallbackActive] = useState(false);
   const [botOpponent, setBotOpponent] = useState<any>(null);
   
-  // Add body class for mobile scrolling control
-  useEffect(() => {
-    document.body.classList.add('waiting-room-active');
-    return () => {
-      document.body.classList.remove('waiting-room-active');
-    };
-  }, []);
   const [vsCountdown, setVsCountdown] = useState<number | null>(null);
   const [isLeaving, setIsLeaving] = useState(false); // Add flag to prevent multiple leave operations
   const [isReady, setIsReady] = useState(false); // Track if current player is ready
@@ -128,9 +121,32 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   // Abandonment notification state
   const [showAbandonmentNotification, setShowAbandonmentNotification] = useState(false);
   const [abandonmentTimer, setAbandonmentTimer] = useState<NodeJS.Timeout | null>(null);
+  
+  // Timer state for countdown management
+  const [vsCountdownTimer, setVsCountdownTimer] = useState<NodeJS.Timeout | null>(null);
+  const [botCountdownTimer, setBotCountdownTimer] = useState<NodeJS.Timeout | null>(null);
   const [opponentLastSeen, setOpponentLastSeen] = useState<Date | null>(null);
   const [gameHasStarted, setGameHasStarted] = useState(false); // Track if the game has actually started
   const [pendingMatchData, setPendingMatchData] = useState<any>(null); // Store match data during countdown
+
+  // Add body class for mobile scrolling control and cleanup timers on unmount
+  useEffect(() => {
+    document.body.classList.add('waiting-room-active');
+    return () => {
+      document.body.classList.remove('waiting-room-active');
+      
+      // Cleanup all timers on unmount
+      if (vsCountdownTimer) {
+        clearInterval(vsCountdownTimer);
+      }
+      if (botCountdownTimer) {
+        clearInterval(botCountdownTimer);
+      }
+      if (abandonmentTimer) {
+        clearInterval(abandonmentTimer);
+      }
+    };
+  }, [vsCountdownTimer, botCountdownTimer, abandonmentTimer]);
 
   // Waiting room cleanup functionality
   const { leaveWaitingRoom } = useWaitingRoomCleanup(waitingRoomEntry?.id || roomId);
@@ -1237,11 +1253,18 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const startVsCountdown = () => {
     console.log('🕐 Starting VS countdown...');
     
+    // Clear any existing timer to prevent multiple countdowns
+    if (vsCountdownTimer) {
+      clearInterval(vsCountdownTimer);
+      setVsCountdownTimer(null);
+    }
+    
     setVsCountdown(5);
     const timer = setInterval(() => {
       setVsCountdown((prev) => {
         if (prev === null || prev <= 1) {
           clearInterval(timer);
+          setVsCountdownTimer(null);
           console.log('🏁 Countdown finished! Starting match...');
           
           // Wait longer after showing "GO!" to ensure animation completes
@@ -1252,12 +1275,21 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         }
         return prev - 1;
       });
-    }, 1000);
+    }, 1000); // Exactly 1 second intervals
+    
+    setVsCountdownTimer(timer);
   };
 
   // 🤖 Function to start bot fallback countdown (7 seconds)
   const startBotCountdown = (sessionId: string) => {
     console.log('🤖 Starting bot fallback countdown (7 seconds)...');
+    
+    // Clear any existing timer to prevent multiple countdowns
+    if (botCountdownTimer) {
+      clearInterval(botCountdownTimer);
+      setBotCountdownTimer(null);
+    }
+    
     setBotFallbackActive(true);
     setBotCountdown(7);
     
@@ -1265,6 +1297,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       setBotCountdown((prev) => {
         if (prev === null || prev <= 1) {
           clearInterval(timer);
+          setBotCountdownTimer(null);
           console.log('🤖 Bot countdown finished! Attempting bot match...');
           
           // Trigger bot matching
@@ -1276,7 +1309,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         }
         return prev - 1;
       });
-    }, 1000);
+    }, 1000); // Exactly 1 second intervals
+    
+    setBotCountdownTimer(timer);
   };
 
   // 🤖 Function to attempt bot matching
@@ -1405,6 +1440,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       console.log('✅ Real player joined! Cancelling bot countdown...');
       setBotFallbackActive(false);
       setBotCountdown(null);
+      
+      // Clear the bot countdown timer
+      if (botCountdownTimer) {
+        clearInterval(botCountdownTimer);
+        setBotCountdownTimer(null);
+      }
     }
   };
 
