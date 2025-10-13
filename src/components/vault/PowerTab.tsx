@@ -170,6 +170,14 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
     isLoading,
     isInitialized
   });
+  
+  // Debug abilities data
+  if (allAbilities?.length) {
+    console.log('🔮 All abilities:', allAbilities.map(a => ({ name: a.name, category: a.category, id: a.id })));
+  }
+  if (userAbilities?.length) {
+    console.log('👤 User abilities:', userAbilities.map(ua => ({ abilityId: ua.abilityId })));
+  }
 
   if (!isInitialized || isLoading || isLoadingLoadouts) {
     return (
@@ -229,6 +237,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
     const categories = Object.keys(ABILITY_CATEGORIES);
     return categories.map(category => {
       const categoryInfo = ABILITY_CATEGORIES[category as keyof typeof ABILITY_CATEGORIES];
+      // Filter abilities by exact category match
       const abilities = allAbilities.filter(ability => ability.category === category);
       return { category, categoryInfo, abilities };
     });
@@ -683,15 +692,16 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                         );
                       })}
                       
-                      {/* Coming Soon Abilities */}
-                      <>
-                        {/* Coming Soon Ability 1 */}
-                        <motion.div
-                          className="relative group"
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: userCategoryAbilities.length * 0.1 }}
-                        >
+                      {/* Coming Soon Abilities - Only show if less than 3 total abilities in category */}
+                      {userCategoryAbilities.length < 3 && (
+                        <>
+                          {/* Coming Soon Ability 1 */}
+                          <motion.div
+                            className="relative group"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: userCategoryAbilities.length * 0.1 }}
+                          >
                             <div
                               className="aspect-square rounded-lg p-3 border transition-all duration-300 backdrop-blur-sm overflow-hidden relative"
                               style={{
@@ -767,6 +777,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                             </div>
                           </motion.div>
                         </>
+                      )}
                     </div>
                   </motion.div>
                 );
@@ -886,15 +897,16 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                     );
                   })}
                   
-                  {/* Coming Soon Abilities */}
-                  <>
-                    {/* Coming Soon Ability 1 */}
-                    <motion.div
-                      className="relative group"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: userCategoryAbilities.length * 0.1 }}
-                    >
+                  {/* Coming Soon Abilities - Only show if less than 3 total abilities in category */}
+                  {userCategoryAbilities.length < 3 && (
+                    <>
+                      {/* Coming Soon Ability 1 */}
+                      <motion.div
+                        className="relative group"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: userCategoryAbilities.length * 0.1 }}
+                      >
                         <div
                           className="aspect-square rounded-lg p-3 border transition-all duration-300 backdrop-blur-sm overflow-hidden relative"
                           style={{
@@ -970,6 +982,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                         </div>
                       </motion.div>
                     </>
+                  )}
                 </div>
               </motion.div>
             );

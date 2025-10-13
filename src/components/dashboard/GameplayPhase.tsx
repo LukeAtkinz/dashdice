@@ -5,6 +5,7 @@ import { SlotMachineDice } from './SlotMachineDice';
 import { useBackground } from '@/context/BackgroundContext';
 import { useAuth } from '@/context/AuthContext';
 import AbilitiesPanel from '@/components/match/AbilitiesPanel';
+import InlineAbilitiesDisplay from '@/components/match/InlineAbilitiesDisplay';
 
 interface GameplayPhaseProps {
   matchData: MatchData;
@@ -359,8 +360,21 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           </div>
         </div>
 
+        {/* Desktop Abilities Display */}
+        {user && onAbilityUsed && (
+          <div className="hidden md:block mb-6 mt-8">
+            <InlineAbilitiesDisplay
+              matchData={matchData}
+              onAbilityUsed={onAbilityUsed}
+              isPlayerTurn={isMyTurn}
+              playerId={user.uid}
+              className="justify-center"
+            />
+          </div>
+        )}
+
         {/* Action Buttons - Desktop Only - Moved further down */}
-        <div className="hidden md:flex gap-4 mb-8 mt-12">
+        <div className="hidden md:flex gap-4 mb-8 mt-4">
           {isMyTurn ? (
             <>
               <button

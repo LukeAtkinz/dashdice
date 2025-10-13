@@ -28,7 +28,7 @@ export interface AbandonedMatch {
 export class AbandonedMatchService {
   private static cleanupInterval: NodeJS.Timeout | null = null;
   private static inactivityThreshold = 300000; // 5 minutes
-  private static timeoutThreshold = 1800000; // 30 minutes max match duration
+  private static timeoutThreshold = 600000; // 10 minutes max match duration (was 30 minutes)
 
   /**
    * Initialize abandoned match cleanup service
@@ -38,10 +38,10 @@ export class AbandonedMatchService {
       clearInterval(this.cleanupInterval);
     }
 
-    // Run cleanup every 2 minutes
+    // Run cleanup every 1 minute (was 2 minutes) - more aggressive to prevent stagnant matches
     this.cleanupInterval = setInterval(async () => {
       await this.cleanupInactiveMatches();
-    }, 120000);
+    }, 60000);
 
     console.log('🗑️ Abandoned match cleanup service initialized');
   }

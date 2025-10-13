@@ -37,7 +37,7 @@ export class WaitingRoomService {
       const querySnapshot = await getDocs(q);
       const rooms: WaitingRoom[] = [];
       const now = new Date();
-      const staleThreshold = 3 * 60 * 1000; // 3 minutes
+      const staleThreshold = 2 * 60 * 1000; // 2 minutes (reduced from 3 to be more aggressive)
 
       // Process rooms and clean up stale ones
       for (const docSnapshot of querySnapshot.docs) {
@@ -364,6 +364,60 @@ export class WaitingRoomService {
   }
 
   /**
+   * 🧹 Clean up existing rooms for a user to prevent duplicates
+   */
+  private static async cleanupExistingUserRooms(userId: string): Promise<void> {
+    try {
+      console.log(`🧹 WaitingRoomService: Cleaning up existing rooms for ${userId}`);
+
+      // Remove user from all waiting rooms they might be in
+      const roomsRef = collection(db, this.COLLECTION_NAME);
+      const hostQuery = query(roomsRef, where('hostData.uid', '==', userId));
+      const participantQuery = query(roomsRef, where('players', 'array-contains-any', [{ uid: userId }]));
+
+      const [hostSnapshot, participantSnapshot] = await Promise.all([
+        getDocs(hostQuery),
+        getDocs(participantQuery)
+      ]);
+
+      const docsToDelete = new Set<string>();
+
+      // Collect host rooms
+      hostSnapshot.docs.forEach(doc => docsToDelete.add(doc.id));
+
+      // Collect participant rooms  
+      participantSnapshot.docs.forEach(doc => {
+        const data = doc.data();
+        const players = data.players || [];
+        const hasUser = players.some((p: any) => p.uid === userId);
+        if (hasUser) {
+          docsToDelete.add(doc.id);
+        }
+      });
+
+      // Delete all found rooms
+      const deletePromises = Array.from(docsToDelete).map(async (docId) => {
+        try {
+          await deleteDoc(doc(db, this.COLLECTION_NAME, docId));
+          console.log(`🗑️ Deleted waiting room: ${docId}`);
+        } catch (error) {
+          console.error(`⚠️ Failed to delete room ${docId}:`, error);
+        }
+      });
+
+      await Promise.allSettled(deletePromises);
+      
+      if (docsToDelete.size > 0) {
+        console.log(`✅ Cleaned up ${docsToDelete.size} existing rooms for ${userId}`);
+      }
+
+    } catch (error) {
+      console.error(`❌ Error cleaning up existing user rooms:`, error);
+      // Don't throw - this is cleanup, not critical for room creation
+    }
+  }
+
+  /**
    * Find or create a room for matchmaking
    */
   static async findOrCreateRoom(
@@ -376,6 +430,9 @@ export class WaitingRoomService {
     }
   ): Promise<{ roomId: string; isNewRoom: boolean }> {
     try {
+      // 🧹 CRITICAL: Clean up any existing rooms/matches for this user first
+      await this.cleanupExistingUserRooms(hostData.uid);
+
       // First, try to find an available room
       const availableRooms = await this.findAvailableRooms(gameMode);
       

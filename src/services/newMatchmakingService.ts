@@ -31,6 +31,11 @@ export class NewMatchmakingService {
     PlayerHeartbeatService.initializeCleanupService();
     AbandonedMatchService.initializeCleanupService();
     
+    // 🧹 IMPORTANT: Run initial cleanup to remove any stagnant matches from previous sessions
+    setTimeout(() => {
+      this.performStartupCleanup();
+    }, 5000); // Wait 5 seconds for services to fully initialize
+    
     console.log('✅ Unified Matchmaking System initialized with optimizations');
   }
 
@@ -50,6 +55,9 @@ export class NewMatchmakingService {
   ): Promise<MatchmakingResult> {
     try {
       console.log(`🎯 NewMatchmakingService: Finding match for ${userId} - ${sessionType}/${gameMode}`);
+
+      // 🧹 CRITICAL: Clean up any existing matches for this user to prevent duplicates
+      await this.cleanupUserMatches(userId);
 
       // Start heartbeat for the user
       await PlayerHeartbeatService.startHeartbeat(userId);
@@ -291,6 +299,125 @@ export class NewMatchmakingService {
 
     } catch (error) {
       console.error('Error cleaning up waiting room documents:', error);
+    }
+  }
+
+  /**
+   * 🧹 Clean up ALL existing matches/rooms for a user to prevent duplicates
+   * This should be called BEFORE starting any new match search
+   */
+  private static async cleanupUserMatches(userId: string): Promise<void> {
+    try {
+      console.log(`🧹 NewMatchmakingService: Cleaning up ALL existing matches for ${userId}`);
+
+      const { db } = await import('./firebase');
+      const { collection, query, where, getDocs, deleteDoc, doc, writeBatch } = await import('firebase/firestore');
+
+      let totalCleaned = 0;
+      const batch = writeBatch(db);
+      const batchLimit = 500; // Firestore batch limit
+      let batchOps = 0;
+
+      // Collections to clean up from
+      const collectionsToClean = [
+        'waitingroom',
+        'gameSessions', 
+        'matches', 
+        'activeGamesSessions'
+      ];
+
+      for (const collectionName of collectionsToClean) {
+        try {
+          const collectionRef = collection(db, collectionName);
+          let queries: any[] = [];
+
+          // Different query strategies for different collections
+          if (collectionName === 'waitingroom') {
+            queries = [
+              query(collectionRef, where('hostData.playerId', '==', userId)),
+              query(collectionRef, where('hostData.uid', '==', userId))
+            ];
+          } else if (collectionName === 'gameSessions') {
+            // For gameSessions, we need to check participants array manually
+            queries = [query(collectionRef)];
+          } else if (collectionName === 'matches') {
+            queries = [
+              query(collectionRef, where('player1.uid', '==', userId)),
+              query(collectionRef, where('player2.uid', '==', userId)),
+              query(collectionRef, where('hostData.playerId', '==', userId)),
+              query(collectionRef, where('opponentData.playerId', '==', userId))
+            ];
+          } else if (collectionName === 'activeGamesSessions') {
+            queries = [query(collectionRef, where('playerId', '==', userId))];
+          }
+
+          for (const queryRef of queries) {
+            const snapshot = await getDocs(queryRef);
+            
+            for (const docSnapshot of snapshot.docs) {
+              const data = docSnapshot.data() as any;
+              let shouldDelete = false;
+
+              // Check if this document involves the user
+              if (collectionName === 'gameSessions') {
+                // For gameSessions, check participants array manually
+                shouldDelete = data.participants?.some((p: any) => 
+                  p.playerId === userId || p.uid === userId
+                );
+              } else {
+                shouldDelete = true; // If we got it from the query, it matches
+              }
+
+              if (shouldDelete) {
+                console.log(`🗑️ Cleaning ${collectionName} document: ${docSnapshot.id}`);
+                
+                if (batchOps < batchLimit) {
+                  batch.delete(docSnapshot.ref);
+                  batchOps++;
+                } else {
+                  // Execute current batch and start a new one
+                  await batch.commit();
+                  const newBatch = writeBatch(db);
+                  newBatch.delete(docSnapshot.ref);
+                  batchOps = 1;
+                }
+                
+                totalCleaned++;
+              }
+            }
+          }
+        } catch (error) {
+          console.error(`⚠️ Error cleaning collection ${collectionName}:`, error);
+          // Continue with other collections
+        }
+      }
+
+      // Commit any remaining batch operations
+      if (batchOps > 0) {
+        await batch.commit();
+      }
+
+      // Also clean up user state
+      const userRef = doc(db, 'users', userId);
+      const { updateDoc, serverTimestamp } = await import('firebase/firestore');
+      
+      try {
+        await updateDoc(userRef, {
+          currentRoom: null,
+          currentGame: null,
+          status: 'online',
+          lastSeen: serverTimestamp()
+        });
+        console.log(`✅ Cleared user state for ${userId}`);
+      } catch (error) {
+        console.error(`⚠️ Error updating user state:`, error);
+      }
+
+      console.log(`✅ NewMatchmakingService: Cleaned up ${totalCleaned} documents for ${userId}`);
+
+    } catch (error) {
+      console.error(`❌ Error in cleanupUserMatches for ${userId}:`, error);
+      // Don't throw - this is cleanup, not critical
     }
   }
 
@@ -790,6 +917,83 @@ export class NewMatchmakingService {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
       };
+    }
+  }
+
+  /**
+   * 🧹 Perform startup cleanup to remove stagnant matches from previous sessions
+   * This prevents the 20+ stagnant matches issue
+   */
+  private static async performStartupCleanup(): Promise<void> {
+    try {
+      console.log('🧹 NewMatchmakingService: Performing startup cleanup of stagnant matches...');
+
+      const { db } = await import('./firebase');
+      const { collection, getDocs, deleteDoc, writeBatch } = await import('firebase/firestore');
+
+      const now = new Date();
+      const tenMinutesAgo = new Date(now.getTime() - (10 * 60 * 1000));
+      const batch = writeBatch(db);
+      let batchOps = 0;
+      let totalCleaned = 0;
+
+      // Collections to clean up
+      const collectionsToClean = ['waitingroom', 'gameSessions', 'matches'];
+
+      for (const collectionName of collectionsToClean) {
+        try {
+          const collectionRef = collection(db, collectionName);
+          const snapshot = await getDocs(collectionRef);
+          
+          console.log(`🔍 Checking ${collectionName}: ${snapshot.docs.length} documents`);
+
+          for (const doc of snapshot.docs) {
+            const data = doc.data() as any;
+            const createdAt = data.createdAt?.toDate() || new Date(0);
+            const lastActivity = data.lastActivity?.toDate() || data.updatedAt?.toDate() || createdAt;
+
+            // If document is older than 10 minutes, clean it
+            if (createdAt < tenMinutesAgo && lastActivity < tenMinutesAgo) {
+              const ageMinutes = Math.round((now.getTime() - createdAt.getTime()) / 60000);
+              console.log(`🗑️ Cleaning stagnant ${collectionName} document: ${doc.id} (${ageMinutes}min old)`);
+
+              if (batchOps < 500) {
+                batch.delete(doc.ref);
+                batchOps++;
+              } else {
+                await batch.commit();
+                const newBatch = writeBatch(db);
+                newBatch.delete(doc.ref);
+                batchOps = 1;
+              }
+
+              totalCleaned++;
+            }
+          }
+        } catch (error) {
+          console.error(`⚠️ Error cleaning ${collectionName} during startup:`, error);
+        }
+      }
+
+      // Commit remaining operations
+      if (batchOps > 0) {
+        await batch.commit();
+      }
+
+      console.log(`✅ Startup cleanup completed: ${totalCleaned} stagnant documents removed`);
+
+      // Also trigger the regular cleanup services
+      if (totalCleaned > 0) {
+        console.log('🔧 Triggering additional cleanup services...');
+        await Promise.allSettled([
+          AbandonedMatchService.forceCleanup(),
+          this.cleanupAbandonedSessions()
+        ]);
+      }
+
+    } catch (error) {
+      console.error('❌ Error during startup cleanup:', error);
+      // Don't throw - this is cleanup, app should still start
     }
   }
 }
