@@ -188,7 +188,7 @@ export default function InlineAbilitiesDisplay({
   });
 
   return (
-    <div className={`flex justify-center gap-2 md:gap-3 ${className}`}>
+    <div className={`flex gap-3 md:gap-6 ${className}`}>
       {displaySlots.map((equippedAbility, index) => {
         if (!equippedAbility) {
           // Empty slot

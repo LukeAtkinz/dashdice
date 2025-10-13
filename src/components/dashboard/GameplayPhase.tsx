@@ -4,7 +4,6 @@ import { MatchData } from '@/types/match';
 import { SlotMachineDice } from './SlotMachineDice';
 import { useBackground } from '@/context/BackgroundContext';
 import { useAuth } from '@/context/AuthContext';
-import AbilitiesPanel from '@/components/match/AbilitiesPanel';
 import InlineAbilitiesDisplay from '@/components/match/InlineAbilitiesDisplay';
 
 interface GameplayPhaseProps {
@@ -360,16 +359,18 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           </div>
         </div>
 
-        {/* Desktop Abilities Display */}
+        {/* Desktop Abilities Display - Match dice container width */}
         {user && onAbilityUsed && (
-          <div className="hidden md:block mb-6 mt-8">
-            <InlineAbilitiesDisplay
-              matchData={matchData}
-              onAbilityUsed={onAbilityUsed}
-              isPlayerTurn={isMyTurn}
-              playerId={user.uid}
-              className="justify-center"
-            />
+          <div className="hidden md:block mb-6 mt-8 w-full flex justify-center">
+            <div className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" style={{ width: 'min(600px, 70vw)' }}>
+              <InlineAbilitiesDisplay
+                matchData={matchData}
+                onAbilityUsed={onAbilityUsed}
+                isPlayerTurn={isMyTurn}
+                playerId={user.uid}
+                className="justify-between"
+              />
+            </div>
           </div>
         )}
 
@@ -427,6 +428,27 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           )}
         </div>
       </div>
+
+      {/* Mobile Abilities Display - Above navigation buttons */}
+      {user && onAbilityUsed && (
+        <div 
+          className="md:hidden fixed bottom-0 left-0 right-0 w-full z-40 p-3"
+          style={{ 
+            bottom: 'max(70px, env(safe-area-inset-bottom) + 70px)',
+            background: 'rgba(0, 0, 0, 0.4)',
+            backdropFilter: 'blur(8px)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+          }}
+        >
+          <InlineAbilitiesDisplay
+            matchData={matchData}
+            onAbilityUsed={onAbilityUsed}
+            isPlayerTurn={isMyTurn}
+            playerId={user.uid}
+            className="justify-end flex-row-reverse"
+          />
+        </div>
+      )}
 
       {/* Mobile Fixed Bottom Buttons */}
       <div 
@@ -505,16 +527,6 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           </div>
         )}
       </div>
-
-      {/* Abilities Panel - Only show for authenticated users */}
-      {user && onAbilityUsed && (
-        <AbilitiesPanel
-          matchData={matchData}
-          onAbilityUsed={onAbilityUsed}
-          isPlayerTurn={isMyTurn}
-          playerId={user.uid}
-        />
-      )}
     </>
   );
 };
