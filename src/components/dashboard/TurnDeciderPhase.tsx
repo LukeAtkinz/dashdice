@@ -65,22 +65,14 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
   // Handle dice result display timing
   useEffect(() => {
     if (hasDice && !diceAnimation.isSpinning) {
-      // Show dice number immediately when dice stops spinning
-      setShowDiceNumber(true);
-      setShowResult(false);
+      // Skip the dice number display and go directly to result
+      // since SlotMachineDice already shows the final number
+      setShowDiceNumber(false);
       
-      // After 1 second, show the result
+      // Show the result after a brief delay
       const timer = setTimeout(() => {
-        setShowDiceNumber(false);
         setShowResult(true);
-        
-        // Add additional delay to ensure user sees the result before transitioning
-        setTimeout(() => {
-          // This gives more time for users to see the turn decider result
-          // The actual phase transition will be handled by the backend/match logic
-        }, 1000); // Reduced from 2 seconds to 1 second
-        
-      }, 1000); // Reduced from 2 seconds to 1 second
+      }, 500); // Shorter delay since dice already shows the number
       
       return () => clearTimeout(timer);
     } else {
@@ -196,17 +188,25 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
+          className="text-center mt-8"
         >
-          <p 
-            className="text-lg text-gray-300 mb-2"
-            style={{ fontFamily: 'Audiowide' }}
-          >
-            Choice Made:
-          </p>
-          <div className="inline-block px-6 py-3 bg-yellow-600/20 border-2 border-yellow-500 rounded-xl mb-4">
-            <p className="text-2xl font-bold text-yellow-400" style={{ fontFamily: "Audiowide" }}>
-              {matchData.gameData.turnDeciderChoice?.toUpperCase()}
+          <div className="bg-white/10 rounded-xl p-6 backdrop-blur-sm border border-white/20 max-w-md mx-auto">
+            <p 
+              className="text-lg text-gray-300 mb-4"
+              style={{ fontFamily: 'Audiowide' }}
+            >
+              Choice Made:
+            </p>
+            <div className="inline-block px-6 py-3 bg-gradient-to-r from-purple-600/30 to-blue-600/30 border border-purple-400/50 rounded-xl mb-4 shadow-lg">
+              <p className="text-2xl font-bold text-purple-300" style={{ fontFamily: "Audiowide" }}>
+                {matchData.gameData.turnDeciderChoice?.toUpperCase()}
+              </p>
+            </div>
+            <p 
+              className="text-gray-400 text-base"
+              style={{ fontFamily: 'Audiowide' }}
+            >
+              Rolling dice...
             </p>
           </div>
           
@@ -231,75 +231,78 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center"
+          className="text-center mt-8"
         >
-          <p 
-            className="text-xl text-gray-300 mb-4"
-            style={{ 
-              fontFamily: 'Audiowide',
-              textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-            }}
-          >
-            Waiting for {opponent.playerDisplayName} to choose...
-          </p>
+          <div className="bg-white/10 rounded-xl p-6 backdrop-blur-sm border border-white/20 max-w-md mx-auto">
+            <p 
+              className="text-lg text-gray-300"
+              style={{ 
+                fontFamily: 'Audiowide',
+                textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+              }}
+            >
+              Waiting for {opponent.playerDisplayName} to choose...
+            </p>
+            <div className="mt-3 flex justify-center">
+              <div className="animate-pulse flex space-x-1">
+                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                <div className="w-2 h-2 bg-purple-400 rounded-full animation-delay-150"></div>
+                <div className="w-2 h-2 bg-purple-400 rounded-full animation-delay-300"></div>
+              </div>
+            </div>
+          </div>
         </motion.div>
       )}
 
       {/* Show result - delayed until dice animation completes */}
       {hasDice && !diceAnimation.isSpinning && (
         <>
-          {/* Show dice number for 1 second */}
-          {showDiceNumber && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.5 }}
-              className="text-center mt-8"
-            >
-              <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full p-8 mx-auto w-32 h-32 flex items-center justify-center shadow-2xl">
-                <p 
-                  className="text-6xl font-bold text-white"
-                  style={{ 
-                    fontFamily: 'Audiowide',
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-                  }}
-                >
-                  {matchData.gameData.turnDeciderDice}
-                </p>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Show detailed result after 1 second */}
+          {/* Show detailed result */}
           {showResult && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="text-center mt-8"
             >
-              <div className="bg-white/10 rounded-2xl p-6 backdrop-blur-sm">
+              <div className="bg-gradient-to-br from-purple-900/50 to-blue-900/50 rounded-2xl p-8 backdrop-blur-sm border border-purple-500/30 shadow-2xl max-w-2xl mx-auto">
+                <div className="bg-white/10 rounded-xl p-4 border border-white/20 mb-4">
+                  <p 
+                    className="text-lg text-gray-300 mb-2"
+                    style={{ fontFamily: 'Audiowide' }}
+                  >
+                    Result: {matchData.gameData.turnDeciderDice} ({matchData.gameData.turnDeciderDice! % 2 === 0 ? 'EVEN' : 'ODD'})
+                  </p>
+                </div>
                 <p 
-                  className="text-lg text-gray-300 mb-2"
-                  style={{ fontFamily: 'Audiowide' }}
-                >
-                  Result: {matchData.gameData.turnDeciderDice} ({matchData.gameData.turnDeciderDice! % 2 === 0 ? 'EVEN' : 'ODD'})
-                </p>
-                <p 
-                  className="text-xl font-bold text-green-400"
-                  style={{ fontFamily: 'Audiowide' }}
+                  className="text-2xl font-bold text-green-400"
+                  style={{ 
+                    fontFamily: 'Audiowide',
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+                  }}
                 >
                   {(() => {
                     // Determine if the choice was correct
                     const choiceWasCorrect = (matchData.gameData.turnDeciderChoice === 'odd' && matchData.gameData.turnDeciderDice! % 2 === 1) ||
                                             (matchData.gameData.turnDeciderChoice === 'even' && matchData.gameData.turnDeciderDice! % 2 === 0);
                     
-                    // If choice was correct, the chooser goes first
-                    // If choice was wrong, the other player goes first
-                    if (choiceWasCorrect) {
-                      return `${isMyTurnToDecide ? 'YOU' : opponent.playerDisplayName} GO FIRST!`;
+                    // Use the same logic as backend processTurnDecider function
+                    const chooserPlayerIndex = matchData.gameData.chooserPlayerIndex || 1;
+                    let hostGoesFirst = false;
+                    
+                    if (chooserPlayerIndex === 1) {
+                      // Host made choice
+                      hostGoesFirst = choiceWasCorrect;
                     } else {
-                      return `${isMyTurnToDecide ? opponent.playerDisplayName : 'YOU'} GO FIRST!`;
+                      // Opponent made choice
+                      hostGoesFirst = !choiceWasCorrect;
                     }
+                    
+                    // Determine who goes first from current player's perspective
+                    const firstPlayerName = hostGoesFirst ? 
+                      (isHost ? 'YOU' : opponent.playerDisplayName) : 
+                      (isHost ? opponent.playerDisplayName : 'YOU');
+                    
+                    return `${firstPlayerName} GO FIRST!`;
                   })()}
                 </p>
               </div>
@@ -310,8 +313,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
       
       {/* Show when not in turn decider phase */}
       {!isInTurnDeciderPhase && (
-        <div className="mt-8 p-4 bg-green-900/30 border border-green-500 rounded-lg">
-          <p className="text-white text-sm mb-2">Turn Decider Complete - Game Phase: {matchData.gameData.gamePhase}</p>
+        <div className="mt-8 p-4 bg-white/10 border border-white/20 rounded-xl backdrop-blur-sm">
+          <p className="text-white text-sm mb-2" style={{ fontFamily: 'Audiowide' }}>Turn Decider Complete - Game Phase: {matchData.gameData.gamePhase}</p>
           <div className="text-xs text-gray-300">
             Phase has moved to: {matchData.gameData.gamePhase} | Choice: {matchData.gameData.turnDeciderChoice} | Dice: {matchData.gameData.turnDeciderDice}
           </div>

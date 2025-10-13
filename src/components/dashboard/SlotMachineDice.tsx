@@ -44,7 +44,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   isTurnDecider = false,
   matchData
 }) => {
-  // For turn decider, handle animation logic differently
+  // For turn decider, handle animation logic differently with proper timing
   const isCurrentlyRolling = isTurnDecider ? 
     (matchRollPhase === 'turnDecider' && animationState.isSpinning) :
     (isGameRolling && 
@@ -53,6 +53,14 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   
   // Enhanced animation logic to prevent jumping for second dice
   const shouldShowAnimation = animationState.isSpinning && isCurrentlyRolling;
+  
+  // Turn decider should have slower, more dramatic animation
+  const getAnimationSpeed = () => {
+    if (isTurnDecider && shouldShowAnimation) {
+      return animationState.reelSpeed || 0.3; // Slower for turn decider
+    }
+    return animationState.reelSpeed || 0.1;
+  };
   
   // Enhanced display logic to prevent jumping during dice 2 rolling
   const getDisplayValue = () => {
@@ -243,7 +251,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               x: [-600, 0, -600],
             }}
             transition={{
-              duration: animationState.reelSpeed || 0.1, // Responsive to speed changes
+              duration: getAnimationSpeed(), // Use dynamic speed
               repeat: Infinity,
               ease: "linear"
             }}

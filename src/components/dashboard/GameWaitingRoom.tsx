@@ -1259,7 +1259,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       setVsCountdownTimer(null);
     }
     
-    setVsCountdown(5);
+    setVsCountdown(3);
     const timer = setInterval(() => {
       setVsCountdown((prev) => {
         if (prev === null || prev <= 1) {

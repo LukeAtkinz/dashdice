@@ -294,7 +294,9 @@ export class MatchService {
         const updates: any = {
           'gameData.gamePhase': 'turnDecider',
           'gameData.isRolling': false,
-          'gameData.turnScore': matchData.gameData.turnScore || 0
+          'gameData.turnScore': matchData.gameData.turnScore || 0,
+          // Ensure chooserPlayerIndex is set for turn decider (defensive programming)
+          'gameData.chooserPlayerIndex': matchData.gameData.chooserPlayerIndex || Math.floor(Math.random() * 2) + 1
         };
         
         await updateDoc(matchRef, updates);

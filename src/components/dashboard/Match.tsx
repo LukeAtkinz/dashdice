@@ -514,6 +514,76 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       animationKey: Date.now() // Force refresh for same values
     });
 
+    // Special handling for turn decider - slower, more dramatic animation
+    if (diceNumber === 'turnDecider') {
+      let currentSpeed = 100; // Slower initial speed: 100ms intervals
+      let intervalId: NodeJS.Timeout;
+      let elapsedTime = 0;
+      let reelAnimationSpeed = 0.15; // Slower background reel speed
+
+      const animateReel = () => {
+        setDiceState((prev: any) => ({
+          ...prev,
+          currentNumber: Math.floor(Math.random() * 6) + 1
+        }));
+        
+        elapsedTime += currentSpeed;
+        const progress = elapsedTime / animationDuration;
+        
+        // 🎰 Phase 1 - Moderate Spinning (0-60% of duration)
+        if (progress < 0.6) {
+          // Speed: 100ms → 150ms intervals (slower than regular dice)
+          currentSpeed = 100 + (progress / 0.6) * 50;
+          reelAnimationSpeed = 0.15; // Background reel: 0.15s (slower)
+        } 
+        // 🎰 Phase 2 - Gradual Deceleration (60-85% of duration)
+        else if (progress < 0.85) {
+          const decelProgress = (progress - 0.6) / 0.25;
+          // Speed: 150ms → 300ms intervals
+          currentSpeed = 150 + (decelProgress * 150);
+          // Background reel: 0.15s → 0.8s (gradual slowdown)
+          reelAnimationSpeed = 0.15 + (decelProgress * 0.65);
+        } 
+        // 🎰 Phase 3 - Final Slow (85-100% of duration)
+        else {
+          const finalProgress = (progress - 0.85) / 0.15;
+          // Speed: 300ms → 600ms intervals (very slow)
+          currentSpeed = 300 + (finalProgress * 300);
+          // Background reel: 0.8s → 2.5s (very slow)
+          reelAnimationSpeed = 0.8 + (finalProgress * 1.7);
+        }
+        
+        // Update the animation speed for the reel background
+        setDiceState((prev: any) => ({
+          ...prev,
+          currentNumber: Math.floor(Math.random() * 6) + 1,
+          reelSpeed: reelAnimationSpeed,
+          animationKey: Date.now()
+        }));
+        
+        if (elapsedTime < animationDuration) {
+          intervalId = setTimeout(animateReel, currentSpeed);
+        }
+      };
+
+      animateReel();
+
+      // Finish animation with direct transition (no overshoot for turn decider)
+      setTimeout(() => {
+        clearTimeout(intervalId);
+        
+        setDiceState({
+          isSpinning: false,
+          currentNumber: finalValue,
+          finalNumber: finalValue,
+          reelSpeed: 0.15, // Reset to slower reel speed for turn decider
+          animationKey: Date.now()
+        });
+      }, animationDuration);
+      
+      return; // Exit early for turn decider
+    }
+
     // Special handling for dice 2 - simplified animation without slowdown
     if (diceNumber === 2) {
       // Simple animation for dice 2 - consistent speed throughout
@@ -756,8 +826,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       // Remove performance-impacting logs
       // console.log('🎰 Starting turn decider dice animation for result:', matchData.gameData.turnDeciderDice);
       // 🎰 Animation Durations per specification:
-      // Turn Decider Dice: 800ms (0.8 seconds) - reduced for faster gameplay
-      startSlotMachineAnimation('turnDecider', matchData.gameData.turnDeciderDice, 800);
+      // Turn Decider Dice: 2000ms (2.0 seconds) - slower for dramatic effect
+      startSlotMachineAnimation('turnDecider', matchData.gameData.turnDeciderDice, 2000);
     }
 
     // Gameplay dice animations - Always animate even for same values
