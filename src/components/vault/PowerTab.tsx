@@ -388,9 +388,17 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                         borderStyle: 'solid',
                         background: isAssigned ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)',
                       }}
+                      onClick={() => {
+                        if (isAssigned) {
+                          // Remove the ability from this category slot
+                          removeAbilityFromCategory(categorySlot.key);
+                        }
+                        // For empty slots on mobile, we could potentially add navigation to abilities section
+                        // or show a selection modal, but for now just handle removal
+                      }}
                     >
                       {isAssigned && assignedAbility ? (
-                        <div className="w-full h-full flex flex-col items-center justify-center text-center">
+                        <div className="w-full h-full flex flex-col items-center justify-center text-center relative">
                           <div className="w-8 h-8 relative">
                             <img
                               src={assignedAbility.iconUrl || '/Abilities/placeholder.webp'}
@@ -408,6 +416,12 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                                 }
                               }}
                             />
+                          </div>
+                          {/* Remove indicator on hover/touch */}
+                          <div className="absolute inset-0 bg-red-500/20 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-lg">
+                            <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                           </div>
                         </div>
                       ) : (
