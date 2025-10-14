@@ -437,7 +437,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                             <img
                               src={assignedAbility.iconUrl || '/Abilities/placeholder.webp'}
                               alt={assignedAbility.name}
-                              className="w-full h-full object-contain"
+                              className="w-full h-full object-contain opacity-100"
                               style={{
                                 filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5))'
                               }}
@@ -988,7 +988,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                               <img
                                 src={getRandomIcon(categoryIndex, 0)}
                                 alt="Coming Soon"
-                                className="w-full h-full object-contain"
+                                className="w-full h-full object-contain opacity-100"
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement;
                                   target.style.display = 'none';
@@ -1029,7 +1029,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                               <img
                                 src={getRandomIcon(categoryIndex, 1)}
                                 alt="Coming Soon"
-                                className="w-full h-full object-contain"
+                                className="w-full h-full object-contain opacity-100"
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement;
                                   target.style.display = 'none';
