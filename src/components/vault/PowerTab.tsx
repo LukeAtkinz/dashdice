@@ -274,7 +274,41 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
   ];
 
   const getRandomIcon = (categoryIndex: number, abilityIndex: number) => {
-    // Create unique index based on category and ability position to avoid repeats
+    // Specific icons for each category's coming soon abilities
+    const categorySpecificIcons = {
+      'tactical': [
+        '/Abilities/hand holding briefcase.webp',
+        '/Abilities/hand holding puzzle.webp'
+      ],
+      'attack': [
+        '/Abilities/hand holding saw.webp',
+        '/Abilities/hand holding axe.webp'
+      ],
+      'defense': [
+        '/Abilities/hand holding helmet.webp',
+        '/Abilities/medicine donation.webp'
+      ],
+      'utility': [
+        '/Abilities/hand holding wrench.webp',
+        '/Abilities/hand holding stopwatch.webp'
+      ],
+      'gamechanger': [
+        '/Abilities/hand holding paint pallete.webp',
+        '/Abilities/x ray.webp'
+      ]
+    };
+
+    // Get category from categoryIndex
+    const categories = Object.keys(ABILITY_CATEGORIES);
+    const category = categories[categoryIndex];
+    
+    // Return specific icon for category and ability index
+    if (categorySpecificIcons[category as keyof typeof categorySpecificIcons]) {
+      const icons = categorySpecificIcons[category as keyof typeof categorySpecificIcons];
+      return icons[abilityIndex] || icons[0]; // Fallback to first icon if index out of bounds
+    }
+    
+    // Fallback to original random system if category not found
     const uniqueIndex = (categoryIndex * 10) + abilityIndex;
     return comingSoonIcons[uniqueIndex % comingSoonIcons.length];
   };
