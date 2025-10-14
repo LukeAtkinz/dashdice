@@ -17,6 +17,8 @@ import AchievementsMini from '@/components/achievements/AchievementsMini';
 import { CompactLeaderboard } from '@/components/ranked/Leaderboard';
 import { CompactProgressionDisplay } from '@/components/ranked/ProgressionDisplay';
 import { AlreadyInMatchNotification } from '@/components/notifications/AlreadyInMatchNotification';
+import { db } from '@/services/firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
 
 interface DashboardSectionProps {
   onGuestGameModeAction?: (gameMode: string, actionType: 'live' | 'ranked') => void;
@@ -103,6 +105,8 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
   const [showAlreadyInMatchNotification, setShowAlreadyInMatchNotification] = useState(false);
   const [currentMatchInfo, setCurrentMatchInfo] = useState<{ gameMode: string; currentGame: string } | null>(null);
   const [skillRating, setSkillRating] = useState<{ level: number; dashNumber: number } | null>(null);
+  const [userRank, setUserRank] = useState<number | null>(null);
+  const [totalRankedPlayers, setTotalRankedPlayers] = useState<number | null>(null);
 
   // Preload user data for faster matchmaking and start cleanup service
   useEffect(() => {
@@ -143,6 +147,72 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
     };
 
     fetchSkillRating();
+  }, [user?.uid]);
+
+  // Fetch user's rank and total players for TOP % display
+  useEffect(() => {
+    if (!user?.uid) {
+      setUserRank(null);
+      setTotalRankedPlayers(null);
+      return;
+    }
+
+    const usersRef = collection(db, 'users');
+    
+    const unsubscribe = onSnapshot(usersRef, (snapshot) => {
+      try {
+        const playerStats: { uid: string; rating: number; rank: number }[] = [];
+        
+        snapshot.forEach((doc) => {
+          const userData = doc.data();
+          
+          // Only include real users (not bots) with matches
+          const isRealUser = !userData.isBot && userData.displayName;
+          
+          const matchWins = userData.stats?.matchWins || 
+                          userData.matchWins || 
+                          userData.stats?.wins || 
+                          userData.wins || 0;
+          
+          const matchLosses = userData.stats?.matchLosses || 
+                            userData.matchLosses || 
+                            userData.stats?.losses || 
+                            userData.losses || 0;
+          
+          const totalGames = matchWins + matchLosses;
+          
+          if (isRealUser && totalGames >= 1) {
+            const gamesPlayed = userData.stats?.gamesPlayed || totalGames;
+            const winRate = gamesPlayed > 0 ? (matchWins / gamesPlayed) : 0;
+            const rating = Math.round(matchWins * winRate);
+            
+            playerStats.push({
+              uid: doc.id,
+              rating,
+              rank: 0 // Will be set after sorting
+            });
+          }
+        });
+        
+        // Sort by rating (highest first) and assign ranks
+        playerStats.sort((a, b) => b.rating - a.rating);
+        playerStats.forEach((player, index) => {
+          player.rank = index + 1;
+        });
+        
+        // Find current user's rank
+        const userPlayer = playerStats.find(p => p.uid === user.uid);
+        setUserRank(userPlayer ? userPlayer.rank : null);
+        setTotalRankedPlayers(playerStats.length);
+        
+      } catch (err) {
+        console.error('❌ Error fetching user rank:', err);
+        setUserRank(null);
+        setTotalRankedPlayers(null);
+      }
+    });
+
+    return unsubscribe;
   }, [user?.uid]);
 
   // Get background-specific game mode selector styling
@@ -345,16 +415,16 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
           <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl px-6 py-3 border border-gray-700/50">
             <div className="flex items-center gap-4">
               <div className="text-white">
-                <span className="text-sm font-medium opacity-80">Elo: </span>
+                <span className="text-sm font-medium opacity-80">TOP: </span>
                 <span className="font-bold text-yellow-400" style={{ fontFamily: 'Audiowide' }}>
-                  {skillRating.level * 100 + skillRating.dashNumber * 10}
+                  {userRank && totalRankedPlayers ? ((userRank / totalRankedPlayers) * 100).toFixed(1) : '--'}%
                 </span>
               </div>
               <div className="h-4 w-px bg-gray-600"></div>
               <div className="text-white">
-                <span className="text-sm font-medium opacity-80">Rank: </span>
+                <span className="text-sm font-medium opacity-80">RANK: </span>
                 <span className="font-bold text-yellow-400" style={{ fontFamily: 'Audiowide' }}>
-                  Dash {skillRating.dashNumber}
+                  {userRank ? `#${userRank}` : '--'}
                 </span>
               </div>
             </div>

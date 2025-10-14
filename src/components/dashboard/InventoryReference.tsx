@@ -129,7 +129,7 @@ export const InventorySection: React.FC = () => {
   }
 
   return (
-    <div className="w-full flex flex-col items-center justify-start gap-[2rem] pt-[3rem] md:pt-[6rem] pb-[2rem] h-screen overflow-hidden"
+    <div className="w-full flex flex-col items-center justify-start gap-[2rem] pt-[1rem] md:pt-[2rem] pb-[2rem] h-screen overflow-hidden"
       style={{
         touchAction: 'none', // Prevent touch scrolling on main container
         overscrollBehavior: 'none', // Prevent overscroll behavior
