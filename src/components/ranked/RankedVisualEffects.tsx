@@ -37,7 +37,14 @@ export function RankBadge({ rank, animated = true, size = 'md' }: RankBadgeProps
         } : {}}
         transition={{ duration: 2, repeat: Infinity }}
       >
-        <Crown className={iconSizes[size]} />
+        <img 
+          src="/Design Elements/Crown.webp" 
+          alt="1st Place" 
+          className={iconSizes[size] + ' object-contain'}
+          style={{
+            filter: 'drop-shadow(0 2px 8px rgba(255, 215, 0, 0.8))'
+          }}
+        />
       </motion.div>
     );
   }

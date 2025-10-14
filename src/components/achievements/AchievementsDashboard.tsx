@@ -217,77 +217,30 @@ export default function AchievementsDashboard() {
       {/* Progress Overview */}
       <div className="px-2 md:px-4 mb-6 mt-8">
         <div 
-          className="relative overflow-hidden rounded-2xl p-6 md:p-8 mb-6"
+          className="relative overflow-hidden rounded-2xl p-4 md:p-5 mb-6"
           style={{
             background: 'linear-gradient(135deg, rgba(30, 30, 50, 0.95) 0%, rgba(15, 15, 35, 0.9) 100%)',
             borderRadius: '20px'
           }}
         >
           <div className="relative z-10">
-            <div className="flex flex-col items-center justify-center gap-6">
-              <div className="text-center">
-                <div className="text-5xl md:text-6xl font-bold text-blue-400 mb-4" style={{ fontFamily: "Audiowide" }}>{completionPercentage}%</div>
-              </div>
-              <div className="w-full max-w-md">
-                <div className="w-full bg-gray-700 rounded-full h-6">
+            <div className="flex items-center justify-center gap-4">
+              <div className="flex-1 max-w-md">
+                <div className="w-full bg-gray-700 rounded-full h-4">
                   <div 
-                    className="bg-gradient-to-r from-blue-500 to-purple-500 h-6 rounded-full transition-all duration-500"
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 h-4 rounded-full transition-all duration-500"
                     style={{ width: `${completionPercentage}%` }}
                   />
                 </div>
               </div>
+              <div className="text-2xl md:text-3xl font-bold text-blue-400" style={{ fontFamily: "Audiowide" }}>{completionPercentage}%</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Category Filters */}
-      <div className="hidden md:block px-2 md:px-4 mb-6">
-        <div className="flex flex-wrap gap-2">
-          {categories.map(category => (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`
-                custom-inventory-button
-                flex items-center space-x-2 px-3 md:px-4 py-2 rounded-lg transition-colors text-sm md:text-base
-                ${selectedCategory === category.id ? 'active' : ''}
-              `}
-            >
-              <span>{category.icon}</span>
-              <span className="font-audiowide">{category.name}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* View Filters */}
-      <div className="hidden md:block px-2 md:px-4 mb-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-        <label className="flex items-center space-x-2 text-gray-300">
-          <input
-            type="checkbox"
-            checked={showCompleted}
-            onChange={(e) => setShowCompleted(e.target.checked)}
-            className="rounded"
-          />
-          <span className="font-montserrat">Show Completed</span>
-        </label>
-        
-        <label className="flex items-center space-x-2 text-gray-300">
-          <input
-            type="checkbox"
-            checked={showIncomplete}
-            onChange={(e) => setShowIncomplete(e.target.checked)}
-            className="rounded"
-          />
-          <span className="font-montserrat">Show In Progress</span>
-        </label>
-        </div>
-      </div>
-
-      {/* Achievements by Category - Mobile */}
-      <div className="md:hidden px-2">
+      {/* Achievements by Category - Both Mobile and Desktop */}
+      <div className="px-2">
         {categories.map((category) => {
           const categoryAchievements = visibleAchievements.filter(
             achievement => achievement && achievement.id && achievement.category === category.id
@@ -306,7 +259,7 @@ export default function AchievementsDashboard() {
               </div>
               
               {/* Category Achievements */}
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {categoryAchievements.map((achievement, index) => (
                   <AchievementCard
                     key={achievement.id || `achievement_${index}`}
@@ -320,33 +273,8 @@ export default function AchievementsDashboard() {
             </div>
           );
         })}
-      </div>
-
-      {/* Achievements Grid - Desktop (unchanged for filters) */}
-      <div className="hidden md:block px-2 md:px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {visibleAchievements.filter(achievement => achievement && achievement.id).map((achievement, index) => (
-            <AchievementCard
-              key={achievement.id || `achievement_${index}`}
-              achievement={achievement}
-              size="medium"
-              showProgress={true}
-              showName={true}
-            />
-          ))}
-        </div>
-
+        
         {/* Empty State */}
-        {visibleAchievements.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-400 text-lg font-audiowide">No achievements found</div>
-            <p className="text-gray-500 mt-2 font-montserrat">Try adjusting your filters or start playing to unlock achievements!</p>
-          </div>
-        )}
-      </div>
-
-      {/* Mobile Empty State */}
-      <div className="md:hidden px-2">
         {visibleAchievements.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-400 text-lg font-audiowide">No achievements found</div>

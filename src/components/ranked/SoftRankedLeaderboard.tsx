@@ -433,23 +433,7 @@ export function SoftRankedLeaderboard() {
                     </motion.div>
                   </div>
 
-                  {/* Special crown animation for #1 */}
-                  {player.rank === 1 && (
-                    <motion.div
-                      className="absolute -top-2 -right-2"
-                      animate={{ 
-                        y: [0, -5, 0],
-                        rotate: [0, 10, -10, 0]
-                      }}
-                      transition={{ 
-                        duration: 2,
-                        repeat: Infinity,
-                        repeatDelay: 1
-                      }}
-                    >
-                      <div className="text-2xl">✨</div>
-                    </motion.div>
-                  )}
+                  {/* Special crown animation for #1 - removed gold star animation per user request */}
                 </motion.div>
               );
             })}

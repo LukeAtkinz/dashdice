@@ -303,7 +303,7 @@ export const InventorySection: React.FC = () => {
       </div>
       
       {/* Mobile Power Tab Loadout Card - Positioned tightly above navigation */}
-      <div className="block md:hidden w-full max-w-[60rem] px-4 mb-4 mt-8">
+      <div className="block md:hidden w-full max-w-[60rem] px-4 mb-4 mt-2">
         {activeTab === 'power' && <PowerTab mobileHeaderOnly={true} />}
       </div>
       
