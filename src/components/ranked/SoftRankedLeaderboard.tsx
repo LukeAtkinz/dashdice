@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collection, query, where, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from '@/services/firebase';
@@ -25,6 +25,8 @@ export function SoftRankedLeaderboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userRank, setUserRank] = useState<number | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const userCardRef = useRef<HTMLDivElement>(null);
 
   // Fetch and calculate player rankings in real-time
   useEffect(() => {
@@ -88,7 +90,7 @@ export function SoftRankedLeaderboard() {
               const gamesPlayed = userData.stats?.gamesPlayed || totalGames;
               const winPercentage = gamesPlayed > 0 ? (matchWins / gamesPlayed) * 100 : 0;
               const winRate = gamesPlayed > 0 ? (matchWins / gamesPlayed) : 0;
-              const rating = Math.round(matchWins * winRate);
+              const rating = Math.round(matchWins * winPercentage);
               
               // Debug win percentage calculation
               console.log(`📊 Win % calculation for ${userData.displayName}:`, {
@@ -99,7 +101,7 @@ export function SoftRankedLeaderboard() {
                 calculationCheck: `${matchWins} / ${gamesPlayed} = ${matchWins / gamesPlayed}`,
                 winPercentage: winPercentage.toFixed(1) + '%',
                 winRate: winRate.toFixed(3),
-                ratingFormula: `${matchWins} × ${winRate.toFixed(3)} = ${rating}`,
+                ratingFormula: `${matchWins} × ${winPercentage.toFixed(1)} = ${rating}`,
                 rating,
                 isWinPercentage100: winPercentage === 100
               });
@@ -178,6 +180,15 @@ export function SoftRankedLeaderboard() {
     });
   };
 
+  const scrollToUserPosition = () => {
+    if (userCardRef.current && scrollContainerRef.current) {
+      userCardRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+  };
+
   const getRankColors = (rank: number) => {
     switch (rank) {
       case 1: return {
@@ -249,8 +260,8 @@ export function SoftRankedLeaderboard() {
     <div 
       className="relative overflow-hidden pt-8 md:pt-0 -mt-4 md:mt-0 h-full md:h-auto"
       style={{
-        touchAction: 'pan-y',
-        overscrollBehavior: 'contain'
+        touchAction: 'none',
+        overscrollBehavior: 'none'
       }}
     >      
       <div className="relative z-10 text-white h-full flex flex-col">
@@ -291,10 +302,13 @@ export function SoftRankedLeaderboard() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-black/80 border border-yellow-400/30 rounded-lg p-3 md:p-4 mb-3 md:mb-4 mx-4 md:mx-6"
+            className="bg-black/80 border border-yellow-400/30 rounded-lg p-3 md:p-4 mb-3 md:mb-4 mx-4 md:mx-6 cursor-pointer hover:bg-black/90 hover:border-yellow-400/50 transition-all duration-200"
             style={{
               boxShadow: "0 0 20px rgba(255, 215, 0, 0.3)"
             }}
+            onClick={scrollToUserPosition}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
             <div className="text-center text-white">
               <div className="text-lg font-bold mb-2" style={{ fontFamily: 'Audiowide' }}>
@@ -327,6 +341,7 @@ export function SoftRankedLeaderboard() {
 
         {/* Leaderboard */}
         <div 
+          ref={scrollContainerRef}
           className="px-6 pb-6 space-y-3 flex-1 overflow-y-auto custom-scrollbar md:max-h-96" 
           style={{ 
             maxHeight: 'calc(100vh - 250px)',
@@ -343,6 +358,7 @@ export function SoftRankedLeaderboard() {
               return (
                 <motion.div
                   key={player.uid}
+                  ref={isCurrentUser ? userCardRef : undefined}
                   initial={{ opacity: 0, x: -50, scale: 0.9 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: 50, scale: 0.9 }}
@@ -359,9 +375,9 @@ export function SoftRankedLeaderboard() {
                   onClick={() => handleViewProfile(player.uid, player.displayName || 'Anonymous')}
                   className={`
                     relative bg-gradient-to-r ${colors.bg} 
-                    backdrop-blur-sm rounded-xl p-4 border ${colors.border} 
+                    backdrop-blur-sm rounded-xl border ${colors.border} 
                     shadow-lg ${colors.glow}
-                    ${isCurrentUser ? 'ring-2 ring-blue-500/50' : ''}
+                    ${isCurrentUser ? 'ring-2 ring-blue-500/50 -ml-8 pl-12 pr-4 py-4' : 'p-4'}
                     ${player.rank <= 3 ? 'shadow-2xl' : ''}
                     group cursor-pointer
                   `}
