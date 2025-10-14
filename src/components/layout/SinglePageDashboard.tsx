@@ -658,7 +658,7 @@ const DashboardContent: React.FC = () => {
               WebkitOverflowScrolling: 'touch' // Smooth scrolling on iOS
             }}
           >
-            <div className="w-full max-w-[100rem] flex flex-col items-center justify-start gap-[2rem] pt-[1rem] md:pt-[2rem] px-[1rem] md:px-[2rem] pb-0" style={{
+            <div className="w-full max-w-[100rem] flex flex-col items-center justify-start gap-[2rem] pt-[4rem] md:pt-[6rem] px-[1rem] md:px-[2rem] pb-0" style={{
               minHeight: 'min-content',
               flex: 'none'
             }}>

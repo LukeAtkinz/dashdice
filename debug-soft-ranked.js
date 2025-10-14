@@ -86,8 +86,10 @@ async function debugUserData() {
         
         if (totalGames >= 5) {
           const winPercentage = (matchWins / totalGames) * 100;
-          const rating = Math.round(matchWins * winPercentage);
+          const winRate = matchWins / totalGames;
+          const rating = Math.round(matchWins * winRate);
           console.log(`   - Win Percentage: ${winPercentage.toFixed(1)}%`);
+          console.log(`   - Win Rate: ${winRate.toFixed(3)}`);
           console.log(`   - Rating: ${rating}`);
         }
         
