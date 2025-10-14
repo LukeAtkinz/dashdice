@@ -632,12 +632,12 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                       <img
                         src={categoryInfo.icon}
                         alt={categoryInfo.name}
-                        className="w-8 h-8 object-contain"
+                        className="w-12 h-12 object-contain"
                         style={{
                           filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))'
                         }}
                       />
-                      <h4 className="text-xl font-semibold text-white" style={{ fontFamily: 'Audiowide' }}>
+                      <h4 className="text-3xl font-semibold text-white" style={{ fontFamily: 'Audiowide' }}>
                         {categoryInfo.name}
                       </h4>
                     </div>
@@ -832,12 +832,12 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                   <img
                     src={categoryInfo.icon}
                     alt={categoryInfo.name}
-                    className="w-6 h-6 md:w-8 md:h-8 object-contain"
+                    className="w-12 h-12 md:w-12 md:h-12 object-contain"
                     style={{
                       filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))'
                     }}
                   />
-                  <h4 className="text-lg md:text-xl font-semibold text-white" style={{ fontFamily: 'Audiowide' }}>
+                  <h4 className="text-2xl md:text-3xl font-semibold text-white" style={{ fontFamily: 'Audiowide' }}>
                     {categoryInfo.name}
                   </h4>
                 </div>

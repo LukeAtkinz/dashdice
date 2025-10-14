@@ -427,7 +427,14 @@ const ProfileSection: React.FC = () => {
         </div>
 
         {/* Content */}
-        <div className="w-full max-w-[80rem] flex-1 overflow-y-auto scrollbar-hide">
+        <div 
+          className="w-full max-w-[80rem] flex-1 overflow-y-auto scrollbar-hide" 
+          style={{
+            touchAction: 'pan-y',
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain'
+          }}
+        >
 
           {/* Profile Tab Content */}
           {activeTab === 'profile' && (

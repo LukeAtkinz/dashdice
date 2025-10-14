@@ -198,7 +198,7 @@ export default function AchievementsDashboard() {
       {/* Header Section */}
       <div className="w-full px-2 md:px-4 py-2 md:py-4 pb-[0.5rem] md:pb-[1rem]">
         <h1
-          className="text-2xl md:text-4xl lg:text-5xl font-normal mb-4 md:mb-6"
+          className="text-4xl md:text-4xl lg:text-5xl font-normal mb-4 md:mb-6"
           style={{
             color: "#FFF",
             fontFamily: "Audiowide",
@@ -216,29 +216,33 @@ export default function AchievementsDashboard() {
 
       {/* Progress Overview */}
       <div className="px-2 md:px-4 mb-6 mt-8">
-        <div className="bg-gray-800 rounded-lg p-4 md:p-6 mb-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
-            <div className="text-center sm:text-left">
-              <h2 className="text-lg md:text-xl font-semibold text-white" style={{ fontFamily: "Audiowide" }}>Overall Progress</h2>
-              <p className="text-gray-400" style={{ fontFamily: "Montserrat" }}>{completedCount} of {totalCount} achievements unlocked</p>
+        <div 
+          className="relative overflow-hidden rounded-2xl p-6 md:p-8 mb-6"
+          style={{
+            background: 'linear-gradient(135deg, rgba(30, 30, 50, 0.95) 0%, rgba(15, 15, 35, 0.9) 100%)',
+            borderRadius: '20px'
+          }}
+        >
+          <div className="relative z-10">
+            <div className="flex flex-col items-center justify-center gap-6">
+              <div className="text-center">
+                <div className="text-5xl md:text-6xl font-bold text-blue-400 mb-4" style={{ fontFamily: "Audiowide" }}>{completionPercentage}%</div>
+              </div>
+              <div className="w-full max-w-md">
+                <div className="w-full bg-gray-700 rounded-full h-6">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 h-6 rounded-full transition-all duration-500"
+                    style={{ width: `${completionPercentage}%` }}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="text-center sm:text-right">
-              <div className="text-2xl md:text-3xl font-bold text-blue-400" style={{ fontFamily: "Audiowide" }}>{completionPercentage}%</div>
-              <div className="text-sm text-gray-400" style={{ fontFamily: "Montserrat" }}>Complete</div>
-            </div>
-          </div>
-          
-          <div className="w-full bg-gray-700 rounded-full h-3">
-            <div 
-              className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500"
-              style={{ width: `${completionPercentage}%` }}
-            />
           </div>
         </div>
       </div>
 
       {/* Category Filters */}
-      <div className="px-2 md:px-4 mb-6">
+      <div className="hidden md:block px-2 md:px-4 mb-6">
         <div className="flex flex-wrap gap-2">
           {categories.map(category => (
             <button
@@ -258,7 +262,7 @@ export default function AchievementsDashboard() {
       </div>
 
       {/* View Filters */}
-      <div className="px-2 md:px-4 mb-6">
+      <div className="hidden md:block px-2 md:px-4 mb-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
         <label className="flex items-center space-x-2 text-gray-300">
           <input
@@ -282,8 +286,44 @@ export default function AchievementsDashboard() {
         </div>
       </div>
 
-      {/* Achievements Grid - 1 per row on mobile, 3 on desktop */}
-      <div className="px-2 md:px-4">
+      {/* Achievements by Category - Mobile */}
+      <div className="md:hidden px-2">
+        {categories.map((category) => {
+          const categoryAchievements = visibleAchievements.filter(
+            achievement => achievement && achievement.id && achievement.category === category.id
+          );
+          
+          if (categoryAchievements.length === 0) return null;
+          
+          return (
+            <div key={category.id} className="mb-8">
+              {/* Category Header */}
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">{category.icon}</span>
+                <h4 className="text-3xl font-semibold text-white" style={{ fontFamily: 'Audiowide' }}>
+                  {category.name}
+                </h4>
+              </div>
+              
+              {/* Category Achievements */}
+              <div className="grid grid-cols-1 gap-4">
+                {categoryAchievements.map((achievement, index) => (
+                  <AchievementCard
+                    key={achievement.id || `achievement_${index}`}
+                    achievement={achievement}
+                    size="medium"
+                    showProgress={true}
+                    showName={true}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Achievements Grid - Desktop (unchanged for filters) */}
+      <div className="hidden md:block px-2 md:px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {visibleAchievements.filter(achievement => achievement && achievement.id).map((achievement, index) => (
             <AchievementCard
@@ -301,6 +341,16 @@ export default function AchievementsDashboard() {
           <div className="text-center py-12">
             <div className="text-gray-400 text-lg font-audiowide">No achievements found</div>
             <p className="text-gray-500 mt-2 font-montserrat">Try adjusting your filters or start playing to unlock achievements!</p>
+          </div>
+        )}
+      </div>
+
+      {/* Mobile Empty State */}
+      <div className="md:hidden px-2">
+        {visibleAchievements.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-gray-400 text-lg font-audiowide">No achievements found</div>
+            <p className="text-gray-500 mt-2 font-montserrat">Start playing to unlock achievements!</p>
           </div>
         )}
       </div>

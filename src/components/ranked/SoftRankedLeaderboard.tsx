@@ -246,7 +246,13 @@ export function SoftRankedLeaderboard() {
   }
 
   return (
-    <div className="relative overflow-hidden pt-8 md:pt-0 -mt-4 md:mt-0 h-full md:h-auto">      
+    <div 
+      className="relative overflow-hidden pt-8 md:pt-0 -mt-4 md:mt-0 h-full md:h-auto"
+      style={{
+        touchAction: 'pan-y',
+        overscrollBehavior: 'contain'
+      }}
+    >      
       <div className="relative z-10 text-white h-full flex flex-col">
         {/* Header */}
         <motion.div 
@@ -320,7 +326,15 @@ export function SoftRankedLeaderboard() {
         )}
 
         {/* Leaderboard */}
-        <div className="px-6 pb-6 space-y-3 flex-1 overflow-y-auto custom-scrollbar md:max-h-96" style={{ maxHeight: 'calc(100vh - 250px)' }}>
+        <div 
+          className="px-6 pb-6 space-y-3 flex-1 overflow-y-auto custom-scrollbar md:max-h-96" 
+          style={{ 
+            maxHeight: 'calc(100vh - 250px)',
+            touchAction: 'pan-y',
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain'
+          }}
+        >
           <AnimatePresence>
             {players.map((player, index) => {
               const colors = getRankColors(player.rank);

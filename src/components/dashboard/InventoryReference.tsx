@@ -291,7 +291,7 @@ export const InventorySection: React.FC = () => {
         
         {/* Mobile Title - Hidden when Power tab is active */}
         <h1 
-          className={`block md:hidden text-5xl font-bold text-white mb-4 ${activeTab === 'power' ? 'hidden' : ''}`}
+          className={`block md:hidden text-5xl font-bold text-white mb-4 mt-12 ${activeTab === 'power' ? 'hidden' : ''}`}
           style={{
             fontFamily: "Audiowide",
             textTransform: "uppercase",
@@ -303,12 +303,12 @@ export const InventorySection: React.FC = () => {
       </div>
       
       {/* Mobile Power Tab Loadout Card - Positioned tightly above navigation */}
-      <div className="block md:hidden w-full max-w-[60rem] px-4 mb-1">
+      <div className="block md:hidden w-full max-w-[60rem] px-4 mb-4 mt-8">
         {activeTab === 'power' && <PowerTab mobileHeaderOnly={true} />}
       </div>
       
       {/* Navigation */}
-      <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8 flex-shrink-0">
+      <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-4 flex-shrink-0">
         <div className="flex items-center justify-center gap-2 md:gap-4">
           <button
             onClick={() => handleTabChange('power')}
@@ -428,7 +428,7 @@ export const InventorySection: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4"
+        <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4 pt-4 md:pt-0"
           style={{
             touchAction: 'pan-y', // Only allow vertical panning within content
             overscrollBehavior: 'contain' // Contain scrolling within this element
