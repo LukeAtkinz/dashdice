@@ -525,7 +525,12 @@ export function RankedDashboard({ userId, userDisplayName, compactMode = false }
               {/* Leaderboard with Friends styling */}
               <motion.div 
                 className="relative overflow-hidden"
-                style={{ borderRadius: '20px' }}
+                style={{ 
+                  borderRadius: '20px',
+                  height: '600px',
+                  touchAction: 'none',
+                  overscrollBehavior: 'none'
+                }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}

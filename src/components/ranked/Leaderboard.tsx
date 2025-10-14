@@ -318,7 +318,14 @@ export function Leaderboard({
   }
 
   return (
-    <div className="relative overflow-hidden" style={{ borderRadius: '20px' }}>
+    <div 
+      className="relative overflow-hidden" 
+      style={{ 
+        borderRadius: '20px',
+        touchAction: 'none',
+        overscrollBehavior: 'none'
+      }}
+    >
       {/* Dark gradient overlay similar to friends card */}
       <div 
         className="absolute inset-0"
@@ -380,7 +387,16 @@ export function Leaderboard({
       </div>
 
       {/* Leaderboard entries */}
-      <div className="p-6">
+      <div 
+        className="p-6 max-h-96 overflow-y-auto"
+        style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(255, 255, 255, 0.3) transparent',
+          touchAction: 'pan-y',
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain'
+        }}
+      >
         {entries.length === 0 ? (
           <div className="text-center py-8">
             <Users className="w-12 h-12 mx-auto text-gray-600 mb-4" />
