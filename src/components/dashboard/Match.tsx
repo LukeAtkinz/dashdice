@@ -395,16 +395,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
   // Subscribe to match updates
   useEffect(() => {
-    // Remove performance-impacting logs
-    // console.log('🎮 Match: useEffect triggered with roomId:', roomId, 'user:', user?.uid);
+    console.log('🎮 Match: useEffect triggered with roomId:', roomId, 'user:', user?.uid);
     if (!roomId || !user) {
-      // Remove performance-impacting logs
-      // console.log('🎮 Match: Early return - missing roomId or user');
+      console.log('🎮 Match: Early return - missing roomId or user');
       return;
     }
 
-    // Remove performance-impacting logs
-    // console.log('🎮 Match: Subscribing to match:', roomId);
+    console.log('🎮 Match: Subscribing to match:', roomId);
     setLoading(true);
     setError(null);
     setMatchData(null); // Clear previous match data
@@ -417,9 +414,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     setTurnDeciderDiceAnimation({ isSpinning: false, currentNumber: 1, finalNumber: null, reelSpeed: 0.1 });
 
     const unsubscribe = MatchService.subscribeToMatch(roomId, (data) => {
+      console.log('🎮 Match: Subscription callback called with data:', !!data);
       if (data) {
-        // Remove performance-impacting logs
-        // console.log('🎮 Match: Received match data:', data);
+        console.log('🎮 Match: Received match data for match ID:', data.id);
         setMatchData(data);
         
         // Initialize game phase if needed
@@ -447,11 +444,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         setTimeout(() => {
           setMatchData(prev => {
             if (!prev) {
+              console.log('❌ Match: Setting error - match not found after timeout');
               setError('Match not found');
             }
             return prev;
           });
-        }, 2000);
+        }, 3000); // Increased timeout to 3 seconds to account for potential delays
       }
       setLoading(false);
     });

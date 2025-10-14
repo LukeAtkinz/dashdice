@@ -89,32 +89,72 @@ export class MatchService {
    * Checks both matches and gameSessions collections for compatibility
    */
   static subscribeToMatch(matchId: string, callback: (data: MatchData | null) => void) {
-    // First try the legacy matches collection
-    const matchRef = doc(db, 'matches', matchId);
+    console.log('🔍 MatchService: Starting subscription for match ID:', matchId);
     
-    const unsubscribe = onSnapshot(matchRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = { id: snapshot.id, ...snapshot.data() } as MatchData;
-        
-        // Validate required fields before passing data
-        if (data.gameData && data.hostData && data.opponentData) {
-          callback(data);
+    // Add a retry mechanism for race conditions during match creation
+    let retryCount = 0;
+    const maxRetries = 3;
+    const retryDelay = 1000; // 1 second between retries
+    
+    const attemptSubscription = () => {
+      // First try the legacy matches collection
+      const matchRef = doc(db, 'matches', matchId);
+      
+      const unsubscribe = onSnapshot(matchRef, (snapshot) => {
+        if (snapshot.exists()) {
+          console.log('✅ MatchService: Found match document:', matchId);
+          const data = { id: snapshot.id, ...snapshot.data() } as MatchData;
+          
+          // Validate required fields before passing data
+          if (data.gameData && data.hostData && data.opponentData) {
+            callback(data);
+          } else {
+            console.error('❌ Invalid match data structure');
+            callback(null);
+          }
         } else {
-          console.error('❌ Invalid match data structure');
-          callback(null);
+          console.log('❌ MatchService: Match document not found:', matchId);
+          
+          // If document doesn't exist and we haven't exhausted retries, try again
+          if (retryCount < maxRetries) {
+            retryCount++;
+            console.log(`🔄 MatchService: Retrying subscription (${retryCount}/${maxRetries}) in ${retryDelay}ms...`);
+            
+            // Unsubscribe current listener before retrying
+            unsubscribe();
+            
+            setTimeout(() => {
+              attemptSubscription();
+            }, retryDelay);
+            return;
+          }
+          
+          // Match not found in legacy collection - try gameSessions
+          console.log('🔍 Match not found in matches collection, checking gameSessions...');
+          this.checkGameSession(matchId, callback);
         }
-      } else {
-        // Match not found in legacy collection - try gameSessions
-        console.log('🔍 Match not found in matches collection, checking gameSessions...');
+      }, (error) => {
+        console.error('❌ Match subscription error:', error);
+        
+        // If error and we haven't exhausted retries, try again
+        if (retryCount < maxRetries) {
+          retryCount++;
+          console.log(`🔄 MatchService: Retrying after error (${retryCount}/${maxRetries}) in ${retryDelay}ms...`);
+          
+          setTimeout(() => {
+            attemptSubscription();
+          }, retryDelay);
+          return;
+        }
+        
+        // Fallback to gameSessions on error
         this.checkGameSession(matchId, callback);
-      }
-    }, (error) => {
-      console.error('❌ Match subscription error:', error);
-      // Fallback to gameSessions on error
-      this.checkGameSession(matchId, callback);
-    });
+      });
+      
+      return unsubscribe;
+    };
     
-    return unsubscribe;
+    return attemptSubscription();
   }
 
   /**

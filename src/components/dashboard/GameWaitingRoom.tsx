@@ -2113,6 +2113,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       });
       console.log('✅ GameWaitingRoom: Navigation called successfully!');
       console.log('🔍 DEBUG: Navigation completed - should now be in match section');
+      console.log('🔍 DEBUG: Match document ID passed to navigation:', matchDocRef.id);
       
     } catch (err) {
       console.error('❌ GameWaitingRoom: Error moving to matches:', err);
