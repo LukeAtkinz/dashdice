@@ -283,11 +283,11 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
   if (mobileHeaderOnly) {
     return (
       <motion.div 
-        className="rounded-2xl p-3 overflow-hidden relative"
+        className="rounded-2xl p-1 overflow-hidden relative"
       >
         <div className="relative z-10">
           {/* Navigation */}
-          <div className="relative flex items-center justify-center mb-3">
+          <div className="relative flex items-center justify-center mb-1">
             {/* Left Arrow */}
             <motion.button
               onClick={prevGameMode}
@@ -304,7 +304,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
             <div className="text-center flex flex-col items-center">
               <motion.div
                 key={currentGameMode.id}
-                className="flex flex-col items-center mb-2"
+                className="flex flex-col items-center mb-1"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
@@ -313,7 +313,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                 <img
                   src={currentGameMode.icon}
                   alt={currentGameMode.name}
-                  className="w-8 h-8 mb-2 object-contain"
+                  className="w-8 h-8 mb-1 object-contain"
                   style={{
                     filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))'
                   }}
@@ -444,7 +444,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
   }
 
   return (
-    <div className="w-full space-y-8">
+    <div className="w-full space-y-2 md:space-y-8">
       {/* Unified Game Mode and Abilities Card - Desktop Only */}
       <motion.div 
         className="hidden md:block rounded-2xl p-8 overflow-hidden relative"
@@ -813,7 +813,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
       </motion.div>
 
       {/* Mobile Available Abilities by Category - Separate for mobile */}
-      <div className="block md:hidden space-y-6">
+      <div className="block md:hidden space-y-2">
         <div>
           {categoryGroups.map(({ category, categoryInfo, abilities }, categoryIndex) => {
             const userCategoryAbilities = abilities.filter(ability => 
@@ -823,26 +823,26 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
             return (
               <motion.div
                 key={category}
-                className="rounded-xl p-6"
+                className="rounded-xl p-2"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3 mb-2">
                   <img
                     src={categoryInfo.icon}
                     alt={categoryInfo.name}
-                    className="w-8 h-8 object-contain"
+                    className="w-6 h-6 md:w-8 md:h-8 object-contain"
                     style={{
                       filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))'
                     }}
                   />
-                  <h4 className="text-xl font-semibold text-white" style={{ fontFamily: 'Audiowide' }}>
+                  <h4 className="text-lg md:text-xl font-semibold text-white" style={{ fontFamily: 'Audiowide' }}>
                     {categoryInfo.name}
                   </h4>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-4">
                   {userCategoryAbilities.map(ability => {
                     const isInCurrentLoadout = Object.values(currentLoadout).includes(ability.id);
                     
