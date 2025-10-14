@@ -506,8 +506,11 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
     // Starting Go backend match status polling
 
-    // Start bot countdown for fallback matching
-    startBotCountdown(roomId);
+    // Start extended waiting period for real players first (15 seconds)
+    // Only start bot countdown if no real players join
+    // Start extended waiting period for real players first (15 seconds)
+    // Only start bot countdown if no real players join
+    startRealPlayerWaitingPeriod(roomId);
 
     const pollInterval = setInterval(async () => {
       try {
@@ -587,6 +590,11 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 };
                 setGoBackendOpponentData(opponentDisplayData);
                 // Stored Go backend opponent data
+                
+                // Cancel bot countdown since a real player joined
+                if (!opponentPlayerId.startsWith('bot_')) {
+                  cancelBotCountdown();
+                }
                 
                 // Set opponent joined state and start countdown if not already started
                 if (!opponentJoined) {
@@ -1296,9 +1304,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           const docRef = await addDoc(collection(db, 'waitingroom'), entry);
           const gameId = docRef.id;
           
-          // Start bot countdown for live matches without friend invitations
+          // Start extended waiting period for real players first (15 seconds)
+          // Only start bot countdown if no real players join
           if (actionType === 'live' && !entry.friendInvitation) {
-            startBotCountdown(gameId);
+            startRealPlayerWaitingPeriod(gameId);
           }
           
           // Set up listener for when opponent joins
@@ -1524,6 +1533,49 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     setVsCountdownTimer(timer);
   };
 
+  // � Function to cancel bot countdown when real player joins
+  const cancelBotCountdown = () => {
+    if (botCountdownTimer) {
+      console.log('🚫 Real player joined! Canceling bot countdown.');
+      clearInterval(botCountdownTimer);
+      clearTimeout(botCountdownTimer); // Handle both interval and timeout
+      setBotCountdownTimer(null);
+      setBotFallbackActive(false);
+      setBotCountdown(null);
+    }
+  };
+
+  // �🔍 Function to start real player waiting period before allowing bots
+  const startRealPlayerWaitingPeriod = (sessionId: string) => {
+    console.log('⏳ Starting real player waiting period (15 seconds) before considering bots...');
+    
+    // Clear any existing timer
+    if (botCountdownTimer) {
+      clearInterval(botCountdownTimer);
+      setBotCountdownTimer(null);
+    }
+    
+    // Set a 15-second waiting period for real players
+    const realPlayerWaitTimer = setTimeout(() => {
+      console.log('⏳ Real player waiting period finished. Checking if opponent joined...');
+      
+      // Only start bot countdown if no real opponent has joined
+      const currentWaitingRoom = waitingRoomEntry;
+      const hasRealOpponent = currentWaitingRoom?.opponentData?.playerId && 
+                             !currentWaitingRoom.opponentData.playerId.startsWith('bot_');
+      
+      if (!hasRealOpponent) {
+        console.log('🤖 No real players joined in 15 seconds. Starting bot fallback...');
+        startBotCountdown(sessionId);
+      } else {
+        console.log('✅ Real player joined! Canceling bot fallback.');
+      }
+    }, 15000); // 15 seconds for real players
+    
+    // Store timer reference for cleanup
+    setBotCountdownTimer(realPlayerWaitTimer);
+  };
+
   // 🤖 Function to start bot fallback countdown (7 seconds)
   const startBotCountdown = (sessionId: string) => {
     console.log('🤖 Starting bot fallback countdown (7 seconds)...');
@@ -1563,13 +1615,51 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     try {
       console.log('🤖 Attempting to add bot to session:', sessionId);
       console.log('🔐 Current user auth state:', user ? 'Authenticated' : 'Not authenticated');
+      
+      // CRITICAL: Check if a real player has already joined
+      // Don't add bots if real players are available or already connected
+      const currentWaitingRoom = waitingRoomEntry;
+      if (currentWaitingRoom?.opponentData?.playerId && 
+          !currentWaitingRoom.opponentData.playerId.startsWith('bot_')) {
+        console.log('🚫 Real player already joined! Canceling bot addition.');
+        setBotFallbackActive(false);
+        return;
+      }
+      
+      // Check for other waiting players in the queue who might join
+      const isGoBackendMatchCheck = sessionId.startsWith('match_') || sessionId.startsWith('match-');
+      if (!isGoBackendMatchCheck) {
+        // For Firebase matches, check if there are other real players waiting
+        const { collection, query, where, getDocs } = await import('firebase/firestore');
+        const { db } = await import('@/services/firebase');
+        
+        const waitingPlayersQuery = query(
+          collection(db, 'waitingroom'),
+          where('gameMode', '==', currentWaitingRoom?.gameMode || 'classic'),
+          where('playersRequired', '==', 1)
+        );
+        
+        const waitingPlayersSnapshot = await getDocs(waitingPlayersQuery);
+        const otherWaitingPlayers = waitingPlayersSnapshot.docs.filter(doc => 
+          doc.id !== sessionId && 
+          doc.data().hostData?.playerId !== user?.uid &&
+          !doc.data().hostData?.playerId?.startsWith('bot_')
+        );
+        
+        if (otherWaitingPlayers.length > 0) {
+          console.log('🚫 Other real players are waiting! Canceling bot addition to prioritize real player matching.');
+          setBotFallbackActive(false);
+          return;
+        }
+      }
+      
       setBotFallbackActive(false);
       
       // Determine if this is a Go backend match or Firebase match
-      const isGoBackendMatch = sessionId.startsWith('match_') || sessionId.startsWith('match-');
-      console.log('🔍 Match type detected:', isGoBackendMatch ? 'Go Backend' : 'Firebase');
+      const isGoBackendMatchType = sessionId.startsWith('match_') || sessionId.startsWith('match-');
+      console.log('🔍 Match type detected:', isGoBackendMatchType ? 'Go Backend' : 'Firebase');
       
-      if (isGoBackendMatch) {
+      if (isGoBackendMatchType) {
         // Handle Go backend match - get actual game mode from bridge data
         const bridgeData = OptimisticMatchmakingService.getBridgeRoomData(sessionId);
         const gameMode = bridgeData?.gameMode || 'classic'; // Use actual game mode from bridge data
@@ -1678,20 +1768,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     }
   };
 
-  // 🤖 Function to cancel bot countdown when real player joins
-  const cancelBotCountdown = () => {
-    if (botFallbackActive) {
-      console.log('✅ Real player joined! Cancelling bot countdown...');
-      setBotFallbackActive(false);
-      setBotCountdown(null);
-      
-      // Clear the bot countdown timer
-      if (botCountdownTimer) {
-        clearInterval(botCountdownTimer);
-        setBotCountdownTimer(null);
-      }
-    }
-  };
+
 
   // Function to add test computer opponent
   const addTestOpponent = async (gameId: string) => {
