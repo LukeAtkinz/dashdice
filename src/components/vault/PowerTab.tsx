@@ -277,24 +277,24 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
     // Specific icons for each category's coming soon abilities
     const categorySpecificIcons = {
       'tactical': [
-        '/Abilities/hand holding briefcase.webp',
-        '/Abilities/hand holding puzzle.webp'
+        '/Abilities/Formatted/hand holding briefcase.webp',
+        '/Abilities/Formatted/hand holding puzzle.webp'
       ],
       'attack': [
-        '/Abilities/hand holding saw.webp',
-        '/Abilities/hand holding axe.webp'
+        '/Abilities/Formatted/hand holding saw.webp',
+        '/Abilities/Formatted/hand holding axe.webp'
       ],
       'defense': [
-        '/Abilities/hand holding helmet.webp',
-        '/Abilities/medicine donation.webp'
+        '/Abilities/Formatted/hand holding helmet.webp',
+        '/Abilities/Formatted/medicine donation.webp'
       ],
       'utility': [
-        '/Abilities/hand holding wrench.webp',
-        '/Abilities/hand holding stopwatch.webp'
+        '/Abilities/Formatted/hand holding wrench.webp',
+        '/Abilities/Formatted/hand holding stopwatch.webp'
       ],
       'gamechanger': [
-        '/Abilities/hand holding paint pallete.webp',
-        '/Abilities/x ray.webp'
+        '/Abilities/Formatted/hand holding paint pallete.webp',
+        '/Abilities/Formatted/x ray.webp'
       ]
     };
 
@@ -604,11 +604,11 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                     >
                       {isAssigned && assignedAbility ? (
                         <div className="w-full h-full flex flex-col items-center justify-center text-center">
-                          <div className="w-8 h-8 relative">
+                          <div className="w-12 h-12 md:w-20 md:h-20 relative">
                             <img
                               src={assignedAbility.iconUrl || '/Abilities/placeholder.webp'}
                               alt={assignedAbility.name}
-                              className="w-full h-full object-contain"
+                              className="w-full h-full object-contain opacity-100"
                               style={{
                                 filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5))'
                               }}
@@ -726,11 +726,11 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                               }}
                             >
                               <div className="w-full h-full flex flex-col items-center justify-center text-center">
-                                <div className="w-10 h-10 mb-2 relative">
+                                <div className="w-14 h-14 md:w-16 md:h-16 mb-2 relative">
                                   <img
                                     src={ability.iconUrl || '/Abilities/placeholder.webp'}
                                     alt={ability.name}
-                                    className="w-full h-full object-contain"
+                                    className="w-full h-full object-contain opacity-100"
                                     style={{
                                       filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))'
                                     }}
@@ -784,11 +784,11 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                               }}
                             >
                               <div className="w-full h-full flex flex-col items-center justify-center text-center relative">
-                                <div className="w-24 h-24 mb-2 relative z-30">
+                                <div className="w-20 h-20 md:w-24 md:h-24 mb-2 relative z-30">
                                   <img
                                     src={getRandomIcon(categoryIndex, 0)}
                                     alt="Coming Soon"
-                                    className="w-full h-full object-contain"
+                                    className="w-full h-full object-contain opacity-100"
                                     onError={(e) => {
                                       const target = e.target as HTMLImageElement;
                                       target.style.display = 'none';
@@ -825,11 +825,11 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                               }}
                             >
                               <div className="w-full h-full flex flex-col items-center justify-center text-center relative">
-                                <div className="w-24 h-24 mb-2 relative z-30">
+                                <div className="w-20 h-20 md:w-24 md:h-24 mb-2 relative z-30">
                                   <img
                                     src={getRandomIcon(categoryIndex, 1)}
                                     alt="Coming Soon"
-                                    className="w-full h-full object-contain"
+                                    className="w-full h-full object-contain opacity-100"
                                     onError={(e) => {
                                       const target = e.target as HTMLImageElement;
                                       target.style.display = 'none';
@@ -930,7 +930,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                               <img
                                 src={ability.iconUrl || '/Abilities/placeholder.webp'}
                                 alt={ability.name}
-                                className="w-full h-full object-contain"
+                                className="w-full h-full object-contain opacity-100"
                                 style={{
                                   filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))'
                                 }}

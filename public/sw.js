@@ -110,8 +110,12 @@ async function handleNavigateRequest(request) {
     
     // Cache successful responses
     if (response.ok) {
-      const cache = await caches.open(RUNTIME_CACHE);
-      cache.put(request, response.clone());
+      try {
+        const cache = await caches.open(RUNTIME_CACHE);
+        await cache.put(request, response.clone());
+      } catch (cacheError) {
+        console.warn('[SW] Failed to cache navigation response:', cacheError);
+      }
     }
     
     return response;
@@ -142,8 +146,12 @@ async function handleStaticAssetRequest(request) {
     
     // Cache successful responses
     if (response.ok) {
-      const cache = await caches.open(RUNTIME_CACHE);
-      cache.put(request, response.clone());
+      try {
+        const cache = await caches.open(RUNTIME_CACHE);
+        await cache.put(request, response.clone());
+      } catch (cacheError) {
+        console.warn('[SW] Failed to cache static asset:', cacheError);
+      }
     }
     
     return response;
@@ -167,8 +175,12 @@ async function handleApiRequest(request) {
     
     // Cache successful GET requests
     if (response.ok && request.method === 'GET') {
-      const cache = await caches.open(RUNTIME_CACHE);
-      cache.put(request, response.clone());
+      try {
+        const cache = await caches.open(RUNTIME_CACHE);
+        await cache.put(request, response.clone());
+      } catch (cacheError) {
+        console.warn('[SW] Failed to cache API response:', cacheError);
+      }
     }
     
     return response;
@@ -195,8 +207,12 @@ async function handleOtherRequest(request) {
     // Cache successful responses for eligible requests
     // Skip partial responses (206) and only cache complete responses (200)
     if (response.ok && response.status === 200 && shouldCacheRequest(request)) {
-      const cache = await caches.open(RUNTIME_CACHE);
-      cache.put(request, response.clone());
+      try {
+        const cache = await caches.open(RUNTIME_CACHE);
+        await cache.put(request, response.clone());
+      } catch (cacheError) {
+        console.warn('[SW] Failed to cache other response:', cacheError);
+      }
     }
     
     return response;
