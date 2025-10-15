@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAchievements } from '@/context/AchievementContext';
 import { useAuth } from '@/context/AuthContext';
 import AchievementCard from './AchievementCard';
@@ -69,6 +70,7 @@ export default function AchievementsDashboard() {
   const [showIncomplete, setShowIncomplete] = useState<boolean>(true);
   const [rankedAchievements, setRankedAchievements] = useState<any[]>([]);
   const [rankedLoading, setRankedLoading] = useState(false);
+  const [isFilterExpanded, setIsFilterExpanded] = useState<boolean>(false);
 
   // Load ranked achievements
   useEffect(() => {
@@ -216,12 +218,16 @@ export default function AchievementsDashboard() {
 
       {/* Progress Overview */}
       <div className="px-2 md:px-4 mb-6 mt-8">
-        <div 
-          className="relative overflow-hidden rounded-2xl p-4 md:p-5 mb-6"
+        <motion.div 
+          className="relative overflow-hidden rounded-2xl p-4 md:p-5 mb-6 cursor-pointer transition-all duration-300"
           style={{
             background: 'linear-gradient(135deg, rgba(30, 30, 50, 0.95) 0%, rgba(15, 15, 35, 0.9) 100%)',
-            borderRadius: '20px'
+            borderRadius: '20px',
+            border: isFilterExpanded ? '2px solid rgba(59, 130, 246, 0.5)' : '2px solid transparent'
           }}
+          onClick={() => setIsFilterExpanded(!isFilterExpanded)}
+          whileHover={{ scale: 1.02, y: -2 }}
+          whileTap={{ scale: 0.98 }}
         >
           <div className="relative z-10">
             <div className="flex items-center justify-center gap-4">
@@ -235,8 +241,131 @@ export default function AchievementsDashboard() {
               </div>
               <div className="text-2xl md:text-3xl font-bold text-blue-400" style={{ fontFamily: "Audiowide" }}>{completionPercentage}%</div>
             </div>
+            <div className="mt-3 text-center">
+              <div className="text-white text-sm md:text-base opacity-80" style={{ fontFamily: "Audiowide" }}>
+                {completedCount} of {totalCount} achievements completed
+              </div>
+              <div className="text-blue-300 text-xs md:text-sm mt-1 opacity-60">
+                {isFilterExpanded ? 'Click to hide filters' : 'Click to show filters'}
+              </div>
+            </div>
           </div>
-        </div>
+        </motion.div>
+
+        {/* Expandable Filter Section */}
+        <AnimatePresence>
+          {isFilterExpanded && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, scale: 0.95 }}
+              animate={{ opacity: 1, height: 'auto', scale: 1 }}
+              exit={{ opacity: 0, height: 0, scale: 0.95 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              <div className="bg-transparent backdrop-blur-[0.5px] border border-gray-700/50 rounded-xl p-4 mb-6">
+                <div className="space-y-4">
+                  {/* Category Filters */}
+                  <div>
+                    <h3 className="text-white text-lg font-bold mb-3" style={{ fontFamily: "Audiowide" }}>
+                      CATEGORY FILTER
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <motion.button
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 }}
+                        onClick={() => setSelectedCategory('all')}
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`p-3 rounded-lg transition-all duration-200 ${
+                          selectedCategory === 'all'
+                            ? 'bg-blue-600/40 border-blue-400/70 text-blue-300'
+                            : 'bg-gray-800/30 border-gray-600/50 text-white hover:bg-gray-700/40 hover:border-blue-400/70'
+                        } border`}
+                        style={{ fontFamily: "Audiowide" }}
+                      >
+                        ALL
+                      </motion.button>
+                      {categories.map((category, index) => (
+                        <motion.button
+                          key={category.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: (index + 1) * 0.05 }}
+                          onClick={() => setSelectedCategory(category.id)}
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          whileTap={{ scale: 0.95 }}
+                          className={`p-3 rounded-lg transition-all duration-200 ${
+                            selectedCategory === category.id
+                              ? 'bg-blue-600/40 border-blue-400/70 text-blue-300'
+                              : 'bg-gray-800/30 border-gray-600/50 text-white hover:bg-gray-700/40 hover:border-blue-400/70'
+                          } border`}
+                          style={{ fontFamily: "Audiowide" }}
+                        >
+                          {category.name.toUpperCase()}
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Progress Filters */}
+                  <div>
+                    <h3 className="text-white text-lg font-bold mb-3" style={{ fontFamily: "Audiowide" }}>
+                      PROGRESS FILTER
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <motion.button
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.3 }}
+                        onClick={() => setShowCompleted(!showCompleted)}
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`p-3 rounded-lg transition-all duration-200 ${
+                          showCompleted
+                            ? 'bg-green-600/40 border-green-400/70 text-green-300'
+                            : 'bg-gray-800/30 border-gray-600/50 text-white hover:bg-gray-700/40 hover:border-green-400/70'
+                        } border`}
+                        style={{ fontFamily: "Audiowide" }}
+                      >
+                        ✓ COMPLETED
+                      </motion.button>
+                      <motion.button
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.35 }}
+                        onClick={() => setShowIncomplete(!showIncomplete)}
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`p-3 rounded-lg transition-all duration-200 ${
+                          showIncomplete
+                            ? 'bg-orange-600/40 border-orange-400/70 text-orange-300'
+                            : 'bg-gray-800/30 border-gray-600/50 text-white hover:bg-gray-700/40 hover:border-orange-400/70'
+                        } border`}
+                        style={{ fontFamily: "Audiowide" }}
+                      >
+                        ⧗ IN PROGRESS
+                      </motion.button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Close Filter Button */}
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  onClick={() => setIsFilterExpanded(false)}
+                  className="w-full mt-4 py-2 px-4 bg-gray-700 hover:bg-gray-600 
+                             text-white rounded-lg font-medium transition-colors"
+                  style={{ fontFamily: 'Audiowide' }}
+                >
+                  HIDE FILTERS
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Achievements by Category - Both Mobile and Desktop */}
