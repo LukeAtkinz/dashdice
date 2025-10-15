@@ -110,6 +110,7 @@ export const useMatchAchievements = () => {
       if (won) {
         batchMetric('games_won', 1);
         batchMetric('matches_won', 1);
+        batchMetric('match_wins', 1); // Fix: Use same metric name as achievement definition
         console.log('🏆 Match won - recording win metrics');
       } else {
         batchMetric('games_lost', 1);

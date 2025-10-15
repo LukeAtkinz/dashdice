@@ -194,7 +194,7 @@ class AchievementTrackingService {
     try {
       console.log(`🎯 Updating metrics for user ${userId} (attempt ${retryCount + 1}):`, updates);
       
-      return await runTransaction(db, async (transaction) => {
+      const updatedProgress = await runTransaction(db, async (transaction) => {
         // Get current progress within transaction
         const progressRef = doc(db, 'achievementProgress', userId);
         const progressDoc = await transaction.get(progressRef);
@@ -243,8 +243,26 @@ class AchievementTrackingService {
         transaction.set(progressRef, updatedProgress);
         
         console.log(`✅ Transaction completed for user ${userId}`);
-        return []; // Return empty array for now, achievement checking will be done separately
+        
+        return updatedProgress; // Return updated progress to evaluate achievements outside transaction
       });
+      
+      // Now evaluate achievements with the updated progress
+      const evaluationResults = await this.evaluateAchievements(userId, updatedProgress);
+      
+      // Process any newly unlocked achievements in separate transactions
+      const unlockedResults = evaluationResults.filter(result => result.wasUnlocked);
+      for (const result of unlockedResults) {
+        try {
+          await runTransaction(db, async (transaction) => {
+            await this.processAchievementUnlock(userId, result, transaction);
+          });
+        } catch (error) {
+          console.error(`Failed to process achievement unlock for ${result.achievementId}:`, error);
+        }
+      }
+      
+      return evaluationResults;
     } catch (error: any) {
       console.error(`❌ Error updating metrics for user ${userId} (attempt ${retryCount + 1}):`, error);
       
