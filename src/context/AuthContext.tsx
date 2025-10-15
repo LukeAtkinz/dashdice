@@ -18,6 +18,7 @@ import { AVAILABLE_BACKGROUNDS, getDefaultBackground, toUserBackground } from '@
 import { UserService } from '@/services/userService';
 import { FriendsService } from '@/services/friendsService';
 import { validateDisplayName, formatDisplayName, generateDisplayNameFromEmail } from '@/utils/contentModeration';
+import AchievementTrackingService from '@/services/achievementTrackingService';
 import { analyticsService } from '@/services/analyticsService';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -150,6 +151,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       analyticsService.trackLogin('email');
       analyticsService.trackDailyLogin();
       
+      // Track daily login achievement
+      const achievementService = AchievementTrackingService.getInstance();
+      await achievementService.recordDailyLogin(result.user.uid);
+      
     } catch (error) {
       console.error('Error signing in:', error);
       analyticsService.trackError('auth_signin', error instanceof Error ? error.message : 'Unknown error');
@@ -179,6 +184,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       analyticsService.trackSignUp('email');
       analyticsService.trackDailyLogin();
       
+      // Track daily login achievement
+      const achievementService = AchievementTrackingService.getInstance();
+      await achievementService.recordDailyLogin(result.user.uid);
+      
     } catch (error: any) {
       console.error('Error signing up:', error);
       analyticsService.trackError('auth_signup', error instanceof Error ? error.message : 'Unknown error');
@@ -199,6 +208,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       analyticsService.trackLogin('google');
       analyticsService.trackDailyLogin();
       
+      // Track daily login achievement
+      const achievementService = AchievementTrackingService.getInstance();
+      await achievementService.recordDailyLogin(result.user.uid);
+      
       return result.user;
     } catch (error) {
       console.error('Error signing in with Google:', error);
@@ -215,6 +228,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Track Apple login analytics
       analyticsService.trackLogin('apple');
       analyticsService.trackDailyLogin();
+      
+      // Track daily login achievement
+      const achievementService = AchievementTrackingService.getInstance();
+      await achievementService.recordDailyLogin(result.user.uid);
       
       return result.user;
     } catch (error) {

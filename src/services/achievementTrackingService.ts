@@ -534,6 +534,66 @@ class AchievementTrackingService {
   }
 
   /**
+   * Record daily login and update login streak
+   */
+  async recordDailyLogin(userId: string): Promise<void> {
+    try {
+      console.log(`📅 Recording daily login for user: ${userId}`);
+      
+      // Check if user already logged in today
+      const progressRef = doc(db, 'achievementProgress', userId);
+      const progressDoc = await getDoc(progressRef);
+      
+      let currentProgress: AchievementProgress;
+      if (progressDoc.exists()) {
+        currentProgress = progressDoc.data() as AchievementProgress;
+      } else {
+        currentProgress = {
+          userId,
+          metrics: {},
+          streaks: {},
+          lastUpdated: Timestamp.now()
+        };
+      }
+      
+      const today = new Date();
+      const todayTimestamp = Math.floor(today.getTime() / (1000 * 60 * 60 * 24)); // Days since epoch
+      const lastLoginTimestamp = currentProgress.metrics['last_login_day'] || 0;
+      
+      // If already logged in today, don't double count
+      if (lastLoginTimestamp === todayTimestamp) {
+        console.log(`📅 User ${userId} already logged in today`);
+        return;
+      }
+      
+      const updates: MetricUpdate[] = [
+        { metric: 'daily_logins', value: 1, operation: 'increment' },
+        { metric: 'last_login_day', value: todayTimestamp, operation: 'set' }
+      ];
+      
+      // Handle consecutive days streak
+      const yesterdayTimestamp = todayTimestamp - 1;
+      
+      if (lastLoginTimestamp === yesterdayTimestamp) {
+        // Consecutive day - increment streak
+        updates.push({ metric: 'consecutive_days_played', value: 1, operation: 'increment' });
+      } else if (lastLoginTimestamp && lastLoginTimestamp !== todayTimestamp) {
+        // Broke streak - reset to 1
+        updates.push({ metric: 'consecutive_days_played', value: 1, operation: 'set' });
+      } else if (!lastLoginTimestamp) {
+        // First time login
+        updates.push({ metric: 'consecutive_days_played', value: 1, operation: 'set' });
+      }
+      
+      await this.updateMultipleMetrics(userId, updates);
+      console.log(`✅ Daily login recorded for user: ${userId}`);
+      
+    } catch (error) {
+      console.error('Error recording daily login:', error);
+    }
+  }
+
+  /**
    * Mark notification as read
    */
   async markNotificationRead(notificationId: string): Promise<void> {
