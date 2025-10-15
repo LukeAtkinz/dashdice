@@ -72,14 +72,16 @@ export default function AchievementsDashboard() {
   const [rankedLoading, setRankedLoading] = useState(false);
   const [isFilterExpanded, setIsFilterExpanded] = useState<boolean>(false);
 
-  // Load ranked achievements
-  useEffect(() => {
-    if (user?.uid) {
-      loadRankedAchievements();
-    }
-  }, [user?.uid]);
+  // Load ranked achievements - DISABLED FOR NOW
+  // useEffect(() => {
+  //   if (user?.uid) {
+  //     loadRankedAchievements();
+  //   }
+  // }, [user?.uid]);
 
   const loadRankedAchievements = async () => {
+    // DISABLED: No ranked achievements for now
+    return;
     try {
       setRankedLoading(true);
       // Mock ranked stats - in a real implementation, you'd load these from the user's profile
@@ -142,33 +144,23 @@ export default function AchievementsDashboard() {
     { id: 'gameplay', name: 'Gameplay', icon: '🎲' },
     { id: 'social', name: 'Social', icon: '👥' },
     { id: 'progression', name: 'Progress', icon: '📈' },
-    { id: 'ranked', name: 'Ranked', icon: '⚔️' },
+    // { id: 'ranked', name: 'Ranked', icon: '⚔️' }, // DISABLED FOR NOW
     { id: 'special', name: 'Special', icon: '⭐' },
     { id: 'seasonal', name: 'Seasonal', icon: '🎃' }
   ];
 
-  // Combine regular and ranked achievements
+  // Combine regular achievements only (ranked disabled)
   const combinedAchievements = [
-    ...allAchievements,
-    ...rankedAchievements
+    ...allAchievements
+    // ...rankedAchievements // DISABLED FOR NOW
   ];
 
   const filteredAchievements = selectedCategory === 'all' 
     ? combinedAchievements
-    : selectedCategory === 'ranked'
-      ? rankedAchievements
-      : getAchievementsByCategory(selectedCategory as AchievementCategory);
+    : getAchievementsByCategory(selectedCategory as AchievementCategory);
 
   const visibleAchievements = filteredAchievements.filter(achievement => {
-    // Handle ranked achievements (they have their unlocked status directly)
-    if (achievement.category === 'ranked') {
-      const isCompleted = achievement.unlocked || false;
-      if (isCompleted && !showCompleted) return false;
-      if (!isCompleted && !showIncomplete) return false;
-      return true;
-    }
-    
-    // Handle regular achievements
+    // Handle regular achievements (ranked achievements disabled)
     const userProgress = userAchievements.find(ua => ua.achievementId === achievement.id);
     const isCompleted = userProgress?.isCompleted || false;
     
@@ -178,11 +170,10 @@ export default function AchievementsDashboard() {
     return true;
   });
 
-  // Calculate totals including ranked achievements
-  const rankedCompletedCount = rankedAchievements.filter(ra => ra.unlocked).length;
+  // Calculate totals (ranked achievements disabled for now)
   const regularCompletedCount = userAchievements.filter(ua => ua.isCompleted).length;
-  const completedCount = regularCompletedCount + rankedCompletedCount;
-  const totalCount = allAchievements.length + rankedAchievements.length;
+  const completedCount = regularCompletedCount; // + rankedCompletedCount (disabled)
+  const totalCount = allAchievements.length; // + rankedAchievements.length (disabled)
   const completionPercentage = getCompletionPercentage();
 
   if (isLoading) {

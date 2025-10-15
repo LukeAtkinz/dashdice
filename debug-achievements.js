@@ -156,7 +156,111 @@ async function simulateMatchWin(userId) {
   }
 }
 
-// Main execution
+async function testAchievementThresholds(userId) {
+  try {
+    console.log(`🧪 Testing achievement thresholds for user: ${userId}`);
+    
+    const progressRef = db.collection('achievementProgress').doc(userId);
+    
+    // Test dice roll achievement (Dice Gremlin: 1,000 dice rolls)
+    console.log('🎲 Testing Dice Gremlin achievement (1,000 dice rolls)...');
+    await db.runTransaction(async (transaction) => {
+      const progressDoc = await transaction.get(progressRef);
+      let currentProgress = progressDoc.exists() ? progressDoc.data() : {
+        userId,
+        metrics: {},
+        streaks: {},
+        lastUpdated: admin.firestore.Timestamp.now()
+      };
+      
+      const updatedMetrics = { ...currentProgress.metrics };
+      updatedMetrics.total_dice_rolled = 1000; // Should unlock Dice Gremlin
+      
+      transaction.set(progressRef, {
+        ...currentProgress,
+        metrics: updatedMetrics,
+        lastUpdated: admin.firestore.Timestamp.now()
+      });
+    });
+    
+    // Test match win achievement (Rolling Strong: 10 wins)
+    console.log('🏆 Testing Rolling Strong achievement (10 match wins)...');
+    await db.runTransaction(async (transaction) => {
+      const progressDoc = await transaction.get(progressRef);
+      let currentProgress = progressDoc.data();
+      
+      const updatedMetrics = { ...currentProgress.metrics };
+      updatedMetrics.match_wins = 10; // Should unlock Rolling Strong
+      updatedMetrics.games_won = 10;
+      
+      transaction.set(progressRef, {
+        ...currentProgress,
+        metrics: updatedMetrics,
+        lastUpdated: admin.firestore.Timestamp.now()
+      });
+    });
+    
+    // Test daily login streak
+    console.log('📅 Testing daily login streak...');
+    await db.runTransaction(async (transaction) => {
+      const progressDoc = await transaction.get(progressRef);
+      let currentProgress = progressDoc.data();
+      
+      const updatedMetrics = { ...currentProgress.metrics };
+      updatedMetrics.daily_logins = 5;
+      updatedMetrics.consecutive_days_played = 5;
+      
+      transaction.set(progressRef, {
+        ...currentProgress,
+        metrics: updatedMetrics,
+        lastUpdated: admin.firestore.Timestamp.now()
+      });
+    });
+    
+    console.log('✅ Achievement thresholds set! Check if achievements unlocked...');
+    
+    // Wait a moment and check for unlocked achievements
+    setTimeout(async () => {
+      await checkUserAchievementProgress(userId);
+    }, 2000);
+    
+  } catch (error) {
+    console.error('❌ Error testing achievement thresholds:', error);
+  }
+}
+
+async function checkAchievementDefinitions() {
+  try {
+    console.log('🔍 Checking achievement definitions...');
+    
+    // Check if achievement definitions exist
+    const achievementsSnapshot = await db.collection('achievements').get();
+    console.log(`📋 Total achievements defined: ${achievementsSnapshot.size}`);
+    
+    if (achievementsSnapshot.size > 0) {
+      console.log('🎯 Sample achievements:');
+      achievementsSnapshot.docs.slice(0, 5).forEach(doc => {
+        const achievement = doc.data();
+        console.log(`  - ${achievement.name}: ${achievement.description}`);
+        if (achievement.requirements) {
+          console.log(`    Requires: ${achievement.requirements.metric} ${achievement.requirements.operator} ${achievement.requirements.value}`);
+        }
+      });
+    } else {
+      console.log('⚠️ No achievement definitions found in database');
+    }
+    
+    // Check specific achievements we care about
+    const diceGremllin = await db.collection('achievements').where('name', '==', 'Dice Gremlin').get();
+    const rollingStrong = await db.collection('achievements').where('name', '==', 'Rolling Strong').get();
+    
+    console.log(`🎲 Dice Gremlin achievement found: ${!diceGremllin.empty}`);
+    console.log(`🏆 Rolling Strong achievement found: ${!rollingStrong.empty}`);
+    
+  } catch (error) {
+    console.error('❌ Error checking achievement definitions:', error);
+  }
+}
 async function main() {
   const args = process.argv.slice(2);
   
@@ -165,27 +269,46 @@ async function main() {
     console.log('  node debug-achievements.js check <userId>');
     console.log('  node debug-achievements.js dice <userId> [numRolls]');
     console.log('  node debug-achievements.js win <userId>');
+    console.log('  node debug-achievements.js test <userId>  # Test achievement thresholds');
+    console.log('  node debug-achievements.js definitions   # Check achievement definitions');
     return;
   }
   
   const command = args[0];
   const userId = args[1];
   
-  if (!userId) {
-    console.error('❌ User ID is required');
-    return;
-  }
-  
   switch (command) {
     case 'check':
+      if (!userId) {
+        console.error('❌ User ID is required');
+        return;
+      }
       await checkUserAchievementProgress(userId);
       break;
     case 'dice':
+      if (!userId) {
+        console.error('❌ User ID is required');
+        return;
+      }
       const numRolls = parseInt(args[2]) || 5;
       await simulateDiceRolls(userId, numRolls);
       break;
     case 'win':
+      if (!userId) {
+        console.error('❌ User ID is required');
+        return;
+      }
       await simulateMatchWin(userId);
+      break;
+    case 'test':
+      if (!userId) {
+        console.error('❌ User ID is required');
+        return;
+      }
+      await testAchievementThresholds(userId);
+      break;
+    case 'definitions':
+      await checkAchievementDefinitions();
       break;
     default:
       console.error('❌ Unknown command:', command);
