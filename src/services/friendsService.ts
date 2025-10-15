@@ -19,6 +19,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/services/firebase';
 import AchievementTrackingService from '@/services/achievementTrackingService';
+import { analyticsService } from '@/services/analyticsService';
 import { 
   FriendRelationship, 
   FriendRequest, 
@@ -146,6 +147,9 @@ export class FriendsService {
         expiresAt: Timestamp.fromDate(expiresAt)
       });
 
+      // Track friend request sent in analytics
+      analyticsService.trackFriendRequest('sent');
+
       return { success: true };
     } catch (error) {
       console.error('Error sending friend request:', error);
@@ -201,6 +205,9 @@ export class FriendsService {
         console.error('Error tracking friend added achievement:', achievementError);
         // Don't fail the friend request if achievement tracking fails
       }
+
+      // Track friend request accepted in analytics
+      analyticsService.trackFriendRequest('accepted');
 
       return true;
     } catch (error) {

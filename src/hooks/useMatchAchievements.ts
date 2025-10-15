@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
 import { MetricUpdate } from '@/types/achievements';
 import AchievementTrackingService from '@/services/achievementTrackingService';
+import { analyticsService } from '@/services/analyticsService';
 import { useAuth } from '@/context/AuthContext';
 
 interface BatchedMetrics {
@@ -96,6 +97,11 @@ export const useMatchAchievements = () => {
   }) => {
     try {
       console.log('🏁 Recording match end with comprehensive achievement tracking');
+      
+      // Track game end in analytics
+      const gameMode = matchData?.gameMode || 'classic';
+      const gameDuration = matchData?.duration || 0;
+      analyticsService.trackGameEnd(gameMode, won ? 'win' : 'loss', Math.floor(gameDuration / 1000));
       
       // Core game completion metrics
       batchMetric('games_played', 1);

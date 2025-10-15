@@ -18,6 +18,7 @@ import { AVAILABLE_BACKGROUNDS, getDefaultBackground, toUserBackground } from '@
 import { UserService } from '@/services/userService';
 import { FriendsService } from '@/services/friendsService';
 import { validateDisplayName, formatDisplayName, generateDisplayNameFromEmail } from '@/utils/contentModeration';
+import { analyticsService } from '@/services/analyticsService';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -144,8 +145,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       await createUserDocument(result.user);
+      
+      // Track login analytics
+      analyticsService.trackLogin('email');
+      analyticsService.trackDailyLogin();
+      
     } catch (error) {
       console.error('Error signing in:', error);
+      analyticsService.trackError('auth_signin', error instanceof Error ? error.message : 'Unknown error');
       throw error;
     }
   };
@@ -167,8 +174,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       // Create user document in Firestore with validated display name
       await createUserDocument(result.user, { displayName: formattedDisplayName });
+      
+      // Track signup analytics
+      analyticsService.trackSignUp('email');
+      analyticsService.trackDailyLogin();
+      
     } catch (error: any) {
       console.error('Error signing up:', error);
+      analyticsService.trackError('auth_signup', error instanceof Error ? error.message : 'Unknown error');
       // Re-throw with proper error message for display name validation
       if (error.message && !error.code) {
         throw new Error(error.message);
@@ -181,9 +194,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       await createUserDocument(result.user);
+      
+      // Track Google login analytics
+      analyticsService.trackLogin('google');
+      analyticsService.trackDailyLogin();
+      
       return result.user;
     } catch (error) {
       console.error('Error signing in with Google:', error);
+      analyticsService.trackError('auth_google', error instanceof Error ? error.message : 'Unknown error');
       throw error;
     }
   };
@@ -192,9 +211,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const result = await signInWithPopup(auth, appleProvider);
       await createUserDocument(result.user);
+      
+      // Track Apple login analytics
+      analyticsService.trackLogin('apple');
+      analyticsService.trackDailyLogin();
+      
       return result.user;
     } catch (error) {
       console.error('Error signing in with Apple:', error);
+      analyticsService.trackError('auth_apple', error instanceof Error ? error.message : 'Unknown error');
       throw error;
     }
   };
@@ -254,6 +279,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         await createUserDocument(firebaseUser);
         const userData = await getUserData(firebaseUser.uid);
         setUser(userData);
+        
+        // Track user analytics
+        if (userData) {
+          // Get user stats for analytics
+          try {
+            const userProfile = await UserService.getUserProfile(firebaseUser.uid);
+            const userStats = userProfile?.stats || { gamesPlayed: 0, matchWins: 0 };
+            
+            analyticsService.setUser(firebaseUser.uid, {
+              display_name: userData.displayName,
+              email: userData.email,
+              account_age: Math.floor((Date.now() - userData.createdAt.getTime()) / (1000 * 60 * 60 * 24)), // days
+              games_played: userStats.gamesPlayed || 0,
+              match_wins: userStats.matchWins || 0
+            });
+          } catch (error) {
+            // Fallback analytics without stats
+            analyticsService.setUser(firebaseUser.uid, {
+              display_name: userData.displayName,
+              email: userData.email,
+              account_age: Math.floor((Date.now() - userData.createdAt.getTime()) / (1000 * 60 * 60 * 24)) // days
+            });
+          }
+          
+          // Track session start
+          analyticsService.trackSessionStart();
+        }
       } else {
         setUser(null);
       }

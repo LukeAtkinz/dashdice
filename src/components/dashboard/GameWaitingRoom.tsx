@@ -16,6 +16,7 @@ import { BotMatchingService } from '@/services/botMatchingService';
 import MatchAbandonmentNotification from '@/components/notifications/MatchAbandonmentNotification';
 import { MatchTransition } from '@/components/match/MatchTransition';
 import { MatchLifecycleService } from '@/services/matchLifecycleService';
+import { analyticsService } from '@/services/analyticsService';
 
 interface GameWaitingRoomProps {
   gameMode: string;
@@ -1304,6 +1305,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           const docRef = await addDoc(collection(db, 'waitingroom'), entry);
           const gameId = docRef.id;
           
+          // Track matchmaking start analytics
+          analyticsService.trackMatchmakingStart(gameMode, gameType || 'quick');
+          
           // Start extended waiting period for real players first (15 seconds)
           // Only start bot countdown if no real players join
           if (actionType === 'live' && !entry.friendInvitation) {
@@ -1344,9 +1348,15 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   setBotOpponent(data.opponentData);
                   setBotFallbackActive(false);
                   setBotCountdown(null);
+                  
+                  // Track bot match found
+                  analyticsService.trackMatchFound(gameMode, 'bot', Date.now() - new Date().getTime());
                 } else {
                   console.log('👤 Real player joined:', data.opponentData.playerDisplayName);
                   cancelBotCountdown();
+                  
+                  // Track human match found
+                  analyticsService.trackMatchFound(gameMode, 'human', Date.now() - new Date().getTime());
                 }
                 
                 // Only auto-start countdown for non-friend invitations
@@ -1830,6 +1840,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       // Use pending match data if available (from countdown sequence)
       if (pendingMatchData) {
         console.log('🎮 GameWaitingRoom: Using pending match data for navigation');
+        // Track game start analytics
+        analyticsService.trackGameStart(pendingMatchData.gameMode, 'pending_match');
         setCurrentSection('match', pendingMatchData);
         setPendingMatchData(null); // Clear pending data
         return;
@@ -2183,6 +2195,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         timestamp: new Date().toISOString(),
         callStack: 'moveToMatchesAndNavigate -> setCurrentSection'
       });
+      
+      // Track game start analytics
+      analyticsService.trackGameStart(roomData.gameMode, 'matchmaking');
       
       setCurrentSection('match', {
         gameMode: roomData.gameMode,

@@ -18,6 +18,7 @@ import {
   runTransaction
 } from 'firebase/firestore';
 import { db } from '@/services/firebase';
+import { analyticsService } from '@/services/analyticsService';
 import { 
   AchievementDefinition,
   UserAchievement, 
@@ -487,6 +488,11 @@ class AchievementTrackingService {
     const achievement = await this.definitionsService.getAchievement(result.achievementId);
     if (achievement?.rewards) {
       await this.applyAchievementRewards(userId, achievement.rewards, transaction);
+    }
+
+    // Track achievement unlock in analytics
+    if (achievement) {
+      analyticsService.trackAchievementUnlocked(result.achievementId, achievement.category || 'general');
     }
   }
 
