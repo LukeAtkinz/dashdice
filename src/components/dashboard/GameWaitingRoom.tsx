@@ -2087,10 +2087,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         startedAt: serverTimestamp(),
         
         // Security: Ensure only authorized players are in match
-        authorizedPlayers: [
-          roomData.hostData?.playerId,
-          roomData.opponentData?.playerId
-        ].filter(Boolean), // Remove any null/undefined values
+        authorizedPlayers: (() => {
+          const opponentData = getOpponentData();
+          return [
+            roomData.hostData?.playerId,
+            opponentData?.playerId
+          ].filter(Boolean); // Remove any null/undefined values
+        })(),
         
         // Initialize host data with game-specific fields
         hostData: {
@@ -2103,14 +2106,29 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         },
         
         // Initialize opponent data with game-specific fields
-        opponentData: roomData.opponentData ? {
-          ...roomData.opponentData,
-          turnActive: false, // Will be set by turn decider
-          playerScore: getStartingScore(roomData.gameMode),
-          roundScore: 0,
-          // Include power loadout for abilities
-          powerLoadout: (roomData.opponentData as any)?.powerLoadout || null
-        } : undefined,
+        opponentData: (() => {
+          const opponentData = getOpponentData();
+          console.log('🔍 DEBUG: Retrieved opponent data for match creation:', {
+            opponentData,
+            hasOpponentData: !!opponentData,
+            opponentPlayerId: opponentData?.playerId,
+            opponentDisplayName: opponentData?.playerDisplayName,
+            fromWaitingRoom: !!roomData.opponentData,
+            fromGoBackend: !!goBackendOpponentData
+          });
+          if (!opponentData) {
+            console.error('❌ GameWaitingRoom: No opponent data available for match creation');
+            return undefined;
+          }
+          return {
+            ...opponentData,
+            turnActive: false, // Will be set by turn decider
+            playerScore: getStartingScore(roomData.gameMode),
+            roundScore: 0,
+            // Include power loadout for abilities
+            powerLoadout: (opponentData as any)?.powerLoadout || null
+          };
+        })(),
         
         gameData: {
           // Use existing gameData if available, otherwise create new
@@ -2131,11 +2149,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           // Add power loadouts for easy access during gameplay
           powerLoadouts: (() => {
             const loadouts: Record<string, any> = {};
+            const opponentData = getOpponentData();
             if (roomData.hostData?.playerId) {
               loadouts[roomData.hostData.playerId] = (roomData.hostData as any)?.powerLoadout || null;
             }
-            if (roomData.opponentData?.playerId) {
-              loadouts[roomData.opponentData.playerId] = (roomData.opponentData as any)?.powerLoadout || null;
+            if (opponentData?.playerId) {
+              loadouts[opponentData.playerId] = (opponentData as any)?.powerLoadout || null;
             }
             return loadouts;
           })()
