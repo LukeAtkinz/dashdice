@@ -1033,7 +1033,19 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           <div className="hidden md:flex items-center justify-between gap-16 w-full">
             
             {/* Player 1 (Current User - Left Side) */}
-            <div className="flex-1">
+            <AnimatePresence>
+              {(matchData.gameData.gamePhase as string) !== 'turnDecider' && (
+                <motion.div 
+                  className="flex-1"
+                  initial={{ opacity: 0, x: -50, scale: 0.9 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: -50, scale: 0.9 }}
+                  transition={{ 
+                    duration: 0.6, 
+                    ease: "easeOut",
+                    delay: 0.2
+                  }}
+                >
               {/* Player Name Above Container - Left Aligned */}
               <motion.h2 
                 className="text-3xl font-bold mb-4 text-left"
@@ -1157,7 +1169,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   {currentPlayerBackground?.rarity || 'COMMON'}
                 </span>
               </div>
-            </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Center Dice Area */}
             <div className="flex flex-col items-center justify-center relative z-10" style={{ alignSelf: 'center', minWidth: '600px', width: '600px', height: '60vh', overflow: 'visible' }}>
@@ -1259,7 +1273,19 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             </div>
 
             {/* Player 2 (Opponent - Right Side) */}
-            <div className="flex-1">
+            <AnimatePresence>
+              {(matchData.gameData.gamePhase as string) !== 'turnDecider' && (
+                <motion.div 
+                  className="flex-1"
+                  initial={{ opacity: 0, x: 50, scale: 0.9 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: 50, scale: 0.9 }}
+                  transition={{ 
+                    duration: 0.6, 
+                    ease: "easeOut",
+                    delay: 0.4
+                  }}
+                >
               {/* Player Name Above Container - Right Aligned */}
               <motion.h2 
                 className="text-3xl font-bold mb-4 text-right"
@@ -1379,14 +1405,29 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   {opponentBackground?.rarity || 'COMMON'}
                 </span>
               </div>
-            </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Mobile Layout - Stacked */}
-          <div className="md:hidden flex flex-col items-center w-full px-4" style={{ maxWidth: '100vw', margin: '0 auto' }}>
+          <div className="md:hidden flex flex-col items-center w-full px-4" style={{ maxWidth: '100vw', margin: '0 auto', paddingTop: '60px' }}>
             
             {/* User Profiles Section - Top */}
-            <div className="w-full flex justify-between mb-4" style={{ gap: '8px' }}>
+            <AnimatePresence>
+              {(matchData.gameData.gamePhase as string) !== 'turnDecider' && (
+                <motion.div 
+                  className="w-full flex justify-between mb-4" 
+                  style={{ gap: '8px' }}
+                  initial={{ opacity: 0, y: -30, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -30, scale: 0.9 }}
+                  transition={{ 
+                    duration: 0.6, 
+                    ease: "easeOut",
+                    delay: 0.3
+                  }}
+                >
               {/* Current Player Profile - Left */}
               <div style={{ width: 'calc(50% - 4px)' }}>
                 <h3 
@@ -1590,7 +1631,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   )} */}
                 </motion.div>
               </div>
-            </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Center Dice Area - Middle */}
             <div className="w-full flex flex-col items-center justify-center" style={{ paddingTop: '20px', paddingBottom: '20px', minHeight: '40vh', maxWidth: '100%', overflow: 'visible' }}>

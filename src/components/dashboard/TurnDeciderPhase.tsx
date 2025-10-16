@@ -200,7 +200,11 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             >
               <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
               <span className="relative z-10 flex items-center justify-center gap-3">
-                <span className="text-3xl">🎯</span>
+                <img 
+                  src="/Design Elements/Match/Turn Decider/Odd.webp" 
+                  alt="Odd" 
+                  className="w-8 h-8" 
+                />
                 {isProcessing ? 'PROCESSING...' : 'ODD'}
               </span>
             </motion.button>
@@ -232,7 +236,11 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             >
               <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
               <span className="relative z-10 flex items-center justify-center gap-3">
-                <span className="text-3xl">⚡</span>
+                <img 
+                  src="/Design Elements/Match/Turn Decider/Even.webp" 
+                  alt="Even" 
+                  className="w-8 h-8" 
+                />
                 {isProcessing ? 'PROCESSING...' : 'EVEN'}
               </span>
             </motion.button>
@@ -280,9 +288,11 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                   Your Prediction:
                 </p>
                 <div className="inline-flex items-center gap-4 px-8 py-4 bg-gradient-to-r from-purple-600/40 to-blue-600/40 border-2 border-purple-400/60 rounded-2xl mb-6 shadow-lg">
-                  <span className="text-3xl">
-                    {matchData.gameData.turnDeciderChoice === 'odd' ? '🎯' : '⚡'}
-                  </span>
+                  <img 
+                    src={matchData.gameData.turnDeciderChoice === 'odd' ? '/Design Elements/Match/Turn Decider/Odd.webp' : '/Design Elements/Match/Turn Decider/Even.webp'} 
+                    alt={matchData.gameData.turnDeciderChoice === 'odd' ? 'Odd' : 'Even'} 
+                    className="w-8 h-8" 
+                  />
                   <p className="text-3xl font-bold text-white" style={{ fontFamily: "Audiowide" }}>
                     {matchData.gameData.turnDeciderChoice?.toUpperCase()}
                   </p>
@@ -356,7 +366,11 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 className="mb-6"
               >
                 <div className="w-20 h-20 mx-auto bg-gradient-to-br from-orange-500 to-yellow-600 rounded-full flex items-center justify-center shadow-lg border-4 border-orange-300/50">
-                  <span className="text-3xl">🤔</span>
+                  <img 
+                    src="/Design Elements/Match/Turn Decider/Waiting.webp" 
+                    alt="Waiting" 
+                    className="w-10 h-10" 
+                  />
                 </div>
               </motion.div>
 
