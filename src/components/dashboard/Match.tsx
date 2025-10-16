@@ -1026,6 +1026,37 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   });
 
   console.log('🚀 DEBUG: Starting main component render - this should show if render begins');
+  console.log('🔍 DEBUG: About to return JSX - checking render conditions:', {
+    gamePhase: matchData?.gameData?.gamePhase,
+    showGameOverScreen,
+    showAbandonmentNotification,
+    matchDataExists: !!matchData,
+    willRenderMainUI: matchData?.gameData?.gamePhase !== 'gameOver'
+  });
+
+  // Debug layout rendering conditions
+  console.log('🔍 DEBUG: Desktop layout render check:', {
+    gamePhase: matchData?.gameData?.gamePhase,
+    isTurnDecider: matchData?.gameData?.gamePhase === 'turnDecider',
+    displayStyle: matchData?.gameData?.gamePhase === 'turnDecider' ? 'none' : '',
+    willShowDesktopLayout: matchData?.gameData?.gamePhase !== 'turnDecider'
+  });
+
+  console.log('🔍 DEBUG: Mobile layout render check:', {
+    gamePhase: matchData?.gameData?.gamePhase,
+    isTurnDecider: matchData?.gameData?.gamePhase === 'turnDecider',
+    displayStyle: matchData?.gameData?.gamePhase === 'turnDecider' ? 'none' : '',
+    willShowMobileLayout: matchData?.gameData?.gamePhase !== 'turnDecider'
+  });
+
+  console.log('🔍 DEBUG: Center dice area render check:', {
+    gamePhase: matchData?.gameData?.gamePhase,
+    showTurnAnnouncement,
+    turnAnnouncementData: !!turnAnnouncementData,
+    willShowTurnDecider: matchData?.gameData?.gamePhase === 'turnDecider',
+    willShowTurnAnnouncement: showTurnAnnouncement && turnAnnouncementData,
+    willShowGameplay: matchData?.gameData?.gamePhase === 'gameplay' && !showTurnAnnouncement
+  });
 
   return (
     <>
