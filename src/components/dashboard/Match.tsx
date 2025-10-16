@@ -435,7 +435,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           gamePhase: data.gameData?.gamePhase,
           hostData: !!data.hostData,
           opponentData: !!data.opponentData,
-          authorizedPlayers: data.authorizedPlayers
+          hostPlayerId: data.hostData?.playerId,
+          opponentPlayerId: data.opponentData?.playerId
         });
         setMatchData(data);
         
