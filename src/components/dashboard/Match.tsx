@@ -1058,6 +1058,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     willShowGameplay: matchData?.gameData?.gamePhase === 'gameplay' && !showTurnAnnouncement
   });
 
+  // Check if TurnDeciderPhase will render
+  if (matchData?.gameData?.gamePhase === 'turnDecider') {
+    console.log('🎯 DEBUG: About to render TurnDeciderPhase component');
+  }
+
   return (
     <>
       {/* Match Abandonment Notification */}
@@ -1122,8 +1127,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           <div 
             className="hidden md:flex items-center justify-between gap-16" 
             style={{ 
-              width: '100%',
-              display: matchData?.gameData?.gamePhase === 'turnDecider' ? 'none' : ''
+              width: '100%'
             }}
           >
             
@@ -1483,8 +1487,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             className="md:hidden flex flex-col items-center w-full" 
             style={{ 
               width: '100vw', 
-              paddingTop: '0px',
-              display: matchData?.gameData?.gamePhase === 'turnDecider' ? 'none' : ''
+              paddingTop: '0px'
             }}
           >
             
