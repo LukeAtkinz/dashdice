@@ -162,7 +162,7 @@ export function SoftRankedLeaderboard() {
     switch (rank) {
       case 1: return (
         <img 
-          src="/Design Elements/Crown.webp" 
+          src="/Leaderboards/CrownLogo.webp" 
           alt="1st Place" 
           className="w-8 h-8 object-contain"
           style={{
@@ -170,8 +170,26 @@ export function SoftRankedLeaderboard() {
           }}
         />
       );
-      case 2: return '🥈';
-      case 3: return '🥉';
+      case 2: return (
+        <img 
+          src="/Leaderboards/Second.png" 
+          alt="2nd Place" 
+          className="w-8 h-8 object-contain"
+          style={{
+            filter: 'drop-shadow(0 2px 8px rgba(192, 192, 192, 0.8))'
+          }}
+        />
+      );
+      case 3: return (
+        <img 
+          src="/Leaderboards/Third.png" 
+          alt="3rd Place" 
+          className="w-8 h-8 object-contain"
+          style={{
+            filter: 'drop-shadow(0 2px 8px rgba(205, 127, 50, 0.8))'
+          }}
+        />
+      );
       default: return rank.toString();
     }
   };

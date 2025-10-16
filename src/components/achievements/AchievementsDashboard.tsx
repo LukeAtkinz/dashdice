@@ -141,11 +141,11 @@ export default function AchievementsDashboard() {
 
   const categories = [
     { id: 'all', name: 'All', icon: '🏆' },
-    { id: 'gameplay', name: 'Gameplay', icon: '🎲' },
-    { id: 'social', name: 'Social', icon: '👥' },
-    { id: 'progression', name: 'Progress', icon: '📈' },
+    { id: 'gameplay', name: 'Gameplay', icon: '/Design Elements/Achivements/Catagories/Game.png' },
+    { id: 'social', name: 'Social', icon: '👥' }, // Will add social icon later
+    { id: 'progression', name: 'Progress', icon: '/Design Elements/Achivements/Catagories/Progress.png' },
     // { id: 'ranked', name: 'Ranked', icon: '⚔️' }, // DISABLED FOR NOW
-    { id: 'special', name: 'Special', icon: '⭐' },
+    { id: 'special', name: 'Special', icon: '/Design Elements/Achivements/Catagories/Special.png' },
     { id: 'seasonal', name: 'Seasonal', icon: '🎃' }
   ];
 
@@ -277,7 +277,9 @@ export default function AchievementsDashboard() {
                       >
                         ALL
                       </motion.button>
-                      {categories.map((category, index) => (
+                      {categories
+                        .filter(category => category.id !== 'all' && category.id !== 'seasonal')
+                        .map((category, index) => (
                         <motion.button
                           key={category.id}
                           initial={{ opacity: 0, x: -20 }}
@@ -286,13 +288,22 @@ export default function AchievementsDashboard() {
                           onClick={() => setSelectedCategory(category.id)}
                           whileHover={{ scale: 1.05, y: -2 }}
                           whileTap={{ scale: 0.95 }}
-                          className={`p-3 rounded-lg transition-all duration-200 ${
+                          className={`p-3 rounded-lg transition-all duration-200 flex items-center gap-2 ${
                             selectedCategory === category.id
                               ? 'bg-blue-600/40 border-blue-400/70 text-blue-300'
                               : 'bg-gray-800/30 border-gray-600/50 text-white hover:bg-gray-700/40 hover:border-blue-400/70'
                           } border`}
                           style={{ fontFamily: "Audiowide" }}
                         >
+                          {category.icon.startsWith('/') ? (
+                            <img 
+                              src={category.icon} 
+                              alt={`${category.name} icon`} 
+                              className="w-5 h-5 object-contain"
+                            />
+                          ) : (
+                            <span className="text-lg">{category.icon}</span>
+                          )}
                           {category.name.toUpperCase()}
                         </motion.button>
                       ))}
@@ -372,7 +383,15 @@ export default function AchievementsDashboard() {
             <div key={category.id} className="mb-8">
               {/* Category Header */}
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl">{category.icon}</span>
+                {category.icon.startsWith('/') ? (
+                  <img 
+                    src={category.icon} 
+                    alt={`${category.name} icon`} 
+                    className="w-8 h-8 object-contain"
+                  />
+                ) : (
+                  <span className="text-3xl">{category.icon}</span>
+                )}
                 <h4 className="text-3xl font-semibold text-white" style={{ fontFamily: 'Audiowide' }}>
                   {category.name}
                 </h4>
