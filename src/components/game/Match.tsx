@@ -247,32 +247,34 @@ export const Match: React.FC<MatchProps> = React.memo(({ matchId, onBack }) => {
         </header>
 
         {/* Game Area */}
-        <main className="flex-1 flex items-center justify-center px-8">
-          <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-            
-            {/* Current Player - Hidden on Mobile */}
-            <div className={`hidden md:block text-center p-6 rounded-lg ${currentPlayer.gameState.turnActive ? 'bg-green-500/20 border-2 border-green-400' : 'bg-gray-500/20'}`}>
-              <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: "Audiowide" }}>
-                {currentPlayer.playerDisplayName}
-              </h2>
-              <div className="text-white space-y-2">
-                <p>Score: {currentPlayer.gameState.playerScore}</p>
-                <p>Round Score: {currentPlayer.gameState.roundScore}</p>
-                {/* Hide turn indicators for True Grit and Last Line modes */}
-                {matchData.gameData.gameMode !== 'true-grit' && matchData.gameData.gameMode !== 'last-line' && (
-                  <p className={currentPlayer.gameState.turnActive ? 'text-green-400 font-bold' : ''}>
-                    {matchData.gameData.isPregame 
-                      ? (matchData.gameData.chooserPlayerIndex === (isHost ? 1 : 2) ? 'CHOOSE ODD/EVEN' : 'WAITING...') 
-                      : (currentPlayer.gameState.turnActive ? 'YOUR TURN' : 'Waiting...')
-                    }
-                  </p>
-                )}
+        <main className="flex-1 flex items-center justify-center px-4 md:px-8">
+          {/* Desktop Layout */}
+          <div className="hidden md:block w-full max-w-6xl">
+            <div className="grid grid-cols-3 gap-8 items-center">
+              
+              {/* Current Player - Desktop */}
+              <div className={`text-center p-6 rounded-lg ${currentPlayer.gameState.turnActive ? 'bg-green-500/20 border-2 border-green-400' : 'bg-gray-500/20'}`}>
+                <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: "Audiowide" }}>
+                  {currentPlayer.playerDisplayName}
+                </h2>
+                <div className="text-white space-y-2">
+                  <p>Score: {currentPlayer.gameState.playerScore}</p>
+                  <p>Round Score: {currentPlayer.gameState.roundScore}</p>
+                  {/* Hide turn indicators for True Grit and Last Line modes */}
+                  {matchData.gameData.gameMode !== 'true-grit' && matchData.gameData.gameMode !== 'last-line' && (
+                    <p className={currentPlayer.gameState.turnActive ? 'text-green-400 font-bold' : ''}>
+                      {matchData.gameData.isPregame 
+                        ? (matchData.gameData.chooserPlayerIndex === (isHost ? 1 : 2) ? 'CHOOSE ODD/EVEN' : 'WAITING...') 
+                        : (currentPlayer.gameState.turnActive ? 'YOUR TURN' : 'Waiting...')
+                      }
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* Dice/Choice Area */}
-            <div className="text-center col-span-1 md:col-span-1">
-              <div className="bg-white/10 p-8 rounded-lg backdrop-blur-sm">
+              {/* Dice/Choice Area - Desktop */}
+              <div className="text-center">
+                <div className="bg-white/10 p-8 rounded-lg backdrop-blur-sm">
                 {matchData.gameData.isPregame ? (
                   <>
                     <h3 className="text-xl text-white mb-4" style={{ fontFamily: "Audiowide" }}>
@@ -370,22 +372,172 @@ export const Match: React.FC<MatchProps> = React.memo(({ matchId, onBack }) => {
               </div>
             </div>
 
-            {/* Opponent - Hidden on Mobile */}
-            <div className={`hidden md:block text-center p-6 rounded-lg ${opponent.gameState.turnActive ? 'bg-red-500/20 border-2 border-red-400' : 'bg-gray-500/20'}`}>
-              <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: "Audiowide" }}>
-                {opponent.playerDisplayName}
-              </h2>
-              <div className="text-white space-y-2">
-                <p>Score: {opponent.gameState.playerScore}</p>
-                <p>Round Score: {opponent.gameState.roundScore}</p>
-                {/* Hide turn indicators for True Grit and Last Line modes */}
-                {matchData.gameData.gameMode !== 'true-grit' && matchData.gameData.gameMode !== 'last-line' && (
-                  <p className={opponent.gameState.turnActive ? 'text-red-400 font-bold' : ''}>
-                    {matchData.gameData.isPregame 
-                      ? (matchData.gameData.chooserPlayerIndex === (isHost ? 2 : 1) ? 'CHOOSING...' : 'WAITING...') 
-                      : (opponent.gameState.turnActive ? 'THEIR TURN' : 'Waiting...')
-                    }
-                  </p>
+              {/* Opponent - Desktop */}
+              <div className={`text-center p-6 rounded-lg ${opponent.gameState.turnActive ? 'bg-red-500/20 border-2 border-red-400' : 'bg-gray-500/20'}`}>
+                <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: "Audiowide" }}>
+                  {opponent.playerDisplayName}
+                </h2>
+                <div className="text-white space-y-2">
+                  <p>Score: {opponent.gameState.playerScore}</p>
+                  <p>Round Score: {opponent.gameState.roundScore}</p>
+                  {/* Hide turn indicators for True Grit and Last Line modes */}
+                  {matchData.gameData.gameMode !== 'true-grit' && matchData.gameData.gameMode !== 'last-line' && (
+                    <p className={opponent.gameState.turnActive ? 'text-red-400 font-bold' : ''}>
+                      {matchData.gameData.isPregame 
+                        ? (matchData.gameData.chooserPlayerIndex === (isHost ? 2 : 1) ? 'CHOOSING...' : 'WAITING...') 
+                        : (opponent.gameState.turnActive ? 'THEIR TURN' : 'Waiting...')
+                      }
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Layout */}
+          <div className="md:hidden flex flex-col items-center w-full space-y-4">
+            
+            {/* Mobile Player Profiles - Top */}
+            <div className="w-full flex justify-between gap-4 px-4">
+              {/* Current Player Profile - Left */}
+              <div className="flex-1">
+                <div className={`text-center p-4 rounded-lg border-2 ${currentPlayer.gameState.turnActive ? 'bg-green-500/20 border-green-400' : 'bg-gray-500/20 border-gray-400'}`}>
+                  <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: "Audiowide" }}>
+                    {currentPlayer.playerDisplayName}
+                  </h3>
+                  <div className="text-white space-y-1">
+                    <p className="text-2xl font-bold">{currentPlayer.gameState.playerScore}</p>
+                    <p className="text-sm">Round: {currentPlayer.gameState.roundScore}</p>
+                    {matchData.gameData.gameMode !== 'true-grit' && matchData.gameData.gameMode !== 'last-line' && (
+                      <p className={`text-xs ${currentPlayer.gameState.turnActive ? 'text-green-400 font-bold' : 'text-gray-300'}`}>
+                        {matchData.gameData.isPregame 
+                          ? (matchData.gameData.chooserPlayerIndex === (isHost ? 1 : 2) ? 'CHOOSE' : 'WAIT') 
+                          : (currentPlayer.gameState.turnActive ? 'YOUR TURN' : 'Waiting')
+                        }
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Opponent Profile - Right */}
+              <div className="flex-1">
+                <div className={`text-center p-4 rounded-lg border-2 ${opponent.gameState.turnActive ? 'bg-red-500/20 border-red-400' : 'bg-gray-500/20 border-gray-400'}`}>
+                  <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: "Audiowide" }}>
+                    {opponent.playerDisplayName}
+                  </h3>
+                  <div className="text-white space-y-1">
+                    <p className="text-2xl font-bold">{opponent.gameState.playerScore}</p>
+                    <p className="text-sm">Round: {opponent.gameState.roundScore}</p>
+                    {matchData.gameData.gameMode !== 'true-grit' && matchData.gameData.gameMode !== 'last-line' && (
+                      <p className={`text-xs ${opponent.gameState.turnActive ? 'text-red-400 font-bold' : 'text-gray-300'}`}>
+                        {matchData.gameData.isPregame 
+                          ? (matchData.gameData.chooserPlayerIndex === (isHost ? 2 : 1) ? 'CHOOSING' : 'WAIT') 
+                          : (opponent.gameState.turnActive ? 'THEIR TURN' : 'Waiting')
+                        }
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile Dice/Choice Area - Center */}
+            <div className="w-full px-4">
+              <div className="bg-white/10 p-6 rounded-lg backdrop-blur-sm">
+                {matchData.gameData.isPregame ? (
+                  <>
+                    <h3 className="text-lg text-white mb-4" style={{ fontFamily: "Audiowide" }}>
+                      {matchData.gameData.oddEvenChoice ? 'DIE ROLLED' : 'CHOOSE ODD OR EVEN'}
+                    </h3>
+                    
+                    {matchData.gameData.oddEvenDieValue ? (
+                      <div className="flex justify-center gap-4 mb-4">
+                        <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center text-2xl font-bold">
+                          {matchData.gameData.oddEvenDieValue}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex justify-center gap-4 mb-4">
+                        <div className="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center text-2xl font-bold text-white">
+                          ?
+                        </div>
+                      </div>
+                    )}
+                    
+                    {matchData.gameData.oddEvenChoice && (
+                      <p className="text-white mb-4 text-sm">
+                        Choice: {matchData.gameData.oddEvenChoice.toUpperCase()}
+                        {matchData.gameData.oddEvenDieValue && (
+                          <>
+                            <br />
+                            Result: {matchData.gameData.oddEvenDieValue % 2 === 1 ? 'ODD' : 'EVEN'}
+                            <br />
+                            {((matchData.gameData.oddEvenChoice === 'odd') === (matchData.gameData.oddEvenDieValue % 2 === 1)) ? 'WIN!' : 'LOSE!'}
+                          </>
+                        )}
+                      </p>
+                    )}
+                    
+                    {!matchData.gameData.oddEvenChoice && matchData.gameData.chooserPlayerIndex === (isHost ? 1 : 2) && (
+                      <div className="flex flex-col gap-3">
+                        <button
+                          onClick={() => handleOddEvenChoice('odd')}
+                          disabled={loading}
+                          className="px-6 py-3 text-white font-bold text-lg rounded-lg transition-all duration-200 hover:scale-105 disabled:opacity-50"
+                          style={{
+                            background: '#FFD700',
+                            fontFamily: 'Audiowide',
+                            textTransform: 'uppercase'
+                          }}
+                        >
+                          ODD
+                        </button>
+                        <button
+                          onClick={() => handleOddEvenChoice('even')}
+                          disabled={loading}
+                          className="px-6 py-3 text-white font-bold text-lg rounded-lg transition-all duration-200 hover:scale-105 disabled:opacity-50"
+                          style={{
+                            background: '#8e44ad',
+                            fontFamily: 'Audiowide',
+                            textTransform: 'uppercase'
+                          }}
+                        >
+                          EVEN
+                        </button>
+                      </div>
+                    )}
+                    
+                    {(!matchData.gameData.chooserPlayerIndex || matchData.gameData.chooserPlayerIndex !== (isHost ? 1 : 2)) && !matchData.gameData.oddEvenChoice && (
+                      <p className="text-white/70 text-sm">
+                        Waiting for opponent to choose...
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-lg text-white mb-4" style={{ fontFamily: "Audiowide" }}>DICE</h3>
+                    <div className="flex justify-center gap-4 mb-4">
+                      <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center text-2xl font-bold">
+                        {matchData.gameData.diceOne || '?'}
+                      </div>
+                      <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center text-2xl font-bold">
+                        {matchData.gameData.diceTwo || '?'}
+                      </div>
+                    </div>
+                    <p className="text-white mb-4">Turn Score: {matchData.gameData.turnScore}</p>
+                    
+                    {currentPlayer.gameState.turnActive && (
+                      <div className="space-y-2">
+                        <button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition-colors">
+                          Roll Dice
+                        </button>
+                        <button className="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded transition-colors">
+                          Bank Score
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
