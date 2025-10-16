@@ -1122,7 +1122,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         }}
       >
       {/* Game Arena */}
-      <div className="flex items-center justify-center p-2 md:p-4" style={{ width: '90vw' }}>
+      <div className="flex items-center justify-center p-2 md:p-4" style={{ width: '100%', maxWidth: '100vw' }}>
           {/* Desktop Layout */}
           <div 
             className="hidden md:flex items-center justify-between gap-16" 
@@ -1486,23 +1486,26 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           <div 
             className="md:hidden flex flex-col items-center w-full" 
             style={{ 
-              width: '100vw', 
-              paddingTop: '0px'
+              width: '100%', 
+              maxWidth: '100vw',
+              paddingTop: '0px',
+              paddingLeft: '8px',
+              paddingRight: '8px'
             }}
           >
             
             {/* User Profiles Section - Top */}
-            <div className="w-full flex justify-between mb-3" style={{ paddingLeft: '10px', paddingRight: '10px', gap: '10px' }}>
+            <div className="w-full flex justify-between mb-4" style={{ gap: '8px' }}>
               {/* Current Player Profile - Left */}
-              <div style={{ width: 'calc(50vw - 15px)' }}>
+              <div style={{ width: 'calc(50% - 4px)' }}>
                 <h3 
                   className="font-bold text-white mb-2 text-center px-1"
                   style={{ 
                     fontFamily: 'Audiowide',
                     textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                    fontSize: 'clamp(12px, 3.5vw, 16px)',
-                    lineHeight: '1.2',
-                    height: '24px',
+                    fontSize: 'clamp(10px, 3vw, 14px)',
+                    lineHeight: '1.1',
+                    height: '20px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -1518,7 +1521,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   className="relative rounded-xl overflow-hidden shadow-lg border-2"
                   style={{ 
                     borderColor: currentPlayer.turnActive ? '#00ff00' : '#ffffff',
-                    height: '120px',
+                    height: '100px',
                     width: '100%'
                   }}
                   animate={{
@@ -1596,15 +1599,15 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               </div>
 
               {/* Opponent Profile - Right */}
-              <div style={{ width: 'calc(50vw - 15px)' }}>
+              <div style={{ width: 'calc(50% - 4px)' }}>
                 <h3 
                   className="font-bold text-white mb-2 text-center px-1"
                   style={{ 
                     fontFamily: 'Audiowide',
                     textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                    fontSize: 'clamp(12px, 3.5vw, 16px)',
-                    lineHeight: '1.2',
-                    height: '24px',
+                    fontSize: 'clamp(10px, 3vw, 14px)',
+                    lineHeight: '1.1',
+                    height: '20px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -1620,7 +1623,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   className="relative rounded-xl overflow-hidden shadow-lg border-2"
                   style={{ 
                     borderColor: opponent.turnActive ? '#00ff00' : '#ffffff',
-                    height: '120px',
+                    height: '100px',
                     width: '100%'
                   }}
                   animate={{
@@ -1699,7 +1702,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             </div>
 
             {/* Center Dice Area - Middle */}
-            <div className="w-full flex flex-col items-center justify-center mb-3" style={{ paddingBottom: '120px', paddingTop: '120px', height: '60vh', overflow: 'visible' }}>
+            <div className="w-full flex flex-col items-center justify-center" style={{ paddingTop: '20px', paddingBottom: '20px', minHeight: '40vh' }}>
               {/* Phase-specific content with mobile modifications and transitions */}
               <AnimatePresence mode="wait">
                 {matchData.gameData.gamePhase === 'turnDecider' && (
