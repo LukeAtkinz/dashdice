@@ -428,10 +428,20 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       console.log('🎮 Match: Subscription callback called with data:', !!data);
       if (data) {
         console.log('🎮 Match: Received match data for match ID:', data.id);
+        console.log('🔍 DEBUG: Full match data structure:', {
+          id: data.id,
+          status: data.status,
+          gameData: data.gameData,
+          gamePhase: data.gameData?.gamePhase,
+          hostData: !!data.hostData,
+          opponentData: !!data.opponentData,
+          authorizedPlayers: data.authorizedPlayers
+        });
         setMatchData(data);
         
         // Initialize game phase if needed
         if (!data.gameData.gamePhase) {
+          console.log('🔧 Match: Initializing game phase');
           MatchService.initializeGamePhase(roomId);
         }
         
@@ -447,6 +457,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         
         // Clear any previous errors when we receive valid data
         setError(null);
+        console.log('✅ Match: Data set, loading set to false');
       } else {
         // Don't immediately show error - match might be transitioning
         console.log('⚠️ Match: No match data received - match may be ending or transitioning');
@@ -978,6 +989,15 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       </div>
     );
   }
+
+  console.log('🔍 DEBUG: About to render main match UI:', {
+    loading,
+    error,
+    hasMatchData: !!matchData,
+    matchId: matchData?.id,
+    gamePhase: matchData?.gameData?.gamePhase,
+    status: matchData?.status
+  });
 
   // Now we know matchData exists, compute player data  
   const isHost = matchData.hostData.playerId === user?.uid;
