@@ -395,20 +395,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
   // Subscribe to match updates
   useEffect(() => {
-    console.log('🔥 CRITICAL DEBUG: Match useEffect triggered');
-    console.log('🔥 roomId:', roomId);
-    console.log('🔥 user?.uid:', user?.uid);
-    console.log('🔥 typeof roomId:', typeof roomId);
-    console.log('🔥 roomId length:', roomId?.length);
-    
+    console.log('🎮 Match: useEffect triggered with roomId:', roomId, 'user:', user?.uid);
     if (!roomId || !user) {
-      console.log('🔥 CRITICAL: Missing roomId or user, showing details:');
-      console.log('🔥 roomId value:', roomId);
-      console.log('🔥 roomId falsy check:', !roomId);
-      console.log('🔥 user value:', user);
-      console.log('🔥 user falsy check:', !user);
-      setError('Missing match ID or user authentication');
-      setLoading(false);
+      console.log('🎮 Match: Early return - missing roomId or user');
       return;
     }
 
@@ -428,21 +417,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       console.log('🎮 Match: Subscription callback called with data:', !!data);
       if (data) {
         console.log('🎮 Match: Received match data for match ID:', data.id);
-        console.log('🔍 DEBUG: Full match data structure:', {
-          id: data.id,
-          status: data.status,
-          gameData: data.gameData,
-          gamePhase: data.gameData?.gamePhase,
-          hostData: !!data.hostData,
-          opponentData: !!data.opponentData,
-          hostPlayerId: data.hostData?.playerId,
-          opponentPlayerId: data.opponentData?.playerId
-        });
         setMatchData(data);
         
         // Initialize game phase if needed
         if (!data.gameData.gamePhase) {
-          console.log('🔧 Match: Initializing game phase');
           MatchService.initializeGamePhase(roomId);
         }
         
@@ -458,7 +436,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         
         // Clear any previous errors when we receive valid data
         setError(null);
-        console.log('✅ Match: Data set, loading set to false');
       } else {
         // Don't immediately show error - match might be transitioning
         console.log('⚠️ Match: No match data received - match may be ending or transitioning');
@@ -991,77 +968,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     );
   }
 
-  console.log('🔍 DEBUG: About to render main match UI:', {
-    loading,
-    error,
-    hasMatchData: !!matchData,
-    matchId: matchData?.id,
-    gamePhase: matchData?.gameData?.gamePhase,
-    status: matchData?.status,
-    hasHostData: !!matchData?.hostData,
-    hasOpponentData: !!matchData?.opponentData,
-    hostPlayerId: matchData?.hostData?.playerId,
-    opponentPlayerId: matchData?.opponentData?.playerId
-  });
-
   // Now we know matchData exists, compute player data  
   const isHost = matchData.hostData.playerId === user?.uid;
-  console.log('🔍 DEBUG: Player role calculation:', {
-    userUid: user?.uid,
-    hostPlayerId: matchData.hostData.playerId,
-    isHost,
-    aboutToCalculateCurrentPlayer: true
-  });
-  
   const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
   const opponent = isHost ? matchData.opponentData : matchData.hostData;
-  
-  console.log('🔍 DEBUG: Player data assignment:', {
-    isHost,
-    hasCurrentPlayer: !!currentPlayer,
-    hasOpponent: !!opponent,
-    currentPlayerName: currentPlayer?.playerDisplayName,
-    opponentName: opponent?.playerDisplayName,
-    aboutToRender: true
-  });
-
-  console.log('🚀 DEBUG: Starting main component render - this should show if render begins');
-  console.log('🔍 DEBUG: About to return JSX - checking render conditions:', {
-    gamePhase: matchData?.gameData?.gamePhase,
-    showGameOverScreen,
-    showAbandonmentNotification,
-    matchDataExists: !!matchData,
-    willRenderMainUI: matchData?.gameData?.gamePhase !== 'gameOver'
-  });
-
-  // Debug layout rendering conditions
-  console.log('🔍 DEBUG: Desktop layout render check:', {
-    gamePhase: matchData?.gameData?.gamePhase,
-    isTurnDecider: matchData?.gameData?.gamePhase === 'turnDecider',
-    displayStyle: matchData?.gameData?.gamePhase === 'turnDecider' ? 'none' : '',
-    willShowDesktopLayout: matchData?.gameData?.gamePhase !== 'turnDecider'
-  });
-
-  console.log('🔍 DEBUG: Mobile layout render check:', {
-    gamePhase: matchData?.gameData?.gamePhase,
-    isTurnDecider: matchData?.gameData?.gamePhase === 'turnDecider',
-    displayStyle: matchData?.gameData?.gamePhase === 'turnDecider' ? 'none' : '',
-    willShowMobileLayout: matchData?.gameData?.gamePhase !== 'turnDecider'
-  });
-
-  console.log('🔍 DEBUG: Center dice area render check:', {
-    gamePhase: matchData?.gameData?.gamePhase,
-    showTurnAnnouncement,
-    turnAnnouncementData: !!turnAnnouncementData,
-    willShowTurnDecider: matchData?.gameData?.gamePhase === 'turnDecider',
-    willShowTurnAnnouncement: showTurnAnnouncement && turnAnnouncementData,
-    willShowGameplay: matchData?.gameData?.gamePhase === 'gameplay' && !showTurnAnnouncement
-  });
-
-  // Check if TurnDeciderPhase will render
-  if (matchData?.gameData?.gamePhase === 'turnDecider') {
-    console.log('🎯 DEBUG: About to render TurnDeciderPhase component');
-  }
 
   return (
     <>
@@ -1122,12 +1032,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         }}
       >
       {/* Game Arena */}
-      <div className="flex items-center justify-center p-2 md:p-4" style={{ width: '100%', maxWidth: '100vw' }}>
+      <div className="flex items-center justify-center p-2 md:p-4" style={{ width: '90vw' }}>
           {/* Desktop Layout */}
           <div 
             className="hidden md:flex items-center justify-between gap-16" 
             style={{ 
-              width: '100%'
+              width: '100%',
+              display: matchData?.gameData?.gamePhase === 'turnDecider' ? 'none' : ''
             }}
           >
             
@@ -1489,8 +1400,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               width: '100%', 
               maxWidth: '100vw',
               paddingTop: '0px',
-              paddingLeft: '8px',
-              paddingRight: '8px'
+              paddingLeft: '16px',
+              paddingRight: '16px'
             }}
           >
             

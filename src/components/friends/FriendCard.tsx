@@ -301,14 +301,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
         return;
       }
 
-      // First open the chat window if it's not already open
-      const { openChatWindow } = await import('../chat/GlobalChatButton');
-      openChatWindow();
-
-      // Wait a minimal moment to ensure the chat window is initialized (reduced from 300ms to 100ms)
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Then open the friend's chat tab
+      // Open the friend's chat tab directly - the SwipeRightChat system will handle opening
       const friendName = friend.friendData?.displayName || 'Unknown Player';
       openFriendChatInUnified(friend.friendId, friendName);
     } catch (error) {

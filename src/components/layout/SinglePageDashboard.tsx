@@ -17,7 +17,6 @@ import AchievementsDashboard from '@/components/achievements/AchievementsDashboa
 import FriendsDashboard from '@/components/friends/FriendsDashboard';
 import { RankedDashboard } from '@/components/ranked/RankedDashboard';
 import { SoftRankedLeaderboard } from '@/components/ranked/SoftRankedLeaderboard';
-import GlobalChatButton from '@/components/chat/GlobalChatButton';
 import SwipeRightChat from '@/components/chat/SwipeRightChat';
 import { GlobalRematchNotification } from '@/components/rematch/GlobalRematchNotification';
 import { GameInvitationNotification } from '@/components/friends/GameInvitationNotification';
@@ -36,7 +35,7 @@ import { MobileBackgroundControl } from '@/components/ui/MobileBackgroundControl
 import { createTestMatch } from '@/utils/testMatchData';
 
 const DashboardContent: React.FC = () => {
-  const { currentSection, sectionParams, setCurrentSection, isGameOver } = useNavigation();
+  const { currentSection, sectionParams, setCurrentSection, previousSection, isGameOver } = useNavigation();
   const { user } = useAuth();
   
   console.log('🎯 DASHBOARD CONTENT: currentSection is:', currentSection);
@@ -704,7 +703,7 @@ const DashboardContent: React.FC = () => {
                   {currentSection === 'user-profile' && sectionParams.userId && (
                     <UserProfileViewer 
                       userId={sectionParams.userId}
-                      onClose={() => setCurrentSection('friends')}
+                      onClose={() => setCurrentSection(previousSection || 'friends')}
                     />
                   )}
                 </motion.div>
@@ -802,9 +801,6 @@ const DashboardContent: React.FC = () => {
         
         {/* Persistent Match Notifications */}
         <PersistentNotificationManager />
-        
-        {/* Global Chat Button */}
-        <GlobalChatButton />
       </div>
     </div>
   );

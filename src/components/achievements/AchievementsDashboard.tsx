@@ -319,7 +319,7 @@ export default function AchievementsDashboard() {
                         } border`}
                         style={{ fontFamily: "Audiowide" }}
                       >
-                        ✓ COMPLETED
+                        COMPLETED
                       </motion.button>
                       <motion.button
                         initial={{ opacity: 0, x: -20 }}
@@ -335,7 +335,7 @@ export default function AchievementsDashboard() {
                         } border`}
                         style={{ fontFamily: "Audiowide" }}
                       >
-                        ⧗ IN PROGRESS
+                        PROGRESS
                       </motion.button>
                     </div>
                   </div>

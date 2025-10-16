@@ -300,7 +300,7 @@ export const InventorySection: React.FC = () => {
       </div>
 
       {/* Category Navigation */}
-      <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8 flex-shrink-0">
+      <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8 flex-shrink-0" style={{ marginTop: '-0.5rem' }}>
         {inventoryCategories.map((category) => (
           <motion.button
             key={category.key}

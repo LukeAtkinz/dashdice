@@ -70,6 +70,7 @@ export interface LeaderboardEntry {
   winStreak: number;
   gamesPlayed: number;
   rank: number; // 1-based ranking
+  matchBackgroundEquipped?: any; // Player's equipped match background
 }
 
 export interface DashLeaderboard {

@@ -125,6 +125,57 @@ export function Leaderboard({
     return 'bg-red-500 text-red-100';
   };
 
+  // Helper function to render background
+  const renderBackground = (background: any, className: string) => {
+    if (!background || !background.file) {
+      return (
+        <div 
+          className={className}
+          style={{
+            background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.8) 50%, rgba(30, 41, 59, 0.9) 100%)'
+          }}
+        />
+      );
+    }
+
+    if (background.type === 'video') {
+      return (
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          controls={false}
+          webkit-playsinline="true"
+          x5-playsinline="true"
+          preload="metadata"
+          disablePictureInPicture
+          controlsList="nodownload noplaybackrate nofullscreen"
+          className={className}
+          style={{ 
+            pointerEvents: 'none',
+            WebkitAppearance: 'none',
+            outline: 'none'
+          }}
+        >
+          <source src={background.file} type="video/mp4" />
+        </video>
+      );
+    }
+
+    return (
+      <img
+        src={background.file}
+        alt={background.name}
+        className={className}
+        style={{ 
+          objectFit: 'cover',
+          objectPosition: 'center'
+        }}
+      />
+    );
+  };
+
   if (loading) {
     return (
       <div className="bg-gray-900 rounded-lg p-6">
@@ -246,13 +297,14 @@ export function Leaderboard({
                 className="relative overflow-hidden"
                 style={{ borderRadius: '20px' }}
               >
-                {/* Friends card style gradient overlay */}
+                {/* Player's match background */}
+                {renderBackground(entry.matchBackgroundEquipped, "absolute inset-0 w-full h-full")}
+                
+                {/* Dark overlay for readability */}
                 <div 
                   className="absolute inset-0"
                   style={{
-                    background: entry.playerId === userId 
-                      ? 'linear-gradient(to right, rgba(147, 51, 234, 0.8) 0%, rgba(139, 92, 246, 0.4) 50%, transparent 100%)'
-                      : 'linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)',
+                    background: 'linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)',
                     borderRadius: '20px'
                   }}
                 />
@@ -265,9 +317,16 @@ export function Leaderboard({
                   
                   {/* Player info */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-white font-medium font-audiowide truncate text-sm">
-                      {entry.displayName}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-white font-medium font-audiowide truncate text-sm">
+                        {entry.displayName}
+                      </p>
+                      {entry.playerId === userId && (
+                        <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                          YOU
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center space-x-2">
                       <LevelTierBadge level={entry.level} animated={false} />
                       <span className="text-green-400 text-xs font-montserrat">
@@ -412,9 +471,7 @@ export function Leaderboard({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ delay: index * 0.05 }}
-                  className={`flex items-center justify-between p-4 rounded-lg border ${getRankBg(entry.rank)} ${
-                    entry.playerId === userId ? 'ring-2 ring-blue-500' : ''
-                  }`}
+                  className={`flex items-center justify-between p-4 rounded-lg border ${getRankBg(entry.rank)}`}
                 >
                   <div className="flex items-center space-x-4">
                     {/* Rank */}
@@ -424,7 +481,14 @@ export function Leaderboard({
 
                     {/* Player info */}
                     <div>
-                      <p className="font-semibold">{entry.displayName}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold">{entry.displayName}</p>
+                        {entry.playerId === userId && (
+                          <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                            YOU
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center space-x-2 text-sm text-gray-400">
                         <LevelTierBadge level={entry.level} animated={false} />
                         {!compactMode && (

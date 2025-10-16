@@ -6,6 +6,7 @@ import { collection, query, where, getDocs, onSnapshot } from 'firebase/firestor
 import { db } from '@/services/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
+import { BackgroundService } from '@/services/backgroundService';
 
 interface PlayerStats {
   uid: string;
@@ -16,6 +17,7 @@ interface PlayerStats {
   winPercentage: number;
   totalGames: number;
   rank: number;
+  equippedBackground?: string;
 }
 
 export function SoftRankedLeaderboard() {
@@ -114,7 +116,8 @@ export function SoftRankedLeaderboard() {
                 rating,
                 winPercentage,
                 totalGames,
-                rank: 0 // Will be set after sorting
+                rank: 0, // Will be set after sorting
+                equippedBackground: userData.equippedBackground
               });
             }
           });
@@ -355,6 +358,11 @@ export function SoftRankedLeaderboard() {
               const colors = getRankColors(player.rank);
               const isCurrentUser = user && player.uid === user.uid;
               
+              // Get player's background
+              const playerBackground = player.equippedBackground ? 
+                BackgroundService.getBackgroundSafely(player.equippedBackground) : 
+                null;
+              
               return (
                 <motion.div
                   key={player.uid}
@@ -379,9 +387,22 @@ export function SoftRankedLeaderboard() {
                     shadow-lg ${colors.glow}
                     ${isCurrentUser ? 'ring-2 ring-blue-500/50 -ml-8 pl-12 pr-4 py-4' : 'p-4'}
                     ${player.rank <= 3 ? 'shadow-2xl' : ''}
-                    group cursor-pointer
+                    group cursor-pointer overflow-hidden
                   `}
                 >
+                  {/* Player Background */}
+                  {playerBackground && (
+                    <div 
+                      className="absolute inset-0 rounded-xl opacity-20"
+                      style={{
+                        backgroundImage: `url('${BackgroundService.getBackgroundUrl(playerBackground)}')`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat'
+                      }}
+                    />
+                  )}
+                  
                   {/* Special effects for top 3 */}
                   {player.rank <= 3 && (
                     <motion.div

@@ -2,6 +2,7 @@ import { collection, query, orderBy, limit as firestoreLimit, where, getDocs } f
 import { db } from '@/services/firebase';
 import { LeaderboardEntry, RankedStats } from '../types/ranked';
 import { SeasonService } from './seasonService';
+import { UserService } from './userService';
 
 export class LeaderboardService {
   private static instance: LeaderboardService;
@@ -63,23 +64,35 @@ export class LeaderboardService {
       const snapshot = await getDocs(q);
       const leaderboard: LeaderboardEntry[] = [];
 
-      snapshot.docs.forEach((doc, index) => {
+      // Fetch user profiles for all players in parallel
+      const userProfilePromises = snapshot.docs.map(async (doc) => {
         const data = doc.data() as RankedStats;
+        const userProfile = await UserService.getUserProfile(doc.id);
+        
         const winRate = data.currentSeason.gamesPlayed > 0 
           ? (data.currentSeason.totalWins / data.currentSeason.gamesPlayed) * 100 
           : 0;
         
-        leaderboard.push({
+        return {
           playerId: doc.id,
-          displayName: 'Player', // TODO: Get from user profile
+          displayName: userProfile?.displayName || 'Player',
           level: data.currentSeason.level,
           winsInLevel: data.currentSeason.winsInLevel,
           totalWins: data.currentSeason.totalWins,
           winRate: Math.round(winRate * 100) / 100,
           winStreak: data.currentSeason.winStreak,
           gamesPlayed: data.currentSeason.gamesPlayed,
-          rank: index + 1
-        });
+          rank: 0, // Will be set after sorting
+          matchBackgroundEquipped: userProfile?.inventory?.matchBackgroundEquipped || null
+        };
+      });
+
+      const entries = await Promise.all(userProfilePromises);
+      
+      // Set rank based on position
+      entries.forEach((entry, index) => {
+        entry.rank = index + 1;
+        leaderboard.push(entry);
       });
 
       return leaderboard;
@@ -106,23 +119,35 @@ export class LeaderboardService {
       const snapshot = await getDocs(q);
       const leaderboard: LeaderboardEntry[] = [];
 
-      snapshot.docs.forEach((doc, index) => {
+      // Fetch user profiles for all players in parallel
+      const userProfilePromises = snapshot.docs.map(async (doc) => {
         const data = doc.data() as RankedStats;
+        const userProfile = await UserService.getUserProfile(doc.id);
+        
         const winRate = data.allTime.totalRankedGames > 0 
           ? (data.allTime.totalRankedWins / data.allTime.totalRankedGames) * 100 
           : 0;
         
-        leaderboard.push({
+        return {
           playerId: doc.id,
-          displayName: 'Player', // TODO: Get from user profile
+          displayName: userProfile?.displayName || 'Player',
           level: data.allTime.maxLevelReached,
           winsInLevel: 0, // Not applicable for all-time
           totalWins: data.allTime.totalRankedWins,
           winRate: Math.round(winRate * 100) / 100,
           winStreak: data.allTime.longestWinStreak,
           gamesPlayed: data.allTime.totalRankedGames,
-          rank: index + 1
-        });
+          rank: 0, // Will be set after sorting
+          matchBackgroundEquipped: userProfile?.inventory?.matchBackgroundEquipped || null
+        };
+      });
+
+      const entries = await Promise.all(userProfilePromises);
+      
+      // Set rank based on position
+      entries.forEach((entry, index) => {
+        entry.rank = index + 1;
+        leaderboard.push(entry);
       });
 
       return leaderboard;

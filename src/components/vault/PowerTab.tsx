@@ -396,7 +396,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
           <AnimatePresence mode="wait">
             <motion.div
               key={currentGameMode.id}
-              className="grid grid-cols-5 gap-2"
+              className="grid grid-cols-5 gap-2 mt-8"
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
@@ -464,7 +464,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                             <img
                               src={categorySlot.icon}
                               alt={categorySlot.name}
-                              className="w-full h-full object-contain opacity-60"
+                              className="w-full h-full object-contain opacity-100"
                               style={{
                                 filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) brightness(1.2)'
                               }}
@@ -575,7 +575,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
           <AnimatePresence mode="wait">
             <motion.div
               key={currentGameMode.id}
-              className="grid grid-cols-5 gap-2 md:gap-4 mb-8"
+              className="grid grid-cols-5 gap-2 md:gap-4 mb-8 mt-12"
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
@@ -629,7 +629,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                             <img
                               src={categorySlot.icon}
                               alt={categorySlot.name}
-                              className="w-full h-full object-contain opacity-60"
+                              className="w-full h-full object-contain opacity-100"
                               style={{
                                 filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) brightness(1.2)'
                               }}
@@ -690,7 +690,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                       </h4>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-6">
                       {userCategoryAbilities.map(ability => {
                         const isInCurrentLoadout = Object.values(currentLoadout).includes(ability.id);
                         
@@ -726,7 +726,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                               }}
                             >
                               <div className="w-full h-full flex flex-col items-center justify-center text-center">
-                                <div className="w-14 h-14 md:w-16 md:h-16 mb-2 relative">
+                                <div className="w-16 h-16 md:w-20 md:h-20 mb-2 relative">
                                   <img
                                     src={ability.iconUrl || '/Abilities/placeholder.webp'}
                                     alt={ability.name}
@@ -780,7 +780,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                               style={{
                                 background: 'linear-gradient(135deg, #374151 0%, transparent 100%)',
                                 borderColor: 'rgba(255, 255, 255, 0.1)',
-                                opacity: 0.6
+                                opacity: 1
                               }}
                             >
                               <div className="w-full h-full flex flex-col items-center justify-center text-center relative">
@@ -821,7 +821,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                               style={{
                                 background: 'linear-gradient(135deg, #374151 0%, transparent 100%)',
                                 borderColor: 'rgba(255, 255, 255, 0.1)',
-                                opacity: 0.6
+                                opacity: 1
                               }}
                             >
                               <div className="w-full h-full flex flex-col items-center justify-center text-center relative">
@@ -890,7 +890,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                   </h4>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-4 mt-4">
                   {userCategoryAbilities.map(ability => {
                     const isInCurrentLoadout = Object.values(currentLoadout).includes(ability.id);
                     
@@ -926,7 +926,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                           }}
                         >
                           <div className="w-full h-full flex flex-col items-center justify-center text-center">
-                            <div className="w-10 h-10 mb-2 relative">
+                            <div className="w-14 h-14 mb-2 relative">
                               <img
                                 src={ability.iconUrl || '/Abilities/placeholder.webp'}
                                 alt={ability.name}
@@ -980,7 +980,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                           style={{
                             background: 'linear-gradient(135deg, #374151 0%, transparent 100%)',
                             borderColor: 'rgba(255, 255, 255, 0.1)',
-                            opacity: 0.6
+                            opacity: 1
                           }}
                         >
                           <div className="w-full h-full flex flex-col items-center justify-center text-center relative">
@@ -1021,7 +1021,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                           style={{
                             background: 'linear-gradient(135deg, #374151 0%, transparent 100%)',
                             borderColor: 'rgba(255, 255, 255, 0.1)',
-                            opacity: 0.6
+                            opacity: 1
                           }}
                         >
                           <div className="w-full h-full flex flex-col items-center justify-center text-center relative">
