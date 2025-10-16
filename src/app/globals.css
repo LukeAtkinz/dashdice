@@ -492,7 +492,7 @@ html, body {
   body.game-over-active {
     overflow: hidden !important;
     touch-action: none !important;
-    position: fixed !important;
+    /* Removed position: fixed as it causes layout offset issues */
     width: 100% !important;
     height: 100% !important;
   }

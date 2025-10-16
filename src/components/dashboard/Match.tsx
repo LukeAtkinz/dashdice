@@ -1024,10 +1024,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className={`w-full h-screen match-container ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-center px-4 py-8`}
+        className={`w-full h-screen match-container ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-start px-2 py-4`}
+        style={{ position: 'relative', left: 0, top: 0, transform: 'none' }}
       >
         {/* Game Arena */}
-        <div className="w-full max-w-7xl mx-auto flex items-center justify-center">
+        <div className="w-full max-w-7xl mx-auto flex items-center justify-center" style={{ position: 'relative' }}>
           {/* Desktop Layout */}
           <div className="hidden md:flex items-center justify-between gap-16 w-full">
             
@@ -1382,7 +1383,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           </div>
 
           {/* Mobile Layout - Stacked */}
-          <div className="md:hidden flex flex-col items-center w-full max-w-md mx-auto px-4">
+          <div className="md:hidden flex flex-col items-center w-full px-4" style={{ maxWidth: '100vw', margin: '0 auto' }}>
             
             {/* User Profiles Section - Top */}
             <div className="w-full flex justify-between mb-4" style={{ gap: '8px' }}>
@@ -1592,7 +1593,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             </div>
 
             {/* Center Dice Area - Middle */}
-            <div className="w-full flex flex-col items-center justify-center" style={{ paddingTop: '20px', paddingBottom: '20px', minHeight: '40vh' }}>
+            <div className="w-full flex flex-col items-center justify-center" style={{ paddingTop: '20px', paddingBottom: '20px', minHeight: '40vh', maxWidth: '100%', overflow: 'visible' }}>
               {/* Phase-specific content with mobile modifications and transitions */}
               <AnimatePresence mode="wait">
                 {matchData.gameData.gamePhase === 'turnDecider' && (
