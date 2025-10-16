@@ -726,7 +726,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                               }}
                             >
                               <div className="w-full h-full flex flex-col items-center justify-center text-center">
-                                <div className="w-16 h-16 md:w-20 md:h-20 mb-2 relative">
+                                <div className="w-16 h-16 md:w-20 md:h-20 relative">
                                   <img
                                     src={ability.iconUrl || '/Abilities/placeholder.webp'}
                                     alt={ability.name}
@@ -784,7 +784,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                               }}
                             >
                               <div className="w-full h-full flex flex-col items-center justify-center text-center relative">
-                                <div className="w-20 h-20 md:w-24 md:h-24 mb-2 relative z-30">
+                                <div className="w-20 h-20 md:w-24 md:h-24 relative z-30">
                                   <img
                                     src={getRandomIcon(categoryIndex, 0)}
                                     alt="Coming Soon"
@@ -825,7 +825,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                               }}
                             >
                               <div className="w-full h-full flex flex-col items-center justify-center text-center relative">
-                                <div className="w-20 h-20 md:w-24 md:h-24 mb-2 relative z-30">
+                                <div className="w-20 h-20 md:w-24 md:h-24 relative z-30">
                                   <img
                                     src={getRandomIcon(categoryIndex, 1)}
                                     alt="Coming Soon"
@@ -926,7 +926,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                           }}
                         >
                           <div className="w-full h-full flex flex-col items-center justify-center text-center">
-                            <div className="w-14 h-14 mb-2 relative">
+                            <div className="w-14 h-14 relative">
                               <img
                                 src={ability.iconUrl || '/Abilities/placeholder.webp'}
                                 alt={ability.name}
@@ -984,7 +984,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                           }}
                         >
                           <div className="w-full h-full flex flex-col items-center justify-center text-center relative">
-                            <div className="w-20 h-20 mb-2 relative z-30">
+                            <div className="w-20 h-20 relative z-30">
                               <img
                                 src={getRandomIcon(categoryIndex, 0)}
                                 alt="Coming Soon"
@@ -1025,7 +1025,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                           }}
                         >
                           <div className="w-full h-full flex flex-col items-center justify-center text-center relative">
-                            <div className="w-20 h-20 mb-2 relative z-30">
+                            <div className="w-20 h-20 relative z-30">
                               <img
                                 src={getRandomIcon(categoryIndex, 1)}
                                 alt="Coming Soon"

@@ -261,8 +261,11 @@ export function SoftRankedLeaderboard() {
 
   return (
     <div 
-      className="relative overflow-hidden pt-8 md:pt-0 -mt-4 md:mt-0 h-full md:h-auto"
+      className="relative pt-8 md:pt-0 -mt-4 md:mt-0 h-full md:h-auto"
       style={{
+        height: '100%',
+        maxHeight: '100%',
+        overflow: 'hidden',
         touchAction: 'none',
         overscrollBehavior: 'none'
       }}
@@ -345,12 +348,13 @@ export function SoftRankedLeaderboard() {
         {/* Leaderboard */}
         <div 
           ref={scrollContainerRef}
-          className="px-6 pb-6 space-y-3 flex-1 overflow-y-auto custom-scrollbar md:max-h-96" 
+          className="px-6 pb-6 space-y-3 flex-1 overflow-y-auto custom-scrollbar" 
           style={{ 
             maxHeight: 'calc(100vh - 250px)',
             touchAction: 'pan-y',
             WebkitOverflowScrolling: 'touch',
-            overscrollBehavior: 'contain'
+            overscrollBehavior: 'auto',
+            scrollBehavior: 'smooth'
           }}
         >
           <AnimatePresence>
@@ -385,22 +389,42 @@ export function SoftRankedLeaderboard() {
                     relative bg-gradient-to-r ${colors.bg} 
                     backdrop-blur-sm rounded-xl border ${colors.border} 
                     shadow-lg ${colors.glow}
-                    ${isCurrentUser ? 'ring-2 ring-blue-500/50 -ml-8 pl-12 pr-4 py-4' : 'p-4'}
+                    ${isCurrentUser ? 'ring-2 ring-blue-500/50' : ''} p-4
                     ${player.rank <= 3 ? 'shadow-2xl' : ''}
                     group cursor-pointer overflow-hidden
                   `}
                 >
                   {/* Player Background */}
                   {playerBackground && (
-                    <div 
-                      className="absolute inset-0 rounded-xl opacity-20"
-                      style={{
-                        backgroundImage: `url('${BackgroundService.getBackgroundUrl(playerBackground)}')`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        backgroundRepeat: 'no-repeat'
-                      }}
-                    />
+                    <>
+                      {playerBackground.type === 'video' ? (
+                        <video
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-50"
+                        >
+                          <source src={BackgroundService.getBackgroundUrl(playerBackground)} type="video/mp4" />
+                        </video>
+                      ) : (
+                        <div 
+                          className="absolute inset-0 rounded-xl opacity-50"
+                          style={{
+                            backgroundImage: `url('${BackgroundService.getBackgroundUrl(playerBackground)}')`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat'
+                          }}
+                        />
+                      )}
+                      
+                      {/* Left gradient overlay for text readability */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent rounded-xl"></div>
+                      
+                      {/* Right gradient overlay for text readability */}
+                      <div className="absolute inset-0 bg-gradient-to-l from-black/60 via-transparent to-transparent rounded-xl"></div>
+                    </>
                   )}
                   
                   {/* Special effects for top 3 */}
@@ -442,8 +466,9 @@ export function SoftRankedLeaderboard() {
                             {player.displayName}
                           </h3>
                           {isCurrentUser && (
-                            <span className="text-xs bg-blue-500/30 text-blue-300 px-2 py-1 rounded-full">
-                              YOU
+                            <span className="relative text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 text-black shadow-lg">
+                              <span className="relative z-10">YOU</span>
+                              <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-yellow-400 rounded-full opacity-50 animate-pulse"></div>
                             </span>
                           )}
                         </div>

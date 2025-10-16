@@ -32,6 +32,17 @@ export default function Home() {
     );
   }
 
+  // If user is authenticated (even during redirect), don't render GuestDashboard
+  if (user) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-white text-xl">Redirecting...</div>
+        </div>
+      </Layout>
+    );
+  }
+
   // If not authenticated, show guest dashboard
   if (!user) {
     return <GuestDashboard />;
