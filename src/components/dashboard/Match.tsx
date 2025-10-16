@@ -1024,23 +1024,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className={`w-full h-full match-container ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center gap-[1rem] p-2 md:p-4 justify-start md:justify-center overflow-hidden`} 
-        style={{ 
-          minHeight: '100vh', 
-          maxHeight: '100vh',
-          paddingTop: '0.5rem'
-        }}
+        className={`w-full h-screen match-container ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-center px-4 py-8`}
       >
-      {/* Game Arena */}
-      <div className="flex items-center justify-center p-2 md:p-4" style={{ width: '90vw' }}>
+        {/* Game Arena */}
+        <div className="w-full max-w-7xl mx-auto flex items-center justify-center">
           {/* Desktop Layout */}
-          <div 
-            className="hidden md:flex items-center justify-between gap-16" 
-            style={{ 
-              width: '100%',
-              display: matchData?.gameData?.gamePhase === 'turnDecider' ? 'none' : ''
-            }}
-          >
+          <div className="hidden md:flex items-center justify-between gap-16 w-full">
             
             {/* Player 1 (Current User - Left Side) */}
             <div className="flex-1">
@@ -1390,20 +1379,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 </span>
               </div>
             </div>
-
           </div>
 
           {/* Mobile Layout - Stacked */}
-          <div 
-            className="md:hidden flex flex-col items-center w-full" 
-            style={{ 
-              width: '100%', 
-              maxWidth: '100vw',
-              paddingTop: '0px',
-              paddingLeft: '16px',
-              paddingRight: '16px'
-            }}
-          >
+          <div className="md:hidden flex flex-col items-center w-full max-w-md mx-auto px-4">
             
             {/* User Profiles Section - Top */}
             <div className="w-full flex justify-between mb-4" style={{ gap: '8px' }}>
