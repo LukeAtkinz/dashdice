@@ -395,9 +395,20 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
   // Subscribe to match updates
   useEffect(() => {
-    console.log('🎮 Match: useEffect triggered with roomId:', roomId, 'user:', user?.uid);
+    console.log('🔥 CRITICAL DEBUG: Match useEffect triggered');
+    console.log('🔥 roomId:', roomId);
+    console.log('🔥 user?.uid:', user?.uid);
+    console.log('🔥 typeof roomId:', typeof roomId);
+    console.log('🔥 roomId length:', roomId?.length);
+    
     if (!roomId || !user) {
-      console.log('🎮 Match: Early return - missing roomId or user');
+      console.log('🔥 CRITICAL: Missing roomId or user, showing details:');
+      console.log('🔥 roomId value:', roomId);
+      console.log('🔥 roomId falsy check:', !roomId);
+      console.log('🔥 user value:', user);
+      console.log('🔥 user falsy check:', !user);
+      setError('Missing match ID or user authentication');
+      setLoading(false);
       return;
     }
 

@@ -613,11 +613,27 @@ const DashboardContent: React.FC = () => {
                 className="w-full h-full flex items-center justify-center"
               >
                 {currentSection === 'match' && (
-                  <Match 
-                    key={`match-${sectionParams.matchId || "dev-room-123"}`}
-                    gameMode={sectionParams.gameMode}
-                    roomId={sectionParams.matchId || "dev-room-123"}
-                  />
+                  <div>
+                    <div style={{
+                      position: 'fixed',
+                      top: '10px',
+                      left: '10px',
+                      background: 'rgba(0,0,0,0.8)',
+                      color: 'white',
+                      padding: '10px',
+                      borderRadius: '5px',
+                      fontSize: '12px',
+                      zIndex: 9999
+                    }}>
+                      DEBUG: matchId = {sectionParams.matchId || "UNDEFINED"}<br/>
+                      gameMode = {sectionParams.gameMode || "UNDEFINED"}
+                    </div>
+                    <Match 
+                      key={`match-${sectionParams.matchId || "dev-room-123"}`}
+                      gameMode={sectionParams.gameMode}
+                      roomId={sectionParams.matchId || "dev-room-123"}
+                    />
+                  </div>
                 )}
                 {currentSection === 'waiting-room' && (
                   <GameWaitingRoom 
