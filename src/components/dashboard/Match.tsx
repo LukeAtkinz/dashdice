@@ -997,13 +997,35 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     hasMatchData: !!matchData,
     matchId: matchData?.id,
     gamePhase: matchData?.gameData?.gamePhase,
-    status: matchData?.status
+    status: matchData?.status,
+    hasHostData: !!matchData?.hostData,
+    hasOpponentData: !!matchData?.opponentData,
+    hostPlayerId: matchData?.hostData?.playerId,
+    opponentPlayerId: matchData?.opponentData?.playerId
   });
 
   // Now we know matchData exists, compute player data  
   const isHost = matchData.hostData.playerId === user?.uid;
+  console.log('🔍 DEBUG: Player role calculation:', {
+    userUid: user?.uid,
+    hostPlayerId: matchData.hostData.playerId,
+    isHost,
+    aboutToCalculateCurrentPlayer: true
+  });
+  
   const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
   const opponent = isHost ? matchData.opponentData : matchData.hostData;
+  
+  console.log('🔍 DEBUG: Player data assignment:', {
+    isHost,
+    hasCurrentPlayer: !!currentPlayer,
+    hasOpponent: !!opponent,
+    currentPlayerName: currentPlayer?.playerDisplayName,
+    opponentName: opponent?.playerDisplayName,
+    aboutToRender: true
+  });
+
+  console.log('🚀 DEBUG: Starting main component render - this should show if render begins');
 
   return (
     <>
