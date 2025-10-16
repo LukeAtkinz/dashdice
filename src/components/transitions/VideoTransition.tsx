@@ -79,19 +79,22 @@ export const VideoTransition: React.FC<VideoTransitionProps> = ({
 
   return (
     <div className="relative w-full h-full">
-      {/* Background content - always rendered but may be behind video */}
-      <div className={`w-full h-full ${isPlaying ? 'opacity-50' : 'opacity-100'} transition-opacity duration-300`}>
+      {/* Background content - always rendered */}
+      <div className="w-full h-full">
         {children}
       </div>
 
-      {/* Video Overlay */}
-      {isPlaying && (
+      {/* Video Overlay - Only render when actually playing */}
+      {isPlaying && videoSrc && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="absolute inset-0 z-50 flex items-center justify-center bg-black/20"
+          className="absolute inset-0 z-40 flex items-center justify-center"
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.3)' // Slight background darkening
+          }}
         >
           <video
             ref={videoRef}
@@ -99,6 +102,10 @@ export const VideoTransition: React.FC<VideoTransitionProps> = ({
             muted
             playsInline
             preload="auto"
+            style={{
+              maxWidth: '100%',
+              maxHeight: '100%'
+            }}
           >
             <source src={videoSrc} type="video/mp4" />
           </video>

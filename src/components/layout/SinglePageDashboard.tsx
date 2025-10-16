@@ -22,7 +22,6 @@ import { GlobalRematchNotification } from '@/components/rematch/GlobalRematchNot
 import { GameInvitationNotification } from '@/components/friends/GameInvitationNotification';
 import InviteAcceptedNotification from '@/components/friends/InviteAcceptedNotification';
 import PersistentNotificationManager from '@/components/notifications/PersistentNotificationManager';
-import { VideoTransition } from '@/components/transitions/VideoTransition';
 import { GameType } from '@/types/ranked';
 import { RematchProvider } from '@/context/RematchContext';
 import { useAuth } from '@/context/AuthContext';
@@ -46,51 +45,6 @@ const DashboardContent: React.FC = () => {
   const onlinePlayerCount = useOnlinePlayerCount();
   const onlineFriendsCount = getOnlineFriendsCount?.() || 0;
   const [userGold] = useState(1000); // Placeholder for user gold
-  
-  // Video transition state
-  const [isVideoTransitionPlaying, setIsVideoTransitionPlaying] = useState(false);
-  const [currentVideoSrc, setCurrentVideoSrc] = useState<string | null>(null);
-  const [pendingNavigation, setPendingNavigation] = useState<{
-    section: string;
-    params: any;
-  } | null>(null);
-  const previousSectionRef = useRef(currentSection);
-  
-  // Monitor section changes and trigger video transitions
-  useEffect(() => {
-    const prevSection = previousSectionRef.current;
-    const newSection = currentSection;
-    
-    if (prevSection !== newSection) {
-      let videoSrc: string | null = null;
-      
-      // Transition to waiting room - show "Into Waiting Room.mp4"
-      if (newSection === 'waiting-room' && prevSection !== 'waiting-room') {
-        videoSrc = '/transitions/Into Waiting Room.mp4';
-      }
-      // Transition to match from waiting room - show "Into Match.mp4"
-      else if (newSection === 'match' && prevSection === 'waiting-room') {
-        videoSrc = '/transitions/Into Match.mp4';
-      }
-      
-      if (videoSrc) {
-        console.log('🎬 Starting video transition:', videoSrc);
-        setCurrentVideoSrc(videoSrc);
-        setIsVideoTransitionPlaying(true);
-        // Store the navigation that triggered this transition
-        setPendingNavigation({ section: newSection, params: sectionParams });
-      }
-      
-      previousSectionRef.current = newSection;
-    }
-  }, [currentSection, sectionParams]);
-
-  const handleVideoTransitionComplete = () => {
-    console.log('🎬 Video transition completed');
-    setIsVideoTransitionPlaying(false);
-    setCurrentVideoSrc(null);
-    setPendingNavigation(null);
-  };
   
   // Create button gradient style based on user's display background
   const getButtonGradientStyle = (baseColor: string) => {
@@ -644,16 +598,67 @@ const DashboardContent: React.FC = () => {
           </div>
         </header>
 
-        {/* Main Content Area */}
-        <VideoTransition
-          videoSrc={currentVideoSrc || ''}
-          isPlaying={isVideoTransitionPlaying}
-          onComplete={handleVideoTransitionComplete}
-          duration={4} // 4 second fallback
-        >
-          {(currentSection === 'match' || currentSection === 'waiting-room') ? (
-            // Full-screen centered layout for match, waiting-room, and winner screens
-            <main className="flex-1 w-full h-full min-h-0 overflow-hidden flex items-center justify-center">
+        {/* Main Content Area - Simplified without video transitions for now */}
+        {(currentSection === 'match' || currentSection === 'waiting-room') ? (
+          // Full-screen centered layout for match, waiting-room, and winner screens
+          <main className="flex-1 w-full h-full min-h-0 overflow-hidden flex items-center justify-center">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentSection}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full flex items-center justify-center"
+              >
+                {currentSection === 'match' && (
+                  <Match 
+                    key={`match-${sectionParams.matchId || "dev-room-123"}`}
+                    gameMode={sectionParams.gameMode}
+                    roomId={sectionParams.matchId || "dev-room-123"}
+                  />
+                )}
+                {currentSection === 'waiting-room' && (
+                  <GameWaitingRoom 
+                    gameMode={sectionParams.gameMode || 'classic'}
+                    actionType={sectionParams.actionType || 'live'}
+                    gameType={(sectionParams.gameType || 'quick') as GameType}
+                    roomId={sectionParams.roomId}
+                    isOptimistic={sectionParams.isOptimistic || false}
+                    onBack={async () => {
+                      // Clear the currentGame field when user manually exits waiting room
+                      if (user?.uid) {
+                        try {
+                          const { GameInvitationService } = await import('@/services/gameInvitationService');
+                          await GameInvitationService.forceClearUserCurrentGame(user.uid);
+                        } catch (error) {
+                          console.error('Error clearing currentGame on back:', error);
+                        }
+                      }
+                      setCurrentSection('dashboard');
+                    }}
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </main>
+        ) : (
+          // Regular content with constraints
+          <main 
+            className="flex-1 w-full flex items-start justify-center overflow-y-auto overflow-x-hidden scrollbar-hide" 
+            data-scrollable="true"
+            style={{ 
+              height: 0, // Force flex item to shrink and allow overflow
+              paddingBottom: 'max(6rem, env(safe-area-inset-bottom) + 6rem)', // Account for bottom nav
+              paddingTop: '0', // Ensure content starts at top
+              touchAction: 'pan-y',
+              WebkitOverflowScrolling: 'touch' // Smooth scrolling on iOS
+            }}
+          >
+            <div className="w-full max-w-[100rem] flex flex-col items-center justify-start gap-[2rem] pt-[4rem] md:pt-[6rem] px-[1rem] md:px-[2rem] pb-0" style={{
+              minHeight: 'min-content',
+              flex: 'none'
+            }}>
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentSection}
@@ -661,93 +666,33 @@ const DashboardContent: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
-                  className="w-full h-full flex items-center justify-center"
+                  className="w-full"
+                  style={{
+                    touchAction: 'pan-y',
+                    overflow: 'visible',
+                    flex: 'none'
+                  }}
                 >
-                  {currentSection === 'match' && (
-                    <Match 
-                      key={`match-${sectionParams.matchId || "dev-room-123"}`}
-                      gameMode={sectionParams.gameMode}
-                      roomId={sectionParams.matchId || "dev-room-123"}
-                    />
+                  {currentSection === 'dashboard' && <DashboardSection />}
+                  {currentSection === 'inventory' && <InventorySection />}
+                  {currentSection === 'achievements' && <AchievementsDashboard />}
+                  {currentSection === 'friends' && <FriendsDashboard />}
+                  {currentSection === 'ranked' && (
+                    <SoftRankedLeaderboard />
                   )}
-                  {currentSection === 'waiting-room' && (
-                    <GameWaitingRoom 
-                      gameMode={sectionParams.gameMode || 'classic'}
-                      actionType={sectionParams.actionType || 'live'}
-                      gameType={(sectionParams.gameType || 'quick') as GameType}
-                      roomId={sectionParams.roomId}
-                      isOptimistic={sectionParams.isOptimistic || false}
-                      onBack={async () => {
-                        // Debug logging
-                        console.log('🐛 DEBUG: GameWaitingRoom onBack - sectionParams:', sectionParams);
-                        // Clear the currentGame field when user manually exits waiting room
-                        if (user?.uid) {
-                          try {
-                            const { GameInvitationService } = await import('@/services/gameInvitationService');
-                            await GameInvitationService.forceClearUserCurrentGame(user.uid);
-                          } catch (error) {
-                            console.error('Error clearing currentGame on back:', error);
-                          }
-                        }
-                        setCurrentSection('dashboard');
-                      }}
+                  {currentSection === 'profile' && <ProfileSection />}
+                  {currentSection === 'settings' && <ProfileSection />}
+                  {currentSection === 'user-profile' && sectionParams.userId && (
+                    <UserProfileViewer 
+                      userId={sectionParams.userId}
+                      onClose={() => setCurrentSection(previousSection || 'friends')}
                     />
                   )}
                 </motion.div>
               </AnimatePresence>
-            </main>
-          ) : (
-            // Regular content with constraints
-            <main 
-              className="flex-1 w-full flex items-start justify-center overflow-y-auto overflow-x-hidden scrollbar-hide" 
-              data-scrollable="true"
-              style={{ 
-                height: 0, // Force flex item to shrink and allow overflow
-                paddingBottom: 'max(6rem, env(safe-area-inset-bottom) + 6rem)', // Account for bottom nav
-                paddingTop: '0', // Ensure content starts at top
-                touchAction: 'pan-y',
-                WebkitOverflowScrolling: 'touch' // Smooth scrolling on iOS
-              }}
-            >
-              <div className="w-full max-w-[100rem] flex flex-col items-center justify-start gap-[2rem] pt-[4rem] md:pt-[6rem] px-[1rem] md:px-[2rem] pb-0" style={{
-                minHeight: 'min-content',
-                flex: 'none'
-              }}>
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentSection}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="w-full"
-                    style={{
-                      touchAction: 'pan-y',
-                      overflow: 'visible',
-                      flex: 'none'
-                    }}
-                  >
-                    {currentSection === 'dashboard' && <DashboardSection />}
-                    {currentSection === 'inventory' && <InventorySection />}
-                    {currentSection === 'achievements' && <AchievementsDashboard />}
-                    {currentSection === 'friends' && <FriendsDashboard />}
-                    {currentSection === 'ranked' && (
-                      <SoftRankedLeaderboard />
-                    )}
-                    {currentSection === 'profile' && <ProfileSection />}
-                    {currentSection === 'settings' && <ProfileSection />}
-                    {currentSection === 'user-profile' && sectionParams.userId && (
-                      <UserProfileViewer 
-                        userId={sectionParams.userId}
-                        onClose={() => setCurrentSection(previousSection || 'friends')}
-                      />
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </main>
-          )}
-        </VideoTransition>
+            </div>
+          </main>
+        )}
 
         {/* Bottom Navigation for Mobile - Fixed at bottom - Hidden during match, waiting-room, and game over */}
         {(currentSection !== 'match' && currentSection !== 'waiting-room') && (
