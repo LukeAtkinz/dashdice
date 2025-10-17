@@ -127,27 +127,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
 
   return (
     <div className="flex flex-col items-center justify-center">
-      {/* Turn Decider Phase - Single Dice with Animation (only show during rolling) */}
-      {(diceAnimation.isSpinning || hasDice) && (
-        <motion.div 
-          className="flex justify-center mb-8"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-        >
-          <div className="w-full max-w-[900px] md:w-[900px]" style={{ width: 'min(90vw, 900px)' }}>
-            <SlotMachineDice
-              diceNumber={'turnDecider' as any}
-              animationState={diceAnimation}
-              matchRollPhase={matchData.gameData.isRolling ? 'turnDecider' : undefined}
-              actualValue={matchData.gameData.turnDeciderDice || null}
-              isGameRolling={matchData.gameData.isRolling || false}
-              isTurnDecider={true}
-              matchData={matchData}
-            />
-          </div>
-        </motion.div>
-      )}
+      {/* Old dice display removed to prevent layout switching */}
 
       {/* Choice Selection - Full-Screen Mobile Layout */}
       {!hasChoice && isMyTurnToDecide && isInTurnDeciderPhase && (
@@ -183,13 +163,21 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             <motion.div
               className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 translate-y-8"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.15 }}
+              animate={{ 
+                opacity: hasChoice && matchData.gameData.turnDeciderChoice === 'odd' ? 1 : 0.15 
+              }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
               <span 
                 className="text-[25vw] md:text-[20rem] text-white font-bold tracking-wider leading-none select-none"
                 style={{ 
                   fontFamily: 'Audiowide',
+                  textShadow: hasChoice && matchData.gameData.turnDeciderChoice === 'odd' 
+                    ? '0 0 60px rgba(255, 215, 0, 1), 0 0 120px rgba(255, 215, 0, 0.8)' 
+                    : 'none',
+                  color: hasChoice && matchData.gameData.turnDeciderChoice === 'odd' 
+                    ? '#FFD700' 
+                    : 'white'
                 }}
               >
                 {isProcessing ? 'PROCESSING' : 'ODD'}
@@ -206,7 +194,10 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                   filter: 'drop-shadow(0 0 40px rgba(59, 130, 246, 0.9))'
                 }}
                 initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
+                animate={{ 
+                  scale: hasChoice && matchData.gameData.turnDeciderChoice === 'odd' ? 1.3 : 1,
+                  y: hasChoice && matchData.gameData.turnDeciderChoice === 'odd' ? -40 : 0
+                }}
                 transition={{ delay: 0.4, duration: 0.5, type: "spring", stiffness: 100 }}
               />
             </div>
@@ -215,22 +206,38 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
           </motion.button>
 
-          {/* VS Element - Centered */}
+          {/* VS Element or Dice - Centered */}
           <motion.div
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.8, duration: 0.5, type: "spring", stiffness: 120 }}
             className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
           >
-            <span 
-              className="text-[15vw] md:text-8xl text-white font-bold tracking-wider"
-              style={{ 
-                fontFamily: 'Audiowide',
-                textShadow: '0 0 40px rgba(255,255,255,1), 0 0 80px rgba(255,255,255,0.5)'
-              }}
-            >
-              VS
-            </span>
+            {hasDice && diceAnimation.isSpinning ? (
+              // Show reel dice animation
+              <div className="w-32 h-32 md:w-40 md:h-40">
+                <SlotMachineDice
+                  diceNumber={'turnDecider' as any}
+                  animationState={diceAnimation}
+                  matchRollPhase={matchData.gameData.isRolling ? 'turnDecider' : undefined}
+                  actualValue={matchData.gameData.turnDeciderDice || null}
+                  isGameRolling={matchData.gameData.isRolling || false}
+                  isTurnDecider={true}
+                  matchData={matchData}
+                />
+              </div>
+            ) : !hasChoice ? (
+              // Show VS when no choice made yet
+              <span 
+                className="text-[15vw] md:text-8xl text-white font-bold tracking-wider"
+                style={{ 
+                  fontFamily: 'Audiowide',
+                  textShadow: '0 0 40px rgba(255,255,255,1), 0 0 80px rgba(255,255,255,0.5)'
+                }}
+              >
+                VS
+              </span>
+            ) : null}
           </motion.div>
 
           {/* EVEN Button - Bottom Half */}
@@ -259,18 +266,28 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             <motion.div
               className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 translate-y-8"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.15 }}
+              animate={{ 
+                opacity: hasChoice && matchData.gameData.turnDeciderChoice === 'even' ? 1 : 0.15 
+              }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
               <span 
                 className="text-[25vw] md:text-[20rem] text-white font-bold tracking-wider leading-none select-none"
                 style={{ 
                   fontFamily: 'Audiowide',
+                  textShadow: hasChoice && matchData.gameData.turnDeciderChoice === 'even' 
+                    ? '0 0 60px rgba(255, 215, 0, 1), 0 0 120px rgba(255, 215, 0, 0.8)' 
+                    : 'none',
+                  color: hasChoice && matchData.gameData.turnDeciderChoice === 'even' 
+                    ? '#FFD700' 
+                    : 'white'
                 }}
               >
                 {isProcessing ? 'PROCESSING' : 'EVEN'}
               </span>
             </motion.div>
+
+
 
             {/* Content */}
             <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 -translate-y-8">
@@ -282,7 +299,10 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                   filter: 'drop-shadow(0 0 40px rgba(147, 51, 234, 0.9))'
                 }}
                 initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
+                animate={{ 
+                  scale: hasChoice && matchData.gameData.turnDeciderChoice === 'even' ? 1.3 : 1,
+                  y: hasChoice && matchData.gameData.turnDeciderChoice === 'even' ? -40 : 0
+                }}
                 transition={{ delay: 0.4, duration: 0.5, type: "spring", stiffness: 100 }}
               />
             </div>
@@ -293,91 +313,151 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
         </motion.div>
       )}
 
-      {/* Show Choice if Made */}
-      {hasChoice && !hasDice && (
+      {/* Debug: Force gameplay button - Only show when not in unified display */}
+      {onForceGameplay && hasChoice && !isInTurnDeciderPhase && (
+        <div className="mt-4 text-center">
+          <button
+            onClick={onForceGameplay}
+            className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-bold transition-all transform hover:scale-105 border border-orange-400"
+            style={{ fontFamily: "Audiowide" }}
+            title="Development: Force skip to gameplay"
+          >
+            🚀 FORCE GAMEPLAY (DEV)
+          </button>
+        </div>
+      )}
+
+      {/* Unified Choice Display - Shows choices after user has made selection */}
+      {hasChoice && isInTurnDeciderPhase && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="text-center mt-8 max-w-2xl mx-auto"
+          className="fixed inset-0 w-full h-full flex flex-col"
         >
-          {/* Premium Choice Confirmation Card */}
-          <div className="bg-gradient-to-br from-purple-900/50 to-blue-900/50 rounded-3xl p-8 backdrop-blur-lg border border-purple-400/40 shadow-2xl relative overflow-hidden">
-            {/* Animated background effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-transparent to-blue-500/10 animate-pulse"></div>
+          {/* User's Choice - Top Half */}
+          <motion.div
+            initial={{ opacity: 0, y: -100 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
+            className={`relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden transition-all duration-200 ${
+              matchData.gameData.turnDeciderChoice === 'odd'
+                ? 'bg-gradient-to-b from-blue-600/95 to-blue-800/95'
+                : 'bg-gradient-to-b from-purple-600/95 to-purple-800/95'
+            }`}
+            style={{ 
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20"></div>
+            
+            {/* Background Text Shadow - Always highlighted since this is user's choice */}
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 translate-y-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              <span 
+                className="text-[25vw] md:text-[20rem] text-white font-bold tracking-wider leading-none select-none"
+                style={{ 
+                  fontFamily: 'Audiowide',
+                  textShadow: '0 0 60px rgba(255, 215, 0, 1), 0 0 120px rgba(255, 215, 0, 0.8)',
+                  color: '#FFD700'
+                }}
+              >
+                {matchData.gameData.turnDeciderChoice?.toUpperCase()}
+              </span>
+            </motion.div>
+
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 -translate-y-8">
+              <motion.img 
+                src={`/Design Elements/Match/Turn Decider/${matchData.gameData.turnDeciderChoice === 'odd' ? 'Odd' : 'Even'}.webp`}
+                alt={matchData.gameData.turnDeciderChoice === 'odd' ? 'Odd' : 'Even'}
+                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain filter drop-shadow-2xl"
+                style={{
+                  filter: matchData.gameData.turnDeciderChoice === 'odd' 
+                    ? 'drop-shadow(0 0 40px rgba(59, 130, 246, 0.9))'
+                    : 'drop-shadow(0 0 40px rgba(147, 51, 234, 0.9))'
+                }}
+                initial={{ scale: 1, y: 0 }}
+                animate={{ scale: 1.3, y: -40 }}
+                transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
+              />
+            </div>
+
+            {/* Subtle shine effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 transform -skew-x-12 -translate-x-full transition-transform duration-1000"></div>
+          </motion.div>
+
+          {/* Opponent Status/Choice - Bottom Half */}
+          <motion.div
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
+            className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden bg-gradient-to-t from-gray-600/95 to-gray-800/95"
+            style={{ 
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-gradient-to-tl from-white/5 via-transparent to-black/20"></div>
             
             {/* Content */}
-            <div className="relative z-10">
-              {/* Status Icon */}
-              <motion.div
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ delay: 0.2, duration: 0.5, type: "spring" }}
-                className="mb-4"
+            <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-4 md:translate-y-0 -translate-y-8">
+              <motion.h3 
+                className="text-4xl md:text-6xl text-white tracking-wide leading-tight"
+                style={{ 
+                  fontFamily: 'Audiowide',
+                  textShadow: '0 0 30px rgba(255,255,255,0.6)'
+                }}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
               >
-                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-                  <span className="text-3xl">✓</span>
-                </div>
-              </motion.div>
-
-              {/* Choice Display */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.4 }}
+                {opponent.playerDisplayName}
+              </motion.h3>
+              
+              <motion.p 
+                className="text-xl md:text-2xl text-gray-300 leading-relaxed"
+                style={{ 
+                  fontFamily: 'Audiowide',
+                  textShadow: '2px 2px 8px rgba(0,0,0,0.8)'
+                }}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.8, duration: 0.5 }}
               >
-                <p 
-                  className="text-lg text-gray-300 mb-4"
-                  style={{ fontFamily: 'Audiowide' }}
-                >
-                  Your Prediction:
-                </p>
-                <div className="inline-flex items-center gap-4 px-8 py-4 bg-gradient-to-r from-purple-600/40 to-blue-600/40 border-2 border-purple-400/60 rounded-2xl mb-6 shadow-lg">
-                  <img 
-                    src={matchData.gameData.turnDeciderChoice === 'odd' ? '/Design Elements/Match/Turn Decider/Odd.webp' : '/Design Elements/Match/Turn Decider/Even.webp'} 
-                    alt={matchData.gameData.turnDeciderChoice === 'odd' ? 'Odd' : 'Even'} 
-                    className="w-8 h-8" 
-                  />
-                  <p className="text-3xl font-bold text-white" style={{ fontFamily: "Audiowide" }}>
-                    {matchData.gameData.turnDeciderChoice?.toUpperCase()}
-                  </p>
-                </div>
-              </motion.div>
-
-              {/* Rolling Animation */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6, duration: 0.4 }}
-                className="flex items-center justify-center gap-3"
-              >
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                </div>
-                <p 
-                  className="text-gray-300 text-lg font-medium"
-                  style={{ fontFamily: 'Audiowide' }}
-                >
-                  Rolling the dice...
-                </p>
-              </motion.div>
+                is making their prediction
+              </motion.p>
             </div>
-          </div>
-          
-          {/* Debug: Force gameplay button */}
-          {onForceGameplay && (
-            <div className="mt-4">
-              <button
-                onClick={onForceGameplay}
-                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-bold transition-all transform hover:scale-105 border border-orange-400"
-                style={{ fontFamily: "Audiowide" }}
-                title="Development: Force skip to gameplay"
-              >
-                🚀 FORCE GAMEPLAY (DEV)
-              </button>
-            </div>
+
+            {/* Subtle shine effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 transform -skew-x-12 -translate-x-full transition-transform duration-1000"></div>
+          </motion.div>
+
+          {/* Dice Animation - Centered */}
+          {(hasDice && diceAnimation.isSpinning) && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, type: "spring", stiffness: 120 }}
+              className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
+            >
+              <div className="w-32 h-32 md:w-40 md:h-40">
+                <SlotMachineDice
+                  diceNumber={'turnDecider' as any}
+                  animationState={diceAnimation}
+                  matchRollPhase={matchData.gameData.isRolling ? 'turnDecider' : undefined}
+                  actualValue={matchData.gameData.turnDeciderDice || null}
+                  isGameRolling={matchData.gameData.isRolling || false}
+                  isTurnDecider={true}
+                  matchData={matchData}
+                />
+              </div>
+            </motion.div>
           )}
         </motion.div>
       )}
@@ -403,22 +483,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             {/* Background Pattern */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20"></div>
             
-            {/* Background Text Shadow */}
-            <motion.div
-              className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 translate-y-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.15 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-            >
-              <span 
-                className="text-[25vw] md:text-[20rem] text-white font-bold tracking-wider leading-none select-none"
-                style={{ 
-                  fontFamily: 'Audiowide',
-                }}
-              >
-                WAIT
-              </span>
-            </motion.div>
+            {/* Background Pattern - No text */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20"></div>
 
             {/* Content */}
             <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 -translate-y-8">
@@ -452,22 +518,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             {/* Background Pattern */}
             <div className="absolute inset-0 bg-gradient-to-tl from-white/5 via-transparent to-black/20"></div>
             
-            {/* Background Text Shadow */}
-            <motion.div
-              className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 translate-y-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.1 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-            >
-              <span 
-                className="text-[20vw] md:text-[15rem] text-white font-bold tracking-wider leading-none select-none"
-                style={{ 
-                  fontFamily: 'Audiowide',
-                }}
-              >
-                THINKING
-              </span>
-            </motion.div>
+            {/* Background Pattern - No text */}
+            <div className="absolute inset-0 bg-gradient-to-tl from-white/5 via-transparent to-black/20"></div>
 
             {/* Content */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-4 md:translate-y-0 -translate-y-8">
@@ -504,101 +556,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
         </motion.div>
       )}
 
-      {/* Show user's choice - Mobile-First Design */}
-      {hasChoice && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-20"
-        >
-          <div className="bg-gradient-to-r from-purple-600/90 to-blue-600/90 backdrop-blur-lg rounded-3xl px-8 py-4 border-2 border-purple-400/50 shadow-2xl">
-            <p className="text-3xl md:text-4xl text-white font-bold text-center" style={{ fontFamily: 'Audiowide' }}>
-              YOUR CHOICE: <span className="text-yellow-300 text-shadow-lg">{matchData.gameData.turnDeciderChoice?.toUpperCase()}</span>
-            </p>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Center-screen animated result container */}
-      {hasDice && !diceAnimation.isSpinning && showDiceNumber && (
-        <motion.div
-          className="fixed inset-0 flex items-center justify-center z-50 bg-black/60 backdrop-blur-sm"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ 
-              scale: showResult ? 1.2 : 1,
-              opacity: 1,
-              width: showResult ? "auto" : "200px",
-              height: showResult ? "auto" : "200px"
-            }}
-            transition={{ 
-              duration: showResult ? 0.8 : 0.5,
-              ease: showResult ? [0.175, 0.885, 0.32, 1.275] : "easeOut"
-            }}
-            className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-3xl shadow-2xl border-4 border-yellow-300/50 flex items-center justify-center relative overflow-hidden"
-            style={{ 
-              minWidth: showResult ? "400px" : "200px",
-              minHeight: showResult ? "200px" : "200px"
-            }}
-          >
-            {/* Shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/30 via-transparent to-transparent"></div>
-            
-            {!showResult ? (
-              // Show just the number initially
-              <div className="text-7xl md:text-8xl font-bold text-white relative z-10" style={{ fontFamily: 'Audiowide', textShadow: '3px 3px 6px rgba(0,0,0,0.8)' }}>
-                {matchData.gameData.turnDeciderDice}
-              </div>
-            ) : (
-              // Show the full result with winner
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-                className="text-center p-8 relative z-10"
-              >
-                {(() => {
-                  // Determine winner logic
-                  const choiceWasCorrect = (matchData.gameData.turnDeciderChoice === 'odd' && matchData.gameData.turnDeciderDice! % 2 === 1) ||
-                                          (matchData.gameData.turnDeciderChoice === 'even' && matchData.gameData.turnDeciderDice! % 2 === 0);
-                  
-                  const chooserPlayerIndex = matchData.gameData.chooserPlayerIndex || 1;
-                  let hostGoesFirst = false;
-                  
-                  if (chooserPlayerIndex === 1) {
-                    hostGoesFirst = choiceWasCorrect;
-                  } else {
-                    hostGoesFirst = !choiceWasCorrect;
-                  }
-                  
-                  const firstPlayerName = hostGoesFirst ? 
-                    (isHost ? 'YOU' : opponent?.playerDisplayName || 'OPPONENT') : 
-                    (isHost ? opponent?.playerDisplayName || 'OPPONENT' : 'YOU');
-                  
-                  return (
-                    <>
-                      <div className="text-5xl md:text-6xl font-bold text-white mb-4" style={{ fontFamily: 'Audiowide', textShadow: '3px 3px 6px rgba(0,0,0,0.8)' }}>
-                        {matchData.gameData.turnDeciderDice}
-                      </div>
-                      <div className="text-2xl md:text-3xl text-white font-bold" style={{ fontFamily: 'Audiowide', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                        {firstPlayerName}
-                      </div>
-                      <div className="text-xl md:text-2xl text-white font-bold" style={{ fontFamily: 'Audiowide', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                        GOES FIRST!
-                      </div>
-                    </>
-                  );
-                })()}
-              </motion.div>
-            )}
-          </motion.div>
-        </motion.div>
-      )}
+      {/* Old result displays removed - using unified display system */}
 
       {/* Old result display removed - now using center screen overlay */}
       
