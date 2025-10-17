@@ -382,119 +382,124 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
         </motion.div>
       )}
 
-      {/* Waiting for opponent choice - Mobile-First Design */}
+      {/* Waiting for opponent choice - Split Screen Design */}
       {!hasChoice && !isMyTurnToDecide && isInTurnDeciderPhase && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="text-center w-full min-h-screen flex flex-col items-center justify-center px-4"
+          className="fixed inset-0 w-full h-full flex flex-col"
         >
+          {/* Waiting Icon - Top Half */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="flex flex-col items-center gap-8 w-full"
+            initial={{ opacity: 0, y: -100 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
+            className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-orange-600/95 to-orange-800/95"
+            style={{ 
+              backdropFilter: 'blur(10px)'
+            }}
           >
-            {/* Massive Waiting Icon */}
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20"></div>
+            
+            {/* Background Text Shadow */}
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, duration: 0.5, type: "spring", stiffness: 100 }}
-              className="relative"
+              className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 translate-y-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.15 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
             >
-              <img 
-                src="/Design Elements/Match/Turn Decider/Waiting.webp" 
-                alt="Waiting" 
-                className="w-[60vw] h-[60vw] max-w-sm max-h-sm object-contain"
-                style={{
-                  filter: 'drop-shadow(0 0 40px rgba(255, 165, 0, 0.8))',
-                }}
-              />
-            </motion.div>
-
-            {/* Opponent Name and Status - Much Larger */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.4 }}
-              className="text-center space-y-4"
-            >
-              <h3 
-                className="text-6xl md:text-8xl text-orange-300 tracking-wide leading-tight"
+              <span 
+                className="text-[25vw] md:text-[20rem] text-white font-bold tracking-wider leading-none select-none"
                 style={{ 
                   fontFamily: 'Audiowide',
-                  textShadow: '0 0 30px rgba(255, 165, 0, 0.6), 0 0 60px rgba(255, 165, 0, 0.3)'
                 }}
               >
+                WAIT
+              </span>
+            </motion.div>
+
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 -translate-y-8">
+              <motion.img 
+                src="/Design Elements/Match/Turn Decider/Waiting.webp" 
+                alt="Waiting" 
+                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain filter drop-shadow-2xl"
+                style={{
+                  filter: 'drop-shadow(0 0 40px rgba(255, 165, 0, 0.9))'
+                }}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.4, duration: 0.5, type: "spring", stiffness: 100 }}
+              />
+            </div>
+
+            {/* Subtle shine effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 transform -skew-x-12 -translate-x-full transition-transform duration-1000"></div>
+          </motion.div>
+
+          {/* Opponent Info - Bottom Half */}
+          <motion.div
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
+            className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden bg-gradient-to-t from-yellow-600/95 to-yellow-800/95"
+            style={{ 
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-gradient-to-tl from-white/5 via-transparent to-black/20"></div>
+            
+            {/* Background Text Shadow */}
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 translate-y-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.1 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              <span 
+                className="text-[20vw] md:text-[15rem] text-white font-bold tracking-wider leading-none select-none"
+                style={{ 
+                  fontFamily: 'Audiowide',
+                }}
+              >
+                THINKING
+              </span>
+            </motion.div>
+
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-4 md:translate-y-0 -translate-y-8">
+              <motion.h3 
+                className="text-5xl md:text-7xl text-white tracking-wide leading-tight"
+                style={{ 
+                  fontFamily: 'Audiowide',
+                  textShadow: '0 0 30px rgba(255,255,255,0.6), 0 0 60px rgba(255, 165, 0, 0.4)'
+                }}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+              >
                 {opponent.playerDisplayName}
-              </h3>
-              <p 
-                className="text-3xl md:text-4xl text-gray-300 leading-relaxed"
+              </motion.h3>
+              
+              <motion.p 
+                className="text-2xl md:text-3xl text-gray-200 leading-relaxed"
                 style={{ 
                   fontFamily: 'Audiowide',
                   textShadow: '2px 2px 8px rgba(0,0,0,0.8)'
                 }}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.8, duration: 0.5 }}
               >
                 is making their prediction
-                <motion.span
-                  className="inline-block ml-2"
-                >
-                  <span className="inline-block animate-pulse delay-0">.</span>
-                  <span className="inline-block animate-pulse delay-200">.</span>
-                  <span className="inline-block animate-pulse delay-400">.</span>
-                </motion.span>
-              </p>
-            </motion.div>
+              </motion.p>
+            </div>
 
-            {/* Enhanced Loading Animation - Larger */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.4 }}
-              className="flex items-center justify-center gap-3 mt-8"
-            >
-              <div className="flex gap-3">
-                <motion.div 
-                  className="w-6 h-6 bg-orange-400 rounded-full"
-                  animate={{ 
-                    scale: [1, 1.4, 1],
-                    opacity: [0.5, 1, 0.5]
-                  }}
-                  transition={{ 
-                    duration: 1.2,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                />
-                <motion.div 
-                  className="w-6 h-6 bg-yellow-400 rounded-full"
-                  animate={{ 
-                    scale: [1, 1.4, 1],
-                    opacity: [0.5, 1, 0.5]
-                  }}
-                  transition={{ 
-                    duration: 1.2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: 0.3
-                  }}
-                />
-                <motion.div 
-                  className="w-6 h-6 bg-orange-400 rounded-full"
-                  animate={{ 
-                    scale: [1, 1.4, 1],
-                    opacity: [0.5, 1, 0.5]
-                  }}
-                  transition={{ 
-                    duration: 1.2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: 0.6
-                  }}
-                />
-              </div>
-            </motion.div>
+            {/* Subtle shine effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 transform -skew-x-12 -translate-x-full transition-transform duration-1000"></div>
           </motion.div>
         </motion.div>
       )}
