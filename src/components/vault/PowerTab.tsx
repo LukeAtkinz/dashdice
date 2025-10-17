@@ -702,10 +702,8 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                             whileTap={{ scale: 0.95 }}
                             onClick={() => {
                               if (!isInCurrentLoadout) {
-                                // Check if the ability's category slot is empty
-                                if (!currentLoadout[ability.category]) {
-                                  assignAbilityToCategory(ability.id, ability.category);
-                                }
+                                // Equip the ability to its category (replace any existing ability in that slot)
+                                assignAbilityToCategory(ability.id, ability.category);
                               } else {
                                 // Find and remove the ability from its current category
                                 const currentCategory = Object.keys(currentLoadout).find(cat => currentLoadout[cat] === ability.id);
@@ -902,10 +900,8 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                         whileTap={{ scale: 0.95 }}
                         onClick={() => {
                           if (!isInCurrentLoadout) {
-                            // Check if the ability's category slot is empty
-                            if (!currentLoadout[ability.category]) {
-                              assignAbilityToCategory(ability.id, ability.category);
-                            }
+                            // Equip the ability to its category (replace any existing ability in that slot)
+                            assignAbilityToCategory(ability.id, ability.category);
                           } else {
                             // Find and remove the ability from its current category
                             const currentCategory = Object.keys(currentLoadout).find(cat => currentLoadout[cat] === ability.id);

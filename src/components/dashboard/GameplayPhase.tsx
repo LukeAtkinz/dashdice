@@ -157,7 +157,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   const gameRuleResult = getGameRuleResult();
 
   return (
-    <>
+    <React.Fragment>
       <div className="flex flex-col items-center justify-center">
         {/* Always Visible Game Status Box - Top of Dice Container - Hidden on mobile */}
         <motion.div 
@@ -434,8 +434,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               >
                 Waiting for {opponent.playerDisplayName} to play...
               </p>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Mobile Abilities Display - Using simplified component */}
@@ -537,6 +538,6 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           </div>
         )}
       </div>
-    </>
+    </React.Fragment>
   );
 };

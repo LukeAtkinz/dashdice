@@ -421,13 +421,13 @@ export function SoftRankedLeaderboard() {
                           loop
                           muted
                           playsInline
-                          className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-50"
+                          className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-20"
                         >
                           <source src={BackgroundService.getBackgroundUrl(playerBackground)} type="video/mp4" />
                         </video>
                       ) : (
                         <div 
-                          className="absolute inset-0 rounded-xl opacity-50"
+                          className="absolute inset-0 rounded-xl opacity-20"
                           style={{
                             backgroundImage: `url('${BackgroundService.getBackgroundUrl(playerBackground)}')`,
                             backgroundSize: 'cover',
@@ -437,18 +437,14 @@ export function SoftRankedLeaderboard() {
                         />
                       )}
                       
-                      {/* Left gradient overlay for text readability */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent rounded-xl"></div>
-                      
-                      {/* Right gradient overlay for text readability */}
-                      <div className="absolute inset-0 bg-gradient-to-l from-black/60 via-transparent to-transparent rounded-xl"></div>
+
                     </>
                   )}
                   
                   {/* Special effects for top 3 */}
                   {player.rank <= 3 && (
                     <motion.div
-                      className="absolute inset-0 rounded-xl opacity-30"
+                      className="absolute inset-0 rounded-xl opacity-10"
                       animate={{ 
                         background: [
                           'radial-gradient(circle at 20% 50%, transparent 20%, rgba(255,215,0,0.1) 50%, transparent 80%)',
@@ -484,10 +480,14 @@ export function SoftRankedLeaderboard() {
                             {player.displayName}
                           </h3>
                           {isCurrentUser && (
-                            <span className="relative text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 text-black shadow-lg">
-                              <span className="relative z-10">YOU</span>
-                              <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-yellow-400 rounded-full opacity-50 animate-pulse"></div>
-                            </span>
+                            <>
+                              {/* Left horizontal line */}
+                              <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-screen h-0.5 bg-yellow-400" 
+                                   style={{ left: 'calc(-50vw)', width: '50vw' }}></div>
+                              {/* Right horizontal line */}
+                              <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-screen h-0.5 bg-yellow-400" 
+                                   style={{ right: 'calc(-50vw)', width: '50vw' }}></div>
+                            </>
                           )}
                         </div>
                         <div className="text-sm text-gray-400">
