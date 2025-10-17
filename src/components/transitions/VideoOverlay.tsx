@@ -56,12 +56,20 @@ export const VideoOverlay: React.FC<VideoOverlayProps> = ({
     const handleLoadedData = () => {
       console.log('🎬 Video loaded:', videoSrc);
       setVideoLoaded(true);
-      // Force play on mobile devices
-      if (isPlaying && video.paused) {
+      // Force play immediately on all devices, especially mobile
+      if (isPlaying && video) {
         video.currentTime = 0;
-        video.play().catch(error => {
-          console.warn('🎬 Video autoplay failed, user interaction required:', error);
-        });
+        // Multiple attempts to ensure playback
+        const playVideo = () => {
+          if (video.paused) {
+            video.play().catch(error => {
+              console.warn('🎬 Video autoplay failed, retrying:', error);
+              // Retry after a small delay
+              setTimeout(playVideo, 100);
+            });
+          }
+        };
+        playVideo();
       }
     };
 
@@ -163,7 +171,17 @@ export const VideoOverlay: React.FC<VideoOverlayProps> = ({
                 webkit-playsinline="true"
                 x5-playsinline="true"
                 disablePictureInPicture
-                controlsList="nodownload noplaybackrate nofullscreen"
+                controlsList="nodownload noplaybackrate nofullscreen noremoteplayback"
+                onLoadedData={() => {
+                  // Force play immediately when loaded on mobile
+                  const video = videoRef.current;
+                  if (video && isPlaying) {
+                    video.currentTime = 0;
+                    video.play().catch(error => {
+                      console.warn('🎬 Video autoplay failed:', error);
+                    });
+                  }
+                }}
                 onCanPlay={() => {
                   // Additional attempt to play on mobile
                   const video = videoRef.current;
@@ -176,7 +194,8 @@ export const VideoOverlay: React.FC<VideoOverlayProps> = ({
                 style={{
                   width: '100vw',
                   height: '100vh',
-                  pointerEvents: 'none'
+                  pointerEvents: 'none',
+                  objectFit: 'cover'
                 }}
               />
               

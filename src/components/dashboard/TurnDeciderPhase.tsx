@@ -162,17 +162,17 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.96, transition: { duration: 0.1 } }}
-            className={`relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden transition-all duration-200 ${
+            className={`relative flex-1 w-full flex flex-col items-center justify-center  transition-all duration-200 ${
               isProcessing || hasChoice || !isInTurnDeciderPhase
-                ? 'bg-black/90 cursor-not-allowed' 
-                : 'bg-black/95 hover:bg-black/98 active:bg-black'
+                ? 'bg-black cursor-not-allowed' 
+                : 'bg-black hover:bg-black active:bg-black'
             }`}
             style={{ 
               fontFamily: "Audiowide"
             }}
           >
-            {/* Background Pattern */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20"></div>
+            {/* Remove background pattern for solid black */}
+            {/*  */}
             
             {/* Background Text Shadow */}
             <motion.div
@@ -220,7 +220,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             </div>
 
             {/* Subtle shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+            
           </motion.button>
 
           {/* VS Element or Dice - Centered */}
@@ -264,17 +264,17 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.96, transition: { duration: 0.1 } }}
-            className={`relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden transition-all duration-200 ${
+            className={`relative flex-1 w-full flex flex-col items-center justify-center  transition-all duration-200 ${
               isProcessing || hasChoice || !isInTurnDeciderPhase
-                ? 'bg-black/90 cursor-not-allowed' 
-                : 'bg-black/95 hover:bg-black/98 active:bg-black'
+                ? 'bg-black cursor-not-allowed' 
+                : 'bg-black hover:bg-black active:bg-black'
             }`}
             style={{ 
               fontFamily: "Audiowide"
             }}
           >
             {/* Background Pattern */}
-            <div className="absolute inset-0 bg-gradient-to-tl from-white/5 via-transparent to-black/20"></div>
+            
             
             {/* Background Text Shadow */}
             <motion.div
@@ -324,7 +324,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             </div>
 
             {/* Subtle shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+            
           </motion.button>
         </motion.div>
       )}
@@ -356,13 +356,13 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             initial={{ opacity: 0, y: -100 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
-            className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden transition-all duration-200 bg-black/95"
+            className="relative flex-1 w-full flex flex-col items-center justify-center  transition-all duration-200 bg-black"
             style={{ 
               
             }}
           >
             {/* Background Pattern */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20"></div>
+            
             
             {/* Background Text Shadow - Always highlighted since this is user's choice */}
             <motion.div
@@ -404,7 +404,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             </div>
 
             {/* Subtle shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 transform -skew-x-12 -translate-x-full transition-transform duration-1000"></div>
+            
           </motion.div>
 
           {/* Opponent Status/Choice - Bottom Half */}
@@ -412,13 +412,13 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
-            className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden bg-black/95"
+            className="relative flex-1 w-full flex flex-col items-center justify-center  bg-black"
             style={{ 
               
             }}
           >
             {/* Background Pattern */}
-            <div className="absolute inset-0 bg-gradient-to-tl from-white/5 via-transparent to-black/20"></div>
+            
             
             {/* Content */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-4 md:translate-y-0 -translate-y-8">
@@ -452,7 +452,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             </div>
 
             {/* Subtle shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 transform -skew-x-12 -translate-x-full transition-transform duration-1000"></div>
+            
           </motion.div>
 
           {/* Dice Animation - Centered */}
@@ -489,16 +489,16 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             initial={{ opacity: 0, y: -100 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
-            className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden bg-black/95"
+            className="relative flex-1 w-full flex flex-col items-center justify-center  bg-black"
             style={{ 
               
             }}
           >
             {/* Background Pattern */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20"></div>
+            
             
             {/* Background Pattern - No text */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20"></div>
+            
 
             {/* Content */}
             <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 translate-y-4">
@@ -516,7 +516,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             </div>
 
             {/* Subtle shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 transform -skew-x-12 -translate-x-full transition-transform duration-1000"></div>
+            
           </motion.div>
 
           {/* Opponent Username - Centered like VS */}
@@ -546,16 +546,16 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
-            className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden bg-black/95"
+            className="relative flex-1 w-full flex flex-col items-center justify-center  bg-black"
             style={{ 
               
             }}
           >
             {/* Background Pattern */}
-            <div className="absolute inset-0 bg-gradient-to-tl from-white/5 via-transparent to-black/20"></div>
+            
             
             {/* Background Pattern - No text */}
-            <div className="absolute inset-0 bg-gradient-to-tl from-white/5 via-transparent to-black/20"></div>
+            
 
             {/* Content */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-4 md:translate-y-0 -translate-y-8">
@@ -588,7 +588,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             </div>
 
             {/* Subtle shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 transform -skew-x-12 -translate-x-full transition-transform duration-1000"></div>
+            
           </motion.div>
         </motion.div>
       )}

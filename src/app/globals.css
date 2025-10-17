@@ -54,6 +54,22 @@ video::-webkit-media-controls-overlay-play-button {
   video::-webkit-media-controls-enclosure {
     display: none !important;
   }
+  
+  video::-webkit-media-controls-panel {
+    display: none !important;
+  }
+  
+  video::-webkit-media-controls-overlay-play-button {
+    display: none !important;
+  }
+  
+  video::-webkit-media-controls-play-button {
+    display: none !important;
+  }
+  
+  video::-webkit-media-controls-start-playback-button {
+    display: none !important;
+  }
 }
 
 /* Hide scrollbars while maintaining scroll functionality */
