@@ -36,7 +36,7 @@ export default function InlineAbilitiesDisplay({
                            (matchData.hostData.playerId === playerId ? (matchData.hostData as any).powerLoadout : (matchData.opponentData as any)?.powerLoadout) ||
                            null;
 
-  // DEBUG: Log powerLoadout loading
+  // DEBUG: Log powerLoadout loading (run only once to prevent infinite loops)
   useEffect(() => {
     console.log('🔮 InlineAbilitiesDisplay DEBUG:', {
       playerId,
@@ -48,7 +48,7 @@ export default function InlineAbilitiesDisplay({
       finalPlayerPowerLoadout: playerPowerLoadout,
       allAbilitiesCount: allAbilities.length
     });
-  }, [playerId, playerPowerLoadout, allAbilities.length, matchData]);
+  }, [playerId]); // Only depend on playerId to prevent infinite re-renders
 
   // Get player's current aura from match data
   const playerAura = matchData.gameData.playerAura?.[playerId] || 0;
@@ -102,8 +102,7 @@ export default function InlineAbilitiesDisplay({
   }, []);
 
   if (!playerPowerLoadout || Object.keys(playerPowerLoadout).length === 0) {
-    console.log('🔮 DEBUG: No powerLoadout or empty powerLoadout, showing empty slots');
-    // Show 5 empty slots when no loadout
+    // Show 5 empty slots when no loadout - but don't show lock icons, show placeholder abilities
     return (
       <div className={`flex justify-center gap-2 md:gap-3 ${className}`}>
         {Array.from({ length: 5 }).map((_, index) => (
@@ -111,7 +110,7 @@ export default function InlineAbilitiesDisplay({
             key={`empty-${index}`}
             className="w-16 h-16 md:w-20 md:h-20 rounded-xl border-2 border-gray-600/50 bg-gray-800/30 backdrop-blur-sm flex items-center justify-center"
           >
-            <div className="text-gray-500 text-2xl md:text-3xl">🔒</div>
+            <div className="text-gray-500 text-lg md:text-xl">+</div>
           </div>
         ))}
       </div>
@@ -120,28 +119,10 @@ export default function InlineAbilitiesDisplay({
 
   // Get equipped abilities (max 5 slots)
   // PowerLoadout structure: { tactical?: string, attack?: string, defense?: string, utility?: string, gamechanger?: string }
-  console.log('🔮 DEBUG: Processing powerLoadout entries:', Object.entries(playerPowerLoadout || {}));
-  
   const equippedAbilities = Object.entries(playerPowerLoadout || {})
-    .filter(([_, abilityId]) => {
-      console.log('🔮 DEBUG: Filtering ability:', { abilityId, hasAbilityId: !!abilityId });
-      return abilityId;
-    })
+    .filter(([_, abilityId]) => abilityId)
     .map(([category, abilityId]) => {
       const ability = allAbilities.find(a => a.id === abilityId);
-      console.log('🔮 DEBUG: Looking for ability:', { category, abilityId, foundAbility: !!ability, ability });
-      
-      // 🔍 DEBUG: Log ability categorization
-      if (ability?.id === 'siphon') {
-        console.log('🔮 DEBUG - Siphon categorization:', {
-          loadoutCategory: category,
-          abilityCategory: ability.category,
-          abilityData: ability,
-          powerLoadout: playerPowerLoadout,
-          isMobile: window.innerWidth < 768
-        });
-      }
-      
       return ability ? { category: category as keyof typeof ABILITY_CATEGORIES, ability } : null;
     })
     .filter(Boolean) as Array<{ category: keyof typeof ABILITY_CATEGORIES; ability: Ability }>;

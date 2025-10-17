@@ -1445,12 +1445,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
           {/* Mobile Layout - Stacked */}
           <div className="md:hidden flex flex-col items-center w-full" style={{ maxWidth: '100vw', margin: '0 auto' }}>
             
-            {/* User Profiles Section - Top Corners of Viewport */}
+            {/* User Profiles Section - Top Corners of Viewport - Moved up */}
             <AnimatePresence>
               {(matchData.gameData.gamePhase as string) !== 'turnDecider' && (
                 <motion.div 
                   className="fixed top-0 left-0 right-0 flex justify-between z-20" 
-                  style={{ gap: '0px', paddingTop: 'env(safe-area-inset-top, 0px)' }}
+                  style={{ gap: '0px', paddingTop: 'max(env(safe-area-inset-top, 0px), 80px)' }}
                   initial={{ opacity: 0, y: -60, scale: 0.8 }}
                   animate={{ 
                     opacity: 1, 
@@ -1489,17 +1489,15 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
                 exit={{ opacity: 0, x: -80, scale: 0.9 }}
               >
                 <motion.div
-                  className="relative rounded-xl overflow-hidden shadow-lg border-2"
+                  className="relative rounded-xl overflow-hidden shadow-lg"
                   style={{ 
-                    borderColor: currentPlayer.turnActive ? '#00ff00' : '#ffffff',
                     height: '100%',
                     width: '100%'
                   }}
                   animate={{
-                    borderColor: currentPlayer.turnActive ? '#00ff00' : '#ffffff',
                     boxShadow: currentPlayer.turnActive 
                       ? '0 0 15px rgba(0, 255, 0, 0.6), 0 0 30px rgba(0, 255, 0, 0.3)'
-                      : '0 0 8px rgba(255, 255, 255, 0.2)'
+                      : '0 0 8px rgba(0, 0, 0, 0.3)'
                   }}
                   transition={{ 
                     duration: 0.5,
@@ -1602,17 +1600,15 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
                 exit={{ opacity: 0, x: 80, scale: 0.9 }}
               >
                 <motion.div
-                  className="relative rounded-xl overflow-hidden shadow-lg border-2"
+                  className="relative rounded-xl overflow-hidden shadow-lg"
                   style={{ 
-                    borderColor: opponent.turnActive ? '#00ff00' : '#ffffff',
                     height: '100%',
                     width: '100%'
                   }}
                   animate={{
-                    borderColor: opponent.turnActive ? '#00ff00' : '#ffffff',
                     boxShadow: opponent.turnActive 
                       ? '0 0 15px rgba(0, 255, 0, 0.6), 0 0 30px rgba(0, 255, 0, 0.3)'
-                      : '0 0 8px rgba(255, 255, 255, 0.2)'
+                      : '0 0 8px rgba(0, 0, 0, 0.3)'
                   }}
                   transition={{ 
                     duration: 0.5,
