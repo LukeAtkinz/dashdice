@@ -26,8 +26,20 @@ export const VideoOverlay: React.FC<VideoOverlayProps> = ({
   const [shouldShow, setShouldShow] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
   const [showOverlayText, setShowOverlayText] = useState(false);
+  const [needsUserInteraction, setNeedsUserInteraction] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-  console.log('🎬 VideoOverlay render:', { videoSrc, isPlaying, shouldShow, videoLoaded, videoError });
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  console.log('🎬 VideoOverlay render:', { videoSrc, isPlaying, shouldShow, videoLoaded, videoError, isMobile });
 
   useEffect(() => {
     if (isPlaying) {
@@ -56,20 +68,26 @@ export const VideoOverlay: React.FC<VideoOverlayProps> = ({
     const handleLoadedData = () => {
       console.log('🎬 Video loaded:', videoSrc);
       setVideoLoaded(true);
-      // Force play immediately on all devices, especially mobile
+      
+      // Attempt autoplay
       if (isPlaying && video) {
         video.currentTime = 0;
-        // Multiple attempts to ensure playback
-        const playVideo = () => {
-          if (video.paused) {
-            video.play().catch(error => {
-              console.warn('🎬 Video autoplay failed, retrying:', error);
-              // Retry after a small delay
-              setTimeout(playVideo, 100);
-            });
+        
+        video.play().catch(error => {
+          console.log('🎬 Video autoplay blocked:', error);
+          
+          // If autoplay fails (especially on mobile), complete transition without video
+          if (isMobile) {
+            console.log('🎬 Mobile autoplay blocked - showing static transition');
+            // Show the overlay for a brief moment then complete
+            setTimeout(() => {
+              setShouldShow(false);
+              setTimeout(() => {
+                onComplete();
+              }, 300);
+            }, 1500);
           }
-        };
-        playVideo();
+        });
       }
     };
 
