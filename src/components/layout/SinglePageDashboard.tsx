@@ -53,32 +53,15 @@ const DashboardContent: React.FC = () => {
     currentTransition, 
     isPlaying: isVideoPlaying, 
     videoSrc, 
+    overlayText,
     triggerTransition, 
     completeTransition 
   } = useVideoTransitions();
   
   const previousSectionRef = useRef(currentSection);
   
-  // Monitor section changes and trigger video transitions
-  useEffect(() => {
-    const prevSection = previousSectionRef.current;
-    const newSection = currentSection;
-    
-    if (prevSection !== newSection) {
-      console.log('🧭 Section change detected:', prevSection, '→', newSection);
-      
-      // Trigger video transitions based on navigation flow
-      if (newSection === 'waiting-room' && prevSection !== 'waiting-room') {
-        // User is entering waiting room (searching for match)
-        triggerTransition('into-waiting-room');
-      } else if (newSection === 'match' && prevSection === 'waiting-room') {
-        // User is going from waiting room to match
-        triggerTransition('into-match');
-      }
-      
-      previousSectionRef.current = newSection;
-    }
-  }, [currentSection, triggerTransition]);
+  // Video transitions are now handled within the Match component based on game phase changes
+  // This provides more accurate timing for when to show transition videos
   
   // Create button gradient style based on user's display background
   const getButtonGradientStyle = (baseColor: string) => {
@@ -650,6 +633,7 @@ const DashboardContent: React.FC = () => {
                     key={`match-${sectionParams.matchId || "dev-room-123"}`}
                     gameMode={sectionParams.gameMode}
                     roomId={sectionParams.matchId || "dev-room-123"}
+                    triggerVideoTransition={triggerTransition}
                   />
                 )}
                 {currentSection === 'waiting-room' && (
@@ -822,16 +806,16 @@ const DashboardContent: React.FC = () => {
         {process.env.NODE_ENV === 'development' && (
           <div className="fixed top-4 right-4 z-[10000] flex flex-col gap-2">
             <button
-              onClick={() => triggerTransition('into-waiting-room')}
+              onClick={() => triggerTransition('into-turn-decider')}
               className="bg-blue-600 text-white px-4 py-2 rounded text-sm"
             >
-              Test Waiting Room Video
+              Test Into Turn Decider
             </button>
             <button
               onClick={() => triggerTransition('into-match')}
               className="bg-green-600 text-white px-4 py-2 rounded text-sm"
             >
-              Test Match Video
+              Test Into Match
             </button>
             <div className="text-white text-xs bg-black/50 p-2 rounded">
               isPlaying: {isVideoPlaying.toString()}<br/>
@@ -848,6 +832,8 @@ const DashboardContent: React.FC = () => {
             isPlaying={isVideoPlaying}
             onComplete={completeTransition}
             duration={4} // 4 second fallback
+            overlayText={overlayText || undefined}
+            overlayDelay={1.15}
           />
         )}
       </div>

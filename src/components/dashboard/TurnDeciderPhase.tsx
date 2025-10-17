@@ -215,16 +215,18 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           >
             {hasDice && diceAnimation.isSpinning ? (
               // Show reel dice animation
-              <div className="w-32 h-32 md:w-40 md:h-40">
-                <SlotMachineDice
-                  diceNumber={'turnDecider' as any}
-                  animationState={diceAnimation}
-                  matchRollPhase={matchData.gameData.isRolling ? 'turnDecider' : undefined}
-                  actualValue={matchData.gameData.turnDeciderDice || null}
-                  isGameRolling={matchData.gameData.isRolling || false}
-                  isTurnDecider={true}
-                  matchData={matchData}
-                />
+              <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center">
+                <div className="w-full h-full flex items-center justify-center">
+                  <SlotMachineDice
+                    diceNumber={'turnDecider' as any}
+                    animationState={diceAnimation}
+                    matchRollPhase={matchData.gameData.isRolling ? 'turnDecider' : undefined}
+                    actualValue={matchData.gameData.turnDeciderDice || null}
+                    isGameRolling={matchData.gameData.isRolling || false}
+                    isTurnDecider={true}
+                    matchData={matchData}
+                  />
+                </div>
               </div>
             ) : !hasChoice ? (
               // Show VS when no choice made yet
@@ -446,16 +448,18 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               transition={{ duration: 0.5, type: "spring", stiffness: 120 }}
               className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
             >
-              <div className="w-32 h-32 md:w-40 md:h-40">
-                <SlotMachineDice
-                  diceNumber={'turnDecider' as any}
-                  animationState={diceAnimation}
-                  matchRollPhase={matchData.gameData.isRolling ? 'turnDecider' : undefined}
-                  actualValue={matchData.gameData.turnDeciderDice || null}
-                  isGameRolling={matchData.gameData.isRolling || false}
-                  isTurnDecider={true}
-                  matchData={matchData}
-                />
+              <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center">
+                <div className="w-full h-full flex items-center justify-center">
+                  <SlotMachineDice
+                    diceNumber={'turnDecider' as any}
+                    animationState={diceAnimation}
+                    matchRollPhase={matchData.gameData.isRolling ? 'turnDecider' : undefined}
+                    actualValue={matchData.gameData.turnDeciderDice || null}
+                    isGameRolling={matchData.gameData.isRolling || false}
+                    isTurnDecider={true}
+                    matchData={matchData}
+                  />
+                </div>
               </div>
             </motion.div>
           )}
@@ -487,11 +491,11 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20"></div>
 
             {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 -translate-y-8">
+            <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 translate-y-4">
               <motion.img 
                 src="/Design Elements/Match/Turn Decider/Waiting.webp" 
                 alt="Waiting" 
-                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain filter drop-shadow-2xl"
+                className="w-[55vw] md:w-[35vw] h-[55vw] md:h-[35vw] max-w-80 max-h-80 object-contain filter drop-shadow-2xl"
                 style={{
                   filter: 'drop-shadow(0 0 40px rgba(255, 165, 0, 0.9))'
                 }}
@@ -503,6 +507,27 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
 
             {/* Subtle shine effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 transform -skew-x-12 -translate-x-full transition-transform duration-1000"></div>
+          </motion.div>
+
+          {/* Opponent Username - Centered like VS */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.8, duration: 0.5, type: "spring", stiffness: 120 }}
+            className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
+          >
+            <motion.h3 
+              className="text-[12vw] md:text-7xl text-white font-bold tracking-wide text-center"
+              style={{ 
+                fontFamily: 'Audiowide',
+                textShadow: '0 0 40px rgba(255,255,255,1), 0 0 80px rgba(255,255,255,0.5)'
+              }}
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+            >
+              {opponent.playerDisplayName}
+            </motion.h3>
           </motion.div>
 
           {/* Opponent Info - Bottom Half */}
@@ -523,24 +548,11 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
 
             {/* Content */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-4 md:translate-y-0 -translate-y-8">
-              <motion.h3 
-                className="text-5xl md:text-7xl text-white tracking-wide leading-tight"
-                style={{ 
-                  fontFamily: 'Audiowide',
-                  textShadow: '0 0 30px rgba(255,255,255,0.6), 0 0 60px rgba(255, 165, 0, 0.4)'
-                }}
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-              >
-                {opponent.playerDisplayName}
-              </motion.h3>
-              
               <motion.p 
-                className="text-2xl md:text-3xl text-gray-200 leading-relaxed"
+                className="text-[8vw] md:text-5xl text-gray-200 leading-relaxed font-bold"
                 style={{ 
                   fontFamily: 'Audiowide',
-                  textShadow: '2px 2px 8px rgba(0,0,0,0.8)'
+                  textShadow: '0 0 30px rgba(255,255,255,0.6), 2px 2px 8px rgba(0,0,0,0.8)'
                 }}
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}

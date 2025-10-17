@@ -16,13 +16,15 @@ import { db } from '@/services/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import MatchAbandonmentNotification from '@/components/notifications/MatchAbandonmentNotification';
 import { useToast } from '@/context/ToastContext';
+import { TransitionType } from '@/hooks/useVideoTransitions';
 
 interface MatchProps {
   gameMode?: string;
   roomId?: string;
+  triggerVideoTransition?: (type: TransitionType, overlayText?: string) => void;
 }
 
-export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
+export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTransition }) => {
   // Remove performance-impacting debug logs
   // console.log('🎮 Match: Component rendered with props:', { gameMode, roomId });
   // console.log('🔍 DEBUG: Match component entry point:', {
@@ -155,12 +157,72 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     
     // Track phase transitions and only show announcement when transitioning from turnDecider to gameplay
     if (currentPhase && currentPhase !== previousGamePhase) {
+      // Trigger video transition when entering turn decider phase for the first time
+      if (!previousGamePhase && currentPhase === 'turnDecider' && triggerVideoTransition && matchData) {
+        console.log('🎬 Triggering Into Turn Decider video transition');
+        
+        // Determine who is choosing (the turn decider)
+        const playerNumber = matchData.gameData.turnDecider;
+        const isHost = matchData.hostData.playerId === user?.uid;
+        const currentPlayerNumber = isHost ? 1 : 2;
+        
+        let chooserName: string;
+        if (playerNumber === currentPlayerNumber) {
+          chooserName = 'YOU';
+        } else {
+          chooserName = playerNumber === 1 ? 
+            (matchData.hostData?.playerDisplayName || 'OPPONENT') : 
+            (matchData.opponentData?.playerDisplayName || 'OPPONENT');
+        }
+        
+        triggerVideoTransition('into-turn-decider', `${chooserName} TO CHOOSE`);
+      }
+      
       setPreviousGamePhase(currentPhase);
       
       // Only trigger announcement when transitioning from turnDecider to gameplay
       if (previousGamePhase === 'turnDecider' && currentPhase === 'gameplay' && 
           matchData?.gameData?.turnDeciderDice && matchData?.gameData?.turnDeciderChoice &&
           !turnAnnouncementShown) {
+        
+        // Trigger video transition from turn decider to match gameplay
+        if (triggerVideoTransition) {
+          console.log('🎬 Triggering Into Match video transition');
+          
+          // Determine who goes first for the overlay text (we'll calculate this before the logic below)
+          const diceValue = matchData.gameData.turnDeciderDice;
+          const choice = matchData.gameData.turnDeciderChoice;
+          const isEven = diceValue % 2 === 0;
+          const choiceMatches = (choice === 'even' && isEven) || (choice === 'odd' && !isEven);
+          
+          const playerNumber = matchData.gameData.turnDecider;
+          const isHost = matchData.hostData.playerId === user?.uid;
+          const currentPlayerNumber = isHost ? 1 : 2;
+          
+          let firstPlayerName: string;
+          if (choiceMatches) {
+            // The player who made the choice goes first
+            if (playerNumber === currentPlayerNumber) {
+              firstPlayerName = 'YOU';
+            } else {
+              firstPlayerName = playerNumber === 1 ? 
+                (matchData.hostData?.playerDisplayName || 'OPPONENT') : 
+                (matchData.opponentData?.playerDisplayName || 'OPPONENT');
+            }
+          } else {
+            // The other player goes first
+            if (playerNumber !== currentPlayerNumber) {
+              firstPlayerName = 'YOU';
+            } else {
+              const otherPlayerNumber = playerNumber === 1 ? 2 : 1;
+              firstPlayerName = otherPlayerNumber === 1 ? 
+                (matchData.hostData?.playerDisplayName || 'OPPONENT') : 
+                (matchData.opponentData?.playerDisplayName || 'OPPONENT');
+            }
+          }
+          
+          triggerVideoTransition('into-match', `${firstPlayerName} GOES FIRST`);
+        }
         
         // Determine who goes first based on turn decider result
         const diceValue = matchData.gameData.turnDeciderDice;
@@ -192,13 +254,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         }
         
         setTurnAnnouncementData({ winner, isCurrentPlayerFirst });
-        setShowTurnAnnouncement(true);
+        // Don't show turn announcement anymore since we display it in video overlay
+        // setShowTurnAnnouncement(true);
         setTurnAnnouncementShown(true); // Mark as shown so it doesn't repeat
-        
-        // Hide announcement after 3 seconds
-        setTimeout(() => {
-          setShowTurnAnnouncement(false);
-        }, 3000);
       }
     }
   }, [matchData?.gameData?.gamePhase, matchData?.gameData?.turnDeciderDice, 
