@@ -166,10 +166,10 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.96, transition: { duration: 0.1 } }}
-            className={`relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden border-b-4 transition-all duration-200 ${
+            className={`relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden transition-all duration-200 ${
               isProcessing || hasChoice || !isInTurnDeciderPhase
-                ? 'bg-gradient-to-b from-gray-800/90 to-gray-600/90 border-gray-400/50 cursor-not-allowed' 
-                : 'bg-gradient-to-b from-blue-600/95 to-blue-800/95 hover:from-blue-500/95 hover:to-blue-700/95 border-blue-300 active:from-blue-700/95 active:to-blue-900/95'
+                ? 'bg-gradient-to-b from-gray-800/90 to-gray-600/90 cursor-not-allowed' 
+                : 'bg-gradient-to-b from-blue-600/95 to-blue-800/95 hover:from-blue-500/95 hover:to-blue-700/95 active:from-blue-700/95 active:to-blue-900/95'
             }`}
             style={{ 
               fontFamily: "Audiowide",
@@ -179,30 +179,36 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             {/* Background Pattern */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20"></div>
             
+            {/* Background Text Shadow */}
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center z-5"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.15 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              <span 
+                className="text-[25vw] md:text-[20rem] text-white font-bold tracking-wider leading-none select-none"
+                style={{ 
+                  fontFamily: 'Audiowide',
+                }}
+              >
+                {isProcessing ? 'PROCESSING' : 'ODD'}
+              </span>
+            </motion.div>
+
             {/* Content */}
-            <div className="relative z-10 flex flex-col items-center gap-6">
+            <div className="relative z-10 flex flex-col items-center justify-center">
               <motion.img 
                 src="/Design Elements/Match/Turn Decider/Odd.webp" 
                 alt="Odd" 
-                className="w-[20vw] h-[20vw] max-w-32 max-h-32 object-contain filter drop-shadow-2xl"
+                className="w-[35vw] h-[35vw] max-w-80 max-h-80 object-contain filter drop-shadow-2xl"
                 style={{
-                  filter: 'drop-shadow(0 0 30px rgba(59, 130, 246, 0.8))'
+                  filter: 'drop-shadow(0 0 40px rgba(59, 130, 246, 0.9))'
                 }}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.4, duration: 0.5, type: "spring", stiffness: 100 }}
               />
-              <motion.span 
-                className="text-[8vw] md:text-6xl text-white tracking-wider leading-none"
-                style={{ 
-                  textShadow: '0 0 40px rgba(255,255,255,0.6), 0 0 80px rgba(59, 130, 246, 0.4)'
-                }}
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-              >
-                {isProcessing ? 'PROCESSING' : 'ODD'}
-              </motion.span>
             </div>
 
             {/* Subtle shine effect */}
@@ -216,17 +222,15 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             transition={{ delay: 0.8, duration: 0.5, type: "spring", stiffness: 120 }}
             className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
           >
-            <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-full p-6 border-4 border-white/50 shadow-2xl backdrop-blur-lg">
-              <span 
-                className="text-[15vw] md:text-8xl text-white font-bold tracking-wider"
-                style={{ 
-                  fontFamily: 'Audiowide',
-                  textShadow: '0 0 30px rgba(255,255,255,0.8)'
-                }}
-              >
-                VS
-              </span>
-            </div>
+            <span 
+              className="text-[15vw] md:text-8xl text-white font-bold tracking-wider"
+              style={{ 
+                fontFamily: 'Audiowide',
+                textShadow: '0 0 40px rgba(255,255,255,1), 0 0 80px rgba(255,255,255,0.5)'
+              }}
+            >
+              VS
+            </span>
           </motion.div>
 
           {/* EVEN Button - Bottom Half */}
@@ -238,10 +242,10 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.96, transition: { duration: 0.1 } }}
-            className={`relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden border-t-4 transition-all duration-200 ${
+            className={`relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden transition-all duration-200 ${
               isProcessing || hasChoice || !isInTurnDeciderPhase
-                ? 'bg-gradient-to-t from-gray-800/90 to-gray-600/90 border-gray-400/50 cursor-not-allowed' 
-                : 'bg-gradient-to-t from-purple-600/95 to-purple-800/95 hover:from-purple-500/95 hover:to-purple-700/95 border-purple-300 active:from-purple-700/95 active:to-purple-900/95'
+                ? 'bg-gradient-to-t from-gray-800/90 to-gray-600/90 cursor-not-allowed' 
+                : 'bg-gradient-to-t from-purple-600/95 to-purple-800/95 hover:from-purple-500/95 hover:to-purple-700/95 active:from-purple-700/95 active:to-purple-900/95'
             }`}
             style={{ 
               fontFamily: "Audiowide",
@@ -251,30 +255,36 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             {/* Background Pattern */}
             <div className="absolute inset-0 bg-gradient-to-tl from-white/5 via-transparent to-black/20"></div>
             
+            {/* Background Text Shadow */}
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center z-5"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.15 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              <span 
+                className="text-[25vw] md:text-[20rem] text-white font-bold tracking-wider leading-none select-none"
+                style={{ 
+                  fontFamily: 'Audiowide',
+                }}
+              >
+                {isProcessing ? 'PROCESSING' : 'EVEN'}
+              </span>
+            </motion.div>
+
             {/* Content */}
-            <div className="relative z-10 flex flex-col items-center gap-6">
+            <div className="relative z-10 flex flex-col items-center justify-center">
               <motion.img 
                 src="/Design Elements/Match/Turn Decider/Even.webp" 
                 alt="Even" 
-                className="w-[20vw] h-[20vw] max-w-32 max-h-32 object-contain filter drop-shadow-2xl"
+                className="w-[35vw] h-[35vw] max-w-80 max-h-80 object-contain filter drop-shadow-2xl"
                 style={{
-                  filter: 'drop-shadow(0 0 30px rgba(147, 51, 234, 0.8))'
+                  filter: 'drop-shadow(0 0 40px rgba(147, 51, 234, 0.9))'
                 }}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.4, duration: 0.5, type: "spring", stiffness: 100 }}
               />
-              <motion.span 
-                className="text-[8vw] md:text-6xl text-white tracking-wider leading-none"
-                style={{ 
-                  textShadow: '0 0 40px rgba(255,255,255,0.6), 0 0 80px rgba(147, 51, 234, 0.4)'
-                }}
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-              >
-                {isProcessing ? 'PROCESSING' : 'EVEN'}
-              </motion.span>
             </div>
 
             {/* Subtle shine effect */}
