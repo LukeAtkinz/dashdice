@@ -1443,49 +1443,56 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
           </div>
 
           {/* Mobile Layout - Stacked */}
-          <div className="md:hidden flex flex-col items-center w-full px-4" style={{ maxWidth: '100vw', margin: '0 auto', paddingTop: '60px' }}>
+          <div className="md:hidden flex flex-col items-center w-full" style={{ maxWidth: '100vw', margin: '0 auto' }}>
             
-            {/* User Profiles Section - Top */}
+            {/* User Profiles Section - Top Corners of Viewport */}
             <AnimatePresence>
               {(matchData.gameData.gamePhase as string) !== 'turnDecider' && (
                 <motion.div 
-                  className="w-full flex justify-between mb-4" 
-                  style={{ gap: '8px' }}
-                  initial={{ opacity: 0, y: -30, scale: 0.9 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -30, scale: 0.9 }}
-                  transition={{ 
-                    duration: 0.6, 
-                    ease: "easeOut",
-                    delay: 0.3
+                  className="fixed top-0 left-0 right-0 flex justify-between z-20" 
+                  style={{ gap: '0px', paddingTop: 'env(safe-area-inset-top, 0px)' }}
+                  initial={{ opacity: 0, y: -60, scale: 0.8 }}
+                  animate={{ 
+                    opacity: 1, 
+                    y: 0, 
+                    scale: 1,
+                    transition: {
+                      opacity: { duration: 0.6, ease: "easeOut" },
+                      y: { duration: 0.8, ease: [0.4, 0, 0.2, 1] },
+                      scale: { duration: 0.7, ease: "backOut", delay: 0.1 }
+                    }
+                  }}
+                  exit={{ 
+                    opacity: 0, 
+                    y: -80, 
+                    scale: 0.7,
+                    transition: {
+                      duration: 0.5,
+                      ease: "easeIn"
+                    }
                   }}
                 >
               {/* Current Player Profile - Left */}
-              <div style={{ width: 'calc(50% - 4px)' }}>
-                <h3 
-                  className="font-bold text-white mb-2 text-center px-1"
-                  style={{ 
-                    fontFamily: 'Audiowide',
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                    fontSize: 'clamp(10px, 3vw, 14px)',
-                    lineHeight: '1.1',
-                    height: '20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
-                  }}
-                >
-                  {currentPlayer.playerDisplayName}
-                </h3>
-                
+              <motion.div 
+                style={{ width: '51vw', height: '20vh' }}
+                initial={{ opacity: 0, x: -100, scale: 0.8 }}
+                animate={{ 
+                  opacity: 1, 
+                  x: 0, 
+                  scale: 1,
+                  transition: {
+                    duration: 0.7,
+                    ease: [0.4, 0, 0.2, 1],
+                    delay: 0.3
+                  }
+                }}
+                exit={{ opacity: 0, x: -80, scale: 0.9 }}
+              >
                 <motion.div
                   className="relative rounded-xl overflow-hidden shadow-lg border-2"
                   style={{ 
                     borderColor: currentPlayer.turnActive ? '#00ff00' : '#ffffff',
-                    height: '100px',
+                    height: '100%',
                     width: '100%'
                   }}
                   animate={{
@@ -1560,34 +1567,45 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
                     </div>
                   )} */}
                 </motion.div>
-              </div>
-
-              {/* Opponent Profile - Right */}
-              <div style={{ width: 'calc(50% - 4px)' }}>
+                
+                {/* Player Name Below Display */}
                 <h3 
-                  className="font-bold text-white mb-2 text-center px-1"
+                  className="font-bold text-white mt-2 text-center px-1"
                   style={{ 
                     fontFamily: 'Audiowide',
                     textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
                     fontSize: 'clamp(10px, 3vw, 14px)',
                     lineHeight: '1.1',
-                    height: '20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis'
                   }}
                 >
-                  {opponent.playerDisplayName}
+                  {currentPlayer.playerDisplayName}
                 </h3>
-                
+              </motion.div>
+
+              {/* Opponent Profile - Right */}
+              <motion.div 
+                style={{ width: '51vw', height: '20vh' }}
+                initial={{ opacity: 0, x: 100, scale: 0.8 }}
+                animate={{ 
+                  opacity: 1, 
+                  x: 0, 
+                  scale: 1,
+                  transition: {
+                    duration: 0.7,
+                    ease: [0.4, 0, 0.2, 1],
+                    delay: 0.5
+                  }
+                }}
+                exit={{ opacity: 0, x: 80, scale: 0.9 }}
+              >
                 <motion.div
                   className="relative rounded-xl overflow-hidden shadow-lg border-2"
                   style={{ 
                     borderColor: opponent.turnActive ? '#00ff00' : '#ffffff',
-                    height: '100px',
+                    height: '100%',
                     width: '100%'
                   }}
                   animate={{
@@ -1662,22 +1680,45 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
                     </div>
                   )} */}
                 </motion.div>
-              </div>
+                
+                {/* Player Name Below Display */}
+                <h3 
+                  className="font-bold text-white mt-2 text-center px-1"
+                  style={{ 
+                    fontFamily: 'Audiowide',
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                    fontSize: 'clamp(10px, 3vw, 14px)',
+                    lineHeight: '1.1',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}
+                >
+                  {opponent.playerDisplayName}
+                </h3>
+              </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
 
             {/* Center Dice Area - Middle */}
-            <div className="w-full flex flex-col items-center justify-center" style={{ paddingTop: '20px', paddingBottom: '20px', minHeight: '40vh', maxWidth: '100%', overflow: 'visible' }}>
-              {/* Phase-specific content with mobile modifications and transitions */}
+            <div className="w-full flex flex-col items-center justify-center" style={{ paddingTop: 'calc(20vh + 60px)', paddingBottom: '20px', minHeight: '40vh', maxWidth: '100%', overflow: 'visible' }}>
+              {/* Phase-specific content with professional transitions */}
               <AnimatePresence mode="wait">
                 {matchData.gameData.gamePhase === 'turnDecider' && (
                   <motion.div
                     key="turnDecider-mobile"
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -30 }}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ 
+                      opacity: 0, 
+                      scale: 1.05,
+                      transition: { 
+                        duration: 0.8,
+                        ease: [0.4, 0, 0.2, 1]
+                      }
+                    }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
                     className="w-full"
                   >
                     <TurnDeciderPhase
@@ -1729,10 +1770,30 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
                 {matchData.gameData.gamePhase === 'gameplay' && !showTurnAnnouncement && (
                   <motion.div
                     key="gameplay-mobile"
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -30 }}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    initial={{ 
+                      opacity: 0, 
+                      scale: 0.9,
+                      y: 50
+                    }}
+                    animate={{ 
+                      opacity: 1, 
+                      scale: 1,
+                      y: 0
+                    }}
+                    exit={{ 
+                      opacity: 0, 
+                      scale: 0.95,
+                      y: -30,
+                      transition: { 
+                        duration: 0.4,
+                        ease: "easeIn"
+                      }
+                    }}
+                    transition={{ 
+                      duration: 0.8, 
+                      ease: [0.4, 0, 0.2, 1],
+                      delay: 0.2
+                    }}
                     className="w-full"
                   >
                     <GameplayPhase

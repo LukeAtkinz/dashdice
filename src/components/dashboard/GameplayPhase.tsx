@@ -4,7 +4,7 @@ import { MatchData } from '@/types/match';
 import { SlotMachineDice } from './SlotMachineDice';
 import { useBackground } from '@/context/BackgroundContext';
 import { useAuth } from '@/context/AuthContext';
-import SimpleAbilitiesDisplay from '@/components/match/SimpleAbilitiesDisplay';
+import InlineAbilitiesDisplay from '@/components/match/InlineAbilitiesDisplay';
 
 interface GameplayPhaseProps {
   matchData: MatchData;
@@ -250,14 +250,24 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         </motion.div>
 
         {/* Dice Container with Turn Score Between - Constrained to 60vh */}
-        <div className="relative flex flex-col gap-0 md:gap-3 mb-1 md:mb-3 justify-between px-4 md:px-0" style={{
-          height: '60vh', // Fixed height to fit in container
-          maxHeight: '60vh',
-          overflow: 'visible',
-          justifyContent: 'center',
-          gap: '60px',
-          marginTop: '-40px' // Move dice container up on mobile
-        }}>
+        <motion.div 
+          className="relative flex flex-col gap-0 md:gap-3 mb-1 md:mb-3 justify-between px-4 md:px-0" 
+          style={{
+            height: '60vh', // Fixed height to fit in container
+            maxHeight: '60vh',
+            overflow: 'visible',
+            justifyContent: 'center',
+            gap: '60px',
+            marginTop: '-40px' // Move dice container up on mobile
+          }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ 
+            duration: 0.8, 
+            ease: [0.4, 0, 0.2, 1],
+            delay: 0.4
+          }}
+        >
           {/* Dice 1 - Slot Machine */}
           <div className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" style={{ width: 'min(600px, 70vw)' }}>
             <SlotMachineDice
@@ -357,13 +367,13 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               matchData={matchData}
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* Desktop Abilities Display - Using simplified component */}
         {user && onAbilityUsed && (
           <div className="hidden md:block mb-6 mt-8 w-full flex justify-center">
             <div className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" style={{ width: 'min(600px, 70vw)' }}>
-              <SimpleAbilitiesDisplay
+              <InlineAbilitiesDisplay
                 matchData={matchData}
                 onAbilityUsed={onAbilityUsed}
                 isPlayerTurn={isMyTurn}
@@ -424,9 +434,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               >
                 Waiting for {opponent.playerDisplayName} to play...
               </p>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Mobile Abilities Display - Using simplified component */}
@@ -440,7 +449,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             borderTop: '1px solid rgba(255, 255, 255, 0.1)'
           }}
         >
-          <SimpleAbilitiesDisplay
+          <InlineAbilitiesDisplay
             matchData={matchData}
             onAbilityUsed={onAbilityUsed}
             isPlayerTurn={isMyTurn}
@@ -477,8 +486,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 fontFamily: "Audiowide",
                 textTransform: "uppercase" as const,
                 border: 'none',
+                borderRight: matchData.gameMode !== 'true-grit' ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
                 borderRadius: '0',
-                background: canRoll ? "rgba(59, 130, 246, 0.0 )" : 'rgba(107, 114, 128, 0.4)',
+                background: canRoll ? "rgba(59, 130, 246, 0.8)" : 'rgba(107, 114, 128, 0.4)',
                 backdropFilter: 'blur(2px)',
               }}
             >
@@ -505,7 +515,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   textTransform: "uppercase" as const,
                   border: 'none',
                   borderRadius: '0',
-                  background: canBank ? "rgba(34, 197, 94, 0.0)" : 'rgba(107, 114, 128, 0.4)',
+                  background: canBank ? "rgba(34, 197, 94, 0.8)" : 'rgba(107, 114, 128, 0.4)',
                   backdropFilter: 'blur(2px)',
                 }}
               >
