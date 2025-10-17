@@ -60,7 +60,7 @@ export const AVAILABLE_BACKGROUNDS: Background[] = [
   {
     id: 'as-they-fall',
     name: 'As They Fall',
-    filename: 'as they fall.mp4',
+    filename: 'As they fall.mp4',
     type: 'video',
     description: 'Dynamic falling sequence with scenic journey vibes',
     tags: ['animated', 'falling', 'scenic', 'journey']
@@ -68,7 +68,7 @@ export const AVAILABLE_BACKGROUNDS: Background[] = [
   {
     id: 'end-of-the-dragon',
     name: 'End Of The Dragon',
-    filename: 'end of the dragon.mp4',
+    filename: 'End of the Dragon.mp4',
     type: 'video',
     description: 'Epic dragon finale with mystical adventure atmosphere',
     tags: ['animated', 'dragon', 'epic', 'mystical']

@@ -198,10 +198,10 @@ const getFriendVideoBackground = (friend: FriendWithStatus) => {
           videoPath = '/backgrounds/On A Mission.mp4';
         } else if (videoPath === 'Underwater.mp4' || videoPath === '/backgrounds/Underwater.mp4') {
           videoPath = '/backgrounds/Underwater.mp4';
-        } else if (videoPath === 'as they fall.mp4' || videoPath === '/backgrounds/as they fall.mp4') {
-          videoPath = '/backgrounds/as they fall.mp4';
-        } else if (videoPath === 'end of the dragon.mp4' || videoPath === '/backgrounds/end of the dragon.mp4') {
-          videoPath = '/backgrounds/end of the dragon.mp4';
+        } else if (videoPath === 'As they fall.mp4' || videoPath === '/backgrounds/As they fall.mp4') {
+          videoPath = '/backgrounds/As they fall.mp4';
+        } else if (videoPath === 'End of the Dragon.mp4' || videoPath === '/backgrounds/End of the Dragon.mp4') {
+          videoPath = '/backgrounds/End of the Dragon.mp4';
         } else if (!videoPath.startsWith('/') && !videoPath.startsWith('http')) {
           // If it's a filename without path, prepend /backgrounds/
           videoPath = `/backgrounds/${videoPath}`;
