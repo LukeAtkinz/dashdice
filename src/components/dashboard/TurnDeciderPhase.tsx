@@ -181,7 +181,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             
             {/* Background Text Shadow */}
             <motion.div
-              className="absolute inset-0 flex items-center justify-center z-5"
+              className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 translate-y-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.15 }}
               transition={{ delay: 0.3, duration: 0.5 }}
@@ -197,11 +197,11 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             </motion.div>
 
             {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center">
+            <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 -translate-y-8">
               <motion.img 
                 src="/Design Elements/Match/Turn Decider/Odd.webp" 
                 alt="Odd" 
-                className="w-[35vw] h-[35vw] max-w-80 max-h-80 object-contain filter drop-shadow-2xl"
+                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain filter drop-shadow-2xl"
                 style={{
                   filter: 'drop-shadow(0 0 40px rgba(59, 130, 246, 0.9))'
                 }}
@@ -257,7 +257,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             
             {/* Background Text Shadow */}
             <motion.div
-              className="absolute inset-0 flex items-center justify-center z-5"
+              className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 translate-y-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.15 }}
               transition={{ delay: 0.3, duration: 0.5 }}
@@ -273,11 +273,11 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             </motion.div>
 
             {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center">
+            <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 -translate-y-8">
               <motion.img 
                 src="/Design Elements/Match/Turn Decider/Even.webp" 
                 alt="Even" 
-                className="w-[35vw] h-[35vw] max-w-80 max-h-80 object-contain filter drop-shadow-2xl"
+                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain filter drop-shadow-2xl"
                 style={{
                   filter: 'drop-shadow(0 0 40px rgba(147, 51, 234, 0.9))'
                 }}
@@ -398,15 +398,9 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           >
             {/* Massive Waiting Icon */}
             <motion.div
-              animate={{ 
-                scale: [1, 1.05, 1],
-                rotate: [0, 2, -2, 0]
-              }}
-              transition={{ 
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, duration: 0.5, type: "spring", stiffness: 100 }}
               className="relative"
             >
               <img 
