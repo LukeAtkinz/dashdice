@@ -820,12 +820,12 @@ const ProfileSection: React.FC = () => {
                             } else if (inventory && 'ownedBackgrounds' in inventory) {
                               // New object format - count video backgrounds as masterpieces
                               const ownedBackgrounds = inventory.ownedBackgrounds || [];
-                              const videoBackgrounds = ['New Day', 'On A Mission', 'Underwater'];
+                              const videoBackgrounds = ['New Day', 'On A Mission', 'Underwater', 'As They Fall', 'End Of The Dragon'];
                               return ownedBackgrounds.filter(bg => videoBackgrounds.includes(bg)).length;
                             } else if (user?.ownedBackgrounds) {
                               // Legacy direct property format - count video backgrounds
                               const ownedBackgrounds = user.ownedBackgrounds || [];
-                              const videoBackgrounds = ['New Day', 'On A Mission', 'Underwater'];
+                              const videoBackgrounds = ['New Day', 'On A Mission', 'Underwater', 'As They Fall', 'End Of The Dragon'];
                               return ownedBackgrounds.filter(bg => videoBackgrounds.includes(bg)).length;
                             }
                             return 0;

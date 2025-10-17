@@ -204,6 +204,8 @@ export class BotMatchingService {
       { name: 'All For Glory', file: '/backgrounds/All For Glory.jpg', type: 'image' },
       { name: 'Underwater', file: '/backgrounds/Underwater.mp4', type: 'video' },
       { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+      { name: 'As They Fall', file: '/backgrounds/as they fall.mp4', type: 'video' },
+      { name: 'End Of The Dragon', file: '/backgrounds/end of the dragon.mp4', type: 'video' },
       { name: 'Neon City', file: '/backgrounds/Neon City.jpg', type: 'image' },
       { name: 'Classic Blue', file: '/backgrounds/Classic Blue.jpg', type: 'image' },
       { name: 'Sunset', file: '/backgrounds/Sunset.mp4', type: 'video' },

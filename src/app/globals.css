@@ -161,6 +161,14 @@ img.scrollbar-hide::-webkit-scrollbar {
     object-position: center center; /* Sunrise/sunset scenes centered */
   }
 
+  .mobile-bg-astheyfall {
+    object-position: center center; /* Center falling sequences for best visual impact */
+  }
+
+  .mobile-bg-endofdragon {
+    object-position: center center; /* Center dragon scenes for best visual composition */
+  }
+
   /* Mobile video optimization */
   video {
     /* Ensure video plays without user interaction on mobile */

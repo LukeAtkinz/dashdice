@@ -901,7 +901,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                         
                         if (Array.isArray(ownedBackgrounds)) {
                           // Count video backgrounds as masterpieces
-                          const videoBackgrounds = ['New Day', 'On A Mission', 'Underwater'];
+                          const videoBackgrounds = ['New Day', 'On A Mission', 'Underwater', 'As They Fall', 'End Of The Dragon'];
                           return ownedBackgrounds.filter((bg: string) => videoBackgrounds.includes(bg)).length;
                         } else {
                           // Legacy array format - can't determine rarity

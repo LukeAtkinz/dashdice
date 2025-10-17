@@ -52,6 +52,20 @@ export const useBackgroundPositioning = () => {
         className: 'mobile-bg-longroad'
       };
     }
+
+    if (name.includes('as they fall')) {
+      return {
+        objectPosition: 'center center', // Center positioning for mobile
+        className: 'mobile-bg-astheyfall'
+      };
+    }
+
+    if (name.includes('end of the dragon')) {
+      return {
+        objectPosition: 'center center', // Center positioning for mobile
+        className: 'mobile-bg-endofdragon'
+      };
+    }
     
     if (name.includes('new day')) {
       return {

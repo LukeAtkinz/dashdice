@@ -577,7 +577,9 @@ export class MatchmakingService {
       { name: "On A Mission", file: "/backgrounds/On A Mission.mp4", type: "video" },
       { name: "Relax", file: "/backgrounds/Relax.png", type: "image" },
       { name: "Underwater", file: "/backgrounds/Underwater.mp4", type: "video" },
-      { name: "Long Road Ahead", file: "/backgrounds/Long Road Ahead.jpg", type: "image" }
+      { name: "Long Road Ahead", file: "/backgrounds/Long Road Ahead.jpg", type: "image" },
+      { name: "As They Fall", file: "/backgrounds/as they fall.mp4", type: "video" },
+      { name: "End Of The Dragon", file: "/backgrounds/end of the dragon.mp4", type: "video" }
     ];
     
     console.log('🔧 MatchmakingService: Converting background string to object:', backgroundId);

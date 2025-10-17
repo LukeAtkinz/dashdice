@@ -723,7 +723,7 @@ const DashboardContent: React.FC = () => {
             <div className="flex flex-row items-center justify-between w-full px-[2vw] py-[15px] shadow-lg" style={{
               background: DisplayBackgroundEquip?.name === 'On A Mission' 
                 ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)'
-                : DisplayBackgroundEquip?.name === 'Long Road Ahead'
+                : (DisplayBackgroundEquip?.name === 'Long Road Ahead' || DisplayBackgroundEquip?.name === 'As They Fall' || DisplayBackgroundEquip?.name === 'End Of The Dragon')
                 ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.6) 0%, rgba(76, 29, 149, 0.4) 25%, rgba(30, 27, 75, 0.3) 50%, rgba(30, 58, 138, 0.4) 75%, rgba(59, 130, 246, 0.3) 100%)'
                 : DisplayBackgroundEquip?.name === 'New Day'
                 ? 'linear-gradient(0deg, #5a7579 0%, transparent 100%)'
@@ -732,7 +732,7 @@ const DashboardContent: React.FC = () => {
                 : DisplayBackgroundEquip?.name === 'Underwater'
                 ? 'linear-gradient(0deg, #00518c 0%, transparent 100%)'
                 : 'rgba(0, 0, 0, 0.6)',
-              backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' ? 'blur(8px)' : 'none',
+              backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' || DisplayBackgroundEquip?.name === 'As They Fall' || DisplayBackgroundEquip?.name === 'End Of The Dragon' ? 'blur(8px)' : 'none',
               borderRadius: '0'
             }}>
               <button
