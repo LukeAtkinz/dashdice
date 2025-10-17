@@ -972,42 +972,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
     };
   }, [matchData?.hostData, matchData?.opponentData, opponentLastSeen, abandonmentTimer, showAbandonmentNotification, user]);
 
-  if (loading) {
-    return (
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900"
-      >
-        <div className="text-center">
-          <motion.div 
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="rounded-full h-32 w-32 border-b-2 border-white mx-auto mb-4"
-          />
-          <motion.h2 
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-2xl font-bold text-white mb-2" 
-            style={{ fontFamily: "Audiowide" }}
-          >
-            Entering Arena...
-          </motion.h2>
-          <motion.p 
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="text-gray-300"
-          >
-            Preparing your match
-          </motion.p>
-        </div>
-      </motion.div>
-    );
-  }
-
+  // Remove loading state entirely - don't show any loading animations
+  // User requested no loading animations between scenes and screens
+  
   if (error || !matchData) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">
@@ -1033,16 +1000,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
   const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
   const opponent = isHost ? matchData.opponentData : matchData.hostData;
 
-  // Show loading screen during video transitions
+  // Don't show loading screen during video transitions - let video handle the transition
   if (isVideoPlaying) {
-    return (
-      <div className="w-full h-full bg-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#FFD700] mx-auto mb-4"></div>
-          <p className="text-white font-audiowide text-lg">Loading...</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (
@@ -1096,19 +1056,19 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className={`w-full h-screen match-container ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-start px-2 py-4`}
+        className={`w-full h-screen match-container ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-center px-2`}
         style={{ position: 'relative', left: 0, top: 0, transform: 'none' }}
       >
         {/* Game Arena */}
-        <div className="w-full max-w-7xl mx-auto flex items-center justify-center" style={{ position: 'relative' }}>
+        <div className="w-[90vw] mx-auto flex items-center justify-center" style={{ position: 'relative' }}>
           {/* Desktop Layout */}
-          <div className="hidden md:flex items-center justify-between gap-16 w-full">
+          <div className="hidden md:flex items-center justify-between gap-8 w-full">
             
             {/* Player 1 (Current User - Left Side) */}
             <AnimatePresence>
               {(matchData.gameData.gamePhase as string) !== 'turnDecider' && (
                 <motion.div 
-                  className="flex-1"
+                  className="w-[40%] max-w-lg"
                   initial={{ opacity: 0, x: -50, scale: 0.9 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: -50, scale: 0.9 }}
@@ -1348,7 +1308,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
             <AnimatePresence>
               {(matchData.gameData.gamePhase as string) !== 'turnDecider' && (
                 <motion.div 
-                  className="flex-1"
+                  className="w-[40%] max-w-lg"
                   initial={{ opacity: 0, x: 50, scale: 0.9 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: 50, scale: 0.9 }}

@@ -259,17 +259,19 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             {createReelNumbers().map((num, index) => (
               <div
                 key={`reel-${index}`}
-                className="h-full flex items-center justify-center text-gray-400 opacity-30"
+                className="h-full flex items-center justify-center opacity-30"
                 style={{ 
                   minWidth: '100%',
                   backgroundColor: index % 2 === 0 ? 'rgba(0,0,0,0.05)' : 'transparent',
-                  color: '#000',
+                  color: '#FFD700',
                   fontFamily: 'Orbitron, monospace',
-                  fontSize: 'clamp(80px, 18vw, 200px)', // Reduced from 25vw to 18vw for mobile
+                  fontSize: 'clamp(80px, 18vw, 200px)',
                   fontStyle: 'normal',
                   fontWeight: 500,
                   lineHeight: '42px',
-                  textTransform: 'uppercase'
+                  textTransform: 'uppercase',
+                  textShadow: '0 0 15px rgba(255, 215, 0, 0.6)',
+                  WebkitFontSmoothing: 'antialiased'
                 }}
               >
                 {num}
@@ -291,14 +293,15 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             }}
           >
             <span style={{
-              color: '#000',
+              color: '#FFD700',
               fontFamily: 'Orbitron, monospace',
-              fontSize: 'clamp(120px, 18vw, 200px)', // Responsive font size for mobile
+              fontSize: 'clamp(120px, 18vw, 200px)',
               fontStyle: 'normal',
               fontWeight: 500,
               lineHeight: '42px',
               textTransform: 'uppercase',
-              filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))'
+              textShadow: '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4)',
+              WebkitFontSmoothing: 'antialiased'
             }}>
               {animationState.currentNumber}
             </span>
@@ -317,8 +320,8 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             }}
           />
 
-          {/* Slot machine window frame effect */}
-          <div className="absolute inset-0 border-2 border-yellow-400/50 rounded-[30px] pointer-events-none" />
+          {/* Slot machine window frame effect - REMOVED gold border */}
+          {/* <div className="absolute inset-0 border-2 border-yellow-400/50 rounded-[30px] pointer-events-none" /> */}
         </div>
       ) : (
         // Static dice display - completely still when not rolling

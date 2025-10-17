@@ -156,10 +156,15 @@ export const VideoOverlay: React.FC<VideoOverlayProps> = ({
                 playsInline
                 preload="auto"
                 controls={false}
-                autoPlay={true}
+                autoPlay
+                webkit-playsinline="true"
+                x5-playsinline="true"
+                disablePictureInPicture
+                controlsList="nodownload noplaybackrate nofullscreen"
                 style={{
                   width: '100vw',
-                  height: '100vh'
+                  height: '100vh',
+                  pointerEvents: 'none'
                 }}
               />
               
@@ -177,18 +182,63 @@ export const VideoOverlay: React.FC<VideoOverlayProps> = ({
                     className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
                   >
                     <div className="text-center px-8">
-                      <motion.h1 
-                        className="text-[12vw] md:text-8xl lg:text-9xl font-bold text-white leading-tight tracking-wide"
-                        style={{ 
-                          fontFamily: 'Audiowide',
-                          textShadow: '0 0 60px rgba(255,255,255,1), 0 0 120px rgba(255,255,255,0.8), 4px 4px 16px rgba(0,0,0,0.9)'
-                        }}
-                        initial={{ letterSpacing: '0.2em' }}
-                        animate={{ letterSpacing: '0.1em' }}
-                        transition={{ duration: 0.8, delay: 0.2 }}
-                      >
-                        {overlayText}
-                      </motion.h1>
+                      {(() => {
+                        // Parse the overlay text to separate name from action
+                        const text = overlayText;
+                        let nameText = '';
+                        let actionText = '';
+                        
+                        if (text.includes(' GOES FIRST')) {
+                          nameText = text.replace(' GOES FIRST', '');
+                          actionText = 'GOES FIRST';
+                        } else if (text.includes(' GO FIRST')) {
+                          nameText = text.replace(' GO FIRST', '');
+                          actionText = 'GO FIRST';
+                        } else if (text.includes(' TO CHOOSE')) {
+                          nameText = text.replace(' TO CHOOSE', '');
+                          actionText = 'TO CHOOSE';
+                        } else {
+                          // Fallback for other text patterns
+                          nameText = text;
+                        }
+                        
+                        return (
+                          <div className="flex flex-col items-center">
+                            {/* Name/YOU - Larger and Gold */}
+                            <motion.h1 
+                              className="text-[14vw] md:text-9xl lg:text-[10rem] font-bold leading-tight tracking-wide mb-2"
+                              style={{ 
+                                fontFamily: 'Audiowide',
+                                color: '#FFD700',
+                                textShadow: '0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.4), 4px 4px 16px rgba(0,0,0,0.9)',
+                                WebkitFontSmoothing: 'antialiased'
+                              }}
+                              initial={{ letterSpacing: '0.2em', opacity: 0, y: 20 }}
+                              animate={{ letterSpacing: '0.1em', opacity: 1, y: 0 }}
+                              transition={{ duration: 0.8, delay: 0.2 }}
+                            >
+                              {nameText}
+                            </motion.h1>
+                            
+                            {/* Action Text - White */}
+                            {actionText && (
+                              <motion.h2 
+                                className="text-[10vw] md:text-6xl lg:text-7xl font-bold text-white leading-tight tracking-wide"
+                                style={{ 
+                                  fontFamily: 'Audiowide',
+                                  textShadow: '0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.4), 4px 4px 16px rgba(0,0,0,0.9)',
+                                  WebkitFontSmoothing: 'antialiased'
+                                }}
+                                initial={{ letterSpacing: '0.2em', opacity: 0, y: 20 }}
+                                animate={{ letterSpacing: '0.1em', opacity: 1, y: 0 }}
+                                transition={{ duration: 0.8, delay: 0.5 }}
+                              >
+                                {actionText}
+                              </motion.h2>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </motion.div>
                 )}

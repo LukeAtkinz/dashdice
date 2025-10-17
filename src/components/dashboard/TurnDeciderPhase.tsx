@@ -205,9 +205,11 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               <motion.img 
                 src="/Design Elements/Match/Turn Decider/Odd.webp" 
                 alt="Odd" 
-                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain filter drop-shadow-2xl"
+                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain"
                 style={{
-                  filter: 'drop-shadow(0 0 40px rgba(59, 130, 246, 0.9))'
+                  filter: 'drop-shadow(0 0 20px rgba(59, 130, 246, 0.7))',
+                  imageRendering: 'auto',
+                  WebkitFontSmoothing: 'antialiased'
                 }}
                 initial={{ scale: 0 }}
                 animate={{ 
@@ -245,7 +247,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 className="text-[15vw] md:text-8xl text-white font-bold tracking-wider"
                 style={{ 
                   fontFamily: 'Audiowide',
-                  textShadow: '0 0 40px rgba(255,255,255,1), 0 0 80px rgba(255,255,255,0.5)'
+                  textShadow: '0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.4)',
+                  WebkitFontSmoothing: 'antialiased'
                 }}
               >
                 VS
@@ -307,9 +310,11 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               <motion.img 
                 src="/Design Elements/Match/Turn Decider/Even.webp" 
                 alt="Even" 
-                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain filter drop-shadow-2xl"
+                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain"
                 style={{
-                  filter: 'drop-shadow(0 0 40px rgba(147, 51, 234, 0.9))'
+                  filter: 'drop-shadow(0 0 20px rgba(147, 51, 234, 0.7))',
+                  imageRendering: 'auto',
+                  WebkitFontSmoothing: 'antialiased'
                 }}
                 initial={{ scale: 0 }}
                 animate={{ 
@@ -372,8 +377,9 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 className="text-[25vw] md:text-[20rem] text-white font-bold tracking-wider leading-none select-none"
                 style={{ 
                   fontFamily: 'Audiowide',
-                  textShadow: '0 0 60px rgba(255, 215, 0, 1), 0 0 120px rgba(255, 215, 0, 0.8)',
-                  color: '#FFD700'
+                  textShadow: '0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.6)',
+                  color: '#FFD700',
+                  WebkitFontSmoothing: 'antialiased'
                 }}
               >
                 {matchData.gameData.turnDeciderChoice?.toUpperCase()}
@@ -385,11 +391,13 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               <motion.img 
                 src={`/Design Elements/Match/Turn Decider/${matchData.gameData.turnDeciderChoice === 'odd' ? 'Odd' : 'Even'}.webp`}
                 alt={matchData.gameData.turnDeciderChoice === 'odd' ? 'Odd' : 'Even'}
-                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain filter drop-shadow-2xl"
+                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain"
                 style={{
                   filter: matchData.gameData.turnDeciderChoice === 'odd' 
-                    ? 'drop-shadow(0 0 40px rgba(59, 130, 246, 0.9))'
-                    : 'drop-shadow(0 0 40px rgba(147, 51, 234, 0.9))'
+                    ? 'drop-shadow(0 0 20px rgba(59, 130, 246, 0.7))'
+                    : 'drop-shadow(0 0 20px rgba(147, 51, 234, 0.7))',
+                  imageRendering: 'auto',
+                  WebkitFontSmoothing: 'antialiased'
                 }}
                 initial={{ scale: 1, y: 0 }}
                 animate={{ scale: 1.3, y: -40 }}
@@ -420,7 +428,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 className="text-3xl md:text-5xl text-white leading-tight font-bold"
                 style={{ 
                   fontFamily: 'Audiowide',
-                  textShadow: '0 0 40px rgba(255,215,0,1), 2px 2px 8px rgba(0,0,0,0.8)'
+                  textShadow: '0 0 20px rgba(255,215,0,0.8), 2px 2px 8px rgba(0,0,0,0.8)',
+                  WebkitFontSmoothing: 'antialiased'
                 }}
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -433,7 +442,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 className="text-lg md:text-xl text-gray-200 leading-relaxed font-medium"
                 style={{ 
                   fontFamily: 'Audiowide',
-                  textShadow: '0 0 20px rgba(255,255,255,0.4), 2px 2px 6px rgba(0,0,0,0.8)'
+                  textShadow: '0 0 10px rgba(255,255,255,0.4), 2px 2px 6px rgba(0,0,0,0.8)',
+                  WebkitFontSmoothing: 'antialiased'
                 }}
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -522,7 +532,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               className="text-[12vw] md:text-7xl text-white font-bold tracking-wide text-center"
               style={{ 
                 fontFamily: 'Audiowide',
-                textShadow: '0 0 40px rgba(255,255,255,1), 0 0 80px rgba(255,255,255,0.5)'
+                textShadow: '0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.4)',
+                WebkitFontSmoothing: 'antialiased'
               }}
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -554,7 +565,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 className="text-[6vw] md:text-4xl text-white leading-tight font-bold mb-2"
                 style={{ 
                   fontFamily: 'Audiowide',
-                  textShadow: '0 0 40px rgba(255,215,0,1), 2px 2px 8px rgba(0,0,0,0.8)'
+                  textShadow: '0 0 20px rgba(255,215,0,0.8), 2px 2px 8px rgba(0,0,0,0.8)',
+                  WebkitFontSmoothing: 'antialiased'
                 }}
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -566,7 +578,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 className="text-[4vw] md:text-2xl text-gray-200 leading-relaxed font-medium"
                 style={{ 
                   fontFamily: 'Audiowide',
-                  textShadow: '0 0 20px rgba(255,255,255,0.4), 2px 2px 6px rgba(0,0,0,0.8)'
+                  textShadow: '0 0 10px rgba(255,255,255,0.4), 2px 2px 6px rgba(0,0,0,0.8)',
+                  WebkitFontSmoothing: 'antialiased'
                 }}
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
