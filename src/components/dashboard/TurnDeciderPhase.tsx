@@ -168,8 +168,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 : 'bg-black/95 hover:bg-black/98 active:bg-black'
             }`}
             style={{ 
-              fontFamily: "Audiowide",
-              backdropFilter: 'blur(10px)'
+              fontFamily: "Audiowide"
             }}
           >
             {/* Background Pattern */}
@@ -207,7 +206,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 alt="Odd" 
                 className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain"
                 style={{
-                  filter: 'drop-shadow(0 0 20px rgba(59, 130, 246, 0.7))',
+                  filter: 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.5))',
                   imageRendering: 'auto',
                   WebkitFontSmoothing: 'antialiased'
                 }}
@@ -271,8 +270,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 : 'bg-black/95 hover:bg-black/98 active:bg-black'
             }`}
             style={{ 
-              fontFamily: "Audiowide",
-              backdropFilter: 'blur(10px)'
+              fontFamily: "Audiowide"
             }}
           >
             {/* Background Pattern */}
@@ -312,7 +310,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 alt="Even" 
                 className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain"
                 style={{
-                  filter: 'drop-shadow(0 0 20px rgba(147, 51, 234, 0.7))',
+                  filter: 'drop-shadow(0 0 10px rgba(147, 51, 234, 0.5))',
                   imageRendering: 'auto',
                   WebkitFontSmoothing: 'antialiased'
                 }}
@@ -360,7 +358,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
             className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden transition-all duration-200 bg-black/95"
             style={{ 
-              backdropFilter: 'blur(10px)'
+              
             }}
           >
             {/* Background Pattern */}
@@ -394,8 +392,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain"
                 style={{
                   filter: matchData.gameData.turnDeciderChoice === 'odd' 
-                    ? 'drop-shadow(0 0 20px rgba(59, 130, 246, 0.7))'
-                    : 'drop-shadow(0 0 20px rgba(147, 51, 234, 0.7))',
+                    ? 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.5))'
+                    : 'drop-shadow(0 0 10px rgba(147, 51, 234, 0.5))',
                   imageRendering: 'auto',
                   WebkitFontSmoothing: 'antialiased'
                 }}
@@ -416,7 +414,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
             className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden bg-black/95"
             style={{ 
-              backdropFilter: 'blur(10px)'
+              
             }}
           >
             {/* Background Pattern */}
@@ -493,7 +491,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
             className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden bg-black/95"
             style={{ 
-              backdropFilter: 'blur(10px)'
+              
             }}
           >
             {/* Background Pattern */}
@@ -550,7 +548,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
             className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden bg-black/95"
             style={{ 
-              backdropFilter: 'blur(10px)'
+              
             }}
           >
             {/* Background Pattern */}

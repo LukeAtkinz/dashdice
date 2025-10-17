@@ -56,9 +56,12 @@ export const VideoOverlay: React.FC<VideoOverlayProps> = ({
     const handleLoadedData = () => {
       console.log('🎬 Video loaded:', videoSrc);
       setVideoLoaded(true);
-      // Video will autoplay due to autoPlay attribute, no manual play needed
-      if (isPlaying) {
+      // Force play on mobile devices
+      if (isPlaying && video.paused) {
         video.currentTime = 0;
+        video.play().catch(error => {
+          console.warn('🎬 Video autoplay failed, user interaction required:', error);
+        });
       }
     };
 
@@ -161,6 +164,15 @@ export const VideoOverlay: React.FC<VideoOverlayProps> = ({
                 x5-playsinline="true"
                 disablePictureInPicture
                 controlsList="nodownload noplaybackrate nofullscreen"
+                onCanPlay={() => {
+                  // Additional attempt to play on mobile
+                  const video = videoRef.current;
+                  if (video && video.paused && isPlaying) {
+                    video.play().catch(error => {
+                      console.warn('🎬 Video play on canPlay failed:', error);
+                    });
+                  }
+                }}
                 style={{
                   width: '100vw',
                   height: '100vh',

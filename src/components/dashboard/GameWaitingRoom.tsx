@@ -354,6 +354,15 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       return false;
     }
 
+    // Skip loading check on mobile for faster UX
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      console.log('📱 Display Check: Mobile detected - skipping background loading check for faster UX');
+      setOpponentDisplayReady(true);
+      setOpponentDisplayLoading(false);
+      return true;
+    }
+
     console.log('🔍 Display Check: Starting opponent display readiness check', {
       opponentName: opponentData.playerDisplayName,
       hasDisplayBackground: !!opponentData.displayBackgroundEquipped,
@@ -400,14 +409,14 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       video.addEventListener('error', handleVideoError);
       video.src = background.file;
       
-      // Timeout fallback after 5 seconds
+      // Timeout fallback after 2 seconds (reduced from 5)
       setTimeout(() => {
         if (!opponentDisplayReady) {
           console.log('⏰ Display Check: Video loading timeout, proceeding anyway');
           setOpponentDisplayReady(true);
           setOpponentDisplayLoading(false);
         }
-      }, 5000);
+      }, 2000);
       
     } else {
       console.log('🖼️ Display Check: Checking image background readiness');
@@ -433,14 +442,14 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       img.addEventListener('error', handleImageError);
       img.src = background.file;
       
-      // Timeout fallback after 5 seconds
+      // Timeout fallback after 2 seconds (reduced from 5)
       setTimeout(() => {
         if (!opponentDisplayReady) {
           console.log('⏰ Display Check: Image loading timeout, proceeding anyway');
           setOpponentDisplayReady(true);
           setOpponentDisplayLoading(false);
         }
-      }, 5000);
+      }, 2000);
     }
 
     return false; // Not ready yet, will be set to true via callbacks

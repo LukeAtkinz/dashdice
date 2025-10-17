@@ -1056,7 +1056,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className={`w-full h-screen match-container ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-center px-2`}
+        className={`w-full h-screen match-container ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-start md:justify-center px-2`}
         style={{ position: 'relative', left: 0, top: 0, transform: 'none' }}
       >
         {/* Game Arena */}

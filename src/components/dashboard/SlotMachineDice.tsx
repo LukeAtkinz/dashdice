@@ -263,14 +263,14 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
                 style={{ 
                   minWidth: '100%',
                   backgroundColor: index % 2 === 0 ? 'rgba(0,0,0,0.05)' : 'transparent',
-                  color: '#FFD700',
+                  color: isTurnDecider ? '#FFD700' : '#000',
                   fontFamily: 'Orbitron, monospace',
                   fontSize: 'clamp(80px, 18vw, 200px)',
                   fontStyle: 'normal',
                   fontWeight: 500,
                   lineHeight: '42px',
                   textTransform: 'uppercase',
-                  textShadow: '0 0 15px rgba(255, 215, 0, 0.6)',
+                  textShadow: isTurnDecider ? '0 0 15px rgba(255, 215, 0, 0.6)' : 'none',
                   WebkitFontSmoothing: 'antialiased'
                 }}
               >
@@ -293,14 +293,14 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             }}
           >
             <span style={{
-              color: '#FFD700',
+              color: isTurnDecider ? '#FFD700' : '#000',
               fontFamily: 'Orbitron, monospace',
               fontSize: 'clamp(120px, 18vw, 200px)',
               fontStyle: 'normal',
               fontWeight: 500,
               lineHeight: '42px',
               textTransform: 'uppercase',
-              textShadow: '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4)',
+              textShadow: isTurnDecider ? '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4)' : 'none',
               WebkitFontSmoothing: 'antialiased'
             }}>
               {animationState.currentNumber}
