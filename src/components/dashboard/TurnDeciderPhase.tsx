@@ -104,6 +104,11 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
       return;
     }
 
+    // Mobile haptic feedback for choice selection
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(75); // Short vibration feedback
+    }
+
     // Remove performance-impacting logs
     // console.log('✅ Validation passed, setting processing state and calling onChoiceSelect');
     setIsProcessing(true);
@@ -144,107 +149,137 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
         </motion.div>
       )}
 
-      {/* Choice Selection or Display */}
+      {/* Choice Selection - Full-Screen Mobile Layout */}
       {!hasChoice && isMyTurnToDecide && isInTurnDeciderPhase && (
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="text-center max-w-2xl mx-auto"
+          className="fixed inset-0 w-full h-full flex flex-col"
         >
-          {/* Main Title with Premium Styling */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="mb-8"
+          {/* ODD Button - Top Half */}
+          <motion.button
+            onClick={() => handleChoice('odd')}
+            disabled={isProcessing || hasChoice || !isInTurnDeciderPhase}
+            initial={{ opacity: 0, y: -100 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.96, transition: { duration: 0.1 } }}
+            className={`relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden border-b-4 transition-all duration-200 ${
+              isProcessing || hasChoice || !isInTurnDeciderPhase
+                ? 'bg-gradient-to-b from-gray-800/90 to-gray-600/90 border-gray-400/50 cursor-not-allowed' 
+                : 'bg-gradient-to-b from-blue-600/95 to-blue-800/95 hover:from-blue-500/95 hover:to-blue-700/95 border-blue-300 active:from-blue-700/95 active:to-blue-900/95'
+            }`}
+            style={{ 
+              fontFamily: "Audiowide",
+              backdropFilter: 'blur(10px)'
+            }}
           >
-            <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-2xl p-6 backdrop-blur-lg border border-purple-400/30 shadow-2xl">
-              <h2 
-                className="text-3xl md:text-4xl text-white mb-2 tracking-wide"
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20"></div>
+            
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center gap-6">
+              <motion.img 
+                src="/Design Elements/Match/Turn Decider/Odd.webp" 
+                alt="Odd" 
+                className="w-[20vw] h-[20vw] max-w-32 max-h-32 object-contain filter drop-shadow-2xl"
+                style={{
+                  filter: 'drop-shadow(0 0 30px rgba(59, 130, 246, 0.8))'
+                }}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.4, duration: 0.5, type: "spring", stiffness: 100 }}
+              />
+              <motion.span 
+                className="text-[8vw] md:text-6xl text-white tracking-wider leading-none"
+                style={{ 
+                  textShadow: '0 0 40px rgba(255,255,255,0.6), 0 0 80px rgba(59, 130, 246, 0.4)'
+                }}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+              >
+                {isProcessing ? 'PROCESSING' : 'ODD'}
+              </motion.span>
+            </div>
+
+            {/* Subtle shine effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+          </motion.button>
+
+          {/* VS Element - Centered */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.8, duration: 0.5, type: "spring", stiffness: 120 }}
+            className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
+          >
+            <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-full p-6 border-4 border-white/50 shadow-2xl backdrop-blur-lg">
+              <span 
+                className="text-[15vw] md:text-8xl text-white font-bold tracking-wider"
                 style={{ 
                   fontFamily: 'Audiowide',
-                  textShadow: '0 0 20px rgba(255,255,255,0.3)'
+                  textShadow: '0 0 30px rgba(255,255,255,0.8)'
                 }}
               >
-                TURN DECIDER
-              </h2>
-              <p 
-                className="text-lg md:text-xl text-gray-300"
-                style={{ 
-                  fontFamily: 'Audiowide',
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-                }}
-              >
-                Choose your prediction:
-              </p>
+                VS
+              </span>
             </div>
           </motion.div>
 
-          {/* Premium Choice Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <motion.button
-              onClick={() => handleChoice('odd')}
-              disabled={isProcessing || hasChoice || !isInTurnDeciderPhase}
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              className={`relative overflow-hidden px-12 py-6 rounded-2xl text-2xl font-bold transition-all duration-300 transform border-2 min-w-[180px] ${
-                isProcessing || hasChoice || !isInTurnDeciderPhase
-                  ? 'bg-gray-600/50 border-gray-400/50 cursor-not-allowed opacity-50 text-gray-400' 
-                  : 'bg-gradient-to-br from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 border-blue-400 text-white shadow-lg hover:shadow-blue-500/25'
-              }`}
-              style={{ fontFamily: "Audiowide" }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-              <span className="relative z-10 flex items-center justify-center gap-3">
-                <img 
-                  src="/Design Elements/Match/Turn Decider/Odd.webp" 
-                  alt="Odd" 
-                  className="w-8 h-8" 
-                />
-                {isProcessing ? 'PROCESSING...' : 'ODD'}
-              </span>
-            </motion.button>
+          {/* EVEN Button - Bottom Half */}
+          <motion.button
+            onClick={() => handleChoice('even')}
+            disabled={isProcessing || hasChoice || !isInTurnDeciderPhase}
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.96, transition: { duration: 0.1 } }}
+            className={`relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden border-t-4 transition-all duration-200 ${
+              isProcessing || hasChoice || !isInTurnDeciderPhase
+                ? 'bg-gradient-to-t from-gray-800/90 to-gray-600/90 border-gray-400/50 cursor-not-allowed' 
+                : 'bg-gradient-to-t from-purple-600/95 to-purple-800/95 hover:from-purple-500/95 hover:to-purple-700/95 border-purple-300 active:from-purple-700/95 active:to-purple-900/95'
+            }`}
+            style={{ 
+              fontFamily: "Audiowide",
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-gradient-to-tl from-white/5 via-transparent to-black/20"></div>
+            
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center gap-6">
+              <motion.img 
+                src="/Design Elements/Match/Turn Decider/Even.webp" 
+                alt="Even" 
+                className="w-[20vw] h-[20vw] max-w-32 max-h-32 object-contain filter drop-shadow-2xl"
+                style={{
+                  filter: 'drop-shadow(0 0 30px rgba(147, 51, 234, 0.8))'
+                }}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.4, duration: 0.5, type: "spring", stiffness: 100 }}
+              />
+              <motion.span 
+                className="text-[8vw] md:text-6xl text-white tracking-wider leading-none"
+                style={{ 
+                  textShadow: '0 0 40px rgba(255,255,255,0.6), 0 0 80px rgba(147, 51, 234, 0.4)'
+                }}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+              >
+                {isProcessing ? 'PROCESSING' : 'EVEN'}
+              </motion.span>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.6, duration: 0.3 }}
-              className="text-white text-xl font-bold px-4"
-              style={{ fontFamily: 'Audiowide' }}
-            >
-              VS
-            </motion.div>
-
-            <motion.button
-              onClick={() => handleChoice('even')}
-              disabled={isProcessing || hasChoice || !isInTurnDeciderPhase}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              className={`relative overflow-hidden px-12 py-6 rounded-2xl text-2xl font-bold transition-all duration-300 transform border-2 min-w-[180px] ${
-                isProcessing || hasChoice || !isInTurnDeciderPhase
-                  ? 'bg-gray-600/50 border-gray-400/50 cursor-not-allowed opacity-50 text-gray-400' 
-                  : 'bg-gradient-to-br from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 border-purple-400 text-white shadow-lg hover:shadow-purple-500/25'
-              }`}
-              style={{ fontFamily: "Audiowide" }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-              <span className="relative z-10 flex items-center justify-center gap-3">
-                <img 
-                  src="/Design Elements/Match/Turn Decider/Even.webp" 
-                  alt="Even" 
-                  className="w-8 h-8" 
-                />
-                {isProcessing ? 'PROCESSING...' : 'EVEN'}
-              </span>
-            </motion.button>
-          </div>
+            {/* Subtle shine effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+          </motion.button>
         </motion.div>
       )}
 
@@ -337,130 +372,140 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
         </motion.div>
       )}
 
-      {/* Waiting for opponent choice */}
+      {/* Waiting for opponent choice - Mobile-First Design */}
       {!hasChoice && !isMyTurnToDecide && isInTurnDeciderPhase && (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="text-center mt-8 max-w-2xl mx-auto"
+          className="text-center w-full min-h-screen flex flex-col items-center justify-center px-4"
         >
-          {/* Premium Waiting Card */}
-          <div className="bg-gradient-to-br from-orange-900/30 to-yellow-900/30 rounded-3xl p-8 backdrop-blur-lg border border-orange-400/40 shadow-2xl relative overflow-hidden">
-            {/* Animated background shimmer */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-400/10 to-transparent transform -skew-x-12 animate-shimmer"></div>
-            
-            {/* Content */}
-            <div className="relative z-10">
-              {/* Opponent Avatar Placeholder */}
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.05, 1],
-                  rotate: [0, 2, -2, 0]
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="flex flex-col items-center gap-8 w-full"
+          >
+            {/* Massive Waiting Icon */}
+            <motion.div
+              animate={{ 
+                scale: [1, 1.05, 1],
+                rotate: [0, 2, -2, 0]
+              }}
+              transition={{ 
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="relative"
+            >
+              <img 
+                src="/Design Elements/Match/Turn Decider/Waiting.webp" 
+                alt="Waiting" 
+                className="w-[60vw] h-[60vw] max-w-sm max-h-sm object-contain"
+                style={{
+                  filter: 'drop-shadow(0 0 40px rgba(255, 165, 0, 0.8))',
                 }}
-                transition={{ 
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="mb-6"
-              >
-                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-orange-500 to-yellow-600 rounded-full flex items-center justify-center shadow-lg border-4 border-orange-300/50">
-                  <img 
-                    src="/Design Elements/Match/Turn Decider/Waiting.webp" 
-                    alt="Waiting" 
-                    className="w-10 h-10" 
-                  />
-                </div>
-              </motion.div>
+              />
+            </motion.div>
 
-              {/* Opponent Name and Status */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.4 }}
+            {/* Opponent Name and Status - Much Larger */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+              className="text-center space-y-4"
+            >
+              <h3 
+                className="text-6xl md:text-8xl text-orange-300 tracking-wide leading-tight"
+                style={{ 
+                  fontFamily: 'Audiowide',
+                  textShadow: '0 0 30px rgba(255, 165, 0, 0.6), 0 0 60px rgba(255, 165, 0, 0.3)'
+                }}
               >
-                <p 
-                  className="text-2xl font-bold text-orange-300 mb-2"
-                  style={{ 
-                    fontFamily: 'Audiowide',
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+                {opponent.playerDisplayName}
+              </h3>
+              <p 
+                className="text-3xl md:text-4xl text-gray-300 leading-relaxed"
+                style={{ 
+                  fontFamily: 'Audiowide',
+                  textShadow: '2px 2px 8px rgba(0,0,0,0.8)'
+                }}
+              >
+                is making their prediction
+                <motion.span
+                  className="inline-block ml-2"
+                >
+                  <span className="inline-block animate-pulse delay-0">.</span>
+                  <span className="inline-block animate-pulse delay-200">.</span>
+                  <span className="inline-block animate-pulse delay-400">.</span>
+                </motion.span>
+              </p>
+            </motion.div>
+
+            {/* Enhanced Loading Animation - Larger */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.4 }}
+              className="flex items-center justify-center gap-3 mt-8"
+            >
+              <div className="flex gap-3">
+                <motion.div 
+                  className="w-6 h-6 bg-orange-400 rounded-full"
+                  animate={{ 
+                    scale: [1, 1.4, 1],
+                    opacity: [0.5, 1, 0.5]
                   }}
-                >
-                  {opponent.playerDisplayName}
-                </p>
-                <p 
-                  className="text-lg text-gray-300 mb-6"
-                  style={{ fontFamily: 'Audiowide' }}
-                >
-                  is making their prediction...
-                </p>
-              </motion.div>
-
-              {/* Enhanced Loading Animation */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.4 }}
-                className="flex items-center justify-center gap-2"
-              >
-                <div className="flex gap-1">
-                  <motion.div 
-                    className="w-3 h-3 bg-orange-400 rounded-full"
-                    animate={{ 
-                      scale: [1, 1.2, 1],
-                      opacity: [0.5, 1, 0.5]
-                    }}
-                    transition={{ 
-                      duration: 1,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                  />
-                  <motion.div 
-                    className="w-3 h-3 bg-yellow-400 rounded-full"
-                    animate={{ 
-                      scale: [1, 1.2, 1],
-                      opacity: [0.5, 1, 0.5]
-                    }}
-                    transition={{ 
-                      duration: 1,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                      delay: 0.2
-                    }}
-                  />
-                  <motion.div 
-                    className="w-3 h-3 bg-orange-400 rounded-full"
-                    animate={{ 
-                      scale: [1, 1.2, 1],
-                      opacity: [0.5, 1, 0.5]
-                    }}
-                    transition={{ 
-                      duration: 1,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                      delay: 0.4
-                    }}
-                  />
-                </div>
-              </motion.div>
-            </div>
-          </div>
+                  transition={{ 
+                    duration: 1.2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+                <motion.div 
+                  className="w-6 h-6 bg-yellow-400 rounded-full"
+                  animate={{ 
+                    scale: [1, 1.4, 1],
+                    opacity: [0.5, 1, 0.5]
+                  }}
+                  transition={{ 
+                    duration: 1.2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: 0.3
+                  }}
+                />
+                <motion.div 
+                  className="w-6 h-6 bg-orange-400 rounded-full"
+                  animate={{ 
+                    scale: [1, 1.4, 1],
+                    opacity: [0.5, 1, 0.5]
+                  }}
+                  transition={{ 
+                    duration: 1.2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: 0.6
+                  }}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
         </motion.div>
       )}
 
-      {/* Show user's choice below the reel */}
+      {/* Show user's choice - Mobile-First Design */}
       {hasChoice && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="text-center mt-6"
+          className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-20"
         >
-          <div className="bg-gradient-to-br from-purple-600/30 to-blue-600/30 backdrop-blur-lg rounded-2xl px-6 py-3 border border-purple-400/50 mx-auto w-fit">
-            <p className="text-xl md:text-2xl text-white font-bold" style={{ fontFamily: 'Audiowide' }}>
-              CHOICE: <span className="text-yellow-400">{matchData.gameData.turnDeciderChoice?.toUpperCase()}</span>
+          <div className="bg-gradient-to-r from-purple-600/90 to-blue-600/90 backdrop-blur-lg rounded-3xl px-8 py-4 border-2 border-purple-400/50 shadow-2xl">
+            <p className="text-3xl md:text-4xl text-white font-bold text-center" style={{ fontFamily: 'Audiowide' }}>
+              YOUR CHOICE: <span className="text-yellow-300 text-shadow-lg">{matchData.gameData.turnDeciderChoice?.toUpperCase()}</span>
             </p>
           </div>
         </motion.div>

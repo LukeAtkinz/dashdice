@@ -20,45 +20,86 @@ export const VideoOverlay: React.FC<VideoOverlayProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [shouldShow, setShouldShow] = useState(false);
+  const [videoError, setVideoError] = useState<string | null>(null);
+
+  console.log('🎬 VideoOverlay render:', { videoSrc, isPlaying, shouldShow, videoLoaded, videoError });
 
   useEffect(() => {
     if (isPlaying) {
+      console.log('🎬 Setting shouldShow to true');
       setShouldShow(true);
+      setVideoError(null);
     }
   }, [isPlaying]);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || !videoSrc || !isPlaying) return;
 
+    console.log('🎬 Setting up video:', videoSrc);
+    
     const handleLoadedData = () => {
+      console.log('🎬 Video loaded:', videoSrc);
       setVideoLoaded(true);
+      // Try to play immediately when loaded
+      if (isPlaying) {
+        video.currentTime = 0;
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              console.log('🎬 Video playing successfully');
+            })
+            .catch(error => {
+              console.error('🎬 Error playing video:', error);
+              setVideoError(`Playback failed: ${error.message}`);
+            });
+        }
+      }
     };
 
     const handleEnded = () => {
+      console.log('🎬 Video ended');
       setShouldShow(false);
       setTimeout(() => {
         onComplete();
-      }, 300); // Small delay for smooth transition
+      }, 300);
     };
 
-    const handleCanPlayThrough = () => {
-      if (isPlaying && videoLoaded) {
-        video.currentTime = 0;
-        video.play().catch(console.error);
-      }
+    const handleError = (event: Event) => {
+      console.error('🎬 Video error:', event);
+      const videoElement = event.target as HTMLVideoElement;
+      const errorMsg = videoElement?.error?.message || 'Unknown error';
+      console.error('🎬 Video error details:', {
+        error: videoElement?.error,
+        src: videoSrc,
+        readyState: videoElement?.readyState,
+        networkState: videoElement?.networkState
+      });
+      setVideoError(`Failed to load video: ${errorMsg}`);
+      // Auto-complete on error after a short delay
+      setTimeout(() => {
+        setShouldShow(false);
+        setTimeout(() => {
+          onComplete();
+        }, 300);
+      }, 1000);
     };
 
     video.addEventListener('loadeddata', handleLoadedData);
     video.addEventListener('ended', handleEnded);
-    video.addEventListener('canplaythrough', handleCanPlayThrough);
+    video.addEventListener('error', handleError);
+
+    // Set video source and load
+    console.log('🎬 Loading video:', videoSrc);
+    video.load(); // This will load the video with the source element
 
     return () => {
       video.removeEventListener('loadeddata', handleLoadedData);
       video.removeEventListener('ended', handleEnded);
-      video.removeEventListener('canplaythrough', handleCanPlayThrough);
+      video.removeEventListener('error', handleError);
     };
-  }, [isPlaying, videoLoaded, onComplete]);
+  }, [isPlaying, videoSrc, onComplete]);
 
   // Fallback timeout
   useEffect(() => {
@@ -92,19 +133,31 @@ export const VideoOverlay: React.FC<VideoOverlayProps> = ({
             backdropFilter: 'blur(2px)'
           }}
         >
-          <video
-            ref={videoRef}
-            className="max-w-full max-h-full object-contain"
-            muted
-            playsInline
-            preload="auto"
-            style={{
-              maxWidth: '90vw',
-              maxHeight: '90vh'
-            }}
-          >
-            <source src={videoSrc} type="video/mp4" />
-          </video>
+          {videoError ? (
+            <div className="text-white text-center p-8">
+              <p className="text-lg mb-2">Video Error</p>
+              <p className="text-sm text-gray-300">{videoError}</p>
+              <p className="text-sm text-gray-300 mt-2">Video: {videoSrc}</p>
+            </div>
+          ) : (
+            <video
+              ref={videoRef}
+              className="max-w-full max-h-full object-contain border-2 border-red-500"
+              muted
+              playsInline
+              preload="auto"
+              controls={true}
+              autoPlay={false}
+              style={{
+                maxWidth: '90vw',
+                maxHeight: '90vh',
+                backgroundColor: 'rgba(255, 0, 0, 0.1)' // Temporary red tint to see if video element is there
+              }}
+            >
+              <source src={videoSrc} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          )}
         </motion.div>
       )}
     </AnimatePresence>,

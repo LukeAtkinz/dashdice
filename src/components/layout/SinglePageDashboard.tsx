@@ -818,6 +818,29 @@ const DashboardContent: React.FC = () => {
         {/* Persistent Match Notifications */}
         <PersistentNotificationManager />
         
+        {/* Video Transition Test Buttons (DEV ONLY) */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="fixed top-4 right-4 z-[10000] flex flex-col gap-2">
+            <button
+              onClick={() => triggerTransition('into-waiting-room')}
+              className="bg-blue-600 text-white px-4 py-2 rounded text-sm"
+            >
+              Test Waiting Room Video
+            </button>
+            <button
+              onClick={() => triggerTransition('into-match')}
+              className="bg-green-600 text-white px-4 py-2 rounded text-sm"
+            >
+              Test Match Video
+            </button>
+            <div className="text-white text-xs bg-black/50 p-2 rounded">
+              isPlaying: {isVideoPlaying.toString()}<br/>
+              videoSrc: {videoSrc || 'null'}<br/>
+              transition: {currentTransition || 'null'}
+            </div>
+          </div>
+        )}
+        
         {/* Video Transition Overlays */}
         {videoSrc && (
           <VideoOverlay

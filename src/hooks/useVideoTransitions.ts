@@ -23,8 +23,8 @@ export const useVideoTransitions = (): UseVideoTransitionsReturn => {
     console.log('🎬 Triggering video transition:', type);
     
     const videoMap = {
-      'into-waiting-room': '/transitions/Into Waiting Room.mp4',
-      'into-match': '/transitions/Into Match.mp4'
+      'into-waiting-room': '/Transitions/Into Waiting Room.mp4',
+      'into-match': '/Transitions/Into Match.mp4'
     };
     
     setCurrentTransition(type);
