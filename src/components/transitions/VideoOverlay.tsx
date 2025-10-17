@@ -56,20 +56,9 @@ export const VideoOverlay: React.FC<VideoOverlayProps> = ({
     const handleLoadedData = () => {
       console.log('🎬 Video loaded:', videoSrc);
       setVideoLoaded(true);
-      // Try to play immediately when loaded
+      // Video will autoplay due to autoPlay attribute, no manual play needed
       if (isPlaying) {
         video.currentTime = 0;
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-          playPromise
-            .then(() => {
-              console.log('🎬 Video playing successfully');
-            })
-            .catch(error => {
-              console.error('🎬 Error playing video:', error);
-              setVideoError(`Playback failed: ${error.message}`);
-            });
-        }
       }
     };
 
@@ -166,7 +155,7 @@ export const VideoOverlay: React.FC<VideoOverlayProps> = ({
                 muted
                 playsInline
                 preload="auto"
-                controls={true}
+                controls={false}
                 autoPlay={true}
                 style={{
                   width: '100vw',

@@ -22,9 +22,10 @@ interface MatchProps {
   gameMode?: string;
   roomId?: string;
   triggerVideoTransition?: (type: TransitionType, overlayText?: string) => void;
+  isVideoPlaying?: boolean;
 }
 
-export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTransition }) => {
+export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTransition, isVideoPlaying }) => {
   // Remove performance-impacting debug logs
   // console.log('🎮 Match: Component rendered with props:', { gameMode, roomId });
   // console.log('🔍 DEBUG: Match component entry point:', {
@@ -221,7 +222,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
             }
           }
           
-          triggerVideoTransition('into-match', `${firstPlayerName} GOES FIRST`);
+          const verb = firstPlayerName === 'YOU' ? 'GO' : 'GOES';
+          triggerVideoTransition('into-match', `${firstPlayerName} ${verb} FIRST`);
         }
         
         // Determine who goes first based on turn decider result
@@ -1030,6 +1032,18 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
   const isHost = matchData.hostData.playerId === user?.uid;
   const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
   const opponent = isHost ? matchData.opponentData : matchData.hostData;
+
+  // Show loading screen during video transitions
+  if (isVideoPlaying) {
+    return (
+      <div className="w-full h-full bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#FFD700] mx-auto mb-4"></div>
+          <p className="text-white font-audiowide text-lg">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

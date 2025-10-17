@@ -634,6 +634,7 @@ const DashboardContent: React.FC = () => {
                     gameMode={sectionParams.gameMode}
                     roomId={sectionParams.matchId || "dev-room-123"}
                     triggerVideoTransition={triggerTransition}
+                    isVideoPlaying={isVideoPlaying}
                   />
                 )}
                 {currentSection === 'waiting-room' && (

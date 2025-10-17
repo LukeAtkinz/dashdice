@@ -37,6 +37,22 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
   const [showDiceNumber, setShowDiceNumber] = useState(false);
   const [showResult, setShowResult] = useState(false);
 
+  // Game mode information for display
+  const getGameModeInfo = () => {
+    const gameMode = matchData.gameMode || 'classic';
+    const gameModeMap: Record<string, { name: string; description: string }> = {
+      'quickfire': { name: 'QUICK FIRE', description: 'Race to 50, Double 6 resets your score' },
+      'classic': { name: 'CLASSIC MODE', description: 'Race to 100, Double 6 resets your score' },
+      'zero-hour': { name: 'ZERO HOUR', description: 'Start at 100, race to 0' },
+      'zerohour': { name: 'ZERO HOUR', description: 'Start at 100, race to 0' },
+      'last-line': { name: 'LAST LINE', description: 'Tug-of-war, eliminate your opponent' },
+      'lastline': { name: 'LAST LINE', description: 'Tug-of-war, eliminate your opponent' }
+    };
+    return gameModeMap[gameMode.toLowerCase()] || gameModeMap.classic;
+  };
+
+  const gameModeInfo = getGameModeInfo();
+
   // Remove performance-impacting debug logs
   // console.log('🔍 TurnDeciderPhase Debug:', {
   //   isHost,
@@ -148,8 +164,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             whileTap={{ scale: 0.96, transition: { duration: 0.1 } }}
             className={`relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden transition-all duration-200 ${
               isProcessing || hasChoice || !isInTurnDeciderPhase
-                ? 'bg-gradient-to-b from-gray-800/90 to-gray-600/90 cursor-not-allowed' 
-                : 'bg-gradient-to-b from-blue-600/95 to-blue-800/95 hover:from-blue-500/95 hover:to-blue-700/95 active:from-blue-700/95 active:to-blue-900/95'
+                ? 'bg-black/90 cursor-not-allowed' 
+                : 'bg-black/95 hover:bg-black/98 active:bg-black'
             }`}
             style={{ 
               fontFamily: "Audiowide",
@@ -207,12 +223,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           </motion.button>
 
           {/* VS Element or Dice - Centered */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.8, duration: 0.5, type: "spring", stiffness: 120 }}
-            className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
-          >
+          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30">
             {hasDice && diceAnimation.isSpinning ? (
               // Show reel dice animation
               <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center">
@@ -240,7 +251,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 VS
               </span>
             ) : null}
-          </motion.div>
+          </div>
 
           {/* EVEN Button - Bottom Half */}
           <motion.button
@@ -253,8 +264,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             whileTap={{ scale: 0.96, transition: { duration: 0.1 } }}
             className={`relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden transition-all duration-200 ${
               isProcessing || hasChoice || !isInTurnDeciderPhase
-                ? 'bg-gradient-to-t from-gray-800/90 to-gray-600/90 cursor-not-allowed' 
-                : 'bg-gradient-to-t from-purple-600/95 to-purple-800/95 hover:from-purple-500/95 hover:to-purple-700/95 active:from-purple-700/95 active:to-purple-900/95'
+                ? 'bg-black/90 cursor-not-allowed' 
+                : 'bg-black/95 hover:bg-black/98 active:bg-black'
             }`}
             style={{ 
               fontFamily: "Audiowide",
@@ -342,11 +353,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             initial={{ opacity: 0, y: -100 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
-            className={`relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden transition-all duration-200 ${
-              matchData.gameData.turnDeciderChoice === 'odd'
-                ? 'bg-gradient-to-b from-blue-600/95 to-blue-800/95'
-                : 'bg-gradient-to-b from-purple-600/95 to-purple-800/95'
-            }`}
+            className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden transition-all duration-200 bg-black/95"
             style={{ 
               backdropFilter: 'blur(10px)'
             }}
@@ -399,7 +406,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
-            className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden bg-gradient-to-t from-gray-600/95 to-gray-800/95"
+            className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden bg-black/95"
             style={{ 
               backdropFilter: 'blur(10px)'
             }}
@@ -409,30 +416,30 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             
             {/* Content */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-4 md:translate-y-0 -translate-y-8">
-              <motion.h3 
-                className="text-4xl md:text-6xl text-white tracking-wide leading-tight"
+              <motion.h2 
+                className="text-3xl md:text-5xl text-white leading-tight font-bold"
                 style={{ 
                   fontFamily: 'Audiowide',
-                  textShadow: '0 0 30px rgba(255,255,255,0.6)'
+                  textShadow: '0 0 40px rgba(255,215,0,1), 2px 2px 8px rgba(0,0,0,0.8)'
                 }}
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.6, duration: 0.5 }}
               >
-                {opponent.playerDisplayName}
-              </motion.h3>
+                {gameModeInfo.name}
+              </motion.h2>
               
               <motion.p 
-                className="text-xl md:text-2xl text-gray-300 leading-relaxed"
+                className="text-lg md:text-xl text-gray-200 leading-relaxed font-medium"
                 style={{ 
                   fontFamily: 'Audiowide',
-                  textShadow: '2px 2px 8px rgba(0,0,0,0.8)'
+                  textShadow: '0 0 20px rgba(255,255,255,0.4), 2px 2px 6px rgba(0,0,0,0.8)'
                 }}
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.8, duration: 0.5 }}
               >
-                is making their prediction
+                {gameModeInfo.description}
               </motion.p>
             </div>
 
@@ -442,12 +449,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
 
           {/* Dice Animation - Centered */}
           {(hasDice && diceAnimation.isSpinning) && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, type: "spring", stiffness: 120 }}
-              className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
-            >
+            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30">
               <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center">
                 <div className="w-full h-full flex items-center justify-center">
                   <SlotMachineDice
@@ -461,7 +463,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                   />
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
         </motion.div>
       )}
@@ -479,7 +481,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             initial={{ opacity: 0, y: -100 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
-            className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-orange-600/95 to-orange-800/95"
+            className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden bg-black/95"
             style={{ 
               backdropFilter: 'blur(10px)'
             }}
@@ -535,7 +537,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
-            className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden bg-gradient-to-t from-yellow-600/95 to-yellow-800/95"
+            className="relative flex-1 w-full flex flex-col items-center justify-center overflow-hidden bg-black/95"
             style={{ 
               backdropFilter: 'blur(10px)'
             }}
@@ -548,17 +550,29 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
 
             {/* Content */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-4 md:translate-y-0 -translate-y-8">
-              <motion.p 
-                className="text-[8vw] md:text-5xl text-gray-200 leading-relaxed font-bold"
+              <motion.h2 
+                className="text-[6vw] md:text-4xl text-white leading-tight font-bold mb-2"
                 style={{ 
                   fontFamily: 'Audiowide',
-                  textShadow: '0 0 30px rgba(255,255,255,0.6), 2px 2px 8px rgba(0,0,0,0.8)'
+                  textShadow: '0 0 40px rgba(255,215,0,1), 2px 2px 8px rgba(0,0,0,0.8)'
+                }}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+              >
+                {gameModeInfo.name}
+              </motion.h2>
+              <motion.p 
+                className="text-[4vw] md:text-2xl text-gray-200 leading-relaxed font-medium"
+                style={{ 
+                  fontFamily: 'Audiowide',
+                  textShadow: '0 0 20px rgba(255,255,255,0.4), 2px 2px 6px rgba(0,0,0,0.8)'
                 }}
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.8, duration: 0.5 }}
               >
-                is making their prediction
+                {gameModeInfo.description}
               </motion.p>
             </div>
 
