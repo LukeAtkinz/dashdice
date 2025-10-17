@@ -22,6 +22,8 @@ import { GlobalRematchNotification } from '@/components/rematch/GlobalRematchNot
 import { GameInvitationNotification } from '@/components/friends/GameInvitationNotification';
 import InviteAcceptedNotification from '@/components/friends/InviteAcceptedNotification';
 import PersistentNotificationManager from '@/components/notifications/PersistentNotificationManager';
+import { VideoOverlay } from '@/components/transitions/VideoOverlay';
+import { useVideoTransitions } from '@/hooks/useVideoTransitions';
 import { GameType } from '@/types/ranked';
 import { RematchProvider } from '@/context/RematchContext';
 import { useAuth } from '@/context/AuthContext';
@@ -45,6 +47,38 @@ const DashboardContent: React.FC = () => {
   const onlinePlayerCount = useOnlinePlayerCount();
   const onlineFriendsCount = getOnlineFriendsCount?.() || 0;
   const [userGold] = useState(1000); // Placeholder for user gold
+  
+  // Video transitions
+  const { 
+    currentTransition, 
+    isPlaying: isVideoPlaying, 
+    videoSrc, 
+    triggerTransition, 
+    completeTransition 
+  } = useVideoTransitions();
+  
+  const previousSectionRef = useRef(currentSection);
+  
+  // Monitor section changes and trigger video transitions
+  useEffect(() => {
+    const prevSection = previousSectionRef.current;
+    const newSection = currentSection;
+    
+    if (prevSection !== newSection) {
+      console.log('🧭 Section change detected:', prevSection, '→', newSection);
+      
+      // Trigger video transitions based on navigation flow
+      if (newSection === 'waiting-room' && prevSection !== 'waiting-room') {
+        // User is entering waiting room (searching for match)
+        triggerTransition('into-waiting-room');
+      } else if (newSection === 'match' && prevSection === 'waiting-room') {
+        // User is going from waiting room to match
+        triggerTransition('into-match');
+      }
+      
+      previousSectionRef.current = newSection;
+    }
+  }, [currentSection, triggerTransition]);
   
   // Create button gradient style based on user's display background
   const getButtonGradientStyle = (baseColor: string) => {
@@ -783,6 +817,16 @@ const DashboardContent: React.FC = () => {
         
         {/* Persistent Match Notifications */}
         <PersistentNotificationManager />
+        
+        {/* Video Transition Overlays */}
+        {videoSrc && (
+          <VideoOverlay
+            videoSrc={videoSrc}
+            isPlaying={isVideoPlaying}
+            onComplete={completeTransition}
+            duration={4} // 4 second fallback
+          />
+        )}
       </div>
     </div>
   );
