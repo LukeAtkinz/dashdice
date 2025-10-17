@@ -90,9 +90,12 @@ export const VideoOverlay: React.FC<VideoOverlayProps> = ({
     video.addEventListener('ended', handleEnded);
     video.addEventListener('error', handleError);
 
-    // Set video source and load
-    console.log('🎬 Loading video:', videoSrc);
-    video.load(); // This will load the video with the source element
+    // Set video source directly and load
+    if (video.src !== videoSrc) {
+      console.log('🎬 Setting video src directly:', videoSrc);
+      video.src = videoSrc;
+      video.load();
+    }
 
     return () => {
       video.removeEventListener('loadeddata', handleLoadedData);
@@ -142,21 +145,18 @@ export const VideoOverlay: React.FC<VideoOverlayProps> = ({
           ) : (
             <video
               ref={videoRef}
-              className="max-w-full max-h-full object-contain border-2 border-red-500"
+              src={videoSrc}
+              className="w-full h-full object-cover"
               muted
               playsInline
               preload="auto"
               controls={true}
-              autoPlay={false}
+              autoPlay={true}
               style={{
-                maxWidth: '90vw',
-                maxHeight: '90vh',
-                backgroundColor: 'rgba(255, 0, 0, 0.1)' // Temporary red tint to see if video element is there
+                width: '100vw',
+                height: '100vh'
               }}
-            >
-              <source src={videoSrc} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
+            />
           )}
         </motion.div>
       )}
