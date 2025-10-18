@@ -244,7 +244,7 @@ export default function InlineAbilitiesDisplay({
           >
             {/* Ability Icon */}
             <div className="w-full h-full flex items-center justify-center">
-              {ability.iconUrl ? (
+              {ability.iconUrl && !ability.iconUrl.includes('/Categories/') ? (
                 <img
                   src={ability.iconUrl}
                   alt={ability.name}

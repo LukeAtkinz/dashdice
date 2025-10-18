@@ -476,7 +476,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               className={`text-xl font-bold transition-all ${
                 canRoll
                   ? 'text-white active:scale-95'
-                  : 'text-gray-300 cursor-not-allowed'
+                  : 'cursor-not-allowed'
               }`}
               style={{ 
                 width: (matchData.gameMode === 'true-grit') ? '100%' : '50%',
@@ -489,11 +489,11 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 border: 'none',
                 borderRight: matchData.gameMode !== 'true-grit' ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
                 borderRadius: '0',
-                background: canRoll ? "rgba(59, 130, 246, 0.8)" : 'rgba(107, 114, 128, 0.4)',
+                background: 'transparent', // Always transparent background
                 backdropFilter: 'blur(2px)',
               }}
             >
-              PLAY
+              {canRoll ? 'PLAY' : ''} {/* Hide text when not available */}
             </button>
             
             {/* Only show bank button for modes other than True Grit on mobile */}
@@ -504,7 +504,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 className={`text-xl font-bold transition-all ${
                   canBank
                     ? 'text-white active:scale-95'
-                    : 'text-gray-300 cursor-not-allowed'
+                    : 'cursor-not-allowed'
                 }`}
                 style={{ 
                   width: '50%',
@@ -516,11 +516,11 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   textTransform: "uppercase" as const,
                   border: 'none',
                   borderRadius: '0',
-                  background: canBank ? "rgba(34, 197, 94, 0.8)" : 'rgba(107, 114, 128, 0.4)',
+                  background: 'transparent', // Always transparent background  
                   backdropFilter: 'blur(2px)',
                 }}
               >
-                {matchData.gameMode === 'last-line' ? 'ATTACK' : 'BANK'}
+                {canBank ? (matchData.gameMode === 'last-line' ? 'ATTACK' : 'BANK') : ''} {/* Hide text when not available */}
               </button>
             )}
           </>

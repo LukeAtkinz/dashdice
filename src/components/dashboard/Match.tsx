@@ -1445,12 +1445,18 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
           {/* Mobile Layout - Stacked */}
           <div className="md:hidden flex flex-col items-center w-full" style={{ maxWidth: '100vw', margin: '0 auto' }}>
             
-            {/* User Profiles Section - Top Corners of Viewport - Moved up */}
+            {/* User Profiles Section - Top Corners of Viewport - Offset above and outside viewport */}
             <AnimatePresence>
               {(matchData.gameData.gamePhase as string) !== 'turnDecider' && (
                 <motion.div 
-                  className="fixed top-0 left-0 right-0 flex justify-between z-20" 
-                  style={{ gap: '0px', paddingTop: 'max(env(safe-area-inset-top, 0px), 80px)' }}
+                  className="fixed flex justify-between z-20" 
+                  style={{ 
+                    top: '-2px', // Offset above viewport by couple pixels
+                    left: '-2px', // Offset left to overlap viewport
+                    right: '-2px', // Offset right to overlap viewport
+                    gap: '4px', // Small gap between cards
+                    paddingTop: 'max(env(safe-area-inset-top, 0px), 0px)' // Remove extra padding
+                  }}
                   initial={{ opacity: 0, y: -60, scale: 0.8 }}
                   animate={{ 
                     opacity: 1, 
@@ -1474,7 +1480,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
                 >
               {/* Current Player Profile - Left */}
               <motion.div 
-                style={{ width: '51vw', height: '20vh' }}
+                style={{ width: '52vw', height: '20vh' }} // Slightly wider to overlap viewport more
                 initial={{ opacity: 0, x: -100, scale: 0.8 }}
                 animate={{ 
                   opacity: 1, 
@@ -1489,10 +1495,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
                 exit={{ opacity: 0, x: -80, scale: 0.9 }}
               >
                 <motion.div
-                  className="relative rounded-xl overflow-hidden shadow-lg"
+                  className="relative overflow-hidden shadow-lg"
                   style={{ 
                     height: '100%',
-                    width: '100%'
+                    width: '100%',
+                    borderTopLeftRadius: '0', // Remove top-left radius
+                    borderTopRightRadius: '0', // Remove top-right radius  
+                    borderBottomLeftRadius: '0', // Remove bottom-left radius (left card)
+                    borderBottomRightRadius: '12px' // Keep bottom-right radius
                   }}
                   animate={{
                     boxShadow: currentPlayer.turnActive 
@@ -1572,7 +1582,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
                   style={{ 
                     fontFamily: 'Audiowide',
                     textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                    fontSize: 'clamp(10px, 3vw, 14px)',
+                    fontSize: 'clamp(14px, 4vw, 18px)', // Increased font size range
                     lineHeight: '1.1',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
@@ -1585,7 +1595,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
 
               {/* Opponent Profile - Right */}
               <motion.div 
-                style={{ width: '51vw', height: '20vh' }}
+                style={{ width: '52vw', height: '20vh' }} // Slightly wider to overlap viewport more
                 initial={{ opacity: 0, x: 100, scale: 0.8 }}
                 animate={{ 
                   opacity: 1, 
@@ -1600,10 +1610,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
                 exit={{ opacity: 0, x: 80, scale: 0.9 }}
               >
                 <motion.div
-                  className="relative rounded-xl overflow-hidden shadow-lg"
+                  className="relative overflow-hidden shadow-lg"
                   style={{ 
                     height: '100%',
-                    width: '100%'
+                    width: '100%',
+                    borderTopLeftRadius: '0', // Remove top-left radius
+                    borderTopRightRadius: '0', // Remove top-right radius  
+                    borderBottomLeftRadius: '12px', // Keep bottom-left radius
+                    borderBottomRightRadius: '0' // Remove bottom-right radius (right card)
                   }}
                   animate={{
                     boxShadow: opponent.turnActive 
@@ -1683,7 +1697,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
                   style={{ 
                     fontFamily: 'Audiowide',
                     textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                    fontSize: 'clamp(10px, 3vw, 14px)',
+                    fontSize: 'clamp(14px, 4vw, 18px)', // Increased font size range
                     lineHeight: '1.1',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
