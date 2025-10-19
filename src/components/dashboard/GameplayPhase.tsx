@@ -308,7 +308,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               {/* Potential Total Score Counter - Left side */}
               {matchData.gameData.turnScore > 0 && (
                 <motion.div
-                  key={`potential-total-${matchData.gameData.turnScore}-${currentPlayer.score}`}
+                  key={`potential-total-${matchData.gameData.turnScore}-${currentPlayer.score || 0}`}
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut" }}
@@ -321,14 +321,14 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     Total
                   </p>
                   <motion.p 
-                    key={`total-value-${matchData.gameData.turnScore + currentPlayer.score}`}
+                    key={`total-value-${(matchData.gameData.turnScore || 0) + (currentPlayer.score || 0)}`}
                     initial={{ scale: 1.3, color: "#60A5FA" }}
                     animate={{ scale: 1, color: "#93C5FD" }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
                     className="text-lg md:text-xl font-bold text-blue-300" 
                     style={{ fontFamily: "Audiowide" }}
                   >
-                    {matchData.gameData.turnScore + currentPlayer.score}
+                    {(matchData.gameData.turnScore || 0) + (currentPlayer.score || 0)}
                   </motion.p>
                 </motion.div>
               )}
