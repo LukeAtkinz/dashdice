@@ -1566,7 +1566,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
   // �🔍 Function to start real player waiting period before allowing bots
   const startRealPlayerWaitingPeriod = (sessionId: string) => {
-    console.log('⏳ Starting real player waiting period (15 seconds) before considering bots...');
+    console.log('⏳ Starting real player waiting period (3 seconds) before considering bots...');
     
     // Clear any existing timer
     if (botCountdownTimer) {
@@ -1574,7 +1574,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       setBotCountdownTimer(null);
     }
     
-    // Set a 15-second waiting period for real players
+    // Set a 3-second waiting period for real players
     const realPlayerWaitTimer = setTimeout(() => {
       console.log('⏳ Real player waiting period finished. Checking if opponent joined...');
       
@@ -1584,20 +1584,20 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                              !currentWaitingRoom.opponentData.playerId.startsWith('bot_');
       
       if (!hasRealOpponent) {
-        console.log('🤖 No real players joined in 15 seconds. Starting bot fallback...');
+        console.log('🤖 No real players joined in 3 seconds. Starting bot fallback...');
         startBotCountdown(sessionId);
       } else {
         console.log('✅ Real player joined! Canceling bot fallback.');
       }
-    }, 15000); // 15 seconds for real players
+    }, 3000); // 3 seconds for real players
     
     // Store timer reference for cleanup
     setBotCountdownTimer(realPlayerWaitTimer);
   };
 
-  // 🤖 Function to start bot fallback countdown (7 seconds)
+  // 🤖 Function to start bot fallback countdown (immediate)
   const startBotCountdown = (sessionId: string) => {
-    console.log('🤖 Starting bot fallback countdown (7 seconds)...');
+    console.log('🤖 Starting bot fallback countdown (immediate)...');
     
     // Clear any existing timer to prevent multiple countdowns
     if (botCountdownTimer) {
@@ -1606,7 +1606,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     }
     
     setBotFallbackActive(true);
-    setBotCountdown(7);
+    setBotCountdown(1);
     
     const timer = setInterval(() => {
       setBotCountdown((prev) => {

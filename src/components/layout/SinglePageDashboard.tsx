@@ -19,8 +19,7 @@ import { RankedDashboard } from '@/components/ranked/RankedDashboard';
 import { SoftRankedLeaderboard } from '@/components/ranked/SoftRankedLeaderboard';
 import SwipeRightChat from '@/components/chat/SwipeRightChat';
 import { GlobalRematchNotification } from '@/components/rematch/GlobalRematchNotification';
-import { GameInvitationNotification } from '@/components/friends/GameInvitationNotification';
-import InviteAcceptedNotification from '@/components/friends/InviteAcceptedNotification';
+
 import PersistentNotificationManager from '@/components/notifications/PersistentNotificationManager';
 import { GameType } from '@/types/ranked';
 import { RematchProvider } from '@/context/RematchContext';
@@ -33,6 +32,7 @@ import { useOnlinePlayerCount } from '@/hooks/useOnlinePlayerCount';
 import NotificationBadge from '@/components/ui/NotificationBadge';
 import { MobileBackgroundControl } from '@/components/ui/MobileBackgroundControl';
 import { createTestMatch } from '@/utils/testMatchData';
+import { NavigationWithInvitations } from '@/components/navigation/NavigationWithInvitations';
 
 const DashboardContent: React.FC = () => {
   const { currentSection, sectionParams, setCurrentSection, previousSection, isGameOver } = useNavigation();
@@ -252,15 +252,19 @@ const DashboardContent: React.FC = () => {
       }}>
         {/* Top Navigation Header */}
         <header className={`${(currentSection === 'match' || currentSection === 'waiting-room') ? 'hidden' : 'hidden md:flex'} flex-shrink-0 w-full flex-row items-center justify-center gap-[1.25rem] relative z-30 px-[1rem] md:px-[4rem] py-[1rem] md:py-[2rem]`}>
-          <div className="flex-1 flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px] w-full max-w-none" style={{ 
+          <div className="flex-1" style={{ 
             background: DisplayBackgroundEquip?.name === 'On A Mission' 
               ? 'transparent'
               : "var(--ui-navbar-bg)",
             backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' ? 'none' : 'none'
           }}>
-            
-            {/* Left Navigation */}
-            <div className="flex flex-row items-center justify-start gap-[1rem] md:gap-[2rem]">
+            <NavigationWithInvitations
+              currentSection={currentSection}
+              isGameOver={isGameOver}
+              onSectionChange={handleSectionChange}
+            >
+              {/* Left Navigation */}
+              <div className="flex flex-row items-center justify-start gap-[1rem] md:gap-[2rem]">
               {/* Logo Section */}
               <div className="flex flex-row items-center justify-start gap-[1rem]">
                 <img
@@ -599,6 +603,7 @@ const DashboardContent: React.FC = () => {
                 </span>
               </button>
             </div>
+            </NavigationWithInvitations>
           </div>
         </header>
 
@@ -779,11 +784,7 @@ const DashboardContent: React.FC = () => {
         {/* Global Rematch Notifications */}
         <GlobalRematchNotification />
         
-        {/* Game Invitation Notifications */}
-        <GameInvitationNotification />
-        
-        {/* Invite Accepted Notifications */}
-        <InviteAcceptedNotification />
+        {/* Game Invitation Notifications - Now handled by NavigationWithInvitations */}
         
         {/* Persistent Match Notifications */}
         <PersistentNotificationManager />
