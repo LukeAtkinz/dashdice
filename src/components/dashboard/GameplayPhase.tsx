@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MatchData } from '@/types/match';
 import { SlotMachineDice } from './SlotMachineDice';
 import { useBackground } from '@/context/BackgroundContext';
@@ -159,12 +159,12 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   return (
     <React.Fragment>
       <div className="flex flex-col items-center justify-center">
-        {/* Always Visible Game Status Box - Top of Dice Container - Hidden on mobile */}
+        {/* Game Status Box - Improved animations and turn display */}
         <motion.div 
           className="mb-8 hidden md:block"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
         >
           <div 
             className="inline-block px-4 md:px-8 py-3 md:py-4 border-2 border-white/30 rounded-2xl min-w-[250px] md:min-w-[300px]"
@@ -173,79 +173,128 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               backdropFilter: "blur(5px)"
             }}
           >
-            {!isMyTurn ? (
-              // Show "YOUR TURN" when it's opponent's turn - HIDDEN ON DESKTOP per user request
-              <motion.div 
-                className="text-center md:hidden" // Added md:hidden to hide on desktop
-                initial={{ scale: 0.9 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                <p 
-                  className="text-xl md:text-2xl font-bold text-yellow-400" 
-                  style={{ fontFamily: "Audiowide" }}
+            <AnimatePresence mode="wait">
+              {!isMyTurn ? (
+                // Opponent's turn - clear messaging
+                <motion.div 
+                  key="opponent-turn"
+                  className="text-center"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
                 >
-                  YOUR TURN
-                </p>
-                <p 
-                  className="text-base md:text-lg text-gray-300 mt-1"
-                  style={{ fontFamily: "Audiowide" }}
-                >
-                  Waiting for {opponent.playerDisplayName}
-                </p>
-              </motion.div>
-            ) : gameRuleResult && !matchData.gameData.isRolling && matchData.gameData.diceOne > 0 && matchData.gameData.diceTwo > 0 ? (
-              // Show game rule result when dice have been rolled - HIDDEN ON DESKTOP per user request
-              <motion.div 
-                className="text-center md:hidden" // Added md:hidden to hide on desktop
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <p 
-                  className={`text-lg md:text-xl font-bold ${gameRuleResult.color}`} 
-                  style={{ fontFamily: "Audiowide" }}
-                >
-                  {gameRuleResult.rule}
-                </p>
-                <p 
-                  className="text-base md:text-lg text-white mt-1"
-                  style={{ fontFamily: "Audiowide" }}
-                >
-                  {gameRuleResult.result}
-                </p>
-              </motion.div>
-            ) : (
-              // Default state - show turn instructions - HIDDEN ON DESKTOP per user request
-              <motion.div 
-                className="text-center md:hidden" // Added md:hidden to hide on desktop
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                <p 
-                  className="text-lg md:text-xl font-bold text-blue-400" 
-                  style={{ fontFamily: "Audiowide" }}
-                >
-                  YOUR TURN
-                </p>
-                {matchData.gameData.hasDoubleMultiplier ? (
                   <p 
-                    className="text-base md:text-lg text-purple-400 mt-1 animate-pulse"
+                    className="text-xl md:text-2xl font-bold text-red-400" 
                     style={{ fontFamily: "Audiowide" }}
                   >
-                    🔥 2x MULTIPLIER ACTIVE! 🔥
+                    {opponent.playerDisplayName}'S TURN
                   </p>
-                ) : (
                   <p 
                     className="text-base md:text-lg text-gray-300 mt-1"
                     style={{ fontFamily: "Audiowide" }}
                   >
-                    Roll the dice to play
+                    Waiting for their move...
                   </p>
-                )}
-              </motion.div>
-            )}
+                </motion.div>
+              ) : matchData.gameData.isRolling ? (
+                // Rolling state
+                <motion.div 
+                  key="rolling-state"
+                  className="text-center"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                >
+                  <p 
+                    className="text-xl md:text-2xl font-bold text-purple-400 animate-pulse" 
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    ROLLING DICE...
+                  </p>
+                  <p 
+                    className="text-base md:text-lg text-gray-300 mt-1"
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    See what you got!
+                  </p>
+                </motion.div>
+              ) : gameRuleResult && matchData.gameData.diceOne > 0 && matchData.gameData.diceTwo > 0 ? (
+                // Show game rule result after roll
+                <motion.div 
+                  key="game-result"
+                  className="text-center"
+                  initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.8, y: -20 }}
+                  transition={{ duration: 0.5, ease: "backOut" }}
+                >
+                  <motion.p 
+                    className={`text-lg md:text-xl font-bold ${gameRuleResult.color}`} 
+                    style={{ fontFamily: "Audiowide" }}
+                    initial={{ scale: 1.2 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.3, delay: 0.2 }}
+                  >
+                    {gameRuleResult.rule}
+                  </motion.p>
+                  <motion.p 
+                    className="text-base md:text-lg text-white mt-1"
+                    style={{ fontFamily: "Audiowide" }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3, delay: 0.4 }}
+                  >
+                    {gameRuleResult.result}
+                  </motion.p>
+                </motion.div>
+              ) : (
+                // Your turn - ready to roll
+                <motion.div 
+                  key="your-turn"
+                  className="text-center"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                >
+                  <p 
+                    className="text-lg md:text-xl font-bold text-green-400" 
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    YOUR TURN
+                  </p>
+                  <AnimatePresence mode="wait">
+                    {matchData.gameData.hasDoubleMultiplier ? (
+                      <motion.p 
+                        key="multiplier-active"
+                        className="text-base md:text-lg text-purple-400 mt-1"
+                        style={{ fontFamily: "Audiowide" }}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        🔥 2x MULTIPLIER ACTIVE! 🔥
+                      </motion.p>
+                    ) : (
+                      <motion.p 
+                        key="roll-instruction"
+                        className="text-base md:text-lg text-gray-300 mt-1"
+                        style={{ fontFamily: "Audiowide" }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        Roll the dice to play
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </motion.div>
 
@@ -412,71 +461,101 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           </div>
         )}
 
-        {/* Action Buttons - Desktop Only - Moved further down */}
-        <div className="hidden md:flex gap-4 mb-8 mt-4">
-          {isMyTurn ? (
-            <>
-              <button
-                onClick={onRollDice}
-                disabled={!canRoll}
-                className={`px-12 py-6 rounded-xl text-2xl font-bold transition-all transform ${
-                  canRoll
-                    ? 'text-white hover:scale-105'
-                    : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
-                }`}
-                style={{ 
-                  fontFamily: "Audiowide",
-                  ...(canRoll ? getButtonGradientStyle('rgba(59, 130, 246, 0.8)') : {})
-                }}
-              >
-                PLAY
-              </button>
-              
-              {/* Only show bank button for modes other than True Grit on desktop */}
-              {matchData.gameMode !== 'true-grit' && (
-                <button
-                  onClick={onBankScore}
-                  disabled={!canBank}
+        {/* Action Buttons - Desktop Only with improved animations */}
+        <AnimatePresence mode="wait">
+          <motion.div 
+            key={`buttons-${isMyTurn}-${canRoll}-${canBank}`}
+            className="hidden md:flex gap-4 mb-8 mt-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+          >
+            {isMyTurn ? (
+              <>
+                <motion.button
+                  onClick={onRollDice}
+                  disabled={!canRoll}
                   className={`px-12 py-6 rounded-xl text-2xl font-bold transition-all transform ${
-                    canBank
+                    canRoll
                       ? 'text-white hover:scale-105'
                       : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
                   }`}
                   style={{ 
                     fontFamily: "Audiowide",
-                    ...(canBank ? getButtonGradientStyle('rgba(34, 197, 94, 0.8)') : {})
+                    ...(canRoll ? getButtonGradientStyle('rgba(59, 130, 246, 0.8)') : {})
+                  }}
+                  initial={{ scale: 0.95, opacity: 0.8 }}
+                  animate={{ 
+                    scale: canRoll ? 1 : 0.95, 
+                    opacity: canRoll ? 1 : 0.6 
+                  }}
+                  whileHover={canRoll ? { scale: 1.05 } : {}}
+                  whileTap={canRoll ? { scale: 0.95 } : {}}
+                  transition={{ duration: 0.2 }}
+                >
+                  PLAY
+                </motion.button>
+                
+                {/* Only show bank button for modes other than True Grit on desktop */}
+                {matchData.gameMode !== 'true-grit' && (
+                  <motion.button
+                    onClick={onBankScore}
+                    disabled={!canBank}
+                    className={`px-12 py-6 rounded-xl text-2xl font-bold transition-all transform ${
+                      canBank
+                        ? 'text-white hover:scale-105'
+                        : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
+                    }`}
+                    style={{ 
+                      fontFamily: "Audiowide",
+                      ...(canBank ? getButtonGradientStyle('rgba(34, 197, 94, 0.8)') : {})
+                    }}
+                    initial={{ scale: 0.95, opacity: 0.8 }}
+                    animate={{ 
+                      scale: canBank ? 1 : 0.95, 
+                      opacity: canBank ? 1 : 0.6 
+                    }}
+                    whileHover={canBank ? { scale: 1.05 } : {}}
+                    whileTap={canBank ? { scale: 0.95 } : {}}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {matchData.gameMode === 'last-line' ? 'ATTACK' : 'BANK'}
+                  </motion.button>
+                )}
+              </>
+            ) : (
+              <motion.div 
+                className="text-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <p 
+                  className="text-gray-300 text-xl"
+                  style={{ 
+                    fontFamily: "Audiowide",
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
                   }}
                 >
-                  {matchData.gameMode === 'last-line' ? 'ATTACK' : 'BANK'}
-                </button>
-              )}
-            </>
-          ) : (
-            <div className="text-center">
-              <p 
-                className="text-gray-300 text-xl"
-                style={{ 
-                  fontFamily: "Audiowide",
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-                }}
-              >
-                Waiting for {opponent.playerDisplayName} to play...
-              </p>
-            </div>
-          )}
-        </div>
+                  Waiting for {opponent.playerDisplayName} to play...
+                </p>
+              </motion.div>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      {/* Mobile Combined Abilities and Buttons Container */}
+      {/* Mobile Combined Abilities and Buttons Container - Transparent background */}
       <div 
-        className="md:hidden fixed bottom-0 left-0 right-0 w-full z-50 backdrop-blur-sm"
+        className="md:hidden fixed bottom-0 left-0 right-0 w-full z-50"
         style={{ 
-          background: getMobileContainerGradient()
+          background: 'transparent'
         }}
       >
-        {/* Abilities Display Section */}
+        {/* Abilities Display Section - Transparent background on mobile */}
         {user && onAbilityUsed && (
-          <div className="px-2 py-3">
+          <div className="px-2 py-3" style={{ background: 'transparent' }}>
             <InlineAbilitiesDisplay
               matchData={matchData}
               onAbilityUsed={onAbilityUsed}
@@ -487,52 +566,31 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           </div>
         )}
         
-        {/* Buttons Section */}
-        <div 
-          className="w-full flex flex-row items-stretch"
-          style={{ 
-            height: 'max(70px, env(safe-area-inset-bottom) + 70px)'
-          }}
-        >
-          {isMyTurn ? (
-            <>
-              <button
-                onClick={onRollDice}
-                disabled={!canRoll}
-                className={`text-xl font-bold transition-all ${
-                  canRoll
-                    ? 'text-white active:scale-95'
-                    : 'cursor-not-allowed'
-                }`}
-                style={{ 
-                  width: (matchData.gameMode === 'true-grit') ? '100%' : '50%',
-                  height: '100%',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  fontFamily: "Audiowide",
-                  textTransform: "uppercase" as const,
-                  border: 'none',
-                  borderRadius: '0',
-                  background: getMobileContainerGradient(), // Match abilities container background
-                  backdropFilter: 'blur(2px)',
-                }}
-              >
-                {canRoll ? 'PLAY' : ''} {/* Hide text when not available */}
-              </button>
-              
-              {/* Only show bank button for modes other than True Grit on mobile */}
-              {matchData.gameMode !== 'true-grit' && (
-                <button
-                  onClick={onBankScore}
-                  disabled={!canBank}
+        {/* Buttons Section with improved mobile animations */}
+        <AnimatePresence mode="wait">
+          <motion.div 
+            key={`mobile-buttons-${isMyTurn}-${canRoll}-${canBank}`}
+            className="w-full flex flex-row items-stretch"
+            style={{ 
+              height: 'max(70px, env(safe-area-inset-bottom) + 70px)'
+            }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            {isMyTurn ? (
+              <>
+                <motion.button
+                  onClick={onRollDice}
+                  disabled={!canRoll}
                   className={`text-xl font-bold transition-all ${
-                    canBank
+                    canRoll
                       ? 'text-white active:scale-95'
                       : 'cursor-not-allowed'
                   }`}
                   style={{ 
-                    width: '50%',
+                    width: (matchData.gameMode === 'true-grit') ? '100%' : '50%',
                     height: '100%',
                     display: 'flex',
                     justifyContent: 'center',
@@ -541,31 +599,97 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     textTransform: "uppercase" as const,
                     border: 'none',
                     borderRadius: '0',
-                    background: getMobileContainerGradient(), // Match abilities container background
-                    backdropFilter: 'blur(2px)',
+                    background: 'transparent',
+                    backdropFilter: 'none',
                   }}
+                  initial={{ opacity: 0.7 }}
+                  animate={{ opacity: canRoll ? 1 : 0.5 }}
+                  whileTap={canRoll ? { scale: 0.95 } : {}}
+                  transition={{ duration: 0.2 }}
                 >
-                  {canBank ? (matchData.gameMode === 'last-line' ? 'ATTACK' : 'BANK') : ''} {/* Hide text when not available */}
-                </button>
-              )}
-            </>
-          ) : (
-            <div 
-              className="w-full h-full flex items-center justify-center"
-              style={{ background: getMobileContainerGradient() }} // Match abilities container background
-            >
-              <p 
-                className="text-gray-300 text-lg"
-                style={{ 
-                  fontFamily: "Audiowide",
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-                }}
+                  <AnimatePresence mode="wait">
+                    {canRoll && (
+                      <motion.span
+                        key="play-text"
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -5 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        PLAY
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+                
+                {/* Only show bank button for modes other than True Grit on mobile */}
+                {matchData.gameMode !== 'true-grit' && (
+                  <motion.button
+                    onClick={onBankScore}
+                    disabled={!canBank}
+                    className={`text-xl font-bold transition-all ${
+                      canBank
+                        ? 'text-white active:scale-95'
+                        : 'cursor-not-allowed'
+                    }`}
+                    style={{ 
+                      width: '50%',
+                      height: '100%',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      fontFamily: "Audiowide",
+                      textTransform: "uppercase" as const,
+                      border: 'none',
+                      borderRadius: '0',
+                      background: 'transparent',
+                      backdropFilter: 'none',
+                    }}
+                    initial={{ opacity: 0.7 }}
+                    animate={{ opacity: canBank ? 1 : 0.5 }}
+                    whileTap={canBank ? { scale: 0.95 } : {}}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <AnimatePresence mode="wait">
+                      {canBank && (
+                        <motion.span
+                          key="bank-text"
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -5 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          {matchData.gameMode === 'last-line' ? 'ATTACK' : 'BANK'}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
+                )}
+              </>
+            ) : (
+              <motion.div 
+                className="w-full h-full flex items-center justify-center"
+                style={{ background: 'transparent' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
               >
-                Waiting for {opponent.playerDisplayName}...
-              </p>
-            </div>
-          )}
-        </div>
+                <motion.p 
+                  className="text-gray-300 text-lg"
+                  style={{ 
+                    fontFamily: "Audiowide",
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+                  }}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.1 }}
+                >
+                  Waiting for {opponent.playerDisplayName}...
+                </motion.p>
+              </motion.div>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </React.Fragment>
   );

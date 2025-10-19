@@ -55,7 +55,7 @@ export interface InviteNotification {
 export class EnhancedFriendInviteService {
   private static readonly INVITES_COLLECTION = 'friendGameInvites';
   private static readonly NOTIFICATIONS_COLLECTION = 'gameNotifications';
-  private static readonly INVITE_EXPIRY_MINUTES = 1; // Changed to 1 minute (60 seconds)
+  private static readonly INVITE_EXPIRY_MINUTES = 0.5; // Changed to 30 seconds
 
   /**
    * Send a game invitation to a friend with enhanced features

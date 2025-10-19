@@ -47,6 +47,11 @@ export function FriendsProvider({ children }: FriendsProviderProps) {
     // Start presence tracking for current user
     PresenceService.startPresenceTracking(user.uid);
 
+    // Start periodic cleanup of expired invitations (every 30 seconds)
+    const cleanupInterval = setInterval(() => {
+      EnhancedFriendInviteService.cleanupExpiredInvitations();
+    }, 30000); // 30 seconds
+
     let unsubscribeFriends: (() => void) | undefined;
     let unsubscribeRequests: (() => void) | undefined;
     let unsubscribeInvitations: (() => void) | undefined;
@@ -89,6 +94,7 @@ export function FriendsProvider({ children }: FriendsProviderProps) {
       unsubscribeInvitations?.();
       unsubscribePresences?.();
       PresenceService.stopPresenceTracking();
+      clearInterval(cleanupInterval);
     };
   }, [user?.uid]);
 
