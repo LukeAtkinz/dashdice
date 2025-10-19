@@ -64,9 +64,9 @@ export const RematchProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // Remove the accepted rematch from the list
       setIncomingRematches(prev => prev.filter(r => r.id !== rematchId));
       
-      // Navigate to the waiting room first, then to match
-      setCurrentSection('waiting-room' as any, { 
-        roomId: newMatchId,
+      // Navigate directly to the match instead of waiting room for rematches
+      setCurrentSection('match', { 
+        matchId: newMatchId,
         gameMode: gameMode
       });
       

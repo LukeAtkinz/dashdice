@@ -128,12 +128,17 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
         
         if (relevantRematch) {
           setIncomingRematch(relevantRematch);
+          
+          // Hide rematch selector instantly when receiving an incoming rematch
+          if (rematchState === 'selecting') {
+            setRematchState('idle');
+          }
         }
       }
     );
     
     return () => unsubscribe();
-  }, [user?.uid, opponent.playerId]);
+  }, [user?.uid, opponent.playerId, rematchState]);
 
   // Listen for rematch room updates when we're the requester
   useEffect(() => {

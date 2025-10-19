@@ -317,8 +317,23 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             delay: 0.4
           }}
         >
-          {/* Dice 1 - Slot Machine */}
-          <div className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" style={{ width: 'min(600px, 70vw)' }}>
+          {/* Dice 1 - Enhanced Slot Machine */}
+          <motion.div 
+            className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" 
+            style={{ width: 'min(600px, 70vw)' }}
+            initial={{ opacity: 0, x: -100, rotateY: -15 }}
+            animate={{ opacity: 1, x: 0, rotateY: 0 }}
+            transition={{ 
+              duration: 0.8, 
+              ease: [0.4, 0, 0.2, 1],
+              delay: 0.2
+            }}
+            whileHover={{ 
+              scale: 1.05,
+              rotateX: 2,
+              transition: { duration: 0.2 }
+            }}
+          >
             <SlotMachineDice
               diceNumber={1}
               animationState={dice1Animation}
@@ -327,7 +342,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               isGameRolling={matchData.gameData.isRolling || false}
               matchData={matchData}
             />
-          </div>
+          </motion.div>
           
           {/* Turn Score - Positioned absolutely between dice - Mobile bigger and more padding */}
           <div 
@@ -338,49 +353,125 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               className="text-center relative"
             >
-              {/* Turn Score Container - Smaller on Mobile */}
-              <div className="inline-block px-4 md:px-8 py-3 md:py-4 bg-yellow-600/30 border-2 border-yellow-500 rounded-2xl backdrop-blur-sm shadow-xl">
-                <p 
-                  className="text-sm md:text-lg text-yellow-300 mb-1 md:mb-1"
-                  style={{ fontFamily: "Audiowide" }}
-                >
-                  Turn Score
-                </p>
-                <p 
-                  className="text-2xl md:text-4xl font-bold text-yellow-400" 
-                  style={{ fontFamily: "Audiowide" }}
-                >
-                  {matchData.gameData.turnScore}
-                </p>
-              </div>
+              {/* Turn Score Container - Dynamic Colors */}
+              {(() => {
+                const turnScore = matchData.gameData.turnScore || 0;
+                const dice1 = matchData.gameData.diceOne;
+                const dice2 = matchData.gameData.diceTwo;
+                const isRolling = matchData.gameData.isRolling;
+                
+                // Check if dice are doubles (for gold flash effect)
+                const areDoublesGold = dice1 && dice2 && dice1 === dice2 && !isRolling;
+                
+                // Determine color based on turn score
+                let textColor = 'text-gray-400'; // 9 or below
+                let borderColor = 'border-gray-500';
+                let bgColor = 'bg-gray-600/30';
+                
+                if (turnScore >= 50) {
+                  textColor = areDoublesGold ? 'text-yellow-400' : 'text-yellow-400'; // Gold
+                  borderColor = areDoublesGold ? 'border-yellow-500' : 'border-yellow-500';
+                  bgColor = areDoublesGold ? 'bg-yellow-600/30' : 'bg-yellow-600/30';
+                } else if (turnScore >= 30) {
+                  textColor = areDoublesGold ? 'text-yellow-400' : 'text-red-400'; // Red
+                  borderColor = areDoublesGold ? 'border-yellow-500' : 'border-red-500';
+                  bgColor = areDoublesGold ? 'bg-yellow-600/30' : 'bg-red-600/30';
+                } else if (turnScore >= 20) {
+                  textColor = areDoublesGold ? 'text-yellow-400' : 'text-blue-400'; // Blue
+                  borderColor = areDoublesGold ? 'border-yellow-500' : 'border-blue-500';
+                  bgColor = areDoublesGold ? 'bg-yellow-600/30' : 'bg-blue-600/30';
+                } else if (turnScore >= 10) {
+                  textColor = areDoublesGold ? 'text-yellow-400' : 'text-purple-400'; // Purple
+                  borderColor = areDoublesGold ? 'border-yellow-500' : 'border-purple-500';
+                  bgColor = areDoublesGold ? 'bg-yellow-600/30' : 'bg-purple-600/30';
+                }
+                
+                return (
+                  <motion.div 
+                    className={`inline-block px-4 md:px-8 py-3 md:py-4 ${bgColor} border-2 ${borderColor} rounded-2xl backdrop-blur-sm shadow-xl`}
+                    animate={areDoublesGold ? {
+                      boxShadow: [
+                        '0 0 10px rgba(255, 215, 0, 0.7), 0 0 20px rgba(255, 215, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3)',
+                        '0 0 15px rgba(255, 215, 0, 0.9), 0 0 30px rgba(255, 215, 0, 0.7), 0 0 45px rgba(255, 215, 0, 0.5)',
+                        '0 0 10px rgba(255, 215, 0, 0.7), 0 0 20px rgba(255, 215, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3)'
+                      ]
+                    } : {}}
+                    transition={areDoublesGold ? {
+                      duration: 0.6,
+                      repeat: Infinity,
+                      repeatType: "reverse"
+                    } : {}}
+                  >
+                    <p 
+                      className={`text-sm md:text-lg ${textColor === 'text-yellow-400' ? 'text-yellow-300' : textColor.replace('400', '300')} mb-1 md:mb-1`}
+                      style={{ fontFamily: "Audiowide" }}
+                    >
+                      Turn Score
+                    </p>
+                    <motion.p 
+                      className={`text-2xl md:text-4xl font-bold ${textColor}`}
+                      style={{ fontFamily: "Audiowide" }}
+                      animate={areDoublesGold ? {
+                        textShadow: [
+                          '0 0 10px rgba(255, 215, 0, 0.8)',
+                          '0 0 20px rgba(255, 215, 0, 1.0)',
+                          '0 0 10px rgba(255, 215, 0, 0.8)'
+                        ]
+                      } : {}}
+                      transition={areDoublesGold ? {
+                        duration: 0.6,
+                        repeat: Infinity,
+                        repeatType: "reverse"
+                      } : {}}
+                    >
+                      {matchData.gameData.turnScore}
+                    </motion.p>
+                  </motion.div>
+                );
+              })()}
               
               {/* Potential Total Score Counter - Left side */}
-              {matchData.gameData.turnScore > 0 && (
-                <motion.div
-                  key={`potential-total-${matchData.gameData.turnScore}-${currentPlayer.score || 0}`}
-                  initial={{ opacity: 0, scale: 0.5, x: -10 }}
-                  animate={{ opacity: 1, scale: 1, x: 0 }}
-                  transition={{ duration: 0.4, ease: "backOut" }}
-                  className="absolute -left-20 md:-left-28 top-1/2 transform -translate-y-1/2 px-3 md:px-4 py-2 md:py-3 bg-blue-600/40 border-2 border-blue-400 rounded-xl backdrop-blur-sm shadow-xl"
-                >
-                  <p 
-                    className="text-xs md:text-sm text-blue-300 mb-1" 
-                    style={{ fontFamily: "Audiowide" }}
+              {matchData.gameData.turnScore > 0 && (() => {
+                const totalScore = (matchData.gameData.turnScore || 0) + (currentPlayer.score || 0);
+                const isThreeDigits = totalScore >= 100;
+                
+                return (
+                  <motion.div
+                    key={`potential-total-${matchData.gameData.turnScore}-${currentPlayer.score || 0}`}
+                    initial={{ opacity: 0, scale: 0.5, x: -10 }}
+                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                    transition={{ duration: 0.4, ease: "backOut" }}
+                    className="absolute -left-20 md:-left-28 top-1/2 transform -translate-y-1/2 bg-blue-600/40 border-2 border-blue-400 rounded-xl backdrop-blur-sm shadow-xl"
+                    style={{
+                      padding: '8px 12px',
+                      minWidth: isThreeDigits ? 'auto' : '64px',
+                      minHeight: isThreeDigits ? 'auto' : '64px',
+                      aspectRatio: isThreeDigits ? 'auto' : '1 / 1',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center'
+                    }}
                   >
-                    Total
-                  </p>
-                  <motion.p 
-                    key={`total-value-${(matchData.gameData.turnScore || 0) + (currentPlayer.score || 0)}`}
-                    initial={{ scale: 1.3, color: "#60A5FA" }}
-                    animate={{ scale: 1, color: "#93C5FD" }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-xl font-bold text-blue-300" 
-                    style={{ fontFamily: "Audiowide" }}
-                  >
-                    {(matchData.gameData.turnScore || 0) + (currentPlayer.score || 0)}
-                  </motion.p>
-                </motion.div>
-              )}
+                    <p 
+                      className="text-xs md:text-sm text-blue-300 mb-1" 
+                      style={{ fontFamily: "Audiowide" }}
+                    >
+                      Total
+                    </p>
+                    <motion.p 
+                      key={`total-value-${totalScore}`}
+                      initial={{ scale: 1.3, color: "#60A5FA" }}
+                      animate={{ scale: 1, color: "#93C5FD" }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                      className="text-lg md:text-xl font-bold text-blue-300" 
+                      style={{ fontFamily: "Audiowide" }}
+                    >
+                      {totalScore}
+                    </motion.p>
+                  </motion.div>
+                );
+              })()}
               
               {/* Multiplier Indicators - Absolutely positioned */}
               {/* Zero Hour Enhanced Multiplier */}
@@ -433,8 +524,23 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             </motion.div>
           </div>
           
-          {/* Dice 2 - Slot Machine */}
-          <div className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" style={{ width: 'min(600px, 70vw)' }}>
+          {/* Dice 2 - Enhanced Slot Machine */}
+          <motion.div 
+            className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" 
+            style={{ width: 'min(600px, 70vw)' }}
+            initial={{ opacity: 0, x: 100, rotateY: 15 }}
+            animate={{ opacity: 1, x: 0, rotateY: 0 }}
+            transition={{ 
+              duration: 0.8, 
+              ease: [0.4, 0, 0.2, 1],
+              delay: 0.4 // Slight delay after first dice
+            }}
+            whileHover={{ 
+              scale: 1.05,
+              rotateX: -2,
+              transition: { duration: 0.2 }
+            }}
+          >
             <SlotMachineDice
               diceNumber={2}
               animationState={dice2Animation}
@@ -443,13 +549,27 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               isGameRolling={matchData.gameData.isRolling || false}
               matchData={matchData}
             />
-          </div>
+          </motion.div>
         </motion.div>
 
-        {/* Desktop Abilities Display - Using simplified component */}
+        {/* Desktop Abilities Display - Enhanced animations */}
         {user && onAbilityUsed && (
-          <div className="hidden md:block mb-6 mt-8 w-full flex justify-center">
-            <div className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" style={{ width: 'min(600px, 70vw)' }}>
+          <motion.div 
+            className="hidden md:block mb-6 mt-8 w-full flex justify-center"
+            initial={{ opacity: 0, y: 30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ 
+              duration: 0.6, 
+              ease: [0.4, 0, 0.2, 1],
+              delay: 0.8 // Delay after dice animation
+            }}
+          >
+            <motion.div 
+              className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" 
+              style={{ width: 'min(600px, 70vw)' }}
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
+            >
               <InlineAbilitiesDisplay
                 matchData={matchData}
                 onAbilityUsed={onAbilityUsed}
@@ -457,19 +577,23 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 playerId={user.uid}
                 className="justify-between"
               />
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
 
-        {/* Action Buttons - Desktop Only with improved animations */}
+        {/* Action Buttons - Desktop Enhanced Animations */}
         <AnimatePresence mode="wait">
           <motion.div 
             key={`buttons-${isMyTurn}-${canRoll}-${canBank}`}
             className="hidden md:flex gap-4 mb-8 mt-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
+            initial={{ opacity: 0, y: 30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -30, scale: 0.9 }}
+            transition={{ 
+              duration: 0.5, 
+              ease: [0.4, 0, 0.2, 1],
+              staggerChildren: 0.1
+            }}
           >
             {isMyTurn ? (
               <>
@@ -485,14 +609,24 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     fontFamily: "Audiowide",
                     ...(canRoll ? getButtonGradientStyle('rgba(59, 130, 246, 0.8)') : {})
                   }}
-                  initial={{ scale: 0.95, opacity: 0.8 }}
+                  initial={{ scale: 0.8, opacity: 0, y: 20 }}
                   animate={{ 
                     scale: canRoll ? 1 : 0.95, 
-                    opacity: canRoll ? 1 : 0.6 
+                    opacity: canRoll ? 1 : 0.6,
+                    y: 0
                   }}
-                  whileHover={canRoll ? { scale: 1.05 } : {}}
-                  whileTap={canRoll ? { scale: 0.95 } : {}}
-                  transition={{ duration: 0.2 }}
+                  whileHover={canRoll ? { 
+                    scale: 1.05, 
+                    boxShadow: "0 8px 25px rgba(59, 130, 246, 0.4)"
+                  } : {}}
+                  whileTap={canRoll ? { 
+                    scale: 0.95,
+                    boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)"
+                  } : {}}
+                  transition={{ 
+                    duration: 0.3,
+                    ease: [0.4, 0, 0.2, 1]
+                  }}
                 >
                   PLAY
                 </motion.button>
@@ -511,16 +645,27 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       fontFamily: "Audiowide",
                       ...(canBank ? getButtonGradientStyle('rgba(34, 197, 94, 0.8)') : {})
                     }}
-                    initial={{ scale: 0.95, opacity: 0.8 }}
+                    initial={{ scale: 0.8, opacity: 0, y: 20 }}
                     animate={{ 
                       scale: canBank ? 1 : 0.95, 
-                      opacity: canBank ? 1 : 0.6 
+                      opacity: canBank ? 1 : 0.6,
+                      y: 0 
                     }}
-                    whileHover={canBank ? { scale: 1.05 } : {}}
-                    whileTap={canBank ? { scale: 0.95 } : {}}
-                    transition={{ duration: 0.2 }}
+                    whileHover={canBank ? { 
+                      scale: 1.05,
+                      boxShadow: "0 8px 25px rgba(34, 197, 94, 0.4)"
+                    } : {}}
+                    whileTap={canBank ? { 
+                      scale: 0.95,
+                      boxShadow: "0 4px 15px rgba(34, 197, 94, 0.3)"
+                    } : {}}
+                    transition={{ 
+                      duration: 0.3,
+                      ease: [0.4, 0, 0.2, 1],
+                      delay: 0.1 // Slight stagger after play button
+                    }}
                   >
-                    {matchData.gameMode === 'last-line' ? 'ATTACK' : 'BANK'}
+                    {matchData.gameMode === 'last-line' ? 'ATTACK' : 'SAVE'}
                   </motion.button>
                 )}
               </>
@@ -553,20 +698,36 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           background: 'transparent'
         }}
       >
-        {/* Abilities Display Section - Transparent background on mobile */}
+        {/* Abilities Display Section - Enhanced mobile animations */}
         {user && onAbilityUsed && (
-          <div className="px-2 py-3" style={{ background: 'transparent' }}>
-            <InlineAbilitiesDisplay
-              matchData={matchData}
-              onAbilityUsed={onAbilityUsed}
-              isPlayerTurn={isMyTurn}
-              playerId={user.uid}
-              className="justify-between w-full"
-            />
-          </div>
+          <motion.div 
+            className="px-2 py-3" 
+            style={{ background: 'transparent' }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ 
+              duration: 0.5, 
+              ease: "easeOut",
+              delay: 0.3 // Slight delay for smoother appearance 
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.4, delay: 0.4 }}
+            >
+              <InlineAbilitiesDisplay
+                matchData={matchData}
+                onAbilityUsed={onAbilityUsed}
+                isPlayerTurn={isMyTurn}
+                playerId={user.uid}
+                className="justify-between w-full"
+              />
+            </motion.div>
+          </motion.div>
         )}
         
-        {/* Buttons Section with improved mobile animations */}
+        {/* Buttons Section - Enhanced Mobile Animations */}
         <AnimatePresence mode="wait">
           <motion.div 
             key={`mobile-buttons-${isMyTurn}-${canRoll}-${canBank}`}
@@ -574,55 +735,18 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             style={{ 
               height: 'max(70px, env(safe-area-inset-bottom) + 70px)'
             }}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ 
+              duration: 0.4, 
+              ease: [0.4, 0, 0.2, 1],
+              staggerChildren: 0.1
+            }}
           >
             {isMyTurn ? (
               <>
-                <motion.button
-                  onClick={onRollDice}
-                  disabled={!canRoll}
-                  className={`text-xl font-bold transition-all ${
-                    canRoll
-                      ? 'text-white active:scale-95'
-                      : 'cursor-not-allowed'
-                  }`}
-                  style={{ 
-                    width: (matchData.gameMode === 'true-grit') ? '100%' : '50%',
-                    height: '100%',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    fontFamily: "Audiowide",
-                    textTransform: "uppercase" as const,
-                    border: 'none',
-                    borderRadius: '0',
-                    background: 'transparent',
-                    backdropFilter: 'none',
-                  }}
-                  initial={{ opacity: 0.7 }}
-                  animate={{ opacity: canRoll ? 1 : 0.5 }}
-                  whileTap={canRoll ? { scale: 0.95 } : {}}
-                  transition={{ duration: 0.2 }}
-                >
-                  <AnimatePresence mode="wait">
-                    {canRoll && (
-                      <motion.span
-                        key="play-text"
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -5 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        PLAY
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </motion.button>
-                
-                {/* Only show bank button for modes other than True Grit on mobile */}
+                {/* Only show save/attack button for modes other than True Grit on mobile - LEFT SIDE */}
                 {matchData.gameMode !== 'true-grit' && (
                   <motion.button
                     onClick={onBankScore}
@@ -645,10 +769,21 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       background: 'transparent',
                       backdropFilter: 'none',
                     }}
-                    initial={{ opacity: 0.7 }}
-                    animate={{ opacity: canBank ? 1 : 0.5 }}
-                    whileTap={canBank ? { scale: 0.95 } : {}}
-                    transition={{ duration: 0.2 }}
+                    initial={{ opacity: 0, x: -50, scale: 0.9 }}
+                    animate={{ 
+                      opacity: canBank ? 1 : 0.5,
+                      x: 0,
+                      scale: 1
+                    }}
+                    whileTap={canBank ? { 
+                      scale: 0.95,
+                      boxShadow: "0 4px 15px rgba(34, 197, 94, 0.3)"
+                    } : {}}
+                    transition={{ 
+                      duration: 0.4, 
+                      ease: [0.4, 0, 0.2, 1],
+                      delay: 0.1
+                    }}
                   >
                     <AnimatePresence mode="wait">
                       {canBank && (
@@ -659,12 +794,65 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                           exit={{ opacity: 0, y: -5 }}
                           transition={{ duration: 0.2 }}
                         >
-                          {matchData.gameMode === 'last-line' ? 'ATTACK' : 'BANK'}
+                          {matchData.gameMode === 'last-line' ? 'ATTACK' : 'SAVE'}
                         </motion.span>
                       )}
                     </AnimatePresence>
                   </motion.button>
                 )}
+
+                {/* PLAY button - RIGHT SIDE */}
+                <motion.button
+                  onClick={onRollDice}
+                  disabled={!canRoll}
+                  className={`text-xl font-bold transition-all ${
+                    canRoll
+                      ? 'text-white active:scale-95'
+                      : 'cursor-not-allowed'
+                  }`}
+                  style={{ 
+                    width: (matchData.gameMode === 'true-grit') ? '100%' : '50%',
+                    height: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    fontFamily: "Audiowide",
+                    textTransform: "uppercase" as const,
+                    border: 'none',
+                    borderRadius: '0',
+                    background: 'transparent',
+                    backdropFilter: 'none',
+                  }}
+                  initial={{ opacity: 0, x: 50, scale: 0.9 }}
+                  animate={{ 
+                    opacity: canRoll ? 1 : 0.5,
+                    x: 0,
+                    scale: 1
+                  }}
+                  whileTap={canRoll ? { 
+                    scale: 0.95,
+                    boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)"
+                  } : {}}
+                  transition={{ 
+                    duration: 0.4, 
+                    ease: [0.4, 0, 0.2, 1],
+                    delay: 0.2 // Slight delay after save button
+                  }}
+                >
+                  <AnimatePresence mode="wait">
+                    {canRoll && (
+                      <motion.span
+                        key="play-text"
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -5 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        PLAY
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
               </>
             ) : (
               <motion.div 

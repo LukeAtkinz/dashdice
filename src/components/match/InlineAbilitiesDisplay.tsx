@@ -102,16 +102,53 @@ export default function InlineAbilitiesDisplay({
   }, []);
 
   if (!playerPowerLoadout || Object.keys(playerPowerLoadout).length === 0) {
-    // Show 5 empty slots when no loadout - but don't show lock icons, show placeholder abilities
+    // Show 5 empty slots with enhanced carousel-style loading animation
     return (
       <div className={`flex justify-center gap-2 md:gap-3 ${className}`}>
         {Array.from({ length: 5 }).map((_, index) => (
-          <div
+          <motion.div
             key={`empty-${index}`}
-            className="w-16 h-16 md:w-20 md:h-20 rounded-xl border-2 border-gray-600/50 bg-gray-800/30 backdrop-blur-sm flex items-center justify-center"
+            className="w-16 h-16 md:w-20 md:h-20 rounded-xl border-2 border-gray-600/50 bg-gray-800/30 backdrop-blur-sm flex items-center justify-center relative overflow-hidden"
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ 
+              duration: 0.4, 
+              ease: [0.4, 0, 0.2, 1],
+              delay: index * 0.1 // Staggered carousel effect
+            }}
+            whileHover={{ 
+              scale: 1.05,
+              borderColor: 'rgba(255, 255, 255, 0.3)',
+              transition: { duration: 0.2 }
+            }}
           >
-            <div className="text-gray-500 text-lg md:text-xl">+</div>
-          </div>
+            {/* Animated background shimmer */}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+              initial={{ x: '-100%' }}
+              animate={{ x: '100%' }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                delay: index * 0.2,
+                ease: "linear"
+              }}
+            />
+            <motion.div 
+              className="text-gray-500 text-lg md:text-xl relative z-10"
+              animate={{ 
+                scale: [1, 1.1, 1],
+                opacity: [0.5, 0.8, 0.5]
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                delay: index * 0.3
+              }}
+            >
+              +
+            </motion.div>
+          </motion.div>
         ))}
       </div>
     );
@@ -203,17 +240,62 @@ export default function InlineAbilitiesDisplay({
   });
 
   return (
-    <div className={`flex gap-3 md:gap-6 ${className}`}>
+    <motion.div 
+      className={`flex gap-3 md:gap-6 ${className}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ 
+        duration: 0.5,
+        staggerChildren: 0.1
+      }}
+    >
       {displaySlots.map((equippedAbility, index) => {
         if (!equippedAbility) {
-          // Empty slot
+          // Enhanced empty slot with carousel-style animation
           return (
-            <div
+            <motion.div
               key={`slot-${index}`}
-              className="w-20 h-20 md:w-24 md:h-24 rounded-xl border-2 border-gray-600/50 bg-gray-800/30 backdrop-blur-sm flex items-center justify-center"
+              className="w-20 h-20 md:w-24 md:h-24 rounded-xl border-2 border-gray-600/50 bg-gray-800/30 backdrop-blur-sm flex items-center justify-center relative overflow-hidden"
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ 
+                duration: 0.4, 
+                ease: [0.4, 0, 0.2, 1],
+                delay: index * 0.1
+              }}
+              whileHover={{ 
+                scale: 1.05,
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                transition: { duration: 0.2 }
+              }}
             >
-              <div className="text-gray-500 text-xl md:text-2xl">+</div>
-            </div>
+              {/* Shimmer effect */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
+                initial={{ x: '-100%' }}
+                animate={{ x: '100%' }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  delay: index * 0.5,
+                  ease: "linear"
+                }}
+              />
+              <motion.div 
+                className="text-gray-500 text-xl md:text-2xl relative z-10"
+                animate={{ 
+                  scale: [1, 1.1, 1],
+                  opacity: [0.5, 0.7, 0.5]
+                }}
+                transition={{
+                  duration: 2.5,
+                  repeat: Infinity,
+                  delay: index * 0.2
+                }}
+              >
+                +
+              </motion.div>
+            </motion.div>
           );
         }
 
@@ -239,8 +321,23 @@ export default function InlineAbilitiesDisplay({
               borderColor: status.disabled ? '#6B7280' : categoryColors.primary,
               boxShadow: !status.disabled ? `0 2px 10px ${categoryColors.primary}40` : 'none'
             }}
-            whileHover={!status.disabled ? { y: -1 } : {}}
-            whileTap={!status.disabled ? { scale: 0.95 } : {}}
+            initial={{ opacity: 0, scale: 0.8, y: 20, rotateY: -15 }}
+            animate={{ opacity: 1, scale: 1, y: 0, rotateY: 0 }}
+            transition={{ 
+              duration: 0.5, 
+              ease: [0.4, 0, 0.2, 1],
+              delay: index * 0.1 
+            }}
+            whileHover={!status.disabled ? { 
+              y: -2, 
+              scale: 1.05,
+              boxShadow: `0 4px 20px ${categoryColors.primary}60`,
+              transition: { duration: 0.2 }
+            } : {}}
+            whileTap={!status.disabled ? { 
+              scale: 0.95,
+              y: 0
+            } : {}}
           >
             {/* Ability Icon */}
             <div className="w-full h-full flex items-center justify-center">
@@ -291,6 +388,6 @@ export default function InlineAbilitiesDisplay({
           </motion.button>
         );
       })}
-    </div>
+    </motion.div>
   );
 }

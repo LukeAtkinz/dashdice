@@ -253,7 +253,7 @@ export const Match: React.FC<MatchProps> = React.memo(({ matchId, onBack }) => {
             <div className="grid grid-cols-3 gap-8 items-center">
               
               {/* Current Player - Desktop */}
-              <div className={`text-center p-6 rounded-lg ${currentPlayer.gameState.turnActive ? 'bg-green-500/20 border-2 border-green-400' : 'bg-gray-500/20'}`}>
+              <div className="text-center p-6 rounded-lg bg-gray-500/20">
                 <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: "Audiowide" }}>
                   {currentPlayer.playerDisplayName}
                 </h2>
@@ -401,7 +401,7 @@ export const Match: React.FC<MatchProps> = React.memo(({ matchId, onBack }) => {
             <div className="w-full flex justify-between gap-4 px-4">
               {/* Current Player Profile - Left */}
               <div className="flex-1">
-                <div className={`text-center p-4 rounded-lg border-2 ${currentPlayer.gameState.turnActive ? 'bg-green-500/20 border-green-400' : 'bg-gray-500/20 border-gray-400'}`}>
+                <div className="text-center p-4 rounded-lg border-2 bg-gray-500/20 border-gray-400">
                   <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: "Audiowide" }}>
                     {currentPlayer.playerDisplayName}
                   </h3>
