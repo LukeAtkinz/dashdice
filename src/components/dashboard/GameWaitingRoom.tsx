@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { UserService } from '@/services/userService';
@@ -3080,7 +3081,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             }}
           >
             {vsCountdown !== null ? (
-              <div
+              // Use motion for morphing transition - layoutId connects to TurnDeciderPhase
+              <motion.div
+                layoutId="vs-morph-text" // This creates the morphing connection to turn decider
                 style={{
                   color: vsCountdown === 0 ? '#00FF00' : '#E2E2E2',
                   fontFamily: 'Audiowide',
@@ -3094,9 +3097,15 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     : '0 0 15px rgba(255, 255, 255, 0.4)',
                   animation: vsCountdown === 0 ? 'goGlow 1s ease-in-out' : 'subtleGlow 1.5s infinite'
                 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30,
+                  duration: 0.8
+                }}
               >
                 {vsCountdown === 0 ? 'GO!' : vsCountdown}
-              </div>
+              </motion.div>
             ) : opponentDisplayLoading ? (
               <div
                 style={{

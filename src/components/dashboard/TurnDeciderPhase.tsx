@@ -36,7 +36,32 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [showDiceNumber, setShowDiceNumber] = useState(false);
   const [showResult, setShowResult] = useState(false);
-  const [transitionPhase, setTransitionPhase] = useState<'choosing' | 'transitioning' | 'rolling'>('choosing');
+  const [transitionPhase, setTransitionPhase] = useState<'choosing' | 'transitioning' | 'rolling' | 'result-display' | 'winner-announcement' | 'transitioning-to-match'>('choosing');
+
+  // Helper function to determine who goes first based on the turn decider result
+  const getWinnerInfo = () => {
+    if (!hasDice || !matchData.gameData.turnDeciderChoice || !matchData.gameData.turnDeciderDice) {
+      return null;
+    }
+
+    const dice = matchData.gameData.turnDeciderDice;
+    const choice = matchData.gameData.turnDeciderChoice;
+    const isOdd = dice % 2 === 1;
+    const choiceCorrect = (choice === 'odd' && isOdd) || (choice === 'even' && !isOdd);
+    
+    // Determine who made the choice
+    const choicePlayer = isMyTurnToDecide ? currentPlayer : opponent;
+    const otherPlayer = isMyTurnToDecide ? opponent : currentPlayer;
+    
+    return {
+      dice,
+      isOdd,
+      choice,
+      choiceCorrect,
+      winner: choiceCorrect ? choicePlayer : otherPlayer,
+      winnerName: choiceCorrect ? choicePlayer.playerDisplayName : otherPlayer.playerDisplayName
+    };
+  };
 
   // Game mode information for display
   const getGameModeInfo = () => {
@@ -79,7 +104,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
     }
   }, [isInTurnDeciderPhase, isProcessing]);
 
-  // Handle dice result display timing and transition phases
+  // Handle dice result display timing and enhanced transition phases
   useEffect(() => {
     if (hasDice && diceAnimation.isSpinning) {
       // When dice starts spinning, move to rolling phase for the final animation
@@ -87,15 +112,25 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
       setShowDiceNumber(false);
       setShowResult(false);
     } else if (hasDice && !diceAnimation.isSpinning) {
-      // First show the dice number prominently for users to see clearly
+      // Step 1: Hide choice and game mode elements, show dice number
+      setTransitionPhase('result-display');
       setShowDiceNumber(true);
       
-      // Show the result after giving time to see the final number
-      const timer = setTimeout(() => {
+      // Step 2: After showing dice number, show winner announcement
+      const winnerTimer = setTimeout(() => {
+        setTransitionPhase('winner-announcement');
         setShowResult(true);
-      }, 1500); // Longer delay to let users clearly see the final number
+      }, 2000); // Let users see the dice number clearly
       
-      return () => clearTimeout(timer);
+      // Step 3: After winner announcement, transition to match
+      const matchTimer = setTimeout(() => {
+        setTransitionPhase('transitioning-to-match');
+      }, 4500); // Total time for complete sequence
+      
+      return () => {
+        clearTimeout(winnerTimer);
+        clearTimeout(matchTimer);
+      };
     } else {
       // Reset states when no dice yet
       setShowDiceNumber(false);
@@ -150,20 +185,34 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="fixed inset-0 w-full h-full flex flex-col"
         >
-          {/* ODD Button - Top Half */}
+          {/* ODD Button - Top Half with Flying Animation */}
           <motion.button
             onClick={() => handleChoice('odd')}
             disabled={isProcessing || hasChoice || !isInTurnDeciderPhase}
-            initial={{ opacity: 0, y: -100 }}
+            initial={{ 
+              opacity: 0, 
+              y: '50vh', // Start from absolute center
+              scale: 0.3
+            }}
             animate={{ 
               opacity: transitionPhase === 'choosing' ? 1 : 0,
               y: transitionPhase === 'choosing' ? 0 : 
-                 (transitionPhase === 'transitioning' && matchData.gameData.turnDeciderChoice !== 'odd') ? -200 : 0
+                 transitionPhase === 'result-display' || transitionPhase === 'winner-announcement' || transitionPhase === 'transitioning-to-match' ? -300 :
+                 (transitionPhase === 'transitioning' && matchData.gameData.turnDeciderChoice !== 'odd') ? -200 : '50vh',
+              scale: transitionPhase === 'choosing' ? 1 : 0.3
             }}
             transition={{ 
-              delay: transitionPhase === 'choosing' ? 0.2 : 0,
-              duration: transitionPhase === 'transitioning' ? 0.8 : 0.6, 
-              ease: transitionPhase === 'transitioning' ? [0.4, 0, 0.2, 1] : "easeOut"
+              delay: transitionPhase === 'choosing' ? 1.3 : 
+                     transitionPhase === 'result-display' ? 0 : 0, // Immediate exit for result display
+              duration: transitionPhase === 'choosing' ? 1.0 : 
+                       transitionPhase === 'result-display' ? 0.5 : // Quick exit
+                       transitionPhase === 'transitioning' ? 0.8 : 0.6, 
+              ease: transitionPhase === 'choosing' ? "backOut" : 
+                    transitionPhase === 'result-display' ? "easeIn" : // Fast exit
+                    transitionPhase === 'transitioning' ? [0.4, 0, 0.2, 1] : "easeOut",
+              type: transitionPhase === 'choosing' ? "spring" : "tween",
+              stiffness: transitionPhase === 'choosing' ? 120 : undefined,
+              damping: transitionPhase === 'choosing' ? 15 : undefined
             }}
             whileHover={transitionPhase === 'choosing' ? { scale: 1.02 } : {}}
             whileTap={transitionPhase === 'choosing' ? { scale: 0.96, transition: { duration: 0.1 } } : {}}
@@ -224,33 +273,75 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 </div>
               </div>
             ) : transitionPhase === 'choosing' ? (
-              // Show VS when no choice made yet
-              <span 
+              // Show VS with morphing capability - starts as GO! from waiting room
+              <motion.span 
+                layoutId="vs-morph-text" // Same layoutId for morphing from GameWaitingRoom
                 className="text-[15vw] md:text-8xl text-white font-bold tracking-wider"
                 style={{ 
                   fontFamily: 'Audiowide',
                   textShadow: '0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.4)',
                   WebkitFontSmoothing: 'antialiased'
                 }}
+                animate={{
+                  // Scale animation sequence: first morph, then grow dramatically
+                  scale: [0.8, 1.2, 1], // Bounce effect
+                  textShadow: [
+                    '0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.4)',
+                    '0 0 30px rgba(255,255,255,1.0), 0 0 60px rgba(255,255,255,0.6)',
+                    '0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.4)'
+                  ]
+                }}
+                transition={{
+                  scale: {
+                    delay: 0.5, // Wait for initial morph to complete
+                    duration: 0.8,
+                    times: [0, 0.6, 1],
+                    type: "spring",
+                    stiffness: 150,
+                    damping: 20
+                  },
+                  textShadow: {
+                    delay: 0.5,
+                    duration: 0.8,
+                    times: [0, 0.5, 1]
+                  },
+                  // Default transition for morph
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30,
+                  duration: 0.8
+                }}
               >
                 VS
-              </span>
+              </motion.span>
             ) : null}
           </div>
 
-          {/* EVEN Button - Bottom Half */}
+          {/* EVEN Button - Bottom Half with Flying Animation */}
           <motion.button
             onClick={() => handleChoice('even')}
             disabled={isProcessing || hasChoice || !isInTurnDeciderPhase}
-            initial={{ opacity: 0, y: 100 }}
+            initial={{ 
+              opacity: 0, 
+              y: '-50vh', // Start from absolute center
+              scale: 0.3
+            }}
             animate={{ 
               opacity: transitionPhase === 'choosing' ? 1 : 0,
-              y: transitionPhase === 'choosing' ? 0 : 200
+              y: transitionPhase === 'choosing' ? 0 : 
+                 transitionPhase === 'result-display' || transitionPhase === 'winner-announcement' || transitionPhase === 'transitioning-to-match' ? 300 : '-50vh',
+              scale: transitionPhase === 'choosing' ? 1 : 0.3
             }}
             transition={{ 
-              delay: transitionPhase === 'choosing' ? 0.2 : 0,
-              duration: transitionPhase === 'transitioning' ? 0.8 : 0.6, 
-              ease: transitionPhase === 'transitioning' ? [0.4, 0, 0.2, 1] : "easeOut"
+              delay: transitionPhase === 'choosing' ? 1.5 : 
+                     transitionPhase === 'result-display' ? 0.1 : 0, // Slight stagger after ODD
+              duration: transitionPhase === 'choosing' ? 1.0 : 
+                       transitionPhase === 'result-display' ? 0.5 : 0.6, // Quick exit
+              ease: transitionPhase === 'choosing' ? "backOut" : 
+                    transitionPhase === 'result-display' ? "easeIn" : "easeOut", // Fast exit
+              type: transitionPhase === 'choosing' ? "spring" : "tween",
+              stiffness: transitionPhase === 'choosing' ? 120 : undefined,
+              damping: transitionPhase === 'choosing' ? 15 : undefined
             }}
             whileHover={transitionPhase === 'choosing' ? { scale: 1.02 } : {}}
             whileTap={transitionPhase === 'choosing' ? { scale: 0.96, transition: { duration: 0.1 } } : {}}
@@ -389,7 +480,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               opacity: (transitionPhase === 'transitioning' && matchData.gameData.turnDeciderChoice === 'odd') || 
                        transitionPhase === 'rolling' ? 1 : 0,
               y: (transitionPhase === 'transitioning' && matchData.gameData.turnDeciderChoice === 'odd') || 
-                  transitionPhase === 'rolling' ? 0 : 200
+                 transitionPhase === 'rolling' ? 0 : 
+                 transitionPhase === 'result-display' || transitionPhase === 'winner-announcement' || transitionPhase === 'transitioning-to-match' ? 200 : 100
             }}
             transition={{ 
               delay: matchData.gameData.turnDeciderChoice === 'odd' ? 0.4 : 0.2,
@@ -469,6 +561,118 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               </div>
             </motion.div>
           )}
+
+          {/* Dice Result Display - Shows the number prominently */}
+          {(transitionPhase === 'result-display' && hasDice) && (
+            <motion.div 
+              className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
+              initial={{ scale: 0, opacity: 0, rotateY: 180 }}
+              animate={{ scale: 1, opacity: 1, rotateY: 0 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ 
+                delay: 0.3, 
+                duration: 0.8, 
+                type: "spring", 
+                stiffness: 100,
+                damping: 20
+              }}
+            >
+              <div className="flex flex-col items-center justify-center">
+                <motion.div
+                  className="text-[15vw] md:text-[12rem] font-bold text-white"
+                  style={{ 
+                    fontFamily: 'Audiowide',
+                    textShadow: '0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.4)',
+                    WebkitFontSmoothing: 'antialiased'
+                  }}
+                  animate={{
+                    textShadow: [
+                      '0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.4)',
+                      '0 0 40px rgba(255,255,255,1.0), 0 0 80px rgba(255,255,255,0.6)',
+                      '0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.4)'
+                    ]
+                  }}
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                    repeatType: "reverse"
+                  }}
+                >
+                  {matchData.gameData.turnDeciderDice}
+                </motion.div>
+                <motion.p
+                  className="text-2xl md:text-4xl text-gray-300 mt-4"
+                  style={{ fontFamily: 'Audiowide' }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.5 }}
+                >
+                  {(matchData.gameData.turnDeciderDice || 0) % 2 === 1 ? 'ODD' : 'EVEN'}
+                </motion.p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Winner Announcement */}
+          {(transitionPhase === 'winner-announcement' && hasDice) && (() => {
+            const winnerInfo = getWinnerInfo();
+            if (!winnerInfo) return null;
+            
+            return (
+              <motion.div 
+                className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
+                initial={{ scale: 0, opacity: 0, y: 50 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0, opacity: 0, y: -50 }}
+                transition={{ 
+                  delay: 0.2, 
+                  duration: 0.8, 
+                  type: "spring", 
+                  stiffness: 120,
+                  damping: 20
+                }}
+              >
+                <div className="flex flex-col items-center justify-center text-center">
+                  <motion.h1
+                    className="text-[8vw] md:text-[6rem] font-bold text-yellow-400 mb-4"
+                    style={{ 
+                      fontFamily: 'Audiowide',
+                      textShadow: '0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.4)',
+                      WebkitFontSmoothing: 'antialiased'
+                    }}
+                    initial={{ scale: 0.8 }}
+                    animate={{
+                      scale: 1,
+                      textShadow: [
+                        '0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.4)',
+                        '0 0 40px rgba(255, 215, 0, 1.0), 0 0 80px rgba(255, 215, 0, 0.6)',
+                        '0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.4)'
+                      ]
+                    }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      repeatType: "reverse"
+                    }}
+                  >
+                    {winnerInfo.winnerName}
+                  </motion.h1>
+                  <motion.p
+                    className="text-3xl md:text-5xl text-white"
+                    style={{ 
+                      fontFamily: 'Audiowide',
+                      textShadow: '2px 2px 8px rgba(0,0,0,0.8)'
+                    }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.6 }}
+                  >
+                    GOES FIRST!
+                  </motion.p>
+                </div>
+              </motion.div>
+            );
+          })()}
         </motion.div>
       )}
 
