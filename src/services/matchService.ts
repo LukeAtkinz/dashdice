@@ -1160,7 +1160,7 @@ export class MatchService {
   /**
    * Bank the current turn score to player score
    */
-  static async bankScore(matchId: string, playerId: string): Promise<void> {
+  static async bankScore(matchId: string, playerId: string, siphonEffect?: { isActive: boolean; opponentId: string }): Promise<void> {
     const matchRef = doc(db, 'matches', matchId);
     
     try {
@@ -1195,40 +1195,50 @@ export class MatchService {
         throw new Error('Banking is not allowed in this game mode');
       }
       
+      // Handle Siphon ability effect if active
+      let siphonStolenPoints = 0;
+      if (siphonEffect?.isActive && matchData.gameData.turnScore > 0) {
+        siphonStolenPoints = Math.floor(matchData.gameData.turnScore / 2);
+        console.log(`🔮 Siphon effect: Stealing ${siphonStolenPoints} points from ${currentPlayer.playerDisplayName}`);
+      }
+      
       // Calculate new player score based on game mode direction
       let newPlayerScore;
       let bankingSuccess = true;
       
       if (gameMode.rules.scoreDirection === 'down') {
-        // Zero Hour: subtract banked score from current score
-        const proposedScore = (currentPlayer.playerScore || 0) - matchData.gameData.turnScore;
+        // Zero Hour: subtract banked score from current score (accounting for siphon)
+        const effectiveTurnScore = matchData.gameData.turnScore - siphonStolenPoints;
+        const proposedScore = (currentPlayer.playerScore || 0) - effectiveTurnScore;
         
         // Allow banking to 0 or below (this triggers a win)
         newPlayerScore = proposedScore;
-        console.log(`💰 Zero Hour - Banked ${matchData.gameData.turnScore}, new score: ${newPlayerScore}`);
+        console.log(`💰 Zero Hour - Banked ${effectiveTurnScore} (${matchData.gameData.turnScore} - ${siphonStolenPoints} siphoned), new score: ${newPlayerScore}`);
         
         // Banking always succeeds in Zero Hour (no more bust rule for going below 0)
         bankingSuccess = true;
       } else if (gameMode.id === 'last-line') {
-        // Last Line (Tug-of-War): transfer turn score from opponent to current player
+        // Last Line (Tug-of-War): transfer turn score from opponent to current player (accounting for siphon)
         console.log('🎲 Last Line - Banking triggers tug-of-war transfer');
         
         const currentPlayerScore = currentPlayer.playerScore || 0;
         const opponentPlayer = isHost ? matchData.opponentData : matchData.hostData;
         const opponentScore = opponentPlayer.playerScore || 0;
-        const turnScore = matchData.gameData.turnScore;
+        const effectiveTurnScore = matchData.gameData.turnScore - siphonStolenPoints;
         
-        // Calculate transfer amount (transfer turn score from opponent to current player)
-        const transferAmount = Math.min(turnScore, opponentScore);
+        // Calculate transfer amount (transfer effective turn score from opponent to current player)
+        const transferAmount = Math.min(effectiveTurnScore, opponentScore);
         newPlayerScore = currentPlayerScore + transferAmount;
         
-        console.log(`💰 Last Line - Transferred ${transferAmount} points on bank (opponent: ${opponentScore} -> ${opponentScore - transferAmount}, current: ${currentPlayerScore} -> ${newPlayerScore})`);
+        console.log(`💰 Last Line - Transferred ${transferAmount} points on bank (${matchData.gameData.turnScore} - ${siphonStolenPoints} siphoned) (opponent: ${opponentScore} -> ${opponentScore - transferAmount}, current: ${currentPlayerScore} -> ${newPlayerScore})`);
         
         // We'll update the opponent score in the updates object below
         bankingSuccess = transferAmount > 0; // Banking succeeds if any points were transferred
       } else {
-        // Classic and other modes: add banked score to current score
-        newPlayerScore = (currentPlayer.playerScore || 0) + matchData.gameData.turnScore;
+        // Classic and other modes: add banked score to current score (accounting for siphon)
+        const effectiveTurnScore = matchData.gameData.turnScore - siphonStolenPoints;
+        newPlayerScore = (currentPlayer.playerScore || 0) + effectiveTurnScore;
+        console.log(`💰 Classic - Banked ${effectiveTurnScore} (${matchData.gameData.turnScore} - ${siphonStolenPoints} siphoned), new score: ${newPlayerScore}`);
       }
       
       // Check for win condition based on game mode
@@ -1278,10 +1288,27 @@ export class MatchService {
       
       // Update player score (only if banking was successful)
       if (bankingSuccess) {
+        // Calculate effective turn score after siphon
+        const effectiveTurnScore = matchData.gameData.turnScore - siphonStolenPoints;
+        
         if (isHost) {
           updates['hostData.playerScore'] = newPlayerScore;
         } else {
           updates['opponentData.playerScore'] = newPlayerScore;
+        }
+        
+        // If siphon is active, add stolen points to the opponent (siphon user)
+        if (siphonEffect?.isActive && siphonStolenPoints > 0) {
+          const opponentCurrentScore = isHost ? matchData.opponentData.playerScore : matchData.hostData.playerScore;
+          const opponentNewScore = (opponentCurrentScore || 0) + siphonStolenPoints;
+          
+          if (isHost) {
+            updates['opponentData.playerScore'] = opponentNewScore;
+          } else {
+            updates['hostData.playerScore'] = opponentNewScore;
+          }
+          
+          console.log(`⚔️ Siphon activated: Added ${siphonStolenPoints} stolen points to opponent. New score: ${opponentNewScore}`);
         }
       }
       

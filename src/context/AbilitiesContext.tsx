@@ -318,7 +318,17 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
         await AbilitiesService.updateAbilityStats(user.uid, abilityId, true);
       }
       
-      return { success: true, effect: { type: 'simulated' } };
+      // Return proper effect data with abilityId
+      return { 
+        success: true, 
+        effect: { 
+          abilityId,
+          type: ability?.effects[0]?.type || 'unknown',
+          value: ability?.effects[0]?.value || 0,
+          target: ability?.effects[0]?.target || 'self',
+          condition: ability?.effects[0]?.condition || 'always'
+        } 
+      };
     } catch (error) {
       console.error('Error using ability:', error);
       return { success: false, error: 'Failed to use ability' };

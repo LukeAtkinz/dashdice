@@ -276,24 +276,28 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
       const opponentPlayer = isHost ? matchData.opponentData : matchData.hostData;
       
+      let siphonEffect: { isActive: boolean; opponentId: string } | undefined = undefined;
+      
       // If Siphon is active and this player has turn points to steal
-      if (siphonActive && currentPlayer.roundScore > 0) {
-        const pointsToSteal = Math.floor(currentPlayer.roundScore / 2);
+      if (siphonActive && matchData.gameData.turnScore > 0) {
+        const pointsToSteal = Math.floor(matchData.gameData.turnScore / 2);
         
         // Show Siphon activation
         showToast(`🔮 Siphon triggered! Stolen ${pointsToSteal} points!`, 'success', 6000);
         
-        // The points will be deducted by the banking process, but we need to 
-        // add them to the opponent's score through the MatchService
-        // Note: The actual implementation would need to modify MatchService.bankScore
-        // to handle Siphon effects, but for now we'll track it locally
         console.log(`⚔️ Siphon activated: Stealing ${pointsToSteal} points from ${currentPlayer.playerDisplayName}`);
+        
+        // Prepare siphon effect for MatchService
+        siphonEffect = {
+          isActive: true,
+          opponentId: opponentPlayer.playerId
+        };
         
         // Reset Siphon state
         setSiphonActive(false);
       }
 
-      await MatchService.bankScore(matchData.id!, playerId);
+      await MatchService.bankScore(matchData.id!, playerId, siphonEffect);
     } catch (error) {
       console.error('❌ Error banking score:', error);
     }

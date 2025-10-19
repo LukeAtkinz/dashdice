@@ -54,10 +54,10 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   // Enhanced animation logic to prevent jumping for second dice
   const shouldShowAnimation = animationState.isSpinning && isCurrentlyRolling;
   
-  // Turn decider should have slower, more dramatic animation
+  // Turn decider should have faster animation
   const getAnimationSpeed = () => {
     if (isTurnDecider && shouldShowAnimation) {
-      return animationState.reelSpeed || 0.3; // Slower for turn decider
+      return animationState.reelSpeed || 0.1; // Faster for turn decider
     }
     return animationState.reelSpeed || 0.1;
   };

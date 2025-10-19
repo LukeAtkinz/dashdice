@@ -502,9 +502,6 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 src="/Design Elements/Match/Turn Decider/Waiting.webp" 
                 alt="Waiting" 
                 className="w-[55vw] md:w-[35vw] h-[55vw] md:h-[35vw] max-w-80 max-h-80 object-contain filter drop-shadow-2xl"
-                style={{
-                  filter: 'drop-shadow(0 0 40px rgba(255, 165, 0, 0.9))'
-                }}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.4, duration: 0.5, type: "spring", stiffness: 100 }}
