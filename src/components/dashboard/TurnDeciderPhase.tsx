@@ -167,7 +167,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             }}
             whileHover={transitionPhase === 'choosing' ? { scale: 1.02 } : {}}
             whileTap={transitionPhase === 'choosing' ? { scale: 0.96, transition: { duration: 0.1 } } : {}}
-            className="relative flex-1 w-full flex flex-col items-center justify-center bg-black transition-all duration-200"
+            className="relative flex-1 w-full flex flex-col items-center justify-center bg-transparent transition-all duration-200"
             style={{ fontFamily: "Audiowide" }}
           >
             {/* Background Text Shadow */}
@@ -254,7 +254,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             }}
             whileHover={transitionPhase === 'choosing' ? { scale: 1.02 } : {}}
             whileTap={transitionPhase === 'choosing' ? { scale: 0.96, transition: { duration: 0.1 } } : {}}
-            className="relative flex-1 w-full flex flex-col items-center justify-center bg-black transition-all duration-200"
+            className="relative flex-1 w-full flex flex-col items-center justify-center bg-transparent transition-all duration-200"
             style={{ fontFamily: "Audiowide" }}
           >
             {/* Background Text Shadow */}
@@ -315,7 +315,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="fixed inset-0 w-full h-full flex flex-col bg-black"
+          className="fixed inset-0 w-full h-full flex flex-col bg-transparent"
         >
           {/* User's Choice Section - Top Half (slides in from top during rolling) */}
           <motion.div
@@ -329,7 +329,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               duration: 0.8, 
               ease: [0.4, 0, 0.2, 1]
             }}
-            className="relative flex-1 w-full flex flex-col items-center justify-center bg-black"
+            className="relative flex-1 w-full flex flex-col items-center justify-center bg-transparent"
           >
             {/* Background Text Shadow - Stunning golden glow */}
             <motion.div
@@ -396,7 +396,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               duration: 0.8, 
               ease: [0.4, 0, 0.2, 1]
             }}
-            className="relative flex-1 w-full flex flex-col items-center justify-center bg-black"
+            className="relative flex-1 w-full flex flex-col items-center justify-center bg-transparent"
           >
             {/* Game Mode Content */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-4 md:translate-y-0 -translate-y-8">
@@ -485,7 +485,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             initial={{ opacity: 0, y: -100 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
-            className="relative flex-1 w-full flex flex-col items-center justify-center  bg-black"
+            className="relative flex-1 w-full flex flex-col items-center justify-center bg-transparent"
             style={{ 
               
             }}
@@ -542,7 +542,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
-            className="relative flex-1 w-full flex flex-col items-center justify-center  bg-black"
+            className="relative flex-1 w-full flex flex-col items-center justify-center bg-transparent"
             style={{ 
               
             }}

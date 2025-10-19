@@ -22,8 +22,6 @@ import { GlobalRematchNotification } from '@/components/rematch/GlobalRematchNot
 import { GameInvitationNotification } from '@/components/friends/GameInvitationNotification';
 import InviteAcceptedNotification from '@/components/friends/InviteAcceptedNotification';
 import PersistentNotificationManager from '@/components/notifications/PersistentNotificationManager';
-import { VideoOverlay } from '@/components/transitions/VideoOverlay';
-import { useVideoTransitions } from '@/hooks/useVideoTransitions';
 import { GameType } from '@/types/ranked';
 import { RematchProvider } from '@/context/RematchContext';
 import { useAuth } from '@/context/AuthContext';
@@ -48,20 +46,9 @@ const DashboardContent: React.FC = () => {
   const onlineFriendsCount = getOnlineFriendsCount?.() || 0;
   const [userGold] = useState(1000); // Placeholder for user gold
   
-  // Video transitions
-  const { 
-    currentTransition, 
-    isPlaying: isVideoPlaying, 
-    videoSrc, 
-    overlayText,
-    triggerTransition, 
-    completeTransition 
-  } = useVideoTransitions();
-  
   const previousSectionRef = useRef(currentSection);
   
-  // Video transitions are now handled within the Match component based on game phase changes
-  // This provides more accurate timing for when to show transition videos
+  // Video transitions removed for better UX
   
   // Create button gradient style based on user's display background
   const getButtonGradientStyle = (baseColor: string) => {
@@ -633,8 +620,6 @@ const DashboardContent: React.FC = () => {
                     key={`match-${sectionParams.matchId || "dev-room-123"}`}
                     gameMode={sectionParams.gameMode}
                     roomId={sectionParams.matchId || "dev-room-123"}
-                    triggerVideoTransition={triggerTransition}
-                    isVideoPlaying={isVideoPlaying}
                   />
                 )}
                 {currentSection === 'waiting-room' && (
@@ -802,41 +787,6 @@ const DashboardContent: React.FC = () => {
         
         {/* Persistent Match Notifications */}
         <PersistentNotificationManager />
-        
-        {/* Video Transition Test Buttons (DEV ONLY) */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="fixed top-4 right-4 z-[10000] flex flex-col gap-2">
-            <button
-              onClick={() => triggerTransition('into-turn-decider')}
-              className="bg-blue-600 text-white px-4 py-2 rounded text-sm"
-            >
-              Test Into Turn Decider
-            </button>
-            <button
-              onClick={() => triggerTransition('into-match')}
-              className="bg-green-600 text-white px-4 py-2 rounded text-sm"
-            >
-              Test Into Match
-            </button>
-            <div className="text-white text-xs bg-black/50 p-2 rounded">
-              isPlaying: {isVideoPlaying.toString()}<br/>
-              videoSrc: {videoSrc || 'null'}<br/>
-              transition: {currentTransition || 'null'}
-            </div>
-          </div>
-        )}
-        
-        {/* Video Transition Overlays */}
-        {videoSrc && (
-          <VideoOverlay
-            videoSrc={videoSrc}
-            isPlaying={isVideoPlaying}
-            onComplete={completeTransition}
-            duration={4} // 4 second fallback
-            overlayText={overlayText || undefined}
-            overlayDelay={1.15}
-          />
-        )}
       </div>
     </div>
   );
