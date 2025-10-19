@@ -1479,7 +1479,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
                 >
               {/* Current Player Profile - Left */}
               <motion.div 
-                style={{ width: '40vw', height: '20vh' }} // Original sizing
+                style={{ width: '45vw', aspectRatio: '16/9' }} // 16:9 aspect ratio, 45vw width
                 initial={{ opacity: 0, x: -100, scale: 0.8 }}
                 animate={{ 
                   opacity: 1, 
@@ -1590,7 +1590,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
 
               {/* Opponent Profile - Right */}
               <motion.div 
-                style={{ width: '40vw', height: '20vh' }} // Original sizing
+                style={{ width: '45vw', aspectRatio: '16/9' }} // 16:9 aspect ratio, 45vw width
                 initial={{ opacity: 0, x: 100, scale: 0.8 }}
                 animate={{ 
                   opacity: 1, 

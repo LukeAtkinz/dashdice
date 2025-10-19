@@ -449,7 +449,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
       >
         {/* Abilities Display Section */}
         {user && onAbilityUsed && (
-          <div className="px-2 py-3 border-b border-white/10">
+          <div className="px-2 py-3">
             <InlineAbilitiesDisplay
               matchData={matchData}
               onAbilityUsed={onAbilityUsed}
