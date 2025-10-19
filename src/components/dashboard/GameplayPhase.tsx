@@ -443,8 +443,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
       <div 
         className="md:hidden fixed bottom-0 left-0 right-0 w-full z-50 backdrop-blur-sm"
         style={{ 
-          background: getMobileContainerGradient(),
-          paddingBottom: 'max(0px, env(safe-area-inset-bottom))'
+          background: getMobileContainerGradient()
         }}
       >
         {/* Abilities Display Section */}
@@ -487,7 +486,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   textTransform: "uppercase" as const,
                   border: 'none',
                   borderRadius: '0',
-                  background: 'transparent', // Always transparent background
+                  background: getMobileContainerGradient(), // Match abilities container background
                   backdropFilter: 'blur(2px)',
                 }}
               >
@@ -514,7 +513,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     textTransform: "uppercase" as const,
                     border: 'none',
                     borderRadius: '0',
-                    background: 'transparent', // Always transparent background  
+                    background: getMobileContainerGradient(), // Match abilities container background
                     backdropFilter: 'blur(2px)',
                   }}
                 >
@@ -523,7 +522,10 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               )}
             </>
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
+            <div 
+              className="w-full h-full flex items-center justify-center"
+              style={{ background: getMobileContainerGradient() }} // Match abilities container background
+            >
               <p 
                 className="text-gray-300 text-lg"
                 style={{ 

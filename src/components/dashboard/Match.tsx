@@ -1493,6 +1493,22 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
                 }}
                 exit={{ opacity: 0, x: -80, scale: 0.9 }}
               >
+                {/* Player Name Above Display */}
+                <h3 
+                  className="font-bold text-white mb-2 text-center px-1"
+                  style={{ 
+                    fontFamily: 'Audiowide',
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                    fontSize: 'clamp(12px, 3.5vw, 16px)', // Slightly bigger font size
+                    lineHeight: '1.1',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}
+                >
+                  {currentPlayer.playerDisplayName}
+                </h3>
+                
                 <motion.div
                   className="relative rounded-xl overflow-hidden shadow-lg"
                   style={{ 
@@ -1570,22 +1586,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
                     </div>
                   )} */}
                 </motion.div>
-                
-                {/* Player Name Below Display */}
-                <h3 
-                  className="font-bold text-white mt-2 text-center px-1"
-                  style={{ 
-                    fontFamily: 'Audiowide',
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                    fontSize: 'clamp(10px, 3vw, 14px)', // Original font size range
-                    lineHeight: '1.1',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
-                  }}
-                >
-                  {currentPlayer.playerDisplayName}
-                </h3>
               </motion.div>
 
               {/* Opponent Profile - Right */}
@@ -1604,6 +1604,22 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
                 }}
                 exit={{ opacity: 0, x: 80, scale: 0.9 }}
               >
+                {/* Player Name Above Display */}
+                <h3 
+                  className="font-bold text-white mb-2 text-center px-1"
+                  style={{ 
+                    fontFamily: 'Audiowide',
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                    fontSize: 'clamp(12px, 3.5vw, 16px)', // Slightly bigger font size
+                    lineHeight: '1.1',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}
+                >
+                  {opponent.playerDisplayName}
+                </h3>
+                
                 <motion.div
                   className="relative rounded-xl overflow-hidden shadow-lg"
                   style={{ 
@@ -1682,21 +1698,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, triggerVideoTran
                   )} */}
                 </motion.div>
                 
-                {/* Player Name Below Display */}
-                <h3 
-                  className="font-bold text-white mt-2 text-center px-1"
-                  style={{ 
-                    fontFamily: 'Audiowide',
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                    fontSize: 'clamp(10px, 3vw, 14px)', // Original font size range
-                    lineHeight: '1.1',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
-                  }}
-                >
-                  {opponent.playerDisplayName}
-                </h3>
               </motion.div>
                 </motion.div>
               )}
