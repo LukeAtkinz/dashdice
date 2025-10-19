@@ -305,6 +305,34 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 </p>
               </div>
               
+              {/* Potential Total Score Counter - Left side */}
+              {matchData.gameData.turnScore > 0 && (
+                <motion.div
+                  key={`potential-total-${matchData.gameData.turnScore}-${currentPlayer.score}`}
+                  initial={{ opacity: 0, scale: 0.5, x: -10 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ duration: 0.4, ease: "backOut" }}
+                  className="absolute -left-20 md:-left-28 top-1/2 transform -translate-y-1/2 px-3 md:px-4 py-2 md:py-3 bg-blue-600/40 border-2 border-blue-400 rounded-xl backdrop-blur-sm shadow-xl"
+                >
+                  <p 
+                    className="text-xs md:text-sm text-blue-300 mb-1" 
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    Total
+                  </p>
+                  <motion.p 
+                    key={`total-value-${matchData.gameData.turnScore + currentPlayer.score}`}
+                    initial={{ scale: 1.3, color: "#60A5FA" }}
+                    animate={{ scale: 1, color: "#93C5FD" }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="text-lg md:text-xl font-bold text-blue-300" 
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    {matchData.gameData.turnScore + currentPlayer.score}
+                  </motion.p>
+                </motion.div>
+              )}
+              
               {/* Multiplier Indicators - Absolutely positioned */}
               {/* Zero Hour Enhanced Multiplier */}
               {matchData.gameData.hasDoubleMultiplier && matchData.gameMode === 'zero-hour' && (
