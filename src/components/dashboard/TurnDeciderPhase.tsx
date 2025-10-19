@@ -120,12 +120,12 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
       const winnerTimer = setTimeout(() => {
         setTransitionPhase('winner-announcement');
         setShowResult(true);
-      }, 2000); // Let users see the dice number clearly
+      }, 3000); // Extended time to let users see the dice number clearly
       
       // Step 3: After winner announcement, transition to match
       const matchTimer = setTimeout(() => {
         setTransitionPhase('transitioning-to-match');
-      }, 4500); // Total time for complete sequence
+      }, 6000); // Extended total time for complete sequence
       
       return () => {
         clearTimeout(winnerTimer);
@@ -202,9 +202,9 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               scale: transitionPhase === 'choosing' ? 1 : 0.3
             }}
             transition={{ 
-              delay: transitionPhase === 'choosing' ? 1.3 : 
+              delay: transitionPhase === 'choosing' ? 1.0 : 
                      transitionPhase === 'result-display' ? 0 : 0, // Immediate exit for result display
-              duration: transitionPhase === 'choosing' ? 1.0 : 
+              duration: transitionPhase === 'choosing' ? 1.5 : 
                        transitionPhase === 'result-display' ? 0.5 : // Quick exit
                        transitionPhase === 'transitioning' ? 0.8 : 0.6, 
               ease: transitionPhase === 'choosing' ? "backOut" : 
@@ -333,10 +333,10 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               scale: transitionPhase === 'choosing' ? 1 : 0.3
             }}
             transition={{ 
-              delay: transitionPhase === 'choosing' ? 1.5 : 
-                     transitionPhase === 'result-display' ? 0.1 : 0, // Slight stagger after ODD
-              duration: transitionPhase === 'choosing' ? 1.0 : 
-                       transitionPhase === 'result-display' ? 0.5 : 0.6, // Quick exit
+              delay: transitionPhase === 'choosing' ? 1.0 : 
+                     transitionPhase === 'result-display' ? 0 : 0, // Same timing as ODD
+              duration: transitionPhase === 'choosing' ? 1.5 : 
+                       transitionPhase === 'result-display' ? 0.5 : 0.6, // Same duration as ODD
               ease: transitionPhase === 'choosing' ? "backOut" : 
                     transitionPhase === 'result-display' ? "easeIn" : "easeOut", // Fast exit
               type: transitionPhase === 'choosing' ? "spring" : "tween",

@@ -360,8 +360,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 const dice2 = matchData.gameData.diceTwo;
                 const isRolling = matchData.gameData.isRolling;
                 
-                // Check if dice are doubles (for gold flash effect)
-                const areDoublesGold = dice1 && dice2 && dice1 === dice2 && !isRolling;
+                // Check if dice are doubles (removed gold flash effect)
+                const areDoublesGold = false; // Disabled gold glow effect
                 
                 // Determine color based on turn score
                 let textColor = 'text-gray-400'; // 9 or below
@@ -432,7 +432,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               
               {/* Potential Total Score Counter - Left side */}
               {matchData.gameData.turnScore > 0 && (() => {
-                const totalScore = (matchData.gameData.turnScore || 0) + (currentPlayer.score || 0);
+                const totalScore = (currentPlayer.score || 0) + (matchData.gameData.turnScore || 0);
                 const isThreeDigits = totalScore >= 100;
                 
                 return (
@@ -473,52 +473,112 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 );
               })()}
               
-              {/* Multiplier Indicators - Absolutely positioned */}
+              {/* Multiplier Indicators - Absolutely positioned with same offset as total score */}
               {/* Zero Hour Enhanced Multiplier */}
               {matchData.gameData.hasDoubleMultiplier && matchData.gameMode === 'zero-hour' && (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="absolute -right-20 md:-right-24 top-1/2 transform -translate-y-1/2 px-6 md:px-4 py-3 md:py-2 bg-purple-600/40 border-2 border-purple-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  initial={{ opacity: 0, scale: 0.5, x: 10 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ duration: 0.4, ease: "backOut" }}
+                  className="absolute right-20 md:right-28 top-1/2 transform -translate-y-1/2 bg-purple-600/40 border-2 border-purple-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  style={{
+                    padding: '8px 12px',
+                    minWidth: '64px',
+                    minHeight: '64px',
+                    aspectRatio: '1 / 1',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
                 >
                   <p 
-                    className="text-xl md:text-2xl font-bold text-purple-300" 
+                    className="text-xs md:text-sm text-purple-300 mb-1" 
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    Multi
+                  </p>
+                  <motion.p 
+                    initial={{ scale: 1.3, color: "#C084FC" }}
+                    animate={{ scale: 1, color: "#D8B4FE" }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="text-lg md:text-xl font-bold text-purple-300" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     {matchData.gameData.multiplierLevel || 2}X
-                  </p>
+                  </motion.p>
                 </motion.div>
               )}
               
               {/* Classic Mode 2X Multiplier */}
               {matchData.gameData.hasDoubleMultiplier && matchData.gameMode !== 'true-grit' && matchData.gameMode !== 'zero-hour' && (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="absolute -right-20 md:-right-24 top-1/2 transform -translate-y-1/2 px-6 md:px-4 py-3 md:py-2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  initial={{ opacity: 0, scale: 0.5, x: 10 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ duration: 0.4, ease: "backOut" }}
+                  className="absolute right-20 md:right-28 top-1/2 transform -translate-y-1/2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  style={{
+                    padding: '8px 12px',
+                    minWidth: '64px',
+                    minHeight: '64px',
+                    aspectRatio: '1 / 1',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
                 >
                   <p 
-                    className="text-xl md:text-2xl font-bold text-red-300" 
+                    className="text-xs md:text-sm text-red-300 mb-1" 
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    Multi
+                  </p>
+                  <motion.p 
+                    initial={{ scale: 1.3, color: "#F87171" }}
+                    animate={{ scale: 1, color: "#FCA5A5" }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="text-lg md:text-xl font-bold text-red-300" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     2X
-                  </p>
+                  </motion.p>
                 </motion.div>
               )}
               
               {/* True Grit Multiplier */}
               {matchData.gameMode === 'true-grit' && matchData.gameData.trueGritMultiplier && matchData.gameData.trueGritMultiplier > 1 && (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="absolute -right-20 md:-right-24 top-1/2 transform -translate-y-1/2 px-6 md:px-4 py-3 md:py-2 bg-orange-600/40 border-2 border-orange-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  initial={{ opacity: 0, scale: 0.5, x: 10 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ duration: 0.4, ease: "backOut" }}
+                  className="absolute right-20 md:right-28 top-1/2 transform -translate-y-1/2 bg-orange-600/40 border-2 border-orange-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  style={{
+                    padding: '8px 12px',
+                    minWidth: '64px',
+                    minHeight: '64px',
+                    aspectRatio: '1 / 1',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
                 >
                   <p 
-                    className="text-xl md:text-2xl font-bold text-orange-300" 
+                    className="text-xs md:text-sm text-orange-300 mb-1" 
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    Multi
+                  </p>
+                  <motion.p 
+                    initial={{ scale: 1.3, color: "#FB923C" }}
+                    animate={{ scale: 1, color: "#FDBA74" }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="text-lg md:text-xl font-bold text-orange-300" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     {matchData.gameData.trueGritMultiplier}X
-                  </p>
+                  </motion.p>
                 </motion.div>
               )}
             </motion.div>
@@ -582,19 +642,16 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         )}
 
         {/* Action Buttons - Desktop Enhanced Animations */}
-        <AnimatePresence mode="wait">
-          <motion.div 
-            key={`buttons-${isMyTurn}-${canRoll}-${canBank}`}
-            className="hidden md:flex gap-4 mb-8 mt-4"
-            initial={{ opacity: 0, y: 30, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -30, scale: 0.9 }}
-            transition={{ 
-              duration: 0.5, 
-              ease: [0.4, 0, 0.2, 1],
-              staggerChildren: 0.1
-            }}
-          >
+        <motion.div 
+          className="hidden md:flex gap-4 mb-8 mt-4"
+          initial={{ opacity: 0, y: 30, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ 
+            duration: 0.5, 
+            ease: [0.4, 0, 0.2, 1],
+            staggerChildren: 0.1
+          }}
+        >
             {isMyTurn ? (
               <>
                 <motion.button
@@ -687,8 +744,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 </p>
               </motion.div>
             )}
-          </motion.div>
-        </AnimatePresence>
+        </motion.div>
       </div>
 
       {/* Mobile Combined Abilities and Buttons Container - Transparent background */}
@@ -728,10 +784,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         )}
         
         {/* Buttons Section - Enhanced Mobile Animations */}
-        <AnimatePresence mode="wait">
-          <motion.div 
-            key={`mobile-buttons-${isMyTurn}-${canRoll}-${canBank}`}
-            className="w-full flex flex-row items-stretch"
+        <motion.div 
+          className="w-full flex flex-row items-stretch"
             style={{ 
               height: 'max(70px, env(safe-area-inset-bottom) + 70px)'
             }}
@@ -876,8 +930,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 </motion.p>
               </motion.div>
             )}
-          </motion.div>
-        </AnimatePresence>
+        </motion.div>
       </div>
     </React.Fragment>
   );

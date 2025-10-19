@@ -988,9 +988,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
       {/* Normal Match UI - Hidden when game over */}
       <motion.div 
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+        initial={{ opacity: 0, x: 100 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
         className={`w-full h-screen match-container ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-start md:justify-center px-2`}
         style={{ position: 'relative', left: 0, top: 0, transform: 'none' }}
       >
@@ -1004,13 +1004,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               {(matchData.gameData.gamePhase as string) !== 'turnDecider' && (
                 <motion.div 
                   className="w-[40%] max-w-lg"
-                  initial={{ opacity: 0, x: -50, scale: 0.9 }}
+                  initial={{ opacity: 0, x: 80, scale: 0.9 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: -50, scale: 0.9 }}
                   transition={{ 
-                    duration: 0.6, 
+                    duration: 0.7, 
                     ease: "easeOut",
-                    delay: 0.2
+                    delay: 0.3
                   }}
                 >
               {/* Player Name Above Container - Left Aligned */}
@@ -1244,13 +1244,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               {(matchData.gameData.gamePhase as string) !== 'turnDecider' && (
                 <motion.div 
                   className="w-[40%] max-w-lg"
-                  initial={{ opacity: 0, x: 50, scale: 0.9 }}
+                  initial={{ opacity: 0, x: 80, scale: 0.9 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: 50, scale: 0.9 }}
                   transition={{ 
-                    duration: 0.6, 
+                    duration: 0.7, 
                     ease: "easeOut",
-                    delay: 0.4
+                    delay: 0.5
                   }}
                 >
               {/* Player Name Above Container - Right Aligned */}
