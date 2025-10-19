@@ -95,20 +95,20 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
     }
   };
 
-  // Get mobile container gradient based on equipped background
+  // Get mobile container gradient based on equipped background - FROM BOTTOM TO TRANSPARENT
   const getMobileContainerGradient = () => {
     if (DisplayBackgroundEquip?.name === 'On A Mission') {
-      return 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)';
+      return 'linear-gradient(0deg, rgba(14, 165, 233, 0.8) 0%, rgba(14, 165, 233, 0.4) 50%, transparent 100%)';
     } else if (DisplayBackgroundEquip?.name === 'Long Road Ahead') {
-      return 'linear-gradient(135deg, rgba(124, 58, 237, 0.6) 0%, rgba(76, 29, 149, 0.4) 25%, rgba(30, 27, 75, 0.3) 50%, rgba(30, 58, 138, 0.4) 75%, rgba(59, 130, 246, 0.3) 100%)';
+      return 'linear-gradient(0deg, rgba(124, 58, 237, 0.8) 0%, rgba(76, 29, 149, 0.5) 30%, rgba(30, 27, 75, 0.3) 60%, transparent 100%)';
     } else if (DisplayBackgroundEquip?.name === 'New Day') {
-      return 'linear-gradient(0deg, #5a7579 0%, transparent 100%)';
+      return 'linear-gradient(0deg, rgba(90, 117, 121, 0.8) 0%, rgba(90, 117, 121, 0.4) 50%, transparent 100%)';
     } else if (DisplayBackgroundEquip?.name === 'Relax') {
-      return 'linear-gradient(0deg, #407080 0%, transparent 100%)';
+      return 'linear-gradient(0deg, rgba(64, 112, 128, 0.8) 0%, rgba(64, 112, 128, 0.4) 50%, transparent 100%)';
     } else if (DisplayBackgroundEquip?.name === 'Underwater') {
-      return 'linear-gradient(0deg, #00518c 0%, transparent 100%)';
+      return 'linear-gradient(0deg, rgba(0, 81, 140, 0.8) 0%, rgba(0, 81, 140, 0.4) 50%, transparent 100%)';
     }
-    return 'rgba(0, 0, 0, 0.3)';
+    return 'linear-gradient(0deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 50%, transparent 100%)';
   };
 
   // Get game rule result for display
@@ -439,75 +439,46 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         </div>
       </div>
 
-      {/* Mobile Abilities Display - Using simplified component */}
-      {user && onAbilityUsed && (
-        <div 
-          className="md:hidden fixed bottom-0 left-0 right-0 w-full z-40 px-2 py-3"
-          style={{ 
-            bottom: 'max(70px, env(safe-area-inset-bottom) + 70px)',
-            background: 'rgba(0, 0, 0, 0.4)',
-            backdropFilter: 'blur(8px)',
-            borderTop: '1px solid rgba(255, 255, 255, 0.1)'
-          }}
-        >
-          <InlineAbilitiesDisplay
-            matchData={matchData}
-            onAbilityUsed={onAbilityUsed}
-            isPlayerTurn={isMyTurn}
-            playerId={user.uid}
-            className="justify-between w-full"
-          />
-        </div>
-      )}
-
-      {/* Mobile Fixed Bottom Buttons */}
+      {/* Mobile Combined Abilities and Buttons Container */}
       <div 
-        className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-stretch z-50 backdrop-blur-sm"
+        className="md:hidden fixed bottom-0 left-0 right-0 w-full z-50 backdrop-blur-sm"
         style={{ 
-          height: 'max(70px, env(safe-area-inset-bottom) + 70px)',
-          background: getMobileContainerGradient()
+          background: getMobileContainerGradient(),
+          paddingBottom: 'max(0px, env(safe-area-inset-bottom))'
         }}
       >
-        {isMyTurn ? (
-          <>
-            <button
-              onClick={onRollDice}
-              disabled={!canRoll}
-              className={`text-xl font-bold transition-all ${
-                canRoll
-                  ? 'text-white active:scale-95'
-                  : 'cursor-not-allowed'
-              }`}
-              style={{ 
-                width: (matchData.gameMode === 'true-grit') ? '100%' : '50%',
-                height: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                fontFamily: "Audiowide",
-                textTransform: "uppercase" as const,
-                border: 'none',
-                borderRight: matchData.gameMode !== 'true-grit' ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
-                borderRadius: '0',
-                background: 'transparent', // Always transparent background
-                backdropFilter: 'blur(2px)',
-              }}
-            >
-              {canRoll ? 'PLAY' : ''} {/* Hide text when not available */}
-            </button>
-            
-            {/* Only show bank button for modes other than True Grit on mobile */}
-            {matchData.gameMode !== 'true-grit' && (
+        {/* Abilities Display Section */}
+        {user && onAbilityUsed && (
+          <div className="px-2 py-3 border-b border-white/10">
+            <InlineAbilitiesDisplay
+              matchData={matchData}
+              onAbilityUsed={onAbilityUsed}
+              isPlayerTurn={isMyTurn}
+              playerId={user.uid}
+              className="justify-between w-full"
+            />
+          </div>
+        )}
+        
+        {/* Buttons Section */}
+        <div 
+          className="w-full flex flex-row items-stretch"
+          style={{ 
+            height: 'max(70px, env(safe-area-inset-bottom) + 70px)'
+          }}
+        >
+          {isMyTurn ? (
+            <>
               <button
-                onClick={onBankScore}
-                disabled={!canBank}
+                onClick={onRollDice}
+                disabled={!canRoll}
                 className={`text-xl font-bold transition-all ${
-                  canBank
+                  canRoll
                     ? 'text-white active:scale-95'
                     : 'cursor-not-allowed'
                 }`}
                 style={{ 
-                  width: '50%',
+                  width: (matchData.gameMode === 'true-grit') ? '100%' : '50%',
                   height: '100%',
                   display: 'flex',
                   justifyContent: 'center',
@@ -516,27 +487,55 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   textTransform: "uppercase" as const,
                   border: 'none',
                   borderRadius: '0',
-                  background: 'transparent', // Always transparent background  
+                  background: 'transparent', // Always transparent background
                   backdropFilter: 'blur(2px)',
                 }}
               >
-                {canBank ? (matchData.gameMode === 'last-line' ? 'ATTACK' : 'BANK') : ''} {/* Hide text when not available */}
+                {canRoll ? 'PLAY' : ''} {/* Hide text when not available */}
               </button>
-            )}
-          </>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <p 
-              className="text-gray-300 text-lg"
-              style={{ 
-                fontFamily: "Audiowide",
-                textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-              }}
-            >
-              Waiting for {opponent.playerDisplayName}...
-            </p>
-          </div>
-        )}
+              
+              {/* Only show bank button for modes other than True Grit on mobile */}
+              {matchData.gameMode !== 'true-grit' && (
+                <button
+                  onClick={onBankScore}
+                  disabled={!canBank}
+                  className={`text-xl font-bold transition-all ${
+                    canBank
+                      ? 'text-white active:scale-95'
+                      : 'cursor-not-allowed'
+                  }`}
+                  style={{ 
+                    width: '50%',
+                    height: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    fontFamily: "Audiowide",
+                    textTransform: "uppercase" as const,
+                    border: 'none',
+                    borderRadius: '0',
+                    background: 'transparent', // Always transparent background  
+                    backdropFilter: 'blur(2px)',
+                  }}
+                >
+                  {canBank ? (matchData.gameMode === 'last-line' ? 'ATTACK' : 'BANK') : ''} {/* Hide text when not available */}
+                </button>
+              )}
+            </>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <p 
+                className="text-gray-300 text-lg"
+                style={{ 
+                  fontFamily: "Audiowide",
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+                }}
+              >
+                Waiting for {opponent.playerDisplayName}...
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </React.Fragment>
   );
