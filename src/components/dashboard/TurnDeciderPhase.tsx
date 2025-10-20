@@ -120,12 +120,12 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
       const winnerTimer = setTimeout(() => {
         setTransitionPhase('winner-announcement');
         setShowResult(true);
-      }, 3000); // Extended time to let users see the dice number clearly
+      }, 5000); // Increased from 3000 to 5000ms (5 seconds) to show dice number longer
       
       // Step 3: After winner announcement, transition to match
       const matchTimer = setTimeout(() => {
         setTransitionPhase('transitioning-to-match');
-      }, 6000); // Extended total time for complete sequence
+      }, 9000); // Increased from 6000 to 9000ms (9 seconds total) for complete sequence
       
       return () => {
         clearTimeout(winnerTimer);

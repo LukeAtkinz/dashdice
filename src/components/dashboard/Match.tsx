@@ -192,8 +192,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         }
         
         setTurnAnnouncementData({ winner, isCurrentPlayerFirst });
-        // Don't show turn announcement anymore since we display it in video overlay
-        // setShowTurnAnnouncement(true);
+        // Show turn announcement so users can see who goes first
+        setShowTurnAnnouncement(true);
         setTurnAnnouncementShown(true); // Mark as shown so it doesn't repeat
       }
     }
@@ -215,6 +215,17 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       }
     }
   }, [matchData?.hostData?.turnActive, matchData?.opponentData?.turnActive, siphonActive, user, showToast, setSiphonActive]);
+  
+  // Auto-hide turn announcement after showing it for a few seconds
+  useEffect(() => {
+    if (showTurnAnnouncement) {
+      const hideTimer = setTimeout(() => {
+        setShowTurnAnnouncement(false);
+      }, 4000); // Show for 4 seconds then hide
+      
+      return () => clearTimeout(hideTimer);
+    }
+  }, [showTurnAnnouncement]);
   
   // Dice animation states for slot machine effect
   const [dice1Animation, setDice1Animation] = useState<{
