@@ -2521,13 +2521,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   };
 
   if (isLoading) {
-    return (
-      <div className="w-full h-full flex items-center justify-center">
-        <div className="text-white text-2xl" style={{ fontFamily: 'Audiowide' }}>
-          Creating game session...
-        </div>
-      </div>
-    );
+    return null; // Don't show loading text, let the game waiting room appear with animation
   }
 
   if (error) {
@@ -2557,18 +2551,29 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   }
 
   return (
-    <div className="waiting-room-container" style={{ 
-      width: '100%', 
-      height: '100vh', 
-      maxHeight: '100vh',
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      padding: '0',
-      margin: '0',
-      background: 'transparent',
-      overflow: 'hidden'
-    }}>
+    <motion.div 
+      className="waiting-room-container" 
+      initial={{ x: '100%', opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: '-100%', opacity: 0 }}
+      transition={{ 
+        type: "spring", 
+        stiffness: 300, 
+        damping: 30,
+        mass: 0.8
+      }}
+      style={{ 
+        width: '100%', 
+        height: '100vh', 
+        maxHeight: '100vh',
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        padding: '0',
+        margin: '0',
+        background: 'transparent',
+        overflow: 'hidden'
+      }}>
       {/* Match Transition Animation */}
       {showMatchTransition && transitionMatchData && (
         <MatchTransition
@@ -3670,6 +3675,6 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
            isLeaving ? 'Leaving...' : 'Leave Game'}
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 };

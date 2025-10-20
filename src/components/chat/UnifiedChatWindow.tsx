@@ -32,6 +32,7 @@ interface UnifiedChatWindowProps {
     gameId?: string;
   };
   onUnreadCountChange?: (count: number) => void;
+  containerMode?: boolean; // When true, uses relative positioning instead of fixed
 }
 
 // Global state for managing chat requests
@@ -47,7 +48,8 @@ export default function UnifiedChatWindow({
   onToggle, 
   position = 'bottom-left',
   initialTab,
-  onUnreadCountChange 
+  onUnreadCountChange,
+  containerMode = false
 }: UnifiedChatWindowProps) {
   const { user } = useAuth();
   const { friends } = useFriends();
@@ -535,25 +537,25 @@ export default function UnifiedChatWindow({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 100 }}
+      initial={{ opacity: 0, y: containerMode ? 0 : 100 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 100 }}
-      className={`fixed z-50 shadow-xl border border-gray-700 overflow-hidden ${
-        isMobile 
+      exit={{ opacity: 0, y: containerMode ? 0 : 100 }}
+      className={`${containerMode ? 'relative h-full' : 'fixed z-50'} shadow-xl border border-gray-700 overflow-hidden ${
+        !containerMode && isMobile 
           ? 'bottom-0 left-0 right-0' 
-          : `${position === 'bottom-left' ? 'bottom-4 left-4' : 'bottom-4 right-4'}`
+          : !containerMode ? `${position === 'bottom-left' ? 'bottom-4 left-4' : 'bottom-4 right-4'}` : ''
       }`}
       style={{
-        width: isMobile ? '100vw' : '400px',
-        height: isMobile 
+        width: containerMode ? '100%' : (isMobile ? '100vw' : '400px'),
+        height: containerMode ? '100%' : (isMobile 
           ? `min(500px, calc(100vh - ${keyboardHeight}px))` 
-          : 'min(500px, 80vh)',
-        maxHeight: isMobile ? `calc(100vh - ${keyboardHeight}px)` : '80vh',
-        borderRadius: isMobile ? '20px 20px 0 0' : '20px',
+          : 'min(500px, 80vh)'),
+        maxHeight: containerMode ? '100%' : (isMobile ? `calc(100vh - ${keyboardHeight}px)` : '80vh'),
+        borderRadius: containerMode ? '0' : (isMobile ? '20px 20px 0 0' : '20px'),
         // Apply friend background or default
         ...friendBackgroundStyle,
         // Ensure proper z-indexing
-        zIndex: 50
+        zIndex: containerMode ? 'auto' : 50
       }}
     >
       {/* Friend video background if applicable */}

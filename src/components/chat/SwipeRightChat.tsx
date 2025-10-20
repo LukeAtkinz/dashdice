@@ -298,6 +298,7 @@ export default function SwipeRightChat({ children }: SwipeRightChatProps) {
                 isVisible={true}
                 onToggle={closeChatWindow}
                 position="bottom-left"
+                containerMode={true}
               />
             </div>
           </motion.div>

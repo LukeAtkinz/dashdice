@@ -170,7 +170,7 @@ const DashboardContent: React.FC = () => {
             controls={false}
             webkit-playsinline="true"
             x5-playsinline="true"
-            preload={isMobile ? "auto" : "metadata"} // Aggressive preloading on mobile
+            preload="none" // Lazy load to improve performance
             poster={isMobile ? undefined : "/backgrounds/placeholder.jpg"} // Remove poster on mobile for faster loading
             onLoadStart={(e) => handleVideoLoadStart(e.currentTarget)}
             onCanPlay={(e) => {
@@ -200,7 +200,7 @@ const DashboardContent: React.FC = () => {
           <img
             src={DisplayBackgroundEquip.file}
             alt={DisplayBackgroundEquip.name}
-            loading={isMobile ? "eager" : "lazy"} // Eager loading on mobile for instant display
+            loading="lazy" // Always lazy load for performance
             className={`absolute inset-0 w-full h-full object-cover z-0 ${positioning.className}`}
             style={{
               objectPosition: positioning.objectPosition

@@ -1021,10 +1021,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
                 }}
                 animate={{
-                  color: currentPlayer.turnActive ? '#00ff66' : '#ffffff',
-                  textShadow: currentPlayer.turnActive 
-                    ? '2px 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(0, 255, 102, 0.5)'
-                    : '2px 2px 4px rgba(0,0,0,0.8)'
+                  color: '#ffffff',
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
                 }}
                 transition={{ 
                   duration: 0.5,
@@ -1037,14 +1035,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               <motion.div
                 className="relative rounded-3xl overflow-hidden shadow-2xl border-4 z-20"
                 style={{ 
-                  borderColor: currentPlayer.turnActive ? '#00ff00' : '#ffffff',
+                  borderColor: '#ffffff',
                   height: '500px'
                 }}
                 animate={{
-                  borderColor: currentPlayer.turnActive ? '#00ff00' : '#ffffff',
-                  boxShadow: currentPlayer.turnActive 
-                    ? '0 0 25px rgba(0, 255, 0, 0.6), 0 0 50px rgba(0, 255, 0, 0.3)'
-                    : '0 0 15px rgba(255, 255, 255, 0.2)'
+                  borderColor: '#ffffff',
+                  boxShadow: '0 0 15px rgba(255, 255, 255, 0.2)'
                 }}
                 transition={{ 
                   duration: 0.5,
@@ -1261,10 +1257,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
                 }}
                 animate={{
-                  color: opponent.turnActive ? '#00ff66' : '#ffffff',
-                  textShadow: opponent.turnActive 
-                    ? '2px 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(0, 255, 102, 0.5)'
-                    : '2px 2px 4px rgba(0,0,0,0.8)'
+                  color: '#ffffff',
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
                 }}
                 transition={{ 
                   duration: 0.5,
@@ -1277,14 +1271,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               <motion.div
                 className="relative rounded-3xl overflow-hidden shadow-2xl border-4 z-20"
                 style={{ 
-                  borderColor: opponent.turnActive ? '#00ff00' : '#ffffff',
+                  borderColor: '#ffffff',
                   height: '500px'
                 }}
                 animate={{
-                  borderColor: opponent.turnActive ? '#00ff00' : '#ffffff',
-                  boxShadow: opponent.turnActive 
-                    ? '0 0 25px rgba(0, 255, 0, 0.6), 0 0 50px rgba(0, 255, 0, 0.3)'
-                    : '0 0 15px rgba(255, 255, 255, 0.2)'
+                  borderColor: '#ffffff',
+                  boxShadow: '0 0 15px rgba(255, 255, 255, 0.2)'
                 }}
                 transition={{ 
                   duration: 0.5,
@@ -1451,9 +1443,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     width: '100%'
                   }}
                   animate={{
-                    boxShadow: currentPlayer.turnActive 
-                      ? '0 0 15px rgba(0, 255, 0, 0.6), 0 0 30px rgba(0, 255, 0, 0.3)'
-                      : '0 0 8px rgba(0, 0, 0, 0.3)'
+                    boxShadow: '0 0 8px rgba(0, 0, 0, 0.3)'
                   }}
                   transition={{ 
                     duration: 0.5,
@@ -1562,9 +1552,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     width: '100%'
                   }}
                   animate={{
-                    boxShadow: opponent.turnActive 
-                      ? '0 0 15px rgba(0, 255, 0, 0.6), 0 0 30px rgba(0, 255, 0, 0.3)'
-                      : '0 0 8px rgba(0, 0, 0, 0.3)'
+                    boxShadow: '0 0 8px rgba(0, 0, 0, 0.3)'
                   }}
                   transition={{ 
                     duration: 0.5,

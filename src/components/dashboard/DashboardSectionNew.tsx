@@ -17,6 +17,7 @@ import AchievementsMini from '@/components/achievements/AchievementsMini';
 import { CompactLeaderboard } from '@/components/ranked/Leaderboard';
 import { CompactProgressionDisplay } from '@/components/ranked/ProgressionDisplay';
 import { AlreadyInMatchNotification } from '@/components/notifications/AlreadyInMatchNotification';
+import { GameModeIcon } from '@/components/ui/OptimizedImage';
 import { db } from '@/services/firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
 
