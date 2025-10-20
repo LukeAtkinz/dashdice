@@ -270,7 +270,10 @@ const DashboardContent: React.FC = () => {
                 <img
                   src="/Design Elements/CrownLogo.webp"
                   alt="DashDice Logo"
-                  className="w-8 h-8 md:w-14 md:h-14"
+                  className="w-8 h-8 md:w-14 md:h-14 object-contain"
+                  loading="lazy"
+                  decoding="async"
+                  style={{ maxWidth: '56px', maxHeight: '56px' }}
                 />
                 <div
                   onClick={() => handleSectionChange('dashboard')}
@@ -750,7 +753,14 @@ const DashboardContent: React.FC = () => {
                   currentSection === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/10'
                 }`}
               >
-                <img src="/Design Elements/CrownLogo.webp" alt="Play" className="w-12 h-12" />
+                <img 
+                  src="/Design Elements/CrownLogo.webp" 
+                  alt="Play" 
+                  className="w-12 h-12 object-contain" 
+                  loading="lazy"
+                  decoding="async"
+                  style={{ maxWidth: '48px', maxHeight: '48px' }}
+                />
                 <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PLAY</span>
               </button>
               <button

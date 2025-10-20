@@ -449,10 +449,11 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 );
               })()}
               
-              {/* Potential Total Score Counter - Left side */}
+              {/* Potential Total Score Counter - Position based on game mode */}
               {matchData.gameData.turnScore > 0 && (() => {
                 const totalScore = (currentPlayer.score || 0) + (matchData.gameData.turnScore || 0);
                 const isThreeDigits = totalScore >= 100;
+                const isLastLine = matchData.gameMode === 'last-line';
                 
                 return (
                   <motion.div
@@ -461,15 +462,15 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     animate={{ 
                       opacity: 1, 
                       scale: 1, 
-                      x: 0,
-                      y: isScoreShooting ? [-8, 8, 0] : 0
+                      x: isScoreShooting ? [0, -16, 0] : 0, // Desktop: horizontal shooting animation
+                      y: 0
                     }}
                     transition={{ 
                       duration: isScoreShooting ? 0.6 : 0.4, 
                       ease: isScoreShooting ? "easeInOut" : "backOut",
-                      y: isScoreShooting ? { duration: 0.6, ease: "easeInOut" } : undefined
+                      x: isScoreShooting ? { duration: 0.6, ease: "easeInOut" } : undefined
                     }}
-                    className="absolute -left-20 md:-left-28 top-1/2 transform -translate-y-1/2 bg-blue-600/40 border-2 border-blue-400 rounded-xl backdrop-blur-sm shadow-xl"
+                    className={`absolute ${isLastLine ? 'right-20 md:right-28' : '-left-20 md:-left-28'} top-1/2 transform -translate-y-1/2 bg-blue-600/40 border-2 border-blue-400 rounded-xl backdrop-blur-sm shadow-xl`}
                     style={{
                       padding: '8px 12px',
                       minWidth: isThreeDigits ? 'auto' : '64px',
@@ -544,7 +545,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: 10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut" }}
-                  className="absolute right-20 md:right-28 top-1/2 transform -translate-y-1/2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  className={`absolute ${matchData.gameMode === 'last-line' ? '-left-20 md:-left-28' : 'right-20 md:right-28'} top-1/2 transform -translate-y-1/2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl`}
                   style={{
                     padding: '8px 12px',
                     minWidth: '64px',

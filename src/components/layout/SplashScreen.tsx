@@ -250,7 +250,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             autoPlay
             muted
             playsInline
-            preload="auto"
+            preload="metadata"
             controls={false}
             disablePictureInPicture
             disableRemotePlayback
@@ -288,7 +288,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
               autoPlay
               muted
               playsInline
-              preload="auto"
+              preload="metadata"
               controls={false}
               disablePictureInPicture
               disableRemotePlayback

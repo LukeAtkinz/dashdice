@@ -40,6 +40,8 @@ export default function AchievementCard({
           src={achievement.icon}
           alt={achievement.name}
           className={`${iconSize} object-contain`}
+          loading="lazy"
+          decoding="async"
           onError={(e) => {
             // Fallback to emoji if image fails to load
             e.currentTarget.style.display = 'none';
