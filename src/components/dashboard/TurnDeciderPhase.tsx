@@ -140,10 +140,10 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
 
   // Reset transition phase when phase changes away from turn decider
   useEffect(() => {
-    if (!isInTurnDeciderPhase) {
+    if (!isInTurnDeciderPhase && transitionPhase !== 'choosing') {
       setTransitionPhase('choosing');
     }
-  }, [isInTurnDeciderPhase]);
+  }, [isInTurnDeciderPhase, transitionPhase]);
 
   // Handle choice with stunning slide transitions
   const handleChoice = async (choice: 'odd' | 'even') => {
@@ -248,9 +248,19 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                   imageRendering: 'auto',
                   WebkitFontSmoothing: 'antialiased'
                 }}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.4, duration: 0.5, type: "spring", stiffness: 100 }}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ 
+                  scale: transitionPhase === 'choosing' ? 1 : 0.3,
+                  opacity: transitionPhase === 'choosing' ? 1 : 0
+                }}
+                transition={{ 
+                  delay: transitionPhase === 'choosing' ? 1.0 : 0, // Same as button timing
+                  duration: transitionPhase === 'choosing' ? 1.5 : 0.5, // Same as button timing
+                  ease: transitionPhase === 'choosing' ? "backOut" : "easeIn",
+                  type: transitionPhase === 'choosing' ? "spring" : "tween",
+                  stiffness: transitionPhase === 'choosing' ? 120 : undefined,
+                  damping: transitionPhase === 'choosing' ? 15 : undefined
+                }}
               />
             </div>
           </motion.button>
@@ -377,9 +387,19 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                   imageRendering: 'auto',
                   WebkitFontSmoothing: 'antialiased'
                 }}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.4, duration: 0.5, type: "spring", stiffness: 100 }}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ 
+                  scale: transitionPhase === 'choosing' ? 1 : 0.3,
+                  opacity: transitionPhase === 'choosing' ? 1 : 0
+                }}
+                transition={{ 
+                  delay: transitionPhase === 'choosing' ? 1.0 : 0, // Same as button timing
+                  duration: transitionPhase === 'choosing' ? 1.5 : 0.5, // Same as button timing
+                  ease: transitionPhase === 'choosing' ? "backOut" : "easeIn",
+                  type: transitionPhase === 'choosing' ? "spring" : "tween",
+                  stiffness: transitionPhase === 'choosing' ? 120 : undefined,
+                  damping: transitionPhase === 'choosing' ? 15 : undefined
+                }}
               />
             </div>
           </motion.button>

@@ -44,6 +44,25 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   const isMyTurn = currentPlayer.turnActive;
   const canRoll = isMyTurn && !matchData.gameData.isRolling;
   const canBank = isMyTurn && !matchData.gameData.isRolling && matchData.gameData.turnScore > 0;
+  
+  // State for score shooting animation
+  const [isScoreShooting, setIsScoreShooting] = React.useState(false);
+
+  // Handle bank/save with animation
+  const handleBankScore = () => {
+    if (!canBank) return;
+    
+    // Trigger shooting animation
+    setIsScoreShooting(true);
+    
+    // Reset animation after completion
+    setTimeout(() => {
+      setIsScoreShooting(false);
+    }, 600); // Animation duration
+    
+    // Call the original bank function
+    onBankScore();
+  };
 
   // Create button gradient style based on user's display background
   const getButtonGradientStyle = (baseColor: string) => {
@@ -439,8 +458,17 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   <motion.div
                     key={`potential-total-${matchData.gameData.turnScore}-${currentPlayer.score || 0}`}
                     initial={{ opacity: 0, scale: 0.5, x: -10 }}
-                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                    transition={{ duration: 0.4, ease: "backOut" }}
+                    animate={{ 
+                      opacity: 1, 
+                      scale: 1, 
+                      x: 0,
+                      y: isScoreShooting ? [-8, 8, 0] : 0
+                    }}
+                    transition={{ 
+                      duration: isScoreShooting ? 0.6 : 0.4, 
+                      ease: isScoreShooting ? "easeInOut" : "backOut",
+                      y: isScoreShooting ? { duration: 0.6, ease: "easeInOut" } : undefined
+                    }}
                     className="absolute -left-20 md:-left-28 top-1/2 transform -translate-y-1/2 bg-blue-600/40 border-2 border-blue-400 rounded-xl backdrop-blur-sm shadow-xl"
                     style={{
                       padding: '8px 12px',
@@ -691,7 +719,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 {/* Only show bank button for modes other than True Grit on desktop */}
                 {matchData.gameMode !== 'true-grit' && (
                   <motion.button
-                    onClick={onBankScore}
+                    onClick={handleBankScore}
                     disabled={!canBank}
                     className={`px-12 py-6 rounded-xl text-2xl font-bold transition-all transform ${
                       canBank
@@ -803,7 +831,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 {/* Only show save/attack button for modes other than True Grit on mobile - LEFT SIDE */}
                 {matchData.gameMode !== 'true-grit' && (
                   <motion.button
-                    onClick={onBankScore}
+                    onClick={handleBankScore}
                     disabled={!canBank}
                     className={`text-xl font-bold transition-all ${
                       canBank
@@ -839,19 +867,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       delay: 0.1
                     }}
                   >
-                    <AnimatePresence mode="wait">
-                      {canBank && (
-                        <motion.span
-                          key="bank-text"
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -5 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          {matchData.gameMode === 'last-line' ? 'ATTACK' : 'SAVE'}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
+                    <span>
+                      {matchData.gameMode === 'last-line' ? 'ATTACK' : 'SAVE'}
+                    </span>
                   </motion.button>
                 )}
 
@@ -893,19 +911,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     delay: 0.2 // Slight delay after save button
                   }}
                 >
-                  <AnimatePresence mode="wait">
-                    {canRoll && (
-                      <motion.span
-                        key="play-text"
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -5 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        PLAY
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
+                  <span>PLAY</span>
                 </motion.button>
               </>
             ) : (
