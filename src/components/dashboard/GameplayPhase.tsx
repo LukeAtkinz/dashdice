@@ -451,13 +451,13 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               
               {/* Potential Total Score Counter - Position based on game mode */}
               {matchData.gameData.turnScore > 0 && (() => {
-                const totalScore = (currentPlayer.score || 0) + (matchData.gameData.turnScore || 0);
+                const totalScore = (currentPlayer.playerScore || 0) + (matchData.gameData.turnScore || 0);
                 const isThreeDigits = totalScore >= 100;
                 const isLastLine = matchData.gameMode === 'last-line';
                 
                 return (
                   <motion.div
-                    key={`potential-total-${matchData.gameData.turnScore}-${currentPlayer.score || 0}`}
+                    key={`potential-total-${matchData.gameData.turnScore}-${currentPlayer.playerScore || 0}`}
                     initial={{ opacity: 0, scale: 0.5, x: -10 }}
                     animate={{ 
                       opacity: 1, 
@@ -502,15 +502,16 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 );
               })()}
               
-              {/* Multiplier Indicators - Absolutely positioned with same offset as total score */}
+              {/* Multiplier Indicators - Positioned to the right of Turn Score (center) */}
               {/* Zero Hour Enhanced Multiplier */}
               {matchData.gameData.hasDoubleMultiplier && matchData.gameMode === 'zero-hour' && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.5, x: 10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut" }}
-                  className="absolute right-20 md:right-28 top-1/2 transform -translate-y-1/2 bg-purple-600/40 border-2 border-purple-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute left-1/2 top-1/2 transform -translate-y-1/2 bg-purple-600/40 border-2 border-purple-400 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
+                    marginLeft: '120px', // Position to the right of turn score
                     padding: '8px 12px',
                     minWidth: '64px',
                     minHeight: '64px',
@@ -545,8 +546,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: 10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut" }}
-                  className="absolute right-20 md:right-28 top-1/2 transform -translate-y-1/2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute left-1/2 top-1/2 transform -translate-y-1/2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
+                    marginLeft: '120px', // Position to the right of turn score
                     padding: '8px 12px',
                     minWidth: '64px',
                     minHeight: '64px',
@@ -581,8 +583,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: 10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut" }}
-                  className="absolute right-20 md:right-28 top-1/2 transform -translate-y-1/2 bg-orange-600/40 border-2 border-orange-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute left-1/2 top-1/2 transform -translate-y-1/2 bg-orange-600/40 border-2 border-orange-400 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
+                    marginLeft: '120px', // Position to the right of turn score
                     padding: '8px 12px',
                     minWidth: '64px',
                     minHeight: '64px',
