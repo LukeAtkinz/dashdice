@@ -348,13 +348,13 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
   return (
     <motion.div 
       className="flex flex-col items-center justify-center gap-[2rem] py-[2rem] md:py-[2rem] pt-[1rem] md:pt-[2rem] mx-auto"
-      initial={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 1, scale: 1, x: 0 }}
       animate={{ 
-        opacity: isExiting ? 0.7 : 1, 
-        scale: isExiting ? 0.95 : 1,
-        filter: isExiting ? "blur(2px)" : "blur(0px)"
+        opacity: isExiting ? 1 : 1, 
+        scale: isExiting ? 1 : 1,
+        x: isExiting ? '-100vw' : 0
       }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.6, ease: "easeInOut" }}
       style={{
         minHeight: 'auto', // Allow natural height growth
         overflow: 'visible', // Ensure no clipping

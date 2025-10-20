@@ -159,7 +159,17 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
         powerLoadout
       );
       
+      // 🔍 ENHANCED DEBUG: Check if siphon was saved
       console.log(`✅ PowerTab: Successfully saved ${gameMode} loadout to Firebase`);
+      if (Object.values(powerLoadout).includes('siphon')) {
+        console.log('🧛 SIPHON SAVE DEBUG: Siphon was included in the saved loadout!', {
+          gameMode,
+          powerLoadout,
+          siphonCategory: Object.entries(powerLoadout).find(([_, abilityId]) => abilityId === 'siphon')?.[0]
+        });
+      } else {
+        console.log('❌ SIPHON SAVE DEBUG: Siphon NOT found in saved loadout', { gameMode, powerLoadout });
+      }
     } catch (error) {
       console.error(`❌ PowerTab: Error saving ${gameMode} loadout:`, error);
     } finally {

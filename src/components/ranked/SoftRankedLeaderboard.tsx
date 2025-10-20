@@ -168,6 +168,10 @@ export function SoftRankedLeaderboard() {
           style={{
             filter: 'drop-shadow(0 2px 8px rgba(255, 215, 0, 0.8))'
           }}
+          onError={(e) => {
+            console.error('Failed to load 1st place icon');
+            e.currentTarget.style.display = 'none';
+          }}
         />
       );
       case 2: return (
@@ -178,6 +182,11 @@ export function SoftRankedLeaderboard() {
           style={{
             filter: 'drop-shadow(0 2px 8px rgba(192, 192, 192, 0.8))'
           }}
+          onError={(e) => {
+            console.error('Failed to load 2nd place icon:', e);
+            // Fallback to text
+            e.currentTarget.outerHTML = '<span class="text-lg font-bold text-gray-400">2</span>';
+          }}
         />
       );
       case 3: return (
@@ -187,6 +196,11 @@ export function SoftRankedLeaderboard() {
           className="w-8 h-8 object-contain"
           style={{
             filter: 'drop-shadow(0 2px 8px rgba(205, 127, 50, 0.8))'
+          }}
+          onError={(e) => {
+            console.error('Failed to load 3rd place icon:', e);
+            // Fallback to text
+            e.currentTarget.outerHTML = '<span class="text-lg font-bold text-orange-400">3</span>';
           }}
         />
       );
@@ -464,20 +478,13 @@ export function SoftRankedLeaderboard() {
                           <h3 className={`font-bold text-lg ${colors.text} group-hover:text-white transition-colors`} 
                               style={{ 
                                 fontFamily: 'Audiowide',
-                                textShadow: '0 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.5)'
+                                textShadow: isCurrentUser 
+                                  ? '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4)' 
+                                  : '0 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.5)',
+                                color: isCurrentUser ? '#FFD700' : undefined
                               }}>
-                            {player.displayName}
+                            {isCurrentUser ? 'YOU' : player.displayName}
                           </h3>
-                          {isCurrentUser && (
-                            <>
-                              {/* Left horizontal line */}
-                              <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-screen h-0.5 bg-yellow-400" 
-                                   style={{ left: 'calc(-50vw)', width: '50vw' }}></div>
-                              {/* Right horizontal line */}
-                              <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-screen h-0.5 bg-yellow-400" 
-                                   style={{ right: 'calc(-50vw)', width: '50vw' }}></div>
-                            </>
-                          )}
                         </div>
                         <div className="text-sm text-gray-400" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)' }}>
                           <div className="md:flex md:space-x-4">

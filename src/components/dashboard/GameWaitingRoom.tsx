@@ -695,6 +695,17 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   hostPowerLoadout = await UserService.getPowerLoadoutForGameMode(user!.uid, gameModeKey);
                   console.log('🔮 Host power loadout loaded:', hostPowerLoadout);
                   
+                  // 🔍 ENHANCED DEBUG: Check for siphon specifically
+                  if (hostPowerLoadout && Object.values(hostPowerLoadout).includes('siphon')) {
+                    console.log('🧛 MATCH CREATION SIPHON DEBUG: Siphon found in host loadout!', {
+                      gameModeKey,
+                      hostPowerLoadout,
+                      siphonCategory: Object.entries(hostPowerLoadout).find(([_, abilityId]) => abilityId === 'siphon')?.[0]
+                    });
+                  } else {
+                    console.log('❌ MATCH CREATION SIPHON DEBUG: Siphon NOT in host loadout', { gameModeKey, hostPowerLoadout });
+                  }
+                  
                   // Load opponent power loadout (only for real users, not bots)
                   if (opponentPlayerId && !opponentPlayerId.includes('bot')) {
                     opponentPowerLoadout = await UserService.getPowerLoadoutForGameMode(opponentPlayerId, gameModeKey);

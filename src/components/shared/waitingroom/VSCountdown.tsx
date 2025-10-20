@@ -32,7 +32,7 @@ const VSCountdown: React.FC<VSCountdownProps> = ({
           <motion.div
             layoutId="vs-morph-text" // This creates the morphing connection
             style={{
-              color: isGo ? '#00FF80' : '#E2E2E2',
+              color: isGo ? '#FFFFFF' : '#E2E2E2',
               textAlign: 'center',
               fontFamily: 'Audiowide',
               fontSize: isMobile ? (isGo ? '48px' : '40px') : (isGo ? '72px' : '64px'),
@@ -41,15 +41,14 @@ const VSCountdown: React.FC<VSCountdownProps> = ({
               lineHeight: isMobile ? (isGo ? '52px' : '44px') : (isGo ? '80px' : '72px'),
               textTransform: 'uppercase',
               textShadow: isGo 
-                ? '0 0 20px rgba(0, 255, 0, 0.8), 0 0 40px rgba(0, 255, 0, 0.4)' 
+                ? '0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.4)' 
                 : '0 0 15px rgba(255, 255, 255, 0.4)',
               animation: isGo ? 'goGlow 1s ease-in-out' : 'subtleGlow 1.5s infinite'
             }}
             transition={{
-              type: "spring",
-              stiffness: 300,
-              damping: 30,
-              duration: 0.8
+              type: "tween",
+              ease: "easeInOut",
+              duration: 0.5
             }}
           >
             {isGo ? 'GO!' : countdown}
@@ -58,7 +57,7 @@ const VSCountdown: React.FC<VSCountdownProps> = ({
           // Original static version
           <div
             style={{
-              color: isGo ? '#00FF80' : '#E2E2E2',
+              color: isGo ? '#FFFFFF' : '#E2E2E2',
               textAlign: 'center',
               fontFamily: 'Audiowide',
               fontSize: isMobile ? (isGo ? '48px' : '40px') : (isGo ? '72px' : '64px'),
@@ -67,7 +66,7 @@ const VSCountdown: React.FC<VSCountdownProps> = ({
               lineHeight: isMobile ? (isGo ? '52px' : '44px') : (isGo ? '80px' : '72px'),
               textTransform: 'uppercase',
               textShadow: isGo 
-                ? '0 0 20px rgba(0, 255, 0, 0.8), 0 0 40px rgba(0, 255, 0, 0.4)' 
+                ? '0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.4)' 
                 : '0 0 15px rgba(255, 255, 255, 0.4)',
               animation: isGo ? 'goGlow 1s ease-in-out' : 'subtleGlow 1.5s infinite'
             }}
@@ -90,10 +89,9 @@ const VSCountdown: React.FC<VSCountdownProps> = ({
               textTransform: 'uppercase'
             }}
             transition={{
-              type: "spring",
-              stiffness: 300,
-              damping: 30,
-              duration: 0.8
+              type: "tween",
+              ease: "easeInOut",
+              duration: 0.5
             }}
           >
             VS

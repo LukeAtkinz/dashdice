@@ -48,7 +48,21 @@ export default function InlineAbilitiesDisplay({
       finalPlayerPowerLoadout: playerPowerLoadout,
       allAbilitiesCount: allAbilities.length
     });
-  }, [playerId]); // Only depend on playerId to prevent infinite re-renders
+    
+    // 🔍 ENHANCED DEBUG: Check if siphon is specifically available
+    const siphonAbility = allAbilities.find(a => a.id === 'siphon');
+    if (siphonAbility) {
+      console.log('🧛 SIPHON DEBUG:', {
+        siphonFound: true,
+        siphonDetails: siphonAbility,
+        isInPlayerLoadout: playerPowerLoadout && Object.values(playerPowerLoadout).includes('siphon'),
+        playerLoadoutValues: playerPowerLoadout ? Object.values(playerPowerLoadout) : null,
+        playerLoadoutEntries: playerPowerLoadout ? Object.entries(playerPowerLoadout) : null
+      });
+    } else {
+      console.log('❌ SIPHON DEBUG: Siphon ability not found in allAbilities array');
+    }
+  }, [playerId, allAbilities, playerPowerLoadout]); // Add dependencies to track changes
 
   // Get player's current aura from match data
   const playerAura = matchData.gameData.playerAura?.[playerId] || 0;

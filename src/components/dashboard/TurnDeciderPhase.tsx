@@ -315,11 +315,10 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                     duration: 0.8,
                     times: [0, 0.5, 1]
                   },
-                  // Default transition for morph
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 30,
-                  duration: 0.8
+                  // Default transition for morph - smoother transition
+                  type: "tween",
+                  ease: "easeInOut",
+                  duration: 0.5
                 }}
               >
                 VS
