@@ -201,7 +201,6 @@ const DashboardContent: React.FC = () => {
             src={DisplayBackgroundEquip.file}
             alt={DisplayBackgroundEquip.name}
             loading={isMobile ? "eager" : "lazy"} // Eager loading on mobile for instant display
-            fetchPriority={isMobile ? "high" : "auto"} // High priority on mobile
             className={`absolute inset-0 w-full h-full object-cover z-0 ${positioning.className}`}
             style={{
               objectPosition: positioning.objectPosition
