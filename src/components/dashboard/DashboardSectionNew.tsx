@@ -696,8 +696,6 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
                   className="game-mode-image w-[15rem] md:w-[25.256rem] absolute max-h-none object-contain z-[1] transition-all duration-500 ease-in-out hover:scale-110"
                   alt={mode}
                   src={config.icon}
-                  {...(mode === 'quickfire' && { fetchPriority: 'high' as const })}
-                  loading={mode === 'quickfire' ? 'eager' : 'lazy'}
                   style={{
                     top: config.position.top,
                     left: config.position.left,
