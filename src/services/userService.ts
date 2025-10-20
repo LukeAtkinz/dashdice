@@ -540,13 +540,23 @@ export class UserService {
    */
   static async getPowerLoadoutForGameMode(uid: string, gameMode: keyof UserPowerLoadouts): Promise<PowerLoadout | null> {
     try {
+      console.log(`🔍 ENHANCED DEBUG: getPowerLoadoutForGameMode called with uid: ${uid}, gameMode: ${gameMode}`);
+      
       const loadouts = await this.getUserPowerLoadouts(uid);
-      if (!loadouts) return null;
+      console.log(`🔍 ENHANCED DEBUG: getUserPowerLoadouts returned:`, loadouts);
+      
+      if (!loadouts) {
+        console.log(`🔍 ENHANCED DEBUG: No loadouts object found for user ${uid}`);
+        return null;
+      }
       
       const gameLoadout = loadouts[gameMode];
+      console.log(`🔍 ENHANCED DEBUG: gameLoadout for ${gameMode}:`, gameLoadout);
+      
       // Return null if the loadout is empty or doesn't exist
       if (!gameLoadout || Object.keys(gameLoadout).length === 0) {
         console.log(`🔮 UserService: No ${gameMode} loadout found for user ${uid}, returning null`);
+        // 🔧 TODO: Consider returning empty loadout {} instead of null for better UX
         return null;
       }
       
