@@ -405,7 +405,7 @@ export function SoftRankedLeaderboard() {
                   onClick={() => handleViewProfile(player.uid, player.displayName || 'Anonymous')}
                   className={`
                     relative bg-gradient-to-r ${colors.bg} 
-                    backdrop-blur-sm rounded-xl border ${colors.border} 
+                    rounded-xl border ${colors.border} 
                     shadow-lg ${colors.glow}
                     ${isCurrentUser ? 'ring-2 ring-blue-500/50' : ''} p-4
                     ${player.rank <= 3 ? 'shadow-2xl' : ''}
@@ -421,13 +421,13 @@ export function SoftRankedLeaderboard() {
                           loop
                           muted
                           playsInline
-                          className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-20"
+                          className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-80"
                         >
                           <source src={BackgroundService.getBackgroundUrl(playerBackground)} type="video/mp4" />
                         </video>
                       ) : (
                         <div 
-                          className="absolute inset-0 rounded-xl opacity-20"
+                          className="absolute inset-0 rounded-xl opacity-80"
                           style={{
                             backgroundImage: `url('${BackgroundService.getBackgroundUrl(playerBackground)}')`,
                             backgroundSize: 'cover',
@@ -440,21 +440,7 @@ export function SoftRankedLeaderboard() {
 
                     </>
                   )}
-                  
-                  {/* Special effects for top 3 */}
-                  {player.rank <= 3 && (
-                    <motion.div
-                      className="absolute inset-0 rounded-xl opacity-10"
-                      animate={{ 
-                        background: [
-                          'radial-gradient(circle at 20% 50%, transparent 20%, rgba(255,215,0,0.1) 50%, transparent 80%)',
-                          'radial-gradient(circle at 80% 50%, transparent 20%, rgba(255,215,0,0.1) 50%, transparent 80%)',
-                          'radial-gradient(circle at 20% 50%, transparent 20%, rgba(255,215,0,0.1) 50%, transparent 80%)'
-                        ]
-                      }}
-                      transition={{ duration: 3, repeat: Infinity }}
-                    />
-                  )}
+
 
                   <div className="relative z-10 flex items-center justify-between">
                     {/* Rank and Player Info */}
@@ -476,7 +462,10 @@ export function SoftRankedLeaderboard() {
                       <div>
                         <div className="flex items-center space-x-2">
                           <h3 className={`font-bold text-lg ${colors.text} group-hover:text-white transition-colors`} 
-                              style={{ fontFamily: 'Audiowide' }}>
+                              style={{ 
+                                fontFamily: 'Audiowide',
+                                textShadow: '0 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.5)'
+                              }}>
                             {player.displayName}
                           </h3>
                           {isCurrentUser && (
@@ -490,10 +479,10 @@ export function SoftRankedLeaderboard() {
                             </>
                           )}
                         </div>
-                        <div className="text-sm text-gray-400">
+                        <div className="text-sm text-gray-400" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)' }}>
                           <div className="md:flex md:space-x-4">
-                            <span>Wins: <span className="text-green-400 font-semibold">{player.matchWins}</span></span>
-                            <span className="block md:inline">Win Rate: <span className="text-blue-400 font-semibold">{player.winPercentage.toFixed(1)}%</span></span>
+                            <span>Wins: <span className="text-green-400 font-semibold" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)' }}>{player.matchWins}</span></span>
+                            <span className="block md:inline">Win Rate: <span className="text-blue-400 font-semibold" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)' }}>{player.winPercentage.toFixed(1)}%</span></span>
                           </div>
                         </div>
                       </div>
@@ -506,10 +495,13 @@ export function SoftRankedLeaderboard() {
                       transition={{ duration: 0.2 }}
                     >
                       <div className={`text-2xl font-bold ${colors.text} group-hover:text-white transition-colors`} 
-                           style={{ fontFamily: 'Audiowide' }}>
+                           style={{ 
+                             fontFamily: 'Audiowide',
+                             textShadow: '0 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.5)'
+                           }}>
                         {player.rating}
                       </div>
-                      <div className="text-xs text-gray-400">Rating</div>
+                      <div className="text-xs text-gray-400" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)' }}>Rating</div>
                     </motion.div>
                   </div>
 
