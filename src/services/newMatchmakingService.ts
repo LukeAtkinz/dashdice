@@ -905,8 +905,8 @@ export class NewMatchmakingService {
       
       return {
         success: true,
-        sessionId: waitingRoomId, // Return waiting room ID for navigation to show optimistic UI
-        roomId: waitingRoomId, // Return waiting room ID for navigation
+        sessionId: sessionId, // Return actual session ID for match navigation
+        roomId: waitingRoomId, // Return waiting room ID for UI display
         isNewRoom: true,
         hasOpponent: true
       };
