@@ -509,9 +509,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: 10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut" }}
-                  className="absolute left-1/2 top-1/2 transform -translate-y-1/2 bg-purple-600/40 border-2 border-purple-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute right-20 md:right-28 top-1/2 transform -translate-y-1/2 bg-purple-600/40 border-2 border-purple-400 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
-                    marginLeft: '120px', // Position to the right of turn score
                     padding: '8px 12px',
                     minWidth: '64px',
                     minHeight: '64px',
@@ -546,9 +545,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: 10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut" }}
-                  className="absolute left-1/2 top-1/2 transform -translate-y-1/2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute right-20 md:right-28 top-1/2 transform -translate-y-1/2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
-                    marginLeft: '120px', // Position to the right of turn score
                     padding: '8px 12px',
                     minWidth: '64px',
                     minHeight: '64px',
@@ -583,9 +581,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: 10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut" }}
-                  className="absolute left-1/2 top-1/2 transform -translate-y-1/2 bg-orange-600/40 border-2 border-orange-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute right-20 md:right-28 top-1/2 transform -translate-y-1/2 bg-orange-600/40 border-2 border-orange-400 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
-                    marginLeft: '120px', // Position to the right of turn score
                     padding: '8px 12px',
                     minWidth: '64px',
                     minHeight: '64px',

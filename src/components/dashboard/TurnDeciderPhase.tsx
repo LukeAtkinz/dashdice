@@ -111,7 +111,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
       setTransitionPhase('rolling');
       setShowDiceNumber(false);
       setShowResult(false);
-    } else if (hasDice && !diceAnimation.isSpinning) {
+    } else if (hasDice && !diceAnimation.isSpinning && transitionPhase !== 'result-display' && transitionPhase !== 'winner-announcement' && transitionPhase !== 'transitioning-to-match') {
+      // Only trigger the sequence once when dice stops spinning
       // Step 1: Hide choice and game mode elements, show dice number
       setTransitionPhase('result-display');
       setShowDiceNumber(true);
@@ -120,23 +121,24 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
       const winnerTimer = setTimeout(() => {
         setTransitionPhase('winner-announcement');
         setShowResult(true);
-      }, 5000); // Increased from 3000 to 5000ms (5 seconds) to show dice number longer
+      }, 3000); // Reduced back to 3 seconds for better pacing
       
       // Step 3: After winner announcement, transition to match
       const matchTimer = setTimeout(() => {
         setTransitionPhase('transitioning-to-match');
-      }, 9000); // Increased from 6000 to 9000ms (9 seconds total) for complete sequence
+      }, 6000); // Reduced back to 6 seconds total
       
       return () => {
         clearTimeout(winnerTimer);
         clearTimeout(matchTimer);
       };
-    } else {
+    } else if (!hasDice && transitionPhase !== 'choosing') {
       // Reset states when no dice yet
+      setTransitionPhase('choosing');
       setShowDiceNumber(false);
       setShowResult(false);
     }
-  }, [hasDice, diceAnimation.isSpinning]);
+  }, [hasDice, diceAnimation.isSpinning, transitionPhase]);
 
   // Reset transition phase when phase changes away from turn decider
   useEffect(() => {
@@ -268,8 +270,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           {/* VS Element or Dice - Centered */}
           <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30">
             {hasDice && diceAnimation.isSpinning ? (
-              // Show reel dice animation
-              <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center">
+              // Show reel dice animation - bigger and more prominent
+              <div className="w-48 h-48 md:w-60 md:h-60 flex items-center justify-center">
                 <div className="w-full h-full flex items-center justify-center">
                   <SlotMachineDice
                     diceNumber={'turnDecider' as any}
@@ -286,33 +288,33 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               // Show VS with morphing capability - starts as GO! from waiting room
               <motion.span 
                 layoutId="vs-morph-text" // Same layoutId for morphing from GameWaitingRoom
-                className="text-[15vw] md:text-8xl text-white font-bold tracking-wider"
+                className="text-[20vw] md:text-[10rem] text-white font-bold tracking-wider"
                 style={{ 
                   fontFamily: 'Audiowide',
-                  textShadow: '0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.4)',
+                  textShadow: '0 0 30px rgba(255,255,255,0.9), 0 0 60px rgba(255,255,255,0.6), 0 0 100px rgba(255,255,255,0.3)',
                   WebkitFontSmoothing: 'antialiased'
                 }}
                 animate={{
                   // Scale animation sequence: first morph, then grow dramatically
-                  scale: [0.8, 1.2, 1], // Bounce effect
+                  scale: [0.8, 1.3, 1], // Bigger bounce effect
                   textShadow: [
-                    '0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.4)',
-                    '0 0 30px rgba(255,255,255,1.0), 0 0 60px rgba(255,255,255,0.6)',
-                    '0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.4)'
+                    '0 0 30px rgba(255,255,255,0.9), 0 0 60px rgba(255,255,255,0.6), 0 0 100px rgba(255,255,255,0.3)',
+                    '0 0 40px rgba(255,255,255,1.0), 0 0 80px rgba(255,255,255,0.8), 0 0 120px rgba(255,255,255,0.5)',
+                    '0 0 30px rgba(255,255,255,0.9), 0 0 60px rgba(255,255,255,0.6), 0 0 100px rgba(255,255,255,0.3)'
                   ]
                 }}
                 transition={{
                   scale: {
                     delay: 0.5, // Wait for initial morph to complete
-                    duration: 0.8,
+                    duration: 1.0, // Slightly longer for more impact
                     times: [0, 0.6, 1],
                     type: "spring",
-                    stiffness: 150,
-                    damping: 20
+                    stiffness: 120,
+                    damping: 18
                   },
                   textShadow: {
                     delay: 0.5,
-                    duration: 0.8,
+                    duration: 1.0,
                     times: [0, 0.5, 1]
                   },
                   // Default transition for morph - smoother transition
@@ -563,9 +565,9 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.5, type: "spring", stiffness: 120 }}
+              transition={{ delay: 0.2, duration: 0.6, type: "spring", stiffness: 100, damping: 15 }}
             >
-              <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center">
+              <div className="w-48 h-48 md:w-60 md:h-60 flex items-center justify-center">
                 <div className="w-full h-full flex items-center justify-center">
                   <SlotMachineDice
                     diceNumber={'turnDecider' as any}
@@ -598,21 +600,21 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             >
               <div className="flex flex-col items-center justify-center">
                 <motion.div
-                  className="text-[15vw] md:text-[12rem] font-bold text-white"
+                  className="text-[20vw] md:text-[15rem] font-bold text-white"
                   style={{ 
                     fontFamily: 'Audiowide',
-                    textShadow: '0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.4)',
+                    textShadow: '0 0 40px rgba(255,255,255,0.9), 0 0 80px rgba(255,255,255,0.6), 0 0 120px rgba(255,255,255,0.3)',
                     WebkitFontSmoothing: 'antialiased'
                   }}
                   animate={{
                     textShadow: [
-                      '0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.4)',
-                      '0 0 40px rgba(255,255,255,1.0), 0 0 80px rgba(255,255,255,0.6)',
-                      '0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.4)'
+                      '0 0 40px rgba(255,255,255,0.9), 0 0 80px rgba(255,255,255,0.6), 0 0 120px rgba(255,255,255,0.3)',
+                      '0 0 50px rgba(255,255,255,1.0), 0 0 100px rgba(255,255,255,0.8), 0 0 150px rgba(255,255,255,0.5)',
+                      '0 0 40px rgba(255,255,255,0.9), 0 0 80px rgba(255,255,255,0.6), 0 0 120px rgba(255,255,255,0.3)'
                     ]
                   }}
                   transition={{
-                    duration: 1,
+                    duration: 1.2,
                     repeat: Infinity,
                     repeatType: "reverse"
                   }}
@@ -620,7 +622,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                   {matchData.gameData.turnDeciderDice}
                 </motion.div>
                 <motion.p
-                  className="text-2xl md:text-4xl text-gray-300 mt-4"
+                  className="text-3xl md:text-5xl text-gray-300 mt-6"
                   style={{ fontFamily: 'Audiowide' }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -653,23 +655,23 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               >
                 <div className="flex flex-col items-center justify-center text-center">
                   <motion.h1
-                    className="text-[8vw] md:text-[6rem] font-bold text-yellow-400 mb-4"
+                    className="text-[10vw] md:text-[8rem] font-bold text-yellow-400 mb-6"
                     style={{ 
                       fontFamily: 'Audiowide',
-                      textShadow: '0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.4)',
+                      textShadow: '0 0 40px rgba(255, 215, 0, 0.9), 0 0 80px rgba(255, 215, 0, 0.6), 0 0 120px rgba(255, 215, 0, 0.3)',
                       WebkitFontSmoothing: 'antialiased'
                     }}
                     initial={{ scale: 0.8 }}
                     animate={{
                       scale: 1,
                       textShadow: [
-                        '0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.4)',
-                        '0 0 40px rgba(255, 215, 0, 1.0), 0 0 80px rgba(255, 215, 0, 0.6)',
-                        '0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.4)'
+                        '0 0 40px rgba(255, 215, 0, 0.9), 0 0 80px rgba(255, 215, 0, 0.6), 0 0 120px rgba(255, 215, 0, 0.3)',
+                        '0 0 50px rgba(255, 215, 0, 1.0), 0 0 100px rgba(255, 215, 0, 0.8), 0 0 150px rgba(255, 215, 0, 0.5)',
+                        '0 0 40px rgba(255, 215, 0, 0.9), 0 0 80px rgba(255, 215, 0, 0.6), 0 0 120px rgba(255, 215, 0, 0.3)'
                       ]
                     }}
                     transition={{
-                      duration: 1,
+                      duration: 1.2,
                       repeat: Infinity,
                       repeatType: "reverse"
                     }}
@@ -677,12 +679,12 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                     {winnerInfo.winnerName}
                   </motion.h1>
                   <motion.p
-                    className="text-3xl md:text-5xl text-white"
+                    className="text-4xl md:text-6xl text-white"
                     style={{ 
                       fontFamily: 'Audiowide',
-                      textShadow: '2px 2px 8px rgba(0,0,0,0.8)'
+                      textShadow: '0 0 20px rgba(255,255,255,0.6), 2px 2px 8px rgba(0,0,0,0.8)'
                     }}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4, duration: 0.6 }}
                   >
