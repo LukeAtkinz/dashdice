@@ -181,54 +181,25 @@ export default function InlineAbilitiesDisplay({
     .filter(Boolean) as Array<{ category: keyof typeof ABILITY_CATEGORIES; ability: Ability }>;
 
   const handleAbilityClick = async (ability: Ability) => {
-    console.log('🎯 ABILITY CLICK ATTEMPT:', {
-      abilityId: ability.id,
-      isUsing,
-      isPlayerTurn,
-      abilityTiming: ability.timing,
-      playerAura,
-      auraCost: ability.auraCost
-    });
-    
-    if (isUsing) {
-      console.log('❌ Click blocked: Already using an ability');
-      return;
-    }
+    if (isUsing) return;
     
     // Check timing constraints properly
     if (ability.timing === 'opponent_turn') {
       // Siphon and other opponent_turn abilities should only work during opponent's turn
-      if (isPlayerTurn) {
-        console.log('❌ Click blocked: Opponent-turn ability used during player turn');
-        return;
-      }
+      if (isPlayerTurn) return;
     } else {
       // Normal abilities require player turn
-      if (!isPlayerTurn) {
-        console.log('❌ Click blocked: Player-turn ability used during opponent turn');
-        return;
-      }
+      if (!isPlayerTurn) return;
     }
     
     const cooldown = cooldowns[ability.id] || 0;
-    if (cooldown > 0) {
-      console.log('❌ Click blocked: Ability on cooldown', cooldown);
-      return;
-    }
+    if (cooldown > 0) return;
     
     const usageCount = usageCounts[ability.id] || 0;
-    if (ability.maxUses && usageCount >= ability.maxUses) {
-      console.log('❌ Click blocked: Max uses reached', usageCount, ability.maxUses);
-      return;
-    }
+    if (ability.maxUses && usageCount >= ability.maxUses) return;
 
     const canUse = canUseAbilityInMatch(ability.id, playerAura);
-    if (!canUse.canUse) {
-      console.log('❌ Click blocked: canUseAbilityInMatch failed', canUse.reason);
-      return;
-    }
-    
-    console.log('✅ All checks passed, using ability:', ability.id);
+    if (!canUse.canUse) return;
 
     // Trigger visual activation animation
     setActivatingAbility(ability.id);
@@ -361,19 +332,6 @@ export default function InlineAbilitiesDisplay({
         const status = getAbilityStatus(ability);
         const categoryColors = CATEGORY_COLORS[category];
         const categoryInfo = ABILITY_CATEGORIES[category];
-        
-        // Debug siphon specifically
-        if (ability.id === 'siphon') {
-          console.log('🔍 SIPHON STATUS DEBUG:', {
-            abilityId: ability.id,
-            isPlayerTurn: isPlayerTurn,
-            timing: ability.timing,
-            status: status,
-            playerAura: playerAura,
-            cooldowns: cooldowns[ability.id],
-            usageCounts: usageCounts[ability.id]
-          });
-        }
 
         // Check if ability can be used right now (for visual active state)
         const canUseRightNow = !status.disabled && (
@@ -381,26 +339,31 @@ export default function InlineAbilitiesDisplay({
           (ability.timing !== 'opponent_turn' && isPlayerTurn)
         );
 
+        // For disabled state, we should disable the button if:
+        // 1. It's on cooldown, maxed out, or lacks aura
+        // 2. OR if it's the wrong turn for this ability type
+        const shouldDisable = status.disabled || isUsing === ability.id || !canUseRightNow;
+
         return (
           <motion.button
             key={ability.id}
             onClick={() => handleAbilityClick(ability)}
-            disabled={status.disabled || isUsing === ability.id}
+            disabled={shouldDisable}
             className={`w-20 h-20 md:w-24 md:h-24 rounded-xl border-2 backdrop-blur-sm transition-all relative overflow-hidden ${
-              status.disabled || isUsing === ability.id
+              shouldDisable
                 ? 'opacity-50 cursor-not-allowed' 
                 : canUseRightNow 
-                  ? 'hover:scale-105 active:scale-95 hover:border-white/60 ring-2 ring-green-400/50' 
-                  : 'hover:scale-105 active:scale-95 hover:border-white/60'
+                  ? 'hover:scale-105 active:scale-95 hover:border-white/60 ring-2 ring-green-400/50 cursor-pointer' 
+                  : 'hover:scale-105 active:scale-95 hover:border-white/60 cursor-pointer'
             }`}
             style={{
-              background: status.disabled 
+              background: shouldDisable 
                 ? 'linear-gradient(135deg, #6B7280 0%, #374151 100%)'
                 : canUseRightNow
                   ? `linear-gradient(135deg, ${categoryColors.primary}CC 0%, ${categoryColors.secondary}80 100%)`
                   : `linear-gradient(135deg, ${categoryColors.primary}80 0%, ${categoryColors.secondary}40 100%)`,
-              borderColor: status.disabled ? '#6B7280' : canUseRightNow ? '#10B981' : categoryColors.primary,
-              boxShadow: !status.disabled ? 
+              borderColor: shouldDisable ? '#6B7280' : canUseRightNow ? '#10B981' : categoryColors.primary,
+              boxShadow: !shouldDisable ? 
                 canUseRightNow 
                   ? `0 2px 15px ${categoryColors.primary}60, 0 0 20px #10B98130` 
                   : `0 2px 10px ${categoryColors.primary}40`
@@ -420,7 +383,7 @@ export default function InlineAbilitiesDisplay({
               times: activatingAbility === ability.id ? [0, 0.4, 1] : undefined,
               repeat: canUseRightNow && activatingAbility !== ability.id ? Infinity : 0
             }}
-            whileHover={!status.disabled ? { 
+            whileHover={!shouldDisable ? { 
               y: -2, 
               scale: 1.05,
               boxShadow: canUseRightNow 
@@ -428,7 +391,7 @@ export default function InlineAbilitiesDisplay({
                 : `0 4px 20px ${categoryColors.primary}60`,
               transition: { duration: 0.2 }
             } : {}}
-            whileTap={!status.disabled ? { 
+            whileTap={!shouldDisable ? { 
               scale: 0.95,
               y: 0
             } : {}}
