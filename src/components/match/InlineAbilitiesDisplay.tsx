@@ -31,6 +31,7 @@ export default function InlineAbilitiesDisplay({
   const [cooldowns, setCooldowns] = useState<{ [key: string]: number }>({});
   const [isUsing, setIsUsing] = useState<string | null>(null);
   const [activatingAbility, setActivatingAbility] = useState<string | null>(null);
+  const [siphonActive, setSiphonActive] = useState<boolean>(false);
 
   // Get player's power loadout from match metadata
   const playerPowerLoadout = (matchData.gameData as any).powerLoadouts?.[playerId] || 
@@ -42,6 +43,15 @@ export default function InlineAbilitiesDisplay({
   
   // Get ability usage counts from match data
   const usageCounts = matchData.gameData.abilityUsageCounts?.[playerId] || {};
+
+  // Reset siphon active state when opponent banks (siphon gets consumed)
+  useEffect(() => {
+    // Check if siphon was active but now opponent has banked (turn changed)
+    if (siphonActive && isPlayerTurn) {
+      setSiphonActive(false);
+      console.log('🔮 Siphon consumed - resetting active state');
+    }
+  }, [isPlayerTurn, siphonActive]);
 
   // Update local cooldowns based on server data
   useEffect(() => {
@@ -196,6 +206,12 @@ export default function InlineAbilitiesDisplay({
         console.log('🎯 Calling onAbilityUsed with effect:', result.effect);
         onAbilityUsed(result.effect);
         
+        // Set siphon as active if it's the siphon ability
+        if (ability.id === 'siphon') {
+          setSiphonActive(true);
+          console.log('⚔️ Siphon activated - waiting for opponent to bank...');
+        }
+        
         // Set cooldown locally for immediate feedback
         setCooldowns(prev => ({
           ...prev,
@@ -318,10 +334,16 @@ export default function InlineAbilitiesDisplay({
           (ability.timing !== 'opponent_turn' && isPlayerTurn)
         );
 
+        // Special handling for siphon
+        const isSiphon = ability.id === 'siphon';
+        const siphonCanUse = isSiphon && canUseRightNow && !siphonActive;
+        const siphonIsActive = isSiphon && siphonActive;
+
         // For disabled state, we should disable the button if:
-        // 1. It's on cooldown, maxed out, or lacks aura
-        // 2. OR if it's the wrong turn for this ability type
-        const shouldDisable = status.disabled || isUsing === ability.id || !canUseRightNow;
+        // 1. It's on cooldown, maxed out, or used
+        // 2. OR if it's the wrong turn for this ability type  
+        // 3. OR if it's siphon and already active
+        const shouldDisable = status.disabled || isUsing === ability.id || !canUseRightNow || siphonIsActive;
 
         return (
           <motion.button
@@ -331,48 +353,48 @@ export default function InlineAbilitiesDisplay({
             className={`w-20 h-20 md:w-24 md:h-24 rounded-xl border-2 backdrop-blur-sm transition-all relative overflow-hidden ${
               shouldDisable
                 ? 'opacity-50 cursor-not-allowed' 
-                : canUseRightNow 
-                  ? 'hover:scale-105 active:scale-95 hover:border-white/60 ring-2 ring-green-400/50 cursor-pointer' 
+                : siphonCanUse
+                  ? 'hover:scale-105 active:scale-95 hover:border-white/60 cursor-pointer' 
                   : 'hover:scale-105 active:scale-95 hover:border-white/60 cursor-pointer'
             }`}
             style={{
-              background: shouldDisable 
-                ? 'linear-gradient(135deg, #6B7280 0%, #374151 100%)'
-                : canUseRightNow
-                  ? `linear-gradient(135deg, ${categoryColors.primary}CC 0%, ${categoryColors.secondary}80 100%)`
-                  : `linear-gradient(135deg, ${categoryColors.primary}80 0%, ${categoryColors.secondary}40 100%)`,
-              borderColor: shouldDisable ? '#6B7280' : canUseRightNow ? '#10B981' : categoryColors.primary,
+              background: 'linear-gradient(135deg, #6B7280 0%, #374151 100%)', // Always grey background
+              borderColor: shouldDisable 
+                ? '#6B7280' 
+                : siphonCanUse 
+                  ? '#FFD700' // Gold border when siphon can be used
+                  : siphonIsActive
+                    ? '#FFD700' // Gold border when siphon is active
+                    : categoryColors.primary,
               boxShadow: !shouldDisable ? 
-                canUseRightNow 
-                  ? `0 2px 15px ${categoryColors.primary}60, 0 0 20px #10B98130` 
+                (siphonCanUse || siphonIsActive)
+                  ? '0 2px 15px #FFD70060, 0 0 20px #FFD70030' // Gold glow
                   : `0 2px 10px ${categoryColors.primary}40`
                 : 'none'
             }}
             initial={{ opacity: 0, scale: 0.8, y: 20, rotateY: -15 }}
             animate={{ 
               opacity: 1, 
-              scale: activatingAbility === ability.id ? [1, 1.15, 1] : canUseRightNow ? [1, 1.02, 1] : 1, 
-              y: activatingAbility === ability.id ? [0, -8, 0] : 0, 
+              scale: activatingAbility === ability.id ? [1, 1.15, 1] : 1, 
+              y: activatingAbility === ability.id ? [0, -8, 0] : siphonIsActive ? -8 : 0, // Move up when siphon is active
               rotateY: 0 
             }}
             transition={{ 
-              duration: activatingAbility === ability.id ? 0.8 : canUseRightNow ? 2 : 0.5, 
-              ease: activatingAbility === ability.id ? [0.4, 0, 0.2, 1] : [0.4, 0, 0.2, 1],
-              delay: activatingAbility === ability.id ? 0 : index * 0.1,
-              times: activatingAbility === ability.id ? [0, 0.4, 1] : undefined,
-              repeat: canUseRightNow && activatingAbility !== ability.id ? Infinity : 0
+              duration: activatingAbility === ability.id ? 0.8 : 0.3, 
+              ease: [0.4, 0, 0.2, 1],
+              delay: activatingAbility === ability.id ? 0 : index * 0.1
             }}
             whileHover={!shouldDisable ? { 
-              y: -2, 
+              y: siphonIsActive ? -10 : -2, // Higher when siphon is active
               scale: 1.05,
-              boxShadow: canUseRightNow 
-                ? `0 4px 25px ${categoryColors.primary}80, 0 0 30px #10B98150`
+              boxShadow: (siphonCanUse || siphonIsActive)
+                ? '0 4px 25px #FFD70080, 0 0 30px #FFD70050' // Gold glow on hover
                 : `0 4px 20px ${categoryColors.primary}60`,
               transition: { duration: 0.2 }
             } : {}}
             whileTap={!shouldDisable ? { 
               scale: 0.95,
-              y: 0
+              y: siphonIsActive ? -8 : 0
             } : {}}
           >
             {/* Ability Icon */}
@@ -415,6 +437,13 @@ export default function InlineAbilitiesDisplay({
             {isUsing === ability.id && (
               <div className="absolute inset-0 bg-blue-600/60 flex items-center justify-center">
                 <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+              </div>
+            )}
+
+            {/* Siphon Active Indicator */}
+            {isSiphon && siphonActive && (
+              <div className="absolute top-0 right-0 bg-yellow-500 text-black text-xs rounded-bl px-1 font-bold">
+                ACTIVE
               </div>
             )}
 

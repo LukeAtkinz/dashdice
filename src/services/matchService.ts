@@ -1197,9 +1197,18 @@ export class MatchService {
       
       // Handle Siphon ability effect if active
       let siphonStolenPoints = 0;
+      let siphonPlayerGain = 0;
       if (siphonEffect?.isActive && matchData.gameData.turnScore > 0) {
-        siphonStolenPoints = Math.floor(matchData.gameData.turnScore / 2);
-        console.log(`🔮 Siphon effect: Stealing ${siphonStolenPoints} points from ${currentPlayer.playerDisplayName}`);
+        // Steal half the turn score (round down)
+        const totalStolen = Math.floor(matchData.gameData.turnScore / 2);
+        // Split stolen points: half to siphon user, half stays with banking player
+        siphonPlayerGain = Math.floor(totalStolen / 2);
+        const bankingPlayerKeeps = totalStolen - siphonPlayerGain;
+        
+        console.log(`🔮 Siphon effect: Stealing ${totalStolen} from turn score. Siphon user gets ${siphonPlayerGain}, banking player keeps ${bankingPlayerKeeps}`);
+        
+        // Only reduce the turn score by the amount the siphon user gains
+        siphonStolenPoints = siphonPlayerGain;
       }
       
       // Calculate new player score based on game mode direction
@@ -1298,9 +1307,9 @@ export class MatchService {
         }
         
         // If siphon is active, add stolen points to the opponent (siphon user)
-        if (siphonEffect?.isActive && siphonStolenPoints > 0) {
+        if (siphonEffect?.isActive && siphonPlayerGain > 0) {
           const opponentCurrentScore = isHost ? matchData.opponentData.playerScore : matchData.hostData.playerScore;
-          const opponentNewScore = (opponentCurrentScore || 0) + siphonStolenPoints;
+          const opponentNewScore = (opponentCurrentScore || 0) + siphonPlayerGain;
           
           if (isHost) {
             updates['opponentData.playerScore'] = opponentNewScore;
@@ -1308,7 +1317,7 @@ export class MatchService {
             updates['hostData.playerScore'] = opponentNewScore;
           }
           
-          console.log(`⚔️ Siphon activated: Added ${siphonStolenPoints} stolen points to opponent. New score: ${opponentNewScore}`);
+          console.log(`⚔️ Siphon activated: Added ${siphonPlayerGain} stolen points to siphon user. New score: ${opponentNewScore}`);
         }
       }
       
