@@ -555,8 +555,19 @@ export class UserService {
       
       // Return null if the loadout is empty or doesn't exist
       if (!gameLoadout || Object.keys(gameLoadout).length === 0) {
-        console.log(`🔮 UserService: No ${gameMode} loadout found for user ${uid}, returning null`);
-        // 🔧 TODO: Consider returning empty loadout {} instead of null for better UX
+        console.log(`🔮 UserService: No ${gameMode} loadout found for user ${uid}`);
+        
+        // 🔧 FALLBACK: Try to find abilities from other game modes
+        const allGameModes = Object.keys(loadouts) as (keyof UserPowerLoadouts)[];
+        for (const otherMode of allGameModes) {
+          const otherLoadout = loadouts[otherMode];
+          if (otherLoadout && Object.keys(otherLoadout).length > 0) {
+            console.log(`🔄 UserService: Using fallback loadout from ${otherMode} for ${gameMode}:`, otherLoadout);
+            return otherLoadout;
+          }
+        }
+        
+        console.log(`🔮 UserService: No loadouts found in any game mode, returning null`);
         return null;
       }
       
