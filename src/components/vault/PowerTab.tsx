@@ -53,7 +53,15 @@ const CATEGORY_SLOTS = [
   { key: 'gamechanger', name: 'Game Changer', icon: '/Abilities/Catagories/Game Changer/Game Changer.webp' }
 ];
 
-export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnly?: boolean }) {
+export default function PowerTab({ 
+  mobileHeaderOnly = false,
+  activeTab,
+  onTabChange
+}: { 
+  mobileHeaderOnly?: boolean;
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
+}) {
   const {
     allAbilities,
     userAbilities,
@@ -556,15 +564,17 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
   }
 
   return (
-    <div className="w-full space-y-1 md:space-y-8 -mt-2 md:mt-0">
+    <div className="w-full space-y-1 md:space-y-8 -mt-16 md:mt-0">
       {/* Unified Game Mode and Abilities Card - Mobile & Desktop */}
       <motion.div 
-        className="rounded-2xl p-4 md:p-8 overflow-hidden relative"
+        className="rounded-2xl p-2 md:p-8 overflow-hidden relative"
         layout
       >
         <div className="relative z-10">
-          {/* Navigation */}
-          <div className="relative flex items-center justify-center mb-6">
+          {/* Game Mode Header and Loadout - Sticky on mobile */}
+          <div className="md:static sticky top-0 z-30 bg-black/95 backdrop-blur-sm rounded-xl p-2 md:p-0 md:bg-transparent">
+            {/* Navigation */}
+            <div className="relative flex items-center justify-center mb-1 md:mb-6">
             {/* Left Arrow */}
             <motion.button
               onClick={prevGameMode}
@@ -609,7 +619,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                   }}
                 />
                 <h1 
-                  className="text-5xl font-bold text-white" 
+                  className="text-2xl md:text-5xl font-bold text-white" 
                   style={{ fontFamily: 'Audiowide' }}
                 >
                   {currentGameMode.name}
@@ -639,7 +649,7 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
           <AnimatePresence mode="wait">
             <motion.div
               key={currentGameMode.id}
-              className="grid grid-cols-5 gap-2 md:gap-4 mb-8 mt-12"
+              className="grid grid-cols-5 gap-2 md:gap-4 mb-2 mt-2 md:mb-8 md:mt-12"
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
@@ -719,12 +729,6 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
                               }}
                             />
                           </div>
-                          <p className="text-white/60 text-xs font-medium" style={{ fontFamily: 'Audiowide' }}>
-                            {categorySlot.name}
-                          </p>
-                          <p className="text-white/40 text-xs md:hidden">
-                            Empty
-                          </p>
                         </div>
                       )}
                     </div>
@@ -733,6 +737,87 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
               })}
             </motion.div>
           </AnimatePresence>
+          </div>
+
+          {/* Mobile Navigation - Between loadout and abilities */}
+          {onTabChange && (
+            <div className="block md:hidden sticky top-0 z-40 bg-black/95 backdrop-blur-sm w-full flex flex-row items-center justify-center gap-[1rem] py-2 mb-2">
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  onClick={() => onTabChange('power')}
+                  className={`tab-button nav-button ${activeTab === 'power' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-3 rounded-[18px] transition-all duration-300 h-10 px-3 min-w-[100px]`}
+                  style={{
+                    display: 'flex',
+                    width: 'fit-content',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '8px',
+                    border: activeTab === 'power' ? '2px solid #FFD700' : '2px solid transparent',
+                    borderRadius: '18px',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <span className="text-sm font-audiowide uppercase" style={{ 
+                    color: '#FFF', 
+                    fontFamily: 'Audiowide', 
+                    fontWeight: 400, 
+                    textTransform: 'uppercase' 
+                  }}>
+                    Power
+                  </span>
+                </button>
+                <button
+                  onClick={() => onTabChange('display')}
+                  className={`tab-button nav-button ${activeTab === 'display' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-3 rounded-[18px] transition-all duration-300 h-10 px-3 min-w-[100px]`}
+                  style={{
+                    display: 'flex',
+                    width: 'fit-content',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '8px',
+                    borderRadius: '18px',
+                    border: activeTab === 'display' ? '2px solid #FFD700' : '2px solid transparent',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <span className="text-sm font-audiowide uppercase" style={{ 
+                    color: '#FFF', 
+                    fontFamily: 'Audiowide', 
+                    fontWeight: 400, 
+                    textTransform: 'uppercase' 
+                  }}>
+                    Vibin
+                  </span>
+                </button>
+                <button
+                  onClick={() => onTabChange('match')}
+                  className={`tab-button nav-button ${activeTab === 'match' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-3 rounded-[18px] transition-all duration-300 h-10 px-3 min-w-[100px]`}
+                  style={{
+                    display: 'flex',
+                    width: 'fit-content',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '8px',
+                    border: activeTab === 'match' ? '2px solid #FFD700' : '2px solid transparent',
+                    borderRadius: '18px',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <span className="text-sm font-audiowide uppercase" style={{ 
+                    color: '#FFF', 
+                    fontFamily: 'Audiowide', 
+                    fontWeight: 400, 
+                    textTransform: 'uppercase' 
+                  }}>
+                    Flexin
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Available Abilities by Category - Integrated */}
           <div className="space-y-6">

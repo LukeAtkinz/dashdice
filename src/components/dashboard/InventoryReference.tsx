@@ -302,13 +302,8 @@ export const InventorySection: React.FC = () => {
         </h1>
       </div>
       
-      {/* Mobile Power Tab Loadout Card - Positioned tightly above navigation */}
-      <div className="block md:hidden w-full max-w-[60rem] px-4 mb-4 mt-2">
-        {activeTab === 'power' && <PowerTab mobileHeaderOnly={true} />}
-      </div>
-      
-      {/* Navigation */}
-      <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-4 flex-shrink-0">
+      {/* Navigation - Hidden on Power tab mobile, visible on desktop and other tabs */}
+      <div className={`w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-4 flex-shrink-0 ${activeTab === 'power' ? 'hidden md:flex' : 'flex'}`}>
         <div className="flex items-center justify-center gap-2 md:gap-4">
           <button
             onClick={() => handleTabChange('power')}
@@ -395,7 +390,7 @@ export const InventorySection: React.FC = () => {
             overscrollBehavior: 'contain' // Contain scrolling within this element
           }}
         >
-          <div className="flex h-auto w-full md:w-auto pl-[0.5rem] md:pl-0" style={{ minHeight: '600px', height: 'auto', maxHeight: '80vh', maxWidth: '1600px', gap: '20px' }} data-mobile-height="410px" data-desktop-height="auto">
+          <div className="flex h-auto w-full md:w-auto pl-[0.5rem] md:pl-0" style={{ minHeight: '600px', height: 'auto', maxHeight: '95vh', maxWidth: '1600px', gap: '20px' }} data-mobile-height="410px" data-desktop-height="auto">
             
             {/* Power Tab Content */}
             <div 
@@ -415,12 +410,16 @@ export const InventorySection: React.FC = () => {
                     msOverflowStyle: 'none',
                     transform: 'translateZ(0)', // Forces hardware acceleration
                     willChange: 'scroll-position', // Optimizes for scrolling
-                    paddingBottom: '120px', // Increased padding to ensure all cards are scrollable
-                    maxHeight: '60vh' // Limit height to ensure scrolling works properly
+                    paddingBottom: '80px', // Reduced padding for mobile nav space
+                    maxHeight: '90vh' // Increased height for mobile
                   }}
                 >
-                  <div className="space-y-2.5 pb-20 pt-4">
-                    <PowerTab mobileHeaderOnly={false} />
+                  <div className="space-y-2.5 pb-20 pt-1">
+                    <PowerTab 
+                      mobileHeaderOnly={false}
+                      activeTab={activeTab}
+                      onTabChange={handleTabChange}
+                    />
                   </div>
                 </div>
               </div>
