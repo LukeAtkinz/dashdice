@@ -217,6 +217,16 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
   };
 
   const assignAbilityToCategory = (abilityId: string, category: string) => {
+    // 🔍 DEBUG: Track which game mode we're assigning to
+    console.log('🎯 ASSIGN DEBUG:', {
+      currentGameModeIndex,
+      currentGameModeId: currentGameMode.id,
+      currentGameModeName: currentGameMode.name,
+      abilityId,
+      category,
+      existingLoadout: gameModeLoadouts[currentGameMode.id]
+    });
+    
     const newLoadouts = {
       ...gameModeLoadouts,
       [currentGameMode.id]: {
