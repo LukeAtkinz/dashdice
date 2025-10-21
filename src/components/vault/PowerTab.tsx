@@ -564,7 +564,7 @@ export default function PowerTab({
   }
 
   return (
-    <div className="w-full space-y-1 md:space-y-8 -mt-24 md:mt-0">
+    <div className="w-full space-y-1 md:space-y-8 -mt-16 md:mt-0">
       {/* Unified Game Mode and Abilities Card - Mobile & Desktop */}
       <motion.div 
         className="rounded-2xl p-0 md:p-8 overflow-visible relative"
@@ -572,7 +572,7 @@ export default function PowerTab({
       >
         <div className="relative z-10">
           {/* Game Mode Header and Loadout - Sticky on mobile */}
-          <div className="md:static sticky top-0 z-30 bg-black/95 backdrop-blur-sm rounded-xl p-1 md:p-0 md:bg-transparent">
+          <div className="md:static sticky top-0 z-30 backdrop-blur-sm rounded-xl p-1 md:p-0 bg-transparent">
             {/* Navigation */}
             <div className="relative flex items-center justify-center mb-1 md:mb-6">
             {/* Left Arrow */}
@@ -625,11 +625,6 @@ export default function PowerTab({
                   {currentGameMode.name}
                 </h1>
               </motion.div>
-              {isSaving && (
-                <div className="text-sm text-yellow-300">
-                  💾 Saving loadout...
-                </div>
-              )}
             </div>
 
             {/* Right Arrow */}
@@ -819,8 +814,8 @@ export default function PowerTab({
           )}
           </div>
 
-          {/* Available Abilities by Category - Integrated */}
-          <div className="space-y-6">
+          {/* Available Abilities by Category - With increased spacing below sticky loadout */}
+          <div className="space-y-6 pt-12 md:pt-0">
             <div>
               {categoryGroups.map(({ category, categoryInfo, abilities }, categoryIndex) => {
                 const userCategoryAbilities = abilities.filter(ability => 
