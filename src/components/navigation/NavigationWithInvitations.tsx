@@ -94,22 +94,47 @@ export const NavigationWithInvitations: React.FC<NavigationWithInvitationsProps>
   };
 
   return (
-    <div className="flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px] w-full max-w-none">
-      <AnimatePresence mode="wait">
-        {shouldShowInvitations ? (
-          <NavGameInvitationButton
-            key="invitation"
-            invitation={activeInvitation}
-            onAccept={handleAcceptInvitation}
-            onDecline={handleDeclineInvitation}
-            isProcessing={processingInvitations.has(activeInvitation.id)}
-          />
-        ) : (
-          <div key="normal-nav" className="flex flex-row items-center justify-between w-full">
-            {children}
-          </div>
-        )}
-      </AnimatePresence>
+    <div className="relative w-full">
+      {/* Mobile Invitation Overlay - appears above navigation */}
+      {shouldShowInvitations && (
+        <div className="md:hidden absolute bottom-full left-0 right-0 mb-2 z-50">
+          <AnimatePresence>
+            <div className="mx-2 bg-gradient-to-br from-purple-900/95 via-blue-900/95 to-purple-800/95 border border-purple-400/60 rounded-xl shadow-2xl backdrop-blur-lg">
+              <NavGameInvitationButton
+                key="mobile-invitation"
+                invitation={activeInvitation}
+                onAccept={handleAcceptInvitation}
+                onDecline={handleDeclineInvitation}
+                isProcessing={processingInvitations.has(activeInvitation.id)}
+              />
+            </div>
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* Desktop Navigation - replaces navigation when invitation is present */}
+      <div className="hidden md:flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px] w-full max-w-none">
+        <AnimatePresence mode="wait">
+          {shouldShowInvitations ? (
+            <NavGameInvitationButton
+              key="desktop-invitation"
+              invitation={activeInvitation}
+              onAccept={handleAcceptInvitation}
+              onDecline={handleDeclineInvitation}
+              isProcessing={processingInvitations.has(activeInvitation.id)}
+            />
+          ) : (
+            <div key="normal-nav" className="flex flex-row items-center justify-between w-full">
+              {children}
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Mobile Navigation - always visible */}
+      <div className="md:hidden flex flex-row items-center justify-between w-full">
+        {children}
+      </div>
     </div>
   );
 };

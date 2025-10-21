@@ -444,12 +444,7 @@ export default function InlineAbilitiesDisplay({
               </div>
             )}
 
-            {/* Using Indicator */}
-            {isUsing === ability.id && (
-              <div className="absolute inset-0 bg-blue-600/60 flex items-center justify-center">
-                <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-              </div>
-            )}
+            {/* Using Indicator - Removed loading spinner as requested */}
 
             {/* Siphon Active Indicator */}
             {isSiphon && siphonActive && (

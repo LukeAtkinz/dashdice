@@ -470,7 +470,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       ease: isScoreShooting ? "easeInOut" : "backOut",
                       x: isScoreShooting ? { duration: 0.6, ease: "easeInOut" } : undefined
                     }}
-                    className={`absolute ${isLastLine ? 'right-20 md:right-28' : '-left-20 md:-left-28'} top-1/2 transform -translate-y-1/2 bg-blue-600/40 border-2 border-blue-400 rounded-xl backdrop-blur-sm shadow-xl`}
+                    className={`absolute right-20 md:right-28 top-1/2 transform -translate-y-1/2 bg-blue-600/40 border-2 border-blue-400 rounded-xl backdrop-blur-sm shadow-xl`}
                     style={{
                       padding: '8px 12px',
                       minWidth: isThreeDigits ? 'auto' : '64px',

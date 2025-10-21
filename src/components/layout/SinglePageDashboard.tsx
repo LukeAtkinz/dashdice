@@ -711,8 +711,13 @@ const DashboardContent: React.FC = () => {
             className="md:hidden fixed bottom-0 left-0 right-0 w-[100vw] flex flex-row items-center justify-center z-50"
             style={{ paddingBottom: 'env(safe-area-inset-bottom)', padding: '0' }}
           >
-            {/* Regular Mobile Navigation */}
-            <div className="flex flex-row items-center justify-between w-full px-[2vw] py-[15px] shadow-lg" style={{
+            <NavigationWithInvitations
+              currentSection={currentSection}
+              isGameOver={isGameOver}
+              onSectionChange={handleSectionChange}
+            >
+              {/* Regular Mobile Navigation */}
+              <div className="flex flex-row items-center justify-between w-full px-[2vw] py-[15px] shadow-lg" style={{
               background: DisplayBackgroundEquip?.name === 'On A Mission' 
                 ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)'
                 : (DisplayBackgroundEquip?.name === 'Long Road Ahead' || DisplayBackgroundEquip?.name === 'As They Fall' || DisplayBackgroundEquip?.name === 'End Of The Dragon')
@@ -780,7 +785,8 @@ const DashboardContent: React.FC = () => {
                 <img src="/Design Elements/Player Profiles/Vault.webp" alt="Vault" className="w-12 h-12" />
                 <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>VAULT</span>
               </button>
-            </div>
+              </div>
+            </NavigationWithInvitations>
           </footer>
         )}
         

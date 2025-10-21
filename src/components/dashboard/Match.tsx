@@ -1014,7 +1014,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             
             {/* Player 1 (Current User - Left Side) */}
             <AnimatePresence>
-              {(matchData.gameData.gamePhase as string) !== 'turnDecider' && (
+              {(matchData.gameData.gamePhase as string) !== 'turnDecider' && !showTurnAnnouncement && (
                 <motion.div 
                   className="w-[40%] max-w-lg"
                   initial={{ opacity: 0, x: 80, scale: 0.9 }}
@@ -1250,7 +1250,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
             {/* Player 2 (Opponent - Right Side) */}
             <AnimatePresence>
-              {(matchData.gameData.gamePhase as string) !== 'turnDecider' && (
+              {(matchData.gameData.gamePhase as string) !== 'turnDecider' && !showTurnAnnouncement && (
                 <motion.div 
                   className="w-[40%] max-w-lg"
                   initial={{ opacity: 0, x: 80, scale: 0.9 }}
@@ -1387,7 +1387,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             
             {/* User Profiles Section - Top Corners of Viewport - Equal spacing */}
             <AnimatePresence>
-              {(matchData.gameData.gamePhase as string) !== 'turnDecider' && (
+              {(matchData.gameData.gamePhase as string) !== 'turnDecider' && !showTurnAnnouncement && (
                 <motion.div 
                   className="fixed top-0 left-0 right-0 flex justify-between z-20" 
                   style={{ 

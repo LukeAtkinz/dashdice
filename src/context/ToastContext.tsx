@@ -32,7 +32,7 @@ interface ToastProviderProps {
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = (message: string, type: Toast['type'] = 'info', duration: number = 3000, icon?: string) => {
+  const showToast = (message: string, type: Toast['type'] = 'info', duration: number = 2000, icon?: string) => {
     const id = Math.random().toString(36).substring(2, 9);
     const newToast: Toast = { id, message, type, duration, icon };
     
@@ -65,15 +65,15 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
     <ToastContext.Provider value={{ showToast }}>
       {children}
       
-      {/* Toast Container */}
-      <div className="fixed bottom-4 right-4 z-50 space-y-3 max-w-xs md:max-w-sm">
+      {/* Toast Container - iPhone-style at top */}
+      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 space-y-3 max-w-xs md:max-w-sm">
         <AnimatePresence>
           {toasts.map((toast) => (
             <motion.div
               key={toast.id}
-              initial={{ opacity: 0, x: 300, scale: 0.8 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 300, scale: 0.8 }}
+              initial={{ opacity: 0, y: -100, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -100, scale: 0.9 }}
               transition={{ 
                 type: "spring", 
                 stiffness: 300, 
