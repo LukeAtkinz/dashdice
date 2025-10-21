@@ -37,35 +37,6 @@ export default function InlineAbilitiesDisplay({
                            (matchData.hostData.playerId === playerId ? (matchData.hostData as any).powerLoadout : (matchData.opponentData as any)?.powerLoadout) ||
                            null;
 
-  // DEBUG: Log powerLoadout loading (run only once to prevent infinite loops)
-  useEffect(() => {
-    console.log('🔮 InlineAbilitiesDisplay DEBUG:', {
-      playerId,
-      isHost: matchData.hostData.playerId === playerId,
-      gameDataPowerLoadouts: (matchData.gameData as any).powerLoadouts,
-      gameDataPlayerLoadout: (matchData.gameData as any).powerLoadouts?.[playerId],
-      hostDataPowerLoadout: (matchData.hostData as any).powerLoadout,
-      opponentDataPowerLoadout: (matchData.opponentData as any)?.powerLoadout,
-      finalPlayerPowerLoadout: playerPowerLoadout,
-      allAbilitiesCount: allAbilities.length
-    });
-    
-    // 🔍 ENHANCED DEBUG: Check if siphon is specifically available
-    const siphonAbility = allAbilities.find(a => a.id === 'siphon');
-    if (siphonAbility) {
-      console.log('🧛 SIPHON DEBUG:', {
-        siphonFound: true,
-        siphonDetails: siphonAbility,
-        siphonIconUrl: siphonAbility.iconUrl,
-        isInPlayerLoadout: playerPowerLoadout && Object.values(playerPowerLoadout).includes('siphon'),
-        playerLoadoutValues: playerPowerLoadout ? Object.values(playerPowerLoadout) : null,
-        playerLoadoutEntries: playerPowerLoadout ? Object.entries(playerPowerLoadout) : null
-      });
-    } else {
-      console.log('❌ SIPHON DEBUG: Siphon ability not found in allAbilities array');
-    }
-  }, [playerId, allAbilities, playerPowerLoadout]); // Add dependencies to track changes
-
   // Get player's current aura from match data
   const playerAura = matchData.gameData.playerAura?.[playerId] || 0;
 
@@ -405,8 +376,16 @@ export default function InlineAbilitiesDisplay({
                 style={{
                   filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))'
                 }}
+                onLoad={() => {
+                  if (ability.id === 'siphon') {
+                    console.log(`✅ Siphon icon loaded: ${ability.iconUrl || categoryInfo.icon}`);
+                  }
+                }}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
+                  if (ability.id === 'siphon') {
+                    console.log(`❌ Siphon icon failed: ${target.src}, iconUrl: ${ability.iconUrl}, fallback: ${categoryInfo.icon}`);
+                  }
                   // If primary icon fails and we haven't tried category icon yet
                   if (target.src !== categoryInfo.icon) {
                     console.log(`⚠️ Failed to load ability icon: ${target.src}, falling back to category icon: ${categoryInfo.icon}`);
