@@ -22,26 +22,11 @@ export default function InlineAbilitiesDisplay({
   playerId,
   className = ''
 }: InlineAbilitiesDisplayProps) {
-  console.log('🔮 ABILITIES COMPONENT MOUNTED:', {
-    hasMatchData: !!matchData,
-    hasOnAbilityUsed: !!onAbilityUsed,
-    isPlayerTurn,
-    playerId,
-    className
-  });
-  
   const { 
     allAbilities, 
     useAbility, 
     canUseAbilityInMatch
   } = useAbilities();
-  
-  console.log('🔮 ABILITIES CONTEXT:', {
-    allAbilitiesCount: allAbilities?.length || 0,
-    hasUseAbility: !!useAbility,
-    hasCanUseAbilityInMatch: !!canUseAbilityInMatch,
-    sampleAbilities: allAbilities?.slice(0, 3)?.map(a => ({ id: a.id, name: a.name })) || []
-  });
   
   const [cooldowns, setCooldowns] = useState<{ [key: string]: number }>({});
   const [isUsing, setIsUsing] = useState<string | null>(null);
