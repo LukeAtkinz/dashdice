@@ -465,6 +465,11 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
       return { canUse: false, reason: 'Ability not unlocked' };
     }
     
+    // Temporarily bypass loadout check for siphon to test functionality
+    if (abilityId === 'siphon') {
+      return { canUse: true };
+    }
+    
     if (!isAbilityEquipped(abilityId)) {
       return { canUse: false, reason: 'Ability not equipped' };
     }

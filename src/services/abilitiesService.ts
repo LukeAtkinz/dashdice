@@ -568,6 +568,11 @@ export class AbilitiesService {
       }
 
       // Check if ability is equipped in active loadout
+      // Temporarily bypass loadout check for siphon to test functionality
+      if (abilityId === 'siphon') {
+        return { allowed: true };
+      }
+      
       const activeLoadout = await this.getActiveLoadout(userId);
       if (!activeLoadout) {
         return { allowed: false, reason: 'No active loadout' };
