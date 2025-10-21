@@ -572,7 +572,7 @@ export default function PowerTab({
       >
         <div className="relative z-10">
           {/* Game Mode Header and Loadout - Sticky on mobile */}
-          <div className="md:static sticky top-0 z-40 bg-black/95 backdrop-blur-sm rounded-xl p-1 md:p-0 md:bg-transparent border-b border-white/10 md:border-none">
+          <div className="md:static sticky top-0 z-30 bg-black/95 backdrop-blur-sm rounded-xl p-1 md:p-0 md:bg-transparent">
             {/* Navigation */}
             <div className="relative flex items-center justify-center mb-1 md:mb-6">
             {/* Left Arrow */}
@@ -737,15 +737,10 @@ export default function PowerTab({
               })}
             </motion.div>
           </AnimatePresence>
-          </div>
-
-          {/* Mobile Navigation - Sticky below loadout */}
+          
+          {/* Mobile Navigation - Inside sticky container */}
           {onTabChange && (
-            <div className="block md:hidden sticky z-50 bg-black/95 backdrop-blur-sm w-full flex flex-row items-center justify-center gap-[1rem] py-2 mb-2 border-b border-white/10"
-              style={{
-                top: '140px' // Stick below the loadout section (increased from 120px)
-              }}
-            >
+            <div className="block md:hidden w-full flex flex-row items-center justify-center gap-[1rem] py-2 mt-2 border-t border-white/10">
               <div className="flex items-center justify-center gap-2">
                 <button
                   onClick={() => onTabChange('power')}
@@ -772,16 +767,16 @@ export default function PowerTab({
                   </span>
                 </button>
                 <button
-                  onClick={() => onTabChange('display')}
-                  className={`tab-button nav-button ${activeTab === 'display' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-3 rounded-[18px] transition-all duration-300 h-10 px-3 min-w-[100px]`}
+                  onClick={() => onTabChange('vibin')}
+                  className={`tab-button nav-button ${activeTab === 'vibin' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-3 rounded-[18px] transition-all duration-300 h-10 px-3 min-w-[100px]`}
                   style={{
                     display: 'flex',
                     width: 'fit-content',
                     justifyContent: 'center',
                     alignItems: 'center',
                     gap: '8px',
+                    border: activeTab === 'vibin' ? '2px solid #FFD700' : '2px solid transparent',
                     borderRadius: '18px',
-                    border: activeTab === 'display' ? '2px solid #FFD700' : '2px solid transparent',
                     background: 'transparent',
                     cursor: 'pointer',
                   }}
@@ -796,15 +791,15 @@ export default function PowerTab({
                   </span>
                 </button>
                 <button
-                  onClick={() => onTabChange('match')}
-                  className={`tab-button nav-button ${activeTab === 'match' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-3 rounded-[18px] transition-all duration-300 h-10 px-3 min-w-[100px]`}
+                  onClick={() => onTabChange('flexin')}
+                  className={`tab-button nav-button ${activeTab === 'flexin' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-3 rounded-[18px] transition-all duration-300 h-10 px-3 min-w-[100px]`}
                   style={{
                     display: 'flex',
                     width: 'fit-content',
                     justifyContent: 'center',
                     alignItems: 'center',
                     gap: '8px',
-                    border: activeTab === 'match' ? '2px solid #FFD700' : '2px solid transparent',
+                    border: activeTab === 'flexin' ? '2px solid #FFD700' : '2px solid transparent',
                     borderRadius: '18px',
                     background: 'transparent',
                     cursor: 'pointer',
@@ -822,17 +817,10 @@ export default function PowerTab({
               </div>
             </div>
           )}
+          </div>
 
           {/* Available Abilities by Category - Integrated */}
-          {/* Abilities Content with Fade Effect */}
-          <div className="space-y-6 relative z-0">
-            {/* Fade overlay on mobile to hide content behind sticky elements */}
-            <div className="block md:hidden absolute top-0 left-0 right-0 z-10 pointer-events-none"
-              style={{
-                height: '180px',
-                background: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0.3) 70%, transparent 100%)'
-              }}
-            />
+          <div className="space-y-6">
             <div>
               {categoryGroups.map(({ category, categoryInfo, abilities }, categoryIndex) => {
                 const userCategoryAbilities = abilities.filter(ability => 
