@@ -49,7 +49,7 @@ interface AbilitiesContextType {
   
   // Match-specific utilities
   getMatchAbilities: (loadoutId?: string) => UserLoadout['abilities'] | null;
-  canUseAbilityInMatch: (abilityId: string, auraAvailable: number) => { canUse: boolean; reason?: string; };
+  canUseAbilityInMatch: (abilityId: string, auraAvailable?: number) => { canUse: boolean; reason?: string; };
   
   // Refresh functions
   refreshData: () => Promise<void>;
@@ -457,7 +457,7 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
     return targetLoadout?.abilities || null;
   };
 
-  const canUseAbilityInMatch = (abilityId: string, auraAvailable: number): { canUse: boolean; reason?: string; } => {
+  const canUseAbilityInMatch = (abilityId: string, auraAvailable?: number): { canUse: boolean; reason?: string; } => {
     const ability = allAbilities.find(a => a.id === abilityId);
     if (!ability) return { canUse: false, reason: 'Ability not found' };
     
@@ -469,10 +469,7 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
       return { canUse: false, reason: 'Ability not equipped' };
     }
     
-    if (auraAvailable < ability.auraCost) {
-      return { canUse: false, reason: `Need ${ability.auraCost} aura (have ${auraAvailable})` };
-    }
-    
+    // No aura check - abilities can be used once per match
     return { canUse: true };
   };
 

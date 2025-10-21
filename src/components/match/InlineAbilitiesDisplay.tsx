@@ -37,10 +37,6 @@ export default function InlineAbilitiesDisplay({
                            (matchData.hostData.playerId === playerId ? (matchData.hostData as any).powerLoadout : (matchData.opponentData as any)?.powerLoadout) ||
                            null;
 
-  // Get player's current aura from match data
-  // TODO: Implement proper aura system - temporarily setting high aura for testing
-  const playerAura = matchData.gameData.playerAura?.[playerId] || 100;
-
   // Get ability cooldowns from match data
   const serverCooldowns = matchData.gameData.abilityCooldowns?.[playerId] || {};
   
@@ -157,8 +153,7 @@ export default function InlineAbilitiesDisplay({
       isUsing,
       isPlayerTurn,
       timing: ability.timing,
-      playerAura,
-      auraCost: ability.auraCost
+      usageCount: usageCounts[ability.id] || 0
     });
 
     if (isUsing) return;
@@ -176,10 +171,8 @@ export default function InlineAbilitiesDisplay({
     if (cooldown > 0) return;
     
     const usageCount = usageCounts[ability.id] || 0;
-    if (ability.maxUses && usageCount >= ability.maxUses) return;
-
-    const canUse = canUseAbilityInMatch(ability.id, playerAura);
-    if (!canUse.canUse) return;
+    // Simple once per match limit
+    if (usageCount >= 1) return;
 
     // Trigger visual activation animation
     setActivatingAbility(ability.id);
@@ -193,7 +186,7 @@ export default function InlineAbilitiesDisplay({
         userScore: getCurrentPlayer()?.playerScore || 0,
         opponentScore: getOpponent()?.playerScore || 0,
         diceValues: [matchData.gameData.diceOne, matchData.gameData.diceTwo],
-        playerAura
+        playerAura: 0 // No longer using aura system
       });
       
       if (result.success) {
@@ -223,13 +216,13 @@ export default function InlineAbilitiesDisplay({
   const getAbilityStatus = (ability: Ability) => {
     const cooldown = cooldowns[ability.id] || 0;
     const usageCount = usageCounts[ability.id] || 0;
-    const canUse = canUseAbilityInMatch(ability.id, playerAura);
+    
+    // Simple system: each ability can be used once per match
+    if (usageCount >= 1) {
+      return { disabled: true, reason: 'Used' };
+    }
     
     if (cooldown > 0) return { disabled: true, reason: `${cooldown}s` };
-    if (ability.maxUses && usageCount >= ability.maxUses) {
-      return { disabled: true, reason: `${usageCount}/${ability.maxUses}` };
-    }
-    if (!canUse.canUse) return { disabled: true, reason: canUse.reason || 'Cannot use' };
     
     // Special timing check for Siphon (opponent_turn timing)
     if (ability.timing === 'opponent_turn') {
@@ -419,10 +412,10 @@ export default function InlineAbilitiesDisplay({
               </div>
             )}
 
-            {/* Aura Cost Indicator */}
-            {!status.disabled && playerAura < ability.auraCost && (
-              <div className="absolute bottom-0 right-0 bg-red-600 text-white text-xs rounded-tl px-1">
-                {ability.auraCost}
+            {/* Used Indicator */}
+            {(usageCounts[ability.id] || 0) >= 1 && (
+              <div className="absolute bottom-0 right-0 bg-gray-600 text-white text-xs rounded-tl px-1">
+                USED
               </div>
             )}
           </motion.button>
