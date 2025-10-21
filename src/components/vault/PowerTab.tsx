@@ -564,10 +564,10 @@ export default function PowerTab({
   }
 
   return (
-    <div className="w-full space-y-1 md:space-y-8 -mt-16 md:mt-0">
+    <div className="w-full space-y-1 md:space-y-8 -mt-16 md:mt-0 h-screen md:h-auto flex flex-col md:block">
       {/* Unified Game Mode and Abilities Card - Mobile & Desktop */}
       <motion.div 
-        className="rounded-2xl p-0 md:p-8 overflow-visible relative"
+        className="rounded-2xl p-0 md:p-8 overflow-visible relative flex-1 md:flex-none flex flex-col md:block"
         layout
       >
         <div className="relative z-10">
@@ -815,10 +815,15 @@ export default function PowerTab({
           </div>
 
           {/* Spacer to push abilities below sticky loadout on mobile */}
-          <div className="block md:hidden h-16"></div>
+          <div className="block md:hidden h-4"></div>
 
-          {/* Available Abilities by Category - With increased spacing below sticky loadout */}
-          <div className="space-y-6 pt-4 md:pt-0">
+          {/* Available Abilities by Category - Scrollable flex container */}
+          <div className="flex-1 md:flex-none overflow-y-auto md:overflow-visible space-y-6 pt-4 md:pt-0" style={{WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+            <style jsx>{`
+              .flex-1::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
             <div>
               {categoryGroups.map(({ category, categoryInfo, abilities }, categoryIndex) => {
                 const userCategoryAbilities = abilities.filter(ability => 
