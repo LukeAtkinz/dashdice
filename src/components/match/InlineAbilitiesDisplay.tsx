@@ -368,12 +368,27 @@ export default function InlineAbilitiesDisplay({
                     target.style.display = 'none';
                     const parent = target.parentElement;
                     if (parent) {
-                      parent.innerHTML = `<div class="text-2xl md:text-3xl">${categoryInfo.icon}</div>`;
+                      parent.innerHTML = `<img src="${categoryInfo.icon}" alt="${categoryInfo.name}" class="w-8 h-8 md:w-8 md:h-8 object-contain" style="filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))" />`;
                     }
                   }}
                 />
               ) : (
-                <div className="text-xl md:text-xl">{categoryInfo.icon}</div>
+                <img
+                  src={categoryInfo.icon}
+                  alt={categoryInfo.name}
+                  className="w-8 h-8 md:w-8 md:h-8 object-contain"
+                  style={{
+                    filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))'
+                  }}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      parent.innerHTML = `<div class="text-2xl md:text-3xl">❓</div>`;
+                    }
+                  }}
+                />
               )}
             </div>
 
