@@ -129,29 +129,16 @@ export const InventorySection: React.FC = () => {
   }
 
   return (
-    <div className="w-full flex flex-col items-center justify-start gap-[0.5rem] md:gap-[2rem] pt-[0.25rem] md:pt-[2rem] pb-[2rem] h-screen overflow-hidden"
+    <div className="w-full flex flex-col items-center justify-start gap-[0.5rem] md:gap-[2rem] pt-0 md:pt-[1rem] pb-[2rem] h-screen overflow-hidden"
       style={{
-        touchAction: 'none', // Prevent touch scrolling on main container
-        overscrollBehavior: 'none', // Prevent overscroll behavior
-        position: 'fixed', // Fix position to prevent body scrolling
-        top: '60px', // Reduced top margin for navigation on mobile
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 10,
-        height: 'calc(100vh - 80px)' // Adjust height to account for top offset
+        touchAction: 'pan-y', // Allow vertical scrolling
+        overscrollBehavior: 'contain', // Contain overscroll to this element
+        minHeight: '100vh',
+        maxHeight: '100vh'
       }}
     >
       {/* Custom scrollbar styles and navigation animations */}
       <style jsx global>{`
-        /* Prevent body scrolling when inventory is open */
-        body {
-          overflow: hidden;
-          position: fixed;
-          width: 100%;
-          height: 100%;
-        }
-        
         /* Hide scrollbars on desktop but allow scrolling */
         .scrollbar-hide {
           scrollbar-width: none; /* Firefox */
@@ -414,7 +401,7 @@ export const InventorySection: React.FC = () => {
                     maxHeight: '90vh' // Increased height for mobile
                   }}
                 >
-                  <div className="space-y-2.5 pb-20 pt-1">
+                  <div className="space-y-2.5 pb-20 pt-0">
                     <PowerTab 
                       mobileHeaderOnly={false}
                       activeTab={activeTab}

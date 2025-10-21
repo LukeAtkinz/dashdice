@@ -564,15 +564,15 @@ export default function PowerTab({
   }
 
   return (
-    <div className="w-full space-y-1 md:space-y-8 -mt-16 md:mt-0">
+    <div className="w-full space-y-1 md:space-y-8 -mt-24 md:mt-0">
       {/* Unified Game Mode and Abilities Card - Mobile & Desktop */}
       <motion.div 
-        className="rounded-2xl p-2 md:p-8 overflow-hidden relative"
+        className="rounded-2xl p-0 md:p-8 overflow-visible relative"
         layout
       >
         <div className="relative z-10">
           {/* Game Mode Header and Loadout - Sticky on mobile */}
-          <div className="md:static sticky top-0 z-30 bg-black/95 backdrop-blur-sm rounded-xl p-2 md:p-0 md:bg-transparent">
+          <div className="md:static sticky top-0 z-40 bg-black/95 backdrop-blur-sm rounded-xl p-1 md:p-0 md:bg-transparent border-b border-white/10 md:border-none">
             {/* Navigation */}
             <div className="relative flex items-center justify-center mb-1 md:mb-6">
             {/* Left Arrow */}
@@ -739,9 +739,13 @@ export default function PowerTab({
           </AnimatePresence>
           </div>
 
-          {/* Mobile Navigation - Between loadout and abilities */}
+          {/* Mobile Navigation - Sticky below loadout */}
           {onTabChange && (
-            <div className="block md:hidden sticky top-0 z-40 bg-black/95 backdrop-blur-sm w-full flex flex-row items-center justify-center gap-[1rem] py-2 mb-2">
+            <div className="block md:hidden sticky z-50 bg-black/95 backdrop-blur-sm w-full flex flex-row items-center justify-center gap-[1rem] py-2 mb-2 border-b border-white/10"
+              style={{
+                top: '140px' // Stick below the loadout section (increased from 120px)
+              }}
+            >
               <div className="flex items-center justify-center gap-2">
                 <button
                   onClick={() => onTabChange('power')}
@@ -820,7 +824,15 @@ export default function PowerTab({
           )}
 
           {/* Available Abilities by Category - Integrated */}
-          <div className="space-y-6">
+          {/* Abilities Content with Fade Effect */}
+          <div className="space-y-6 relative z-0">
+            {/* Fade overlay on mobile to hide content behind sticky elements */}
+            <div className="block md:hidden absolute top-0 left-0 right-0 z-10 pointer-events-none"
+              style={{
+                height: '180px',
+                background: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0.3) 70%, transparent 100%)'
+              }}
+            />
             <div>
               {categoryGroups.map(({ category, categoryInfo, abilities }, categoryIndex) => {
                 const userCategoryAbilities = abilities.filter(ability => 
