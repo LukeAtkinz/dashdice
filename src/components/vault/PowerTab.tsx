@@ -572,7 +572,7 @@ export default function PowerTab({
       >
         <div className="relative z-10">
           {/* Game Mode Header and Loadout - Sticky on mobile */}
-          <div className="md:static sticky top-0 z-30 backdrop-blur-sm rounded-xl p-1 md:p-0 bg-transparent">
+          <div className="md:static sticky top-0 z-30 backdrop-blur-sm rounded-xl p-1 md:p-0 bg-transparent border-b border-white/20 md:border-none pb-2 md:pb-0">
             {/* Navigation */}
             <div className="relative flex items-center justify-center mb-1 md:mb-6">
             {/* Left Arrow */}
@@ -814,8 +814,11 @@ export default function PowerTab({
           )}
           </div>
 
+          {/* Spacer to push abilities below sticky loadout on mobile */}
+          <div className="block md:hidden h-16"></div>
+
           {/* Available Abilities by Category - With increased spacing below sticky loadout */}
-          <div className="space-y-6 pt-12 md:pt-0">
+          <div className="space-y-6 pt-4 md:pt-0">
             <div>
               {categoryGroups.map(({ category, categoryInfo, abilities }, categoryIndex) => {
                 const userCategoryAbilities = abilities.filter(ability => 
