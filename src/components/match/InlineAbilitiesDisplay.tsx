@@ -30,6 +30,7 @@ export default function InlineAbilitiesDisplay({
   
   const [cooldowns, setCooldowns] = useState<{ [key: string]: number }>({});
   const [isUsing, setIsUsing] = useState<string | null>(null);
+  const [activatingAbility, setActivatingAbility] = useState<string | null>(null);
 
   // Get player's power loadout from match metadata
   const playerPowerLoadout = (matchData.gameData as any).powerLoadouts?.[playerId] || 
@@ -190,6 +191,10 @@ export default function InlineAbilitiesDisplay({
     const canUse = canUseAbilityInMatch(ability.id, playerAura);
     if (!canUse.canUse) return;
 
+    // Trigger visual activation animation
+    setActivatingAbility(ability.id);
+    setTimeout(() => setActivatingAbility(null), 800); // Reset after animation
+
     setIsUsing(ability.id);
     
     try {
@@ -336,11 +341,17 @@ export default function InlineAbilitiesDisplay({
               boxShadow: !status.disabled ? `0 2px 10px ${categoryColors.primary}40` : 'none'
             }}
             initial={{ opacity: 0, scale: 0.8, y: 20, rotateY: -15 }}
-            animate={{ opacity: 1, scale: 1, y: 0, rotateY: 0 }}
+            animate={{ 
+              opacity: 1, 
+              scale: activatingAbility === ability.id ? [1, 1.15, 1] : 1, 
+              y: activatingAbility === ability.id ? [0, -8, 0] : 0, 
+              rotateY: 0 
+            }}
             transition={{ 
-              duration: 0.5, 
-              ease: [0.4, 0, 0.2, 1],
-              delay: index * 0.1 
+              duration: activatingAbility === ability.id ? 0.8 : 0.5, 
+              ease: activatingAbility === ability.id ? [0.4, 0, 0.2, 1] : [0.4, 0, 0.2, 1],
+              delay: activatingAbility === ability.id ? 0 : index * 0.1,
+              times: activatingAbility === ability.id ? [0, 0.4, 1] : undefined
             }}
             whileHover={!status.disabled ? { 
               y: -2, 
@@ -355,41 +366,29 @@ export default function InlineAbilitiesDisplay({
           >
             {/* Ability Icon */}
             <div className="w-full h-full flex items-center justify-center">
-              {ability.iconUrl ? (
-                <img
-                  src={ability.iconUrl}
-                  alt={ability.name}
-                  className="w-8 h-8 md:w-8 md:h-8 object-contain"
-                  style={{
-                    filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))'
-                  }}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    const parent = target.parentElement;
-                    if (parent) {
-                      parent.innerHTML = `<img src="${categoryInfo.icon}" alt="${categoryInfo.name}" class="w-8 h-8 md:w-8 md:h-8 object-contain" style="filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))" />`;
-                    }
-                  }}
-                />
-              ) : (
-                <img
-                  src={categoryInfo.icon}
-                  alt={categoryInfo.name}
-                  className="w-8 h-8 md:w-8 md:h-8 object-contain"
-                  style={{
-                    filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))'
-                  }}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
+              <img
+                src={ability.iconUrl || categoryInfo.icon}
+                alt={ability.name}
+                className="w-8 h-8 md:w-8 md:h-8 object-contain"
+                style={{
+                  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))'
+                }}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  // If primary icon fails and we haven't tried category icon yet
+                  if (target.src !== categoryInfo.icon) {
+                    console.log(`⚠️ Failed to load ability icon: ${target.src}, falling back to category icon: ${categoryInfo.icon}`);
+                    target.src = categoryInfo.icon;
+                  } else {
+                    // If category icon also fails, show emoji
                     target.style.display = 'none';
                     const parent = target.parentElement;
                     if (parent) {
                       parent.innerHTML = `<div class="text-2xl md:text-3xl">❓</div>`;
                     }
-                  }}
-                />
-              )}
+                  }
+                }}
+              />
             </div>
 
             {/* Cooldown Overlay */}
