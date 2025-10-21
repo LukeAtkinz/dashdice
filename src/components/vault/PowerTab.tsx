@@ -233,43 +233,61 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
   };
 
   const assignAbilityToCategory = (abilityId: string, category: string) => {
-    // 🔍 DEBUG: Track which game mode we're assigning to
-    console.log('🎯 ASSIGN DEBUG:', {
-      currentGameModeIndex,
-      currentGameModeId: currentGameMode.id,
-      currentGameModeName: currentGameMode.name,
-      abilityId,
-      category,
-      existingLoadout: gameModeLoadouts[currentGameMode.id]
+    // 🔍 Get current state values to avoid closure issues
+    setCurrentGameModeIndex(currentIndex => {
+      const actualCurrentGameMode = GAME_MODES[currentIndex];
+      
+      console.log('🎯 ASSIGN DEBUG (FIXED):', {
+        currentGameModeIndex: currentIndex,
+        currentGameModeId: actualCurrentGameMode.id,
+        currentGameModeName: actualCurrentGameMode.name,
+        abilityId,
+        category,
+        existingLoadout: gameModeLoadouts[actualCurrentGameMode.id]
+      });
+      
+      // Update loadouts using the actual current game mode
+      setGameModeLoadouts(currentLoadouts => {
+        const newLoadouts = {
+          ...currentLoadouts,
+          [actualCurrentGameMode.id]: {
+            ...currentLoadouts[actualCurrentGameMode.id],
+            [category]: abilityId
+          }
+        };
+        
+        // Save to Firebase with the correct game mode
+        saveLoadoutToFirebase(actualCurrentGameMode.id, newLoadouts[actualCurrentGameMode.id]);
+        
+        return newLoadouts;
+      });
+      
+      return currentIndex; // Don't change the index, just use it
     });
-    
-    const newLoadouts = {
-      ...gameModeLoadouts,
-      [currentGameMode.id]: {
-        ...gameModeLoadouts[currentGameMode.id],
-        [category]: abilityId
-      }
-    };
-    
-    setGameModeLoadouts(newLoadouts);
-    
-    // Save to Firebase
-    saveLoadoutToFirebase(currentGameMode.id, newLoadouts[currentGameMode.id]);
   };
 
   const removeAbilityFromCategory = (category: string) => {
-    const newLoadout = { ...gameModeLoadouts[currentGameMode.id] };
-    delete newLoadout[category];
-    
-    const newLoadouts = {
-      ...gameModeLoadouts,
-      [currentGameMode.id]: newLoadout
-    };
-    
-    setGameModeLoadouts(newLoadouts);
-    
-    // Save to Firebase
-    saveLoadoutToFirebase(currentGameMode.id, newLoadout);
+    // 🔍 Use current state to avoid closure issues
+    setCurrentGameModeIndex(currentIndex => {
+      const actualCurrentGameMode = GAME_MODES[currentIndex];
+      
+      setGameModeLoadouts(currentLoadouts => {
+        const newLoadout = { ...currentLoadouts[actualCurrentGameMode.id] };
+        delete newLoadout[category];
+        
+        const newLoadouts = {
+          ...currentLoadouts,
+          [actualCurrentGameMode.id]: newLoadout
+        };
+        
+        // Save to Firebase with the correct game mode
+        saveLoadoutToFirebase(actualCurrentGameMode.id, newLoadout);
+        
+        return newLoadouts;
+      });
+      
+      return currentIndex; // Don't change the index
+    });
   };
 
   // Get abilities by category for placeholders
