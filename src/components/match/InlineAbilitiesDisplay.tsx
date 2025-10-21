@@ -56,6 +56,7 @@ export default function InlineAbilitiesDisplay({
       console.log('🧛 SIPHON DEBUG:', {
         siphonFound: true,
         siphonDetails: siphonAbility,
+        siphonIconUrl: siphonAbility.iconUrl,
         isInPlayerLoadout: playerPowerLoadout && Object.values(playerPowerLoadout).includes('siphon'),
         playerLoadoutValues: playerPowerLoadout ? Object.values(playerPowerLoadout) : null,
         playerLoadoutEntries: playerPowerLoadout ? Object.entries(playerPowerLoadout) : null
@@ -180,16 +181,54 @@ export default function InlineAbilitiesDisplay({
     .filter(Boolean) as Array<{ category: keyof typeof ABILITY_CATEGORIES; ability: Ability }>;
 
   const handleAbilityClick = async (ability: Ability) => {
-    if (!isPlayerTurn || isUsing) return;
+    console.log('🎯 ABILITY CLICK ATTEMPT:', {
+      abilityId: ability.id,
+      isUsing,
+      isPlayerTurn,
+      abilityTiming: ability.timing,
+      playerAura,
+      auraCost: ability.auraCost
+    });
+    
+    if (isUsing) {
+      console.log('❌ Click blocked: Already using an ability');
+      return;
+    }
+    
+    // Check timing constraints properly
+    if (ability.timing === 'opponent_turn') {
+      // Siphon and other opponent_turn abilities should only work during opponent's turn
+      if (isPlayerTurn) {
+        console.log('❌ Click blocked: Opponent-turn ability used during player turn');
+        return;
+      }
+    } else {
+      // Normal abilities require player turn
+      if (!isPlayerTurn) {
+        console.log('❌ Click blocked: Player-turn ability used during opponent turn');
+        return;
+      }
+    }
     
     const cooldown = cooldowns[ability.id] || 0;
-    if (cooldown > 0) return;
+    if (cooldown > 0) {
+      console.log('❌ Click blocked: Ability on cooldown', cooldown);
+      return;
+    }
     
     const usageCount = usageCounts[ability.id] || 0;
-    if (ability.maxUses && usageCount >= ability.maxUses) return;
+    if (ability.maxUses && usageCount >= ability.maxUses) {
+      console.log('❌ Click blocked: Max uses reached', usageCount, ability.maxUses);
+      return;
+    }
 
     const canUse = canUseAbilityInMatch(ability.id, playerAura);
-    if (!canUse.canUse) return;
+    if (!canUse.canUse) {
+      console.log('❌ Click blocked: canUseAbilityInMatch failed', canUse.reason);
+      return;
+    }
+    
+    console.log('✅ All checks passed, using ability:', ability.id);
 
     // Trigger visual activation animation
     setActivatingAbility(ability.id);
@@ -322,6 +361,25 @@ export default function InlineAbilitiesDisplay({
         const status = getAbilityStatus(ability);
         const categoryColors = CATEGORY_COLORS[category];
         const categoryInfo = ABILITY_CATEGORIES[category];
+        
+        // Debug siphon specifically
+        if (ability.id === 'siphon') {
+          console.log('🔍 SIPHON STATUS DEBUG:', {
+            abilityId: ability.id,
+            isPlayerTurn: isPlayerTurn,
+            timing: ability.timing,
+            status: status,
+            playerAura: playerAura,
+            cooldowns: cooldowns[ability.id],
+            usageCounts: usageCounts[ability.id]
+          });
+        }
+
+        // Check if ability can be used right now (for visual active state)
+        const canUseRightNow = !status.disabled && (
+          (ability.timing === 'opponent_turn' && !isPlayerTurn) ||
+          (ability.timing !== 'opponent_turn' && isPlayerTurn)
+        );
 
         return (
           <motion.button
@@ -331,32 +389,43 @@ export default function InlineAbilitiesDisplay({
             className={`w-20 h-20 md:w-24 md:h-24 rounded-xl border-2 backdrop-blur-sm transition-all relative overflow-hidden ${
               status.disabled || isUsing === ability.id
                 ? 'opacity-50 cursor-not-allowed' 
-                : 'hover:scale-105 active:scale-95 hover:border-white/60'
+                : canUseRightNow 
+                  ? 'hover:scale-105 active:scale-95 hover:border-white/60 ring-2 ring-green-400/50' 
+                  : 'hover:scale-105 active:scale-95 hover:border-white/60'
             }`}
             style={{
               background: status.disabled 
                 ? 'linear-gradient(135deg, #6B7280 0%, #374151 100%)'
-                : `linear-gradient(135deg, ${categoryColors.primary}80 0%, ${categoryColors.secondary}40 100%)`,
-              borderColor: status.disabled ? '#6B7280' : categoryColors.primary,
-              boxShadow: !status.disabled ? `0 2px 10px ${categoryColors.primary}40` : 'none'
+                : canUseRightNow
+                  ? `linear-gradient(135deg, ${categoryColors.primary}CC 0%, ${categoryColors.secondary}80 100%)`
+                  : `linear-gradient(135deg, ${categoryColors.primary}80 0%, ${categoryColors.secondary}40 100%)`,
+              borderColor: status.disabled ? '#6B7280' : canUseRightNow ? '#10B981' : categoryColors.primary,
+              boxShadow: !status.disabled ? 
+                canUseRightNow 
+                  ? `0 2px 15px ${categoryColors.primary}60, 0 0 20px #10B98130` 
+                  : `0 2px 10px ${categoryColors.primary}40`
+                : 'none'
             }}
             initial={{ opacity: 0, scale: 0.8, y: 20, rotateY: -15 }}
             animate={{ 
               opacity: 1, 
-              scale: activatingAbility === ability.id ? [1, 1.15, 1] : 1, 
+              scale: activatingAbility === ability.id ? [1, 1.15, 1] : canUseRightNow ? [1, 1.02, 1] : 1, 
               y: activatingAbility === ability.id ? [0, -8, 0] : 0, 
               rotateY: 0 
             }}
             transition={{ 
-              duration: activatingAbility === ability.id ? 0.8 : 0.5, 
+              duration: activatingAbility === ability.id ? 0.8 : canUseRightNow ? 2 : 0.5, 
               ease: activatingAbility === ability.id ? [0.4, 0, 0.2, 1] : [0.4, 0, 0.2, 1],
               delay: activatingAbility === ability.id ? 0 : index * 0.1,
-              times: activatingAbility === ability.id ? [0, 0.4, 1] : undefined
+              times: activatingAbility === ability.id ? [0, 0.4, 1] : undefined,
+              repeat: canUseRightNow && activatingAbility !== ability.id ? Infinity : 0
             }}
             whileHover={!status.disabled ? { 
               y: -2, 
               scale: 1.05,
-              boxShadow: `0 4px 20px ${categoryColors.primary}60`,
+              boxShadow: canUseRightNow 
+                ? `0 4px 25px ${categoryColors.primary}80, 0 0 30px #10B98150`
+                : `0 4px 20px ${categoryColors.primary}60`,
               transition: { duration: 0.2 }
             } : {}}
             whileTap={!status.disabled ? { 
