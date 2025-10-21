@@ -557,9 +557,9 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
 
   return (
     <div className="w-full space-y-1 md:space-y-8 -mt-2 md:mt-0">
-      {/* Unified Game Mode and Abilities Card - Desktop Only */}
+      {/* Unified Game Mode and Abilities Card - Mobile & Desktop */}
       <motion.div 
-        className="hidden md:block rounded-2xl p-8 overflow-hidden relative"
+        className="rounded-2xl p-4 md:p-8 overflow-hidden relative"
         layout
       >
         <div className="relative z-10">
@@ -568,11 +568,11 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
             {/* Left Arrow */}
             <motion.button
               onClick={prevGameMode}
-              className="absolute left-0 p-3 rounded-full hover:bg-black/30 transition-colors"
+              className="absolute left-0 p-2 md:p-3 rounded-full hover:bg-black/30 transition-colors"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </motion.button>
@@ -625,11 +625,11 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
             {/* Right Arrow */}
             <motion.button
               onClick={nextGameMode}
-              className="absolute right-0 p-3 rounded-full hover:bg-black/30 transition-colors"
+              className="absolute right-0 p-2 md:p-3 rounded-full hover:bg-black/30 transition-colors"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </motion.button>
@@ -932,8 +932,8 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
         </div>
       </motion.div>
 
-      {/* Mobile Available Abilities by Category - Separate for mobile */}
-      <div className="block md:hidden space-y-1 -mt-1">
+      {/* Mobile Available Abilities by Category - DISABLED - Using unified section above */}
+      <div className="hidden space-y-1 -mt-1">
         <div>
           {categoryGroups.map(({ category, categoryInfo, abilities }, categoryIndex) => {
             const userCategoryAbilities = abilities.filter(ability => 
