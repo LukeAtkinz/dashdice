@@ -181,6 +181,7 @@ export default function InlineAbilitiesDisplay({
     setIsUsing(ability.id);
     
     try {
+      console.log('🎯 Calling useAbility for:', ability.id);
       const result = await useAbility(ability.id, matchData.id || 'unknown', {
         round: 1, // This should come from match state
         userScore: getCurrentPlayer()?.playerScore || 0,
@@ -189,7 +190,10 @@ export default function InlineAbilitiesDisplay({
         playerAura: 0 // No longer using aura system
       });
       
+      console.log('🎯 useAbility result:', result);
+      
       if (result.success) {
+        console.log('🎯 Calling onAbilityUsed with effect:', result.effect);
         onAbilityUsed(result.effect);
         
         // Set cooldown locally for immediate feedback
@@ -197,6 +201,8 @@ export default function InlineAbilitiesDisplay({
           ...prev,
           [ability.id]: ability.cooldown
         }));
+      } else {
+        console.log('❌ useAbility failed:', result);
       }
     } catch (error) {
       console.error('Error using ability:', error);

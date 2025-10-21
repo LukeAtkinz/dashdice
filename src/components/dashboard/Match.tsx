@@ -315,6 +315,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   }, [matchData, user?.uid, siphonActive, showToast, setSiphonActive]);
 
   const handleAbilityUsed = useCallback((effect: any) => {
+    console.log('🔮 HANDLE ABILITY USED CALLED:', { effect, hasMatchData: !!matchData, hasUser: !!user });
+    
     if (!matchData || !user) return;
     
     try {
