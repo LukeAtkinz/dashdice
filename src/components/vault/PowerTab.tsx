@@ -206,14 +206,30 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
 
   const currentGameMode = GAME_MODES[currentGameModeIndex];
   const currentLoadout = gameModeLoadouts[currentGameMode.id] || {};
+  
+  // 🔍 DEBUG: Track current game mode calculation
+  console.log('📊 CURRENT GAME MODE CALCULATION:', {
+    currentGameModeIndex,
+    currentGameModeId: currentGameMode.id,
+    currentGameModeName: currentGameMode.name,
+    totalGameModes: GAME_MODES.length
+  });
 
   // Helper functions
   const nextGameMode = () => {
-    setCurrentGameModeIndex((prev) => (prev + 1) % GAME_MODES.length);
+    setCurrentGameModeIndex((prev) => {
+      const newIndex = (prev + 1) % GAME_MODES.length;
+      console.log('🔄 NEXT GAME MODE:', { from: prev, to: newIndex, gameMode: GAME_MODES[newIndex] });
+      return newIndex;
+    });
   };
 
   const prevGameMode = () => {
-    setCurrentGameModeIndex((prev) => (prev - 1 + GAME_MODES.length) % GAME_MODES.length);
+    setCurrentGameModeIndex((prev) => {
+      const newIndex = (prev - 1 + GAME_MODES.length) % GAME_MODES.length;
+      console.log('🔄 PREV GAME MODE:', { from: prev, to: newIndex, gameMode: GAME_MODES[newIndex] });
+      return newIndex;
+    });
   };
 
   const assignAbilityToCategory = (abilityId: string, category: string) => {
