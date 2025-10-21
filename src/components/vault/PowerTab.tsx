@@ -422,6 +422,16 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
               exit={{ opacity: 0, x: -50 }}
               transition={{ duration: 0.3 }}
             >
+              {(() => {
+                console.log('🎮 MOBILE LOADOUT RENDER DEBUG:', {
+                  currentGameModeId: currentGameMode.id,
+                  currentGameModeName: currentGameMode.name,
+                  currentLoadout: currentLoadout,
+                  gameModeLoadouts: gameModeLoadouts,
+                  siphonInLoadout: currentLoadout.attack === 'siphon'
+                });
+                return null;
+              })()}
               {CATEGORY_SLOTS.map((categorySlot, index) => {
                 const assignedAbilityId = currentLoadout[categorySlot.key];
                 const assignedAbility = assignedAbilityId ? allAbilities.find(a => a.id === assignedAbilityId) : null;
@@ -601,6 +611,16 @@ export default function PowerTab({ mobileHeaderOnly = false }: { mobileHeaderOnl
               exit={{ opacity: 0, x: -50 }}
               transition={{ duration: 0.3 }}
             >
+              {(() => {
+                console.log('🖥️ DESKTOP LOADOUT RENDER DEBUG:', {
+                  currentGameModeId: currentGameMode.id,
+                  currentGameModeName: currentGameMode.name,
+                  currentLoadout: currentLoadout,
+                  gameModeLoadouts: gameModeLoadouts,
+                  siphonInLoadout: currentLoadout.attack === 'siphon'
+                });
+                return null;
+              })()}
               {CATEGORY_SLOTS.map((categorySlot, index) => {
                 const assignedAbilityId = currentLoadout[categorySlot.key];
                 const assignedAbility = assignedAbilityId ? allAbilities.find(a => a.id === assignedAbilityId) : null;
