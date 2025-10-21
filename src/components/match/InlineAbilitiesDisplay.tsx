@@ -38,7 +38,8 @@ export default function InlineAbilitiesDisplay({
                            null;
 
   // Get player's current aura from match data
-  const playerAura = matchData.gameData.playerAura?.[playerId] || 0;
+  // TODO: Implement proper aura system - temporarily setting high aura for testing
+  const playerAura = matchData.gameData.playerAura?.[playerId] || 100;
 
   // Get ability cooldowns from match data
   const serverCooldowns = matchData.gameData.abilityCooldowns?.[playerId] || {};
@@ -152,6 +153,14 @@ export default function InlineAbilitiesDisplay({
     .filter(Boolean) as Array<{ category: keyof typeof ABILITY_CATEGORIES; ability: Ability }>;
 
   const handleAbilityClick = async (ability: Ability) => {
+    console.log(`🎯 ABILITY CLICKED: ${ability.id}`, {
+      isUsing,
+      isPlayerTurn,
+      timing: ability.timing,
+      playerAura,
+      auraCost: ability.auraCost
+    });
+
     if (isUsing) return;
     
     // Check timing constraints properly
@@ -376,16 +385,8 @@ export default function InlineAbilitiesDisplay({
                 style={{
                   filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))'
                 }}
-                onLoad={() => {
-                  if (ability.id === 'siphon') {
-                    console.log(`✅ Siphon icon loaded: ${ability.iconUrl || categoryInfo.icon}`);
-                  }
-                }}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  if (ability.id === 'siphon') {
-                    console.log(`❌ Siphon icon failed: ${target.src}, iconUrl: ${ability.iconUrl}, fallback: ${categoryInfo.icon}`);
-                  }
                   // If primary icon fails and we haven't tried category icon yet
                   if (target.src !== categoryInfo.icon) {
                     console.log(`⚠️ Failed to load ability icon: ${target.src}, falling back to category icon: ${categoryInfo.icon}`);
