@@ -251,7 +251,10 @@ export function FriendsProvider({ children }: FriendsProviderProps) {
   // Get online friends count
   const getOnlineFriendsCount = (): number => {
     return Object.values(friendPresences).filter(presence => 
-      presence.isOnline && presence.status !== 'offline'
+      presence.isOnline && 
+      presence.status === 'online' &&
+      presence.lastSeen &&
+      !PresenceService.isPresenceStale(presence.lastSeen)
     ).length;
   };
 
@@ -261,11 +264,15 @@ export function FriendsProvider({ children }: FriendsProviderProps) {
       const presence = friendPresences[friend.friendId];
       if (!presence) return status === 'offline';
       
+      // Check if presence is stale
+      const isStale = presence.lastSeen ? PresenceService.isPresenceStale(presence.lastSeen) : true;
+      
       if (status === 'offline') {
-        return !presence.isOnline || presence.status === 'offline';
+        return !presence.isOnline || presence.status === 'offline' || isStale;
       }
       
-      return presence.isOnline && presence.status === status;
+      // For online/away/busy, presence must not be stale
+      return presence.isOnline && presence.status === status && !isStale;
     });
   };
 

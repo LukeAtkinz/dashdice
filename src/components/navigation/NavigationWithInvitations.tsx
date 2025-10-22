@@ -54,17 +54,16 @@ export const NavigationWithInvitations: React.FC<NavigationWithInvitationsProps>
       console.log('🎯 NavigationWithInvitations: acceptGameInvitation result:', result);
       
       if (result.success && result.gameId) {
-        console.log('🎯 NavigationWithInvitations: Friend invitation accepted - navigating to waiting room first:', { 
-          sessionId: result.gameId,
+        console.log('🎯 NavigationWithInvitations: Friend invitation accepted - navigating directly to match:', { 
+          matchId: result.gameId,
           gameMode: invitation?.gameMode || 'classic'
         });
         
-        // Navigate to waiting room first, then the system will automatically navigate to match
-        setCurrentSection('waiting-room', { 
+        // Navigate directly to the match since it's already created by the invitation acceptance
+        setCurrentSection('match', { 
+          matchId: result.gameId,
           roomId: result.gameId,
-          gameMode: invitation?.gameMode || 'classic',
-          actionType: 'live',
-          gameType: 'quick'
+          gameMode: invitation?.gameMode || 'classic'
         });
       }
     } catch (error) {

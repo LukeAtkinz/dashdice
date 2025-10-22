@@ -16,6 +16,8 @@ export const InviteDeclinedNotification: React.FC = () => {
     const unsubscribe = EnhancedFriendInviteService.subscribeToNotifications(
       user.uid,
       (notifications) => {
+        console.log('🔍 InviteDeclinedNotification: Received notifications:', notifications.length);
+        
         // Find the most recent unread invite_declined notification
         const declinedNotification = notifications.find(
           notification => 
@@ -24,7 +26,7 @@ export const InviteDeclinedNotification: React.FC = () => {
         );
 
         if (declinedNotification) {
-          console.log('😔 Friend declined your invitation');
+          console.log('😔 Found declined invitation notification:', declinedNotification);
           
           // Mark notification as read
           EnhancedFriendInviteService.markNotificationAsRead(declinedNotification.id);

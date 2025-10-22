@@ -85,14 +85,8 @@ export class EnhancedFriendInviteService {
         throw new Error('User profiles not found');
       }
 
-      // Check if there's already a pending invitation between these users
-      const existingInvite = await this.findPendingInvite(fromUserId, toUserId);
-      if (existingInvite) {
-        return { 
-          success: false, 
-          error: 'There is already a pending invitation with this friend' 
-        };
-      }
+      // Check if there's already a pending invitation between these users (in either direction)
+      await this.clearPendingInvitesBetweenUsers(fromUserId, toUserId);
 
       // Create the invitation
       const now = new Date();
@@ -510,6 +504,49 @@ export class EnhancedFriendInviteService {
   /**
    * Private helper methods
    */
+
+  private static async clearPendingInvitesBetweenUsers(fromUserId: string, toUserId: string): Promise<void> {
+    try {
+      // Check for invitations from fromUserId to toUserId
+      const q1 = query(
+        collection(db, this.INVITES_COLLECTION),
+        where('fromUserId', '==', fromUserId),
+        where('toUserId', '==', toUserId),
+        where('status', '==', 'pending')
+      );
+
+      // Check for invitations from toUserId to fromUserId (reverse direction)
+      const q2 = query(
+        collection(db, this.INVITES_COLLECTION),
+        where('fromUserId', '==', toUserId),
+        where('toUserId', '==', fromUserId),
+        where('status', '==', 'pending')
+      );
+
+      const [snapshot1, snapshot2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+      
+      const deletePromises: Promise<void>[] = [];
+      
+      // Delete invitations in both directions
+      snapshot1.docs.forEach(doc => {
+        console.log('🔄 Removing existing invitation (same direction):', doc.id);
+        deletePromises.push(deleteDoc(doc.ref));
+      });
+      
+      snapshot2.docs.forEach(doc => {
+        console.log('🔄 Removing existing invitation (reverse direction):', doc.id);
+        deletePromises.push(deleteDoc(doc.ref));
+      });
+
+      if (deletePromises.length > 0) {
+        await Promise.all(deletePromises);
+        console.log(`✅ Cleared ${deletePromises.length} pending invitation(s) between users`);
+      }
+    } catch (error) {
+      console.error('Error clearing pending invitations:', error);
+      // Don't throw - allow new invitation to proceed even if cleanup fails
+    }
+  }
 
   private static async findPendingInvite(fromUserId: string, toUserId: string): Promise<FriendGameInvitation | null> {
     const q = query(

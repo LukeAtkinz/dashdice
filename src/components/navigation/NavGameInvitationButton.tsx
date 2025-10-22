@@ -59,15 +59,15 @@ export const NavGameInvitationButton: React.FC<NavGameInvitationButtonProps> = (
   const getGameModeIcon = (gameMode: string) => {
     switch (gameMode) {
       case 'classic':
-        return '/Design Elements/Match/Dice/DiceAnimationFrames/Dice-1-1.webp';
+        return '/Design Elements/CrownLogo.webp';
       case 'zero-hour':
-        return '/Design Elements/Match/Dice/DiceAnimationFrames/Dice-6-6.webp';
+        return '/Design Elements/time out.webp';
       case 'true-grit':
-        return '/Design Elements/Match/Dice/DiceAnimationFrames/Dice-2-2.webp';
+        return '/Design Elements/Shield.webp';
       case 'last-line':
-        return '/Design Elements/Match/Dice/DiceAnimationFrames/Dice-3-3.webp';
+        return '/Design Elements/Sword.webp';
       default:
-        return '/Design Elements/Match/Dice/DiceAnimationFrames/Dice-1-1.webp';
+        return '/Design Elements/CrownLogo.webp';
     }
   };
 
@@ -98,6 +98,10 @@ export const NavGameInvitationButton: React.FC<NavGameInvitationButtonProps> = (
       exit={{ opacity: 0, y: -20, scale: 0.9 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="flex flex-col items-center gap-4 px-6 py-4"
+      style={{
+        background: "transparent",
+        border: "none"
+      }}
     >
       {/* Invitation Text */}
       <motion.div
@@ -149,12 +153,12 @@ export const NavGameInvitationButton: React.FC<NavGameInvitationButtonProps> = (
           style={{
             fontFamily: "Audiowide",
             background: buttonsClickable && !isProcessing
-              ? "transparent"
+              ? "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)"
               : "#666666",
-            border: "2px solid rgba(255, 255, 255, 0.3)",
+            border: "none",
             backdropFilter: "blur(6px)",
             boxShadow: buttonsClickable && !isProcessing 
-              ? "0 4px 8px rgba(255, 215, 0, 0.3)" 
+              ? "0 4px 8px rgba(34, 197, 94, 0.3)" 
               : "none"
           }}
         >
@@ -177,12 +181,12 @@ export const NavGameInvitationButton: React.FC<NavGameInvitationButtonProps> = (
           style={{
             fontFamily: "Audiowide",
             background: buttonsClickable && !isProcessing
-              ? "transparent"
+              ? "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)"
               : "#666666",
-            border: "2px solid rgba(255, 255, 255, 0.3)",
+            border: "none",
             backdropFilter: "blur(6px)",
             boxShadow: buttonsClickable && !isProcessing 
-              ? "0 4px 8px rgba(255, 215, 0, 0.3)" 
+              ? "0 4px 8px rgba(239, 68, 68, 0.3)" 
               : "none"
           }}
         >
