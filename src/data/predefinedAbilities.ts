@@ -21,7 +21,7 @@ export const ATTACK_ABILITIES: Ability[] = [
     hidden: false,
     unlockLevel: 1,
     timing: 'opponent_turn',
-    iconUrl: '/Abilities/USed/Siphon.png',
+    iconUrl: '/Abilities/Catagories/Attack/Siphon.webp',
     effects: [
       {
         type: 'steal_points',
