@@ -250,36 +250,6 @@ export class EnhancedFriendInviteService {
           PlayerHeartbeatService.updateCurrentGame(invite.toUserId, sessionResult.sessionId)
         ]);
 
-        // Send notifications to both users
-        await Promise.all([
-          this.sendNotification(invite.fromUserId, {
-            type: 'invite_accepted',
-            title: 'Invitation Accepted!',
-            message: `${invite.toDisplayName} accepted your game invitation`,
-            fromUser: {
-              id: invite.toUserId,
-              displayName: invite.toDisplayName
-            },
-            sessionId: sessionResult.sessionId,
-            inviteId,
-            createdAt: serverTimestamp() as Timestamp,
-            read: false
-          }),
-          this.sendNotification(invite.toUserId, {
-            type: 'session_ready',
-            title: 'Game Session Ready!',
-            message: `Your match with ${invite.fromDisplayName} is starting`,
-            fromUser: {
-              id: invite.fromUserId,
-              displayName: invite.fromDisplayName
-            },
-            sessionId: sessionResult.sessionId,
-            inviteId,
-            createdAt: serverTimestamp() as Timestamp,
-            read: false
-          })
-        ]);
-
         console.log('✅ Invitation accepted, session created:', sessionResult.sessionId);
         
         // Since we're navigating directly to match, we need to get the match ID
@@ -303,6 +273,36 @@ export class EnhancedFriendInviteService {
         } else {
           console.warn('⚠️ No match document found for session, using session ID as fallback');
         }
+
+        // Send notifications to both users with the correct match ID
+        await Promise.all([
+          this.sendNotification(invite.fromUserId, {
+            type: 'invite_accepted',
+            title: 'Invitation Accepted!',
+            message: `${invite.toDisplayName} accepted your game invitation`,
+            fromUser: {
+              id: invite.toUserId,
+              displayName: invite.toDisplayName
+            },
+            sessionId: matchId, // Use the actual match document ID
+            inviteId,
+            createdAt: serverTimestamp() as Timestamp,
+            read: false
+          }),
+          this.sendNotification(invite.toUserId, {
+            type: 'session_ready',
+            title: 'Game Session Ready!',
+            message: `Your match with ${invite.fromDisplayName} is starting`,
+            fromUser: {
+              id: invite.fromUserId,
+              displayName: invite.fromDisplayName
+            },
+            sessionId: matchId, // Use the actual match document ID
+            inviteId,
+            createdAt: serverTimestamp() as Timestamp,
+            read: false
+          })
+        ]);
         
         return { 
           success: true, 

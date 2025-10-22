@@ -138,8 +138,8 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
         AbilitiesService.getProgressionSummary(user.uid)
       ]);
 
-      // If no abilities in database, use predefined ones for development  
-      const finalAbilities = abilities && abilities.length > 0 ? abilities : ALL_PREDEFINED_ABILITIES;
+      // Always use predefined abilities to ensure correct iconUrls and latest definitions
+      const finalAbilities = ALL_PREDEFINED_ABILITIES;
       setAllAbilities(finalAbilities);
       
       // If no user abilities, create some mock ones for development
