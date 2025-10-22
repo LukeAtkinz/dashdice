@@ -149,22 +149,19 @@ export const NavGameInvitationButton: React.FC<NavGameInvitationButtonProps> = (
           style={{
             fontFamily: "Audiowide",
             background: buttonsClickable && !isProcessing
-              ? "linear-gradient(135deg, #22C55E 0%, transparent 100%)"
+              ? "transparent"
               : "#666666",
             border: "2px solid rgba(255, 255, 255, 0.3)",
             backdropFilter: "blur(6px)",
             boxShadow: buttonsClickable && !isProcessing 
-              ? "0 4px 15px rgba(34, 197, 94, 0.3)" 
+              ? "0 4px 8px rgba(255, 215, 0, 0.3)" 
               : "none"
           }}
         >
           {isProcessing ? (
             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
-            <>
-              <span>ACCEPT</span>
-              <span className="text-2xl">✓</span>
-            </>
+            <span>ACCEPT</span>
           )}
         </button>
 
@@ -180,22 +177,19 @@ export const NavGameInvitationButton: React.FC<NavGameInvitationButtonProps> = (
           style={{
             fontFamily: "Audiowide",
             background: buttonsClickable && !isProcessing
-              ? "linear-gradient(135deg, #EF4444 0%, transparent 100%)"
+              ? "transparent"
               : "#666666",
             border: "2px solid rgba(255, 255, 255, 0.3)",
             backdropFilter: "blur(6px)",
             boxShadow: buttonsClickable && !isProcessing 
-              ? "0 4px 15px rgba(239, 68, 68, 0.3)" 
+              ? "0 4px 8px rgba(255, 215, 0, 0.3)" 
               : "none"
           }}
         >
           {isProcessing ? (
             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
-            <>
-              <span>DECLINE</span>
-              <span className="text-2xl">✗</span>
-            </>
+            <span>DECLINE</span>
           )}
         </button>
       </motion.div>

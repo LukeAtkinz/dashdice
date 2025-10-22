@@ -19,6 +19,8 @@ import { RankedDashboard } from '@/components/ranked/RankedDashboard';
 import { SoftRankedLeaderboard } from '@/components/ranked/SoftRankedLeaderboard';
 import SwipeRightChat from '@/components/chat/SwipeRightChat';
 import { GlobalRematchNotification } from '@/components/rematch/GlobalRematchNotification';
+import InviteAcceptedNotification from '@/components/friends/InviteAcceptedNotification';
+import InviteDeclinedNotification from '@/components/friends/InviteDeclinedNotification';
 
 import PersistentNotificationManager from '@/components/notifications/PersistentNotificationManager';
 import { GameType } from '@/types/ranked';
@@ -798,6 +800,12 @@ const DashboardContent: React.FC = () => {
         
         {/* Global Rematch Notifications */}
         <GlobalRematchNotification />
+        
+        {/* Invite Accepted Notifications - Auto-navigate sender to match */}
+        <InviteAcceptedNotification />
+        
+        {/* Invite Declined Notifications - Show toast to sender */}
+        <InviteDeclinedNotification />
         
         {/* Game Invitation Notifications - Now handled by NavigationWithInvitations */}
         

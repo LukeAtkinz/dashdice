@@ -40,38 +40,43 @@ export const NavigationWithInvitations: React.FC<NavigationWithInvitationsProps>
 
   const handleAcceptInvitation = async (invitationId: string) => {
     console.log('🎯 NavigationWithInvitations: Accept button clicked for invitation:', invitationId);
+    
+    // Find the invitation to get the game mode
+    const invitation = validInvitations.find(inv => inv.id === invitationId);
+    console.log('🎯 NavigationWithInvitations: Found invitation:', invitation);
+    
+    // Immediately remove the invitation from processing to hide the UI
     setProcessingInvitations(prev => new Set(prev).add(invitationId));
     
     try {
-      // Find the invitation to get the game mode
-      const invitation = validInvitations.find(inv => inv.id === invitationId);
-      console.log('🎯 NavigationWithInvitations: Found invitation:', invitation);
-      
       console.log('🎯 NavigationWithInvitations: Calling acceptGameInvitation...');
       const result = await acceptGameInvitation(invitationId);
       console.log('🎯 NavigationWithInvitations: acceptGameInvitation result:', result);
       
       if (result.success && result.gameId) {
-        // Navigate directly to the match
-        console.log('🎯 NavigationWithInvitations: Friend invitation accepted - navigating to match:', { 
+        console.log('🎯 NavigationWithInvitations: Friend invitation accepted - navigating to waiting room first:', { 
           sessionId: result.gameId,
           gameMode: invitation?.gameMode || 'classic'
         });
-        setCurrentSection('match', { 
-          matchId: result.gameId,
+        
+        // Navigate to waiting room first, then the system will automatically navigate to match
+        setCurrentSection('waiting-room', { 
           roomId: result.gameId,
-          gameMode: invitation?.gameMode || 'classic'
+          gameMode: invitation?.gameMode || 'classic',
+          actionType: 'live',
+          gameType: 'quick'
         });
       }
     } catch (error) {
       console.error('Error accepting invitation:', error);
-    } finally {
+      // Re-enable the processing state on error
       setProcessingInvitations(prev => {
         const newSet = new Set(prev);
         newSet.delete(invitationId);
         return newSet;
       });
     }
+    // Note: We don't clear processing state on success to keep UI hidden
   };
 
   const handleDeclineInvitation = async (invitationId: string) => {
