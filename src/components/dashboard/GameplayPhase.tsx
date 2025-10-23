@@ -458,11 +458,11 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 return (
                   <motion.div
                     key={`potential-total-${matchData.gameData.turnScore}-${currentPlayer.playerScore || 0}`}
-                    initial={{ opacity: 0, scale: 0.5, x: -10 }}
+                    initial={{ opacity: 0, scale: 0.5, x: 10 }}
                     animate={{ 
                       opacity: 1, 
                       scale: 1, 
-                      x: isScoreShooting ? [0, -16, 0] : 0, // Desktop: horizontal shooting animation
+                      x: isScoreShooting ? [0, 16, 0] : 0, // Desktop: horizontal shooting animation (reversed)
                       y: 0
                     }}
                     transition={{ 
@@ -470,7 +470,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       ease: isScoreShooting ? "easeInOut" : "backOut",
                       x: isScoreShooting ? { duration: 0.6, ease: "easeInOut" } : undefined
                     }}
-                    className={`absolute right-20 md:right-28 top-1/2 transform -translate-y-1/2 bg-blue-600/40 border-2 border-blue-400 rounded-xl backdrop-blur-sm shadow-xl`}
+                    className={`absolute left-20 md:left-28 top-1/2 transform -translate-y-1/2 bg-blue-600/40 border-2 border-blue-400 rounded-xl backdrop-blur-sm shadow-xl`}
                     style={{
                       padding: '8px 12px',
                       minWidth: isThreeDigits ? 'auto' : '64px',
@@ -521,17 +521,11 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     alignItems: 'center'
                   }}
                 >
-                  <p 
-                    className="text-xs md:text-sm text-purple-300 mb-1" 
-                    style={{ fontFamily: "Audiowide" }}
-                  >
-                    Multi
-                  </p>
                   <motion.p 
                     initial={{ scale: 1.3, color: "#C084FC" }}
                     animate={{ scale: 1, color: "#D8B4FE" }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-xl font-bold text-purple-300" 
+                    className="text-2xl md:text-3xl font-bold text-purple-300" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     {matchData.gameData.multiplierLevel || 2}X
@@ -557,17 +551,11 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     alignItems: 'center'
                   }}
                 >
-                  <p 
-                    className="text-xs md:text-sm text-red-300 mb-1" 
-                    style={{ fontFamily: "Audiowide" }}
-                  >
-                    Multi
-                  </p>
                   <motion.p 
                     initial={{ scale: 1.3, color: "#F87171" }}
                     animate={{ scale: 1, color: "#FCA5A5" }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-xl font-bold text-red-300" 
+                    className="text-2xl md:text-3xl font-bold text-red-300" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     2X
@@ -593,17 +581,11 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     alignItems: 'center'
                   }}
                 >
-                  <p 
-                    className="text-xs md:text-sm text-orange-300 mb-1" 
-                    style={{ fontFamily: "Audiowide" }}
-                  >
-                    Multi
-                  </p>
                   <motion.p 
                     initial={{ scale: 1.3, color: "#FB923C" }}
                     animate={{ scale: 1, color: "#FDBA74" }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-xl font-bold text-orange-300" 
+                    className="text-2xl md:text-3xl font-bold text-orange-300" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     {matchData.gameData.trueGritMultiplier}X
