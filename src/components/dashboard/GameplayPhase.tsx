@@ -525,7 +525,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     initial={{ scale: 1.3, color: "#C084FC" }}
                     animate={{ scale: 1, color: "#D8B4FE" }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-xl font-bold text-purple-300" 
+                    className="text-2xl md:text-3xl font-bold text-purple-300" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     {matchData.gameData.multiplierLevel || 2}X
@@ -555,7 +555,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     initial={{ scale: 1.3, color: "#F87171" }}
                     animate={{ scale: 1, color: "#FCA5A5" }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-xl font-bold text-red-300" 
+                    className="text-2xl md:text-3xl font-bold text-red-300" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     2X
@@ -585,7 +585,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     initial={{ scale: 1.3, color: "#FB923C" }}
                     animate={{ scale: 1, color: "#FDBA74" }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-xl font-bold text-orange-300" 
+                    className="text-2xl md:text-3xl font-bold text-orange-300" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     {matchData.gameData.trueGritMultiplier}X
