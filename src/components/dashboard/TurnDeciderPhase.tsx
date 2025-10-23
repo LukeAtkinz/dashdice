@@ -1,7 +1,71 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MatchData } from '@/types/match';
-import { SlotMachineDice } from './SlotMachineDice';
+
+// Simple Pulse Dice Component
+const PulseDice: React.FC<{ finalNumber: number | null; onComplete?: () => void }> = ({ finalNumber, onComplete }) => {
+  const [currentNumber, setCurrentNumber] = useState<number | null>(null);
+  const [animationPhase, setAnimationPhase] = useState<'pulse1' | 'pulse2' | 'final' | 'complete'>('pulse1');
+
+  useEffect(() => {
+    if (finalNumber !== null) {
+      const sequence = async () => {
+        // First pulse - random number
+        setCurrentNumber(Math.floor(Math.random() * 6) + 1);
+        setAnimationPhase('pulse1');
+        
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Second pulse - random number
+        setCurrentNumber(Math.floor(Math.random() * 6) + 1);
+        setAnimationPhase('pulse2');
+        
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Final number - the actual result
+        setCurrentNumber(finalNumber);
+        setAnimationPhase('final');
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        setAnimationPhase('complete');
+        onComplete?.();
+      };
+      
+      sequence();
+    }
+  }, [finalNumber, onComplete]);
+
+  if (currentNumber === null) return null;
+
+  return (
+    <motion.div
+      className="w-32 h-32 md:w-40 md:h-40 bg-white rounded-2xl flex items-center justify-center shadow-2xl border-4 border-gray-300"
+      animate={{
+        scale: animationPhase === 'final' ? [1, 1.1, 1] : [1, 1.05, 1],
+        boxShadow: animationPhase === 'final' 
+          ? ['0 0 20px rgba(255, 215, 0, 0.8)', '0 0 40px rgba(255, 215, 0, 1)', '0 0 20px rgba(255, 215, 0, 0.8)']
+          : ['0 10px 25px rgba(0,0,0,0.3)', '0 15px 35px rgba(0,0,0,0.4)', '0 10px 25px rgba(0,0,0,0.3)']
+      }}
+      transition={{
+        duration: animationPhase === 'final' ? 0.6 : 0.2,
+        repeat: animationPhase === 'final' ? 3 : 0,
+        repeatType: "reverse"
+      }}
+    >
+      <motion.span
+        className="text-6xl md:text-7xl font-bold text-gray-800"
+        style={{ fontFamily: 'Audiowide' }}
+        animate={{
+          color: animationPhase === 'final' ? '#FFD700' : '#374151'
+        }}
+        transition={{ duration: 0.3 }}
+      >
+        {currentNumber}
+      </motion.span>
+    </motion.div>
+  );
+};
 
 interface TurnDeciderPhaseProps {
   matchData: MatchData;
@@ -27,8 +91,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
   onChoiceSelect,
   onForceGameplay
 }) => {
-  const isMyTurnToDecide = (isHost && matchData.gameData.chooserPlayerIndex === 1) || 
-                          (!isHost && matchData.gameData.chooserPlayerIndex === 2);
+  const isMyTurnToDecide = (isHost && matchData.gameData.turnDecider === 1) || 
+                          (!isHost && matchData.gameData.turnDecider === 2);
   
   const hasChoice = !!matchData.gameData.turnDeciderChoice;
   const hasDice = !!matchData.gameData.turnDeciderDice;
@@ -270,19 +334,11 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           {/* VS Element or Dice - Centered */}
           <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30">
             {hasDice && diceAnimation.isSpinning ? (
-              // Show reel dice animation - bigger and more prominent
+              // Show simple pulse dice animation
               <div className="w-48 h-48 md:w-60 md:h-60 flex items-center justify-center">
-                <div className="w-full h-full flex items-center justify-center">
-                  <SlotMachineDice
-                    diceNumber={'turnDecider' as any}
-                    animationState={diceAnimation}
-                    matchRollPhase={matchData.gameData.isRolling ? 'turnDecider' : undefined}
-                    actualValue={matchData.gameData.turnDeciderDice || null}
-                    isGameRolling={matchData.gameData.isRolling || false}
-                    isTurnDecider={true}
-                    matchData={matchData}
-                  />
-                </div>
+                <PulseDice 
+                  finalNumber={matchData.gameData.turnDeciderDice || null} 
+                />
               </div>
             ) : transitionPhase === 'choosing' ? (
               // Show VS with morphing capability - starts as GO! from waiting room
@@ -567,19 +623,9 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.6, type: "spring", stiffness: 100, damping: 15 }}
             >
-              <div className="w-48 h-48 md:w-60 md:h-60 flex items-center justify-center">
-                <div className="w-full h-full flex items-center justify-center">
-                  <SlotMachineDice
-                    diceNumber={'turnDecider' as any}
-                    animationState={diceAnimation}
-                    matchRollPhase={matchData.gameData.isRolling ? 'turnDecider' : undefined}
-                    actualValue={matchData.gameData.turnDeciderDice || null}
-                    isGameRolling={matchData.gameData.isRolling || false}
-                    isTurnDecider={true}
-                    matchData={matchData}
-                  />
-                </div>
-              </div>
+              <PulseDice 
+                finalNumber={matchData.gameData.turnDeciderDice || null} 
+              />
             </motion.div>
           )}
 

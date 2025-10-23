@@ -1199,16 +1199,11 @@ export class MatchService {
       let siphonStolenPoints = 0;
       let siphonPlayerGain = 0;
       if (siphonEffect?.isActive && matchData.gameData.turnScore > 0) {
-        // Steal half the turn score (round down)
-        const totalStolen = Math.floor(matchData.gameData.turnScore / 2);
-        // Split stolen points: half to siphon user, half stays with banking player
-        siphonPlayerGain = Math.floor(totalStolen / 2);
-        const bankingPlayerKeeps = totalStolen - siphonPlayerGain;
+        // Steal half the turn score (round down) - this goes entirely to the siphon user
+        siphonPlayerGain = Math.floor(matchData.gameData.turnScore / 2);
+        siphonStolenPoints = siphonPlayerGain; // Same amount is stolen from banking player
         
-        console.log(`🔮 Siphon effect: Stealing ${totalStolen} from turn score. Siphon user gets ${siphonPlayerGain}, banking player keeps ${bankingPlayerKeeps}`);
-        
-        // Only reduce the turn score by the amount the siphon user gains
-        siphonStolenPoints = siphonPlayerGain;
+        console.log(`🔮 Siphon effect: Stealing ${siphonStolenPoints} points from turn score (${matchData.gameData.turnScore}). Siphon user gains ${siphonPlayerGain} points.`);
       }
       
       // Calculate new player score based on game mode direction

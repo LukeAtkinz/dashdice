@@ -505,7 +505,7 @@ export default function PowerTab({
                     >
                       {isAssigned && assignedAbility ? (
                         <div className="w-full h-full flex flex-col items-center justify-center text-center relative">
-                          <div className="w-8 h-8 relative">
+                          <div className="w-12 h-12 relative">
                             <img
                               src={assignedAbility.iconUrl || '/Abilities/placeholder.webp'}
                               alt={assignedAbility.name}
@@ -532,7 +532,7 @@ export default function PowerTab({
                         </div>
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center text-center">
-                          <div className="w-8 h-8 relative">
+                          <div className="w-12 h-12 relative">
                             <img
                               src={categorySlot.icon}
                               alt={categorySlot.name}
@@ -683,7 +683,7 @@ export default function PowerTab({
                     >
                       {isAssigned && assignedAbility ? (
                         <div className="w-full h-full flex flex-col items-center justify-center text-center">
-                          <div className="w-12 h-12 md:w-20 md:h-20 relative">
+                          <div className="w-12 h-12 md:w-16 md:h-16 relative">
                             <img
                               src={assignedAbility.iconUrl || '/Abilities/placeholder.webp'}
                               alt={assignedAbility.name}
@@ -704,7 +704,7 @@ export default function PowerTab({
                         </div>
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center text-center">
-                          <div className="w-10 h-10 md:w-24 md:h-24 mb-1 md:mb-2 relative">
+                          <div className="w-12 h-12 md:w-16 md:h-16 mb-1 md:mb-2 relative">
                             <img
                               src={categorySlot.icon}
                               alt={categorySlot.name}

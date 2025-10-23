@@ -6,23 +6,25 @@ export const PerformanceOptimizer = () => {
   useEffect(() => {
     // Preload critical resources
     const preloadCriticalResources = () => {
-      // Preload fonts
+      // Load fonts properly with stylesheet links
       const fontLinks = [
         'https://fonts.googleapis.com/css2?family=Audiowide:wght@400&display=swap'
       ];
 
       fontLinks.forEach(href => {
-        const link = document.createElement('link');
-        link.rel = 'preload';
-        link.as = 'style';
-        link.href = href;
-        document.head.appendChild(link);
+        // Check if already loaded
+        if (!document.querySelector(`link[href="${href}"]`)) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = href;
+          document.head.appendChild(link);
+        }
       });
 
-      // Preload critical images
+      // Preload critical images (only the ones actually used immediately)
       const criticalImages = [
-        '/Design Elements/CrownLogo.webp',
-        '/icons/android/mipmap-xxxhdpi/appicons.png'
+        '/Design Elements/CrownLogo.webp'
+        // Removed app icon as it's not needed for immediate page load
       ];
 
       criticalImages.forEach(src => {

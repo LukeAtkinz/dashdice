@@ -36,7 +36,8 @@ export const NavigationWithInvitations: React.FC<NavigationWithInvitationsProps>
   // Should show invitations on all pages except match and waiting room
   const shouldShowInvitations = activeInvitation && 
     currentSection !== 'match' && 
-    currentSection !== 'waiting-room';
+    currentSection !== 'waiting-room' &&
+    !processingInvitations.has(activeInvitation.id); // Hide immediately when processing
 
   const handleAcceptInvitation = async (invitationId: string) => {
     console.log('🎯 NavigationWithInvitations: Accept button clicked for invitation:', invitationId);
@@ -122,7 +123,7 @@ export const NavigationWithInvitations: React.FC<NavigationWithInvitationsProps>
       <div className="md:hidden flex flex-row items-center justify-between w-full">
         <AnimatePresence mode="wait">
           {shouldShowInvitations ? (
-            <div key="mobile-invitation" className="w-full bg-gradient-to-br from-purple-900/95 via-blue-900/95 to-purple-800/95 border border-purple-400/60 rounded-xl shadow-2xl backdrop-blur-lg">
+            <div key="mobile-invitation" className="w-full bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-purple-800/20 border border-purple-400/60 rounded-xl shadow-2xl backdrop-blur-lg">
               <NavGameInvitationButton
                 invitation={activeInvitation}
                 onAccept={handleAcceptInvitation}

@@ -184,8 +184,11 @@ export function SoftRankedLeaderboard() {
           }}
           onError={(e) => {
             console.error('Failed to load 2nd place icon:', e);
-            // Fallback to text
-            e.currentTarget.outerHTML = '<span class="text-lg font-bold text-gray-400">2</span>';
+            // Fallback to emoji and then text
+            const parent = e.currentTarget.parentElement;
+            if (parent) {
+              parent.innerHTML = '<span class="text-xl">🥈</span>';
+            }
           }}
         />
       );
@@ -199,8 +202,11 @@ export function SoftRankedLeaderboard() {
           }}
           onError={(e) => {
             console.error('Failed to load 3rd place icon:', e);
-            // Fallback to text
-            e.currentTarget.outerHTML = '<span class="text-lg font-bold text-orange-400">3</span>';
+            // Fallback to emoji and then text
+            const parent = e.currentTarget.parentElement;
+            if (parent) {
+              parent.innerHTML = '<span class="text-xl">🥉</span>';
+            }
           }}
         />
       );

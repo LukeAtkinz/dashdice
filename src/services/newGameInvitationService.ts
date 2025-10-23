@@ -435,6 +435,7 @@ export class NewGameInvitationService {
           type: invitation.gameType,
           settings: invitation.gameSettings || {},
           turnDecider: Math.floor(Math.random() * 2) + 1, // 1 = host, 2 = opponent
+          chooserPlayerIndex: Math.floor(Math.random() * 2) + 1, // FIXED: Add missing chooserPlayerIndex field for turn decider logic
           turnScore: 0,
           diceOne: 0,
           diceTwo: 0,

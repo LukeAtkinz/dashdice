@@ -292,7 +292,7 @@ export default function InlineAbilitiesDisplay({
           return (
             <motion.div
               key={`slot-${index}`}
-              className="w-20 h-20 md:w-24 md:h-24 rounded-xl border-2 border-gray-600/50 bg-gray-800/30 backdrop-blur-sm flex items-center justify-center relative overflow-hidden"
+              className="w-20 h-20 md:w-24 md:h-24 aspect-square rounded-xl border-2 border-gray-600/50 bg-gray-800/30 backdrop-blur-sm flex items-center justify-center relative overflow-hidden"
               initial={{ opacity: 0, scale: 0.8, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ 
@@ -363,7 +363,7 @@ export default function InlineAbilitiesDisplay({
             key={ability.id}
             onClick={() => handleAbilityClick(ability)}
             disabled={shouldDisable}
-            className={`w-20 h-20 md:w-24 md:h-24 rounded-xl border-2 backdrop-blur-sm transition-all relative overflow-hidden ${
+            className={`w-20 h-20 md:w-24 md:h-24 aspect-square rounded-xl border-2 backdrop-blur-sm transition-all relative overflow-hidden ${
               shouldDisable
                 ? 'opacity-50 cursor-not-allowed' 
                 : siphonCanUse
@@ -409,11 +409,11 @@ export default function InlineAbilitiesDisplay({
             } : {}}
           >
             {/* Ability Icon */}
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center">
               <img
                 src={ability.iconUrl || categoryInfo.icon}
                 alt={ability.name}
-                className="w-8 h-8 md:w-8 md:h-8 object-contain"
+                className="w-10 h-10 md:w-12 md:h-12 object-contain"
                 style={{
                   filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))'
                 }}
