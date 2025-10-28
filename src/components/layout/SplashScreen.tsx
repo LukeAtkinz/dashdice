@@ -14,6 +14,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   const [videoError, setVideoError] = useState(false);
   const [isPWA, setIsPWA] = useState(false);
   const [videoInitialized, setVideoInitialized] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false); // Prevent multiple retry attempts
 
   // Detect mobile device and PWA
   useEffect(() => {
@@ -58,10 +59,12 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
 
   // Force video playback for mobile/PWA with enhanced retry logic
   const forceVideoPlay = useCallback(async (video: HTMLVideoElement) => {
-    if (videoInitialized) {
-      console.log('⏭️ Video already initialized, skipping...');
+    if (videoInitialized || isRetrying) {
+      console.log('⏭️ Video already initialized or retry in progress, skipping...');
       return;
     }
+    
+    setIsRetrying(true);
     
     try {
       // Ensure video is muted for autoplay (critical for mobile)
@@ -89,115 +92,59 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
         setVideoInitialized(true);
       }
     } catch (error) {
-      console.warn('📱 Video autoplay failed, attempting mobile-specific retry:', error);
+      console.warn('📱 Video autoplay failed, attempting limited retry:', error);
       
-      // Multiple retry strategies for mobile
-      const retryStrategies = [
-        // Strategy 1: Immediate retry with fresh load
-        async () => {
-          video.load();
-          video.muted = true;
-          await new Promise(resolve => setTimeout(resolve, 100));
-          return video.play();
-        },
-        
-        // Strategy 2: Force properties and retry
-        async () => {
-          video.muted = true;
-          video.volume = 0;
-          video.autoplay = true;
-          return video.play();
-        },
-        
-        // Strategy 3: Create new video element (last resort)
-        async () => {
-          const newVideo = video.cloneNode(true) as HTMLVideoElement;
-          newVideo.muted = true;
-          newVideo.autoplay = true;
-          newVideo.setAttribute('playsinline', 'true');
-          video.parentNode?.replaceChild(newVideo, video);
-          return newVideo.play();
-        }
-      ];
-      
-      // Try each strategy with delays
-      for (let i = 0; i < retryStrategies.length; i++) {
-        try {
-          await new Promise(resolve => setTimeout(resolve, 200 * (i + 1))); // Increasing delay
-          await retryStrategies[i]();
-          console.log(`✅ Splash video retry strategy ${i + 1} successful`);
-          setVideoInitialized(true);
-          return;
-        } catch (retryError) {
-          console.warn(`❌ Splash video retry strategy ${i + 1} failed:`, retryError);
-        }
-      }
-      
-      // All strategies failed - skip splash screen
-      console.warn('❌ All splash video strategies failed, skipping splash screen');
-      handleVideoEnd();
-    }
-  }, [handleVideoEnd, videoInitialized]);
-
-  // Handle video error - fallback to secondary video or skip splash
-  const handleVideoError = useCallback(() => {
-    console.warn('Splash video failed to load, trying fallback...');
-    setVideoError(true);
-    
-    // Try to load the fallback video
-    setTimeout(() => {
-      const fallbackVideo = document.getElementById('fallback-splash-video') as HTMLVideoElement;
-      if (fallbackVideo) {
-        fallbackVideo.load();
-        forceVideoPlay(fallbackVideo).catch(() => {
-          // If fallback also fails, skip splash screen
-          console.warn('Fallback splash video also failed, skipping splash screen');
-          handleVideoEnd();
-        });
-      } else {
-        // No fallback available, skip splash screen
+      // Single retry strategy to prevent loops
+      try {
+        video.load();
+        video.muted = true;
+        await new Promise(resolve => setTimeout(resolve, 300)); // Single delay
+        await video.play();
+        console.log('✅ Splash video retry successful');
+        setVideoInitialized(true);
+      } catch (retryError) {
+        console.warn('❌ Splash video retry failed, skipping splash screen:', retryError);
         handleVideoEnd();
       }
-    }, 100);
-  }, [handleVideoEnd, forceVideoPlay]);
+    } finally {
+      setIsRetrying(false);
+    }
+  }, [handleVideoEnd, videoInitialized, isRetrying]);
 
-  // Aggressive video initialization for all devices
+  // Handle video error - simplified fallback
+  const handleVideoError = useCallback(() => {
+    console.warn('Splash video failed to load, skipping splash screen...');
+    setVideoError(true);
+    // Skip directly to avoid retry loops
+    handleVideoEnd();
+  }, [handleVideoEnd]);
+
+  // Single video initialization attempt
   useEffect(() => {
-    if (videoInitialized) return; // Skip if already initialized
+    if (videoInitialized || isRetrying) return; // Skip if already initialized or retrying
 
     const initVideoPlayback = async () => {
-      // Always try to start video, especially critical for mobile
       const mainVideo = document.getElementById('main-splash-video') as HTMLVideoElement;
-      if (mainVideo && !videoInitialized) {
+      if (mainVideo) {
         console.log('🎬 Initializing splash video playback...');
         await forceVideoPlay(mainVideo);
       }
     };
 
-    // Multiple attempts with different timing for maximum mobile compatibility
-    const timers = [
-      setTimeout(initVideoPlayback, 50),   // Immediate attempt
-      setTimeout(initVideoPlayback, 200),  // Quick retry
-      setTimeout(initVideoPlayback, 500),  // Fallback attempt
-    ];
+    // Single initialization attempt with a reasonable delay
+    const timer = setTimeout(initVideoPlayback, 100);
 
-    return () => {
-      timers.forEach(timer => clearTimeout(timer));
-    };
-  }, [forceVideoPlay, videoInitialized]);
+    return () => clearTimeout(timer);
+  }, [forceVideoPlay, videoInitialized, isRetrying]);
 
   // Handle user interaction to start video (PWA/mobile fallback)
   useEffect(() => {
     const handleUserInteraction = () => {
-      if (videoInitialized) return; // Skip if already initialized
+      if (videoInitialized || isRetrying) return; // Skip if already initialized or retrying
       
       const mainVideo = document.getElementById('main-splash-video') as HTMLVideoElement;
-      const fallbackVideo = document.getElementById('fallback-splash-video') as HTMLVideoElement;
-      
       if (mainVideo && !mainVideo.played.length) {
         forceVideoPlay(mainVideo);
-      } else if (fallbackVideo && !fallbackVideo.played.length) {
-        forceVideoPlay(fallbackVideo);
       }
       
       // Remove event listeners after first interaction
@@ -213,7 +160,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       document.removeEventListener('touchstart', handleUserInteraction);
       document.removeEventListener('click', handleUserInteraction);
     };
-  }, [forceVideoPlay, videoInitialized]);
+  }, [forceVideoPlay, videoInitialized, isRetrying]);
 
   // Skip splash screen after maximum time (safety fallback)
   useEffect(() => {
@@ -263,62 +210,19 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             onError={handleVideoError}
             onCanPlay={() => setVideoError(false)}
             onLoadedData={(e) => {
-              const video = e.target as HTMLVideoElement;
-              forceVideoPlay(video);
-            }}
-            onLoadedMetadata={(e) => {
-              const video = e.target as HTMLVideoElement;
-              // Additional attempt for mobile devices
-              forceVideoPlay(video);
+              if (!videoInitialized && !isRetrying) {
+                const video = e.target as HTMLVideoElement;
+                forceVideoPlay(video);
+              }
             }}
             className={`object-cover ${isMobile ? 'w-[85%] h-[75%]' : 'w-[95%] h-[90%]'} max-w-none`}
             style={{ 
-              display: videoError ? 'none' : 'block',
               pointerEvents: 'none' // Prevent any clicks that might show controls
             }}
           >
             <source src={getVideoSource()} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
-
-          {/* Fallback video */}
-          {videoError && (
-            <video
-              id="fallback-splash-video"
-              autoPlay
-              muted
-              playsInline
-              preload="metadata"
-              controls={false}
-              disablePictureInPicture
-              disableRemotePlayback
-              webkit-playsinline="true"
-              x5-video-player-type="h5-page"
-              x5-video-player-fullscreen="false"
-              x5-video-orientation="portrait"
-              loop={false}
-              onEnded={handleVideoEnd}
-              onError={() => {
-                console.warn('All splash videos failed, skipping splash screen');
-                handleVideoEnd();
-              }}
-              onLoadedData={(e) => {
-                const video = e.target as HTMLVideoElement;
-                forceVideoPlay(video);
-              }}
-              onLoadedMetadata={(e) => {
-                const video = e.target as HTMLVideoElement;
-                forceVideoPlay(video);
-              }}
-              className={`object-cover ${isMobile ? 'w-full h-full' : 'w-[95%] h-[90%]'} max-w-none`}
-              style={{ 
-                pointerEvents: 'none' // Prevent any clicks that might show controls
-              }}
-            >
-              <source src="/Splash Screens/splashscreen.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          )}
         </motion.div>
       )}
     </AnimatePresence>
