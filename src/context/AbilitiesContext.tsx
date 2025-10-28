@@ -60,8 +60,6 @@ interface AbilitiesContextType {
 const AbilitiesContext = createContext<AbilitiesContextType | undefined>(undefined);
 
 export function AbilitiesProvider({ children }: { children: ReactNode }) {
-  console.log('🚨 ABILITIES PROVIDER: STARTING TO RENDER!!!');
-  
   const { user } = useAuth();
   
   // Core State
@@ -78,12 +76,10 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
 
   // Initialize data when user changes
   useEffect(() => {
-    console.log('🔄 AbilitiesContext: useEffect triggered, user:', user ? 'authenticated' : 'guest');
     if (user) {
       initializeAbilitiesData();
     } else {
       // For guest users, provide read-only access to predefined abilities
-      console.log('🔄 AbilitiesContext: Setting up guest mode with predefined abilities');
       setAllAbilities(ALL_PREDEFINED_ABILITIES);
       setProgressionSummary({
         currentLevel: 1,
@@ -94,7 +90,6 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
       });
       setIsLoading(false);
       setIsInitialized(true);
-      console.log('✅ AbilitiesContext: Guest mode initialized');
     }
   }, [user]);
 
@@ -112,18 +107,14 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
   const initializeAbilitiesData = async () => {
     if (!user) return;
     
-    console.log('🔄 AbilitiesContext: Starting initialization for user:', user.uid);
     setIsLoading(true);
     
     try {
-      console.log('🔄 AbilitiesContext: Trying Firebase services...');
       // Try to load Firebase data with a simple timeout
       const abilities = await Promise.race([
         AbilitiesService.getAllAbilities(),
         new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
       ]) as Ability[];
-      
-      console.log('✅ AbilitiesContext: Got abilities from Firebase:', abilities.length);
       
       // If we get here, Firebase is working, continue with full initialization
       const [
@@ -219,11 +210,9 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
       };
       setProgressionSummary(finalSummary);
       
-      console.log('✅ AbilitiesContext: Initialization completed successfully');
       setIsInitialized(true);
     } catch (error) {
       console.error('❌ AbilitiesContext: Error initializing abilities data:', error);
-      console.log('🔄 AbilitiesContext: Falling back to predefined abilities');
       
       // Fallback to predefined abilities - this should always work
       setAllAbilities(ALL_PREDEFINED_ABILITIES);
@@ -364,7 +353,6 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
   const deleteLoadout = async (loadoutId: string): Promise<boolean> => {
     // Implementation would delete from Firestore
     // For now, we'll simulate
-    console.log('Delete loadout:', loadoutId);
     return true;
   };
 

@@ -185,22 +185,6 @@ export default function PowerTab({
     }
   };
 
-  console.log('🚨 PowerTab: Component starting to render!!!');
-  console.log('PowerTab Debug:', {
-    allAbilitiesCount: allAbilities?.length || 0,
-    userAbilitiesCount: userAbilities?.length || 0,
-    isLoading,
-    isInitialized
-  });
-  
-  // Debug abilities data
-  if (allAbilities?.length) {
-    console.log('🔮 All abilities:', allAbilities.map(a => ({ name: a.name, category: a.category, id: a.id })));
-  }
-  if (userAbilities?.length) {
-    console.log('👤 User abilities:', userAbilities.map(ua => ({ abilityId: ua.abilityId })));
-  }
-
   if (!isInitialized || isLoading || isLoadingLoadouts) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -227,7 +211,6 @@ export default function PowerTab({
   const nextGameMode = () => {
     setCurrentGameModeIndex((prev) => {
       const newIndex = (prev + 1) % GAME_MODES.length;
-      console.log('🔄 NEXT GAME MODE:', { from: prev, to: newIndex, gameMode: GAME_MODES[newIndex] });
       return newIndex;
     });
   };
@@ -235,7 +218,6 @@ export default function PowerTab({
   const prevGameMode = () => {
     setCurrentGameModeIndex((prev) => {
       const newIndex = (prev - 1 + GAME_MODES.length) % GAME_MODES.length;
-      console.log('🔄 PREV GAME MODE:', { from: prev, to: newIndex, gameMode: GAME_MODES[newIndex] });
       return newIndex;
     });
   };
@@ -244,15 +226,6 @@ export default function PowerTab({
     // 🔍 Get current state values to avoid closure issues
     setCurrentGameModeIndex(currentIndex => {
       const actualCurrentGameMode = GAME_MODES[currentIndex];
-      
-      console.log('🎯 ASSIGN DEBUG (FIXED):', {
-        currentGameModeIndex: currentIndex,
-        currentGameModeId: actualCurrentGameMode.id,
-        currentGameModeName: actualCurrentGameMode.name,
-        abilityId,
-        category,
-        existingLoadout: gameModeLoadouts[actualCurrentGameMode.id]
-      });
       
       // Update loadouts using the actual current game mode
       setGameModeLoadouts(currentLoadouts => {
@@ -464,16 +437,6 @@ export default function PowerTab({
               exit={{ opacity: 0, x: -50 }}
               transition={{ duration: 0.3 }}
             >
-              {(() => {
-                console.log('🎮 MOBILE LOADOUT RENDER DEBUG:', {
-                  currentGameModeId: currentGameMode.id,
-                  currentGameModeName: currentGameMode.name,
-                  currentLoadout: currentLoadout,
-                  gameModeLoadouts: gameModeLoadouts,
-                  siphonInLoadout: currentLoadout.attack === 'siphon'
-                });
-                return null;
-              })()}
               {CATEGORY_SLOTS.map((categorySlot, index) => {
                 const assignedAbilityId = currentLoadout[categorySlot.key];
                 const assignedAbility = assignedAbilityId ? allAbilities.find(a => a.id === assignedAbilityId) : null;
@@ -650,16 +613,6 @@ export default function PowerTab({
               exit={{ opacity: 0, x: -50 }}
               transition={{ duration: 0.3 }}
             >
-              {(() => {
-                console.log('🖥️ DESKTOP LOADOUT RENDER DEBUG:', {
-                  currentGameModeId: currentGameMode.id,
-                  currentGameModeName: currentGameMode.name,
-                  currentLoadout: currentLoadout,
-                  gameModeLoadouts: gameModeLoadouts,
-                  siphonInLoadout: currentLoadout.attack === 'siphon'
-                });
-                return null;
-              })()}
               {CATEGORY_SLOTS.map((categorySlot, index) => {
                 const assignedAbilityId = currentLoadout[categorySlot.key];
                 const assignedAbility = assignedAbilityId ? allAbilities.find(a => a.id === assignedAbilityId) : null;
