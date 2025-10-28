@@ -299,7 +299,7 @@ export function SoftRankedLeaderboard() {
 
   return (
     <div 
-      className="relative pt-8 md:pt-0 -mt-4 md:mt-0 h-full md:h-auto"
+      className="relative pt-8 md:pt-0 -mt-4 md:mt-0 h-full md:h-auto mt-[7vh] md:mt-0"
       style={{
         height: '100%',
         maxHeight: '100%',

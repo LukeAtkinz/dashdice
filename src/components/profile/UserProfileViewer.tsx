@@ -311,7 +311,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
   }
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full h-full flex flex-col mt-[7vh] md:mt-0">
       {/* Header with Back Button */}
       <div className="flex items-center justify-between gap-4 mb-6 px-4">
         <div className="flex items-center gap-4">

@@ -39,13 +39,15 @@ const PulseDice: React.FC<{ finalNumber: number | null; onComplete?: () => void 
   if (currentNumber === null) return null;
 
   return (
-    <motion.div
-      className="w-32 h-32 md:w-40 md:h-40 bg-white rounded-2xl flex items-center justify-center shadow-2xl border-4 border-gray-300"
+    <motion.span
+      className="text-6xl md:text-7xl font-bold"
+      style={{ fontFamily: 'Audiowide' }}
       animate={{
-        scale: animationPhase === 'final' ? [1, 1.1, 1] : [1, 1.05, 1],
-        boxShadow: animationPhase === 'final' 
+        scale: animationPhase === 'final' ? [1, 1.2, 1] : [1, 1.1, 1],
+        color: animationPhase === 'final' ? '#FFD700' : '#FFFFFF',
+        textShadow: animationPhase === 'final' 
           ? ['0 0 20px rgba(255, 215, 0, 0.8)', '0 0 40px rgba(255, 215, 0, 1)', '0 0 20px rgba(255, 215, 0, 0.8)']
-          : ['0 10px 25px rgba(0,0,0,0.3)', '0 15px 35px rgba(0,0,0,0.4)', '0 10px 25px rgba(0,0,0,0.3)']
+          : ['0 0 10px rgba(255,255,255,0.5)', '0 0 15px rgba(255,255,255,0.7)', '0 0 10px rgba(255,255,255,0.5)']
       }}
       transition={{
         duration: animationPhase === 'final' ? 0.6 : 0.2,
@@ -53,17 +55,8 @@ const PulseDice: React.FC<{ finalNumber: number | null; onComplete?: () => void 
         repeatType: "reverse"
       }}
     >
-      <motion.span
-        className="text-6xl md:text-7xl font-bold text-gray-800"
-        style={{ fontFamily: 'Audiowide' }}
-        animate={{
-          color: animationPhase === 'final' ? '#FFD700' : '#374151'
-        }}
-        transition={{ duration: 0.3 }}
-      >
-        {currentNumber}
-      </motion.span>
-    </motion.div>
+      {currentNumber}
+    </motion.span>
   );
 };
 
@@ -299,7 +292,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                   WebkitFontSmoothing: 'antialiased'
                 }}
               >
-                {isProcessing ? 'PROCESSING' : 'ODD'}
+                ODD
               </span>
             </motion.div>
 
@@ -350,9 +343,11 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                   textShadow: '0 0 30px rgba(255,255,255,0.9), 0 0 60px rgba(255,255,255,0.6), 0 0 100px rgba(255,255,255,0.3)',
                   WebkitFontSmoothing: 'antialiased'
                 }}
+                initial={{ scale: 0, opacity: 0 }}
                 animate={{
-                  // Scale animation sequence: first morph, then grow dramatically
-                  scale: [0.8, 1.3, 1], // Bigger bounce effect
+                  // Scale animation sequence: grow from center dramatically
+                  scale: [0, 1.3, 1], // Start from 0, grow big, then settle
+                  opacity: 1,
                   textShadow: [
                     '0 0 30px rgba(255,255,255,0.9), 0 0 60px rgba(255,255,255,0.6), 0 0 100px rgba(255,255,255,0.3)',
                     '0 0 40px rgba(255,255,255,1.0), 0 0 80px rgba(255,255,255,0.8), 0 0 120px rgba(255,255,255,0.5)',
@@ -367,6 +362,10 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                     type: "spring",
                     stiffness: 120,
                     damping: 18
+                  },
+                  opacity: {
+                    delay: 0.5,
+                    duration: 0.3
                   },
                   textShadow: {
                     delay: 0.5,
@@ -429,7 +428,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                   WebkitFontSmoothing: 'antialiased'
                 }}
               >
-                {isProcessing ? 'PROCESSING' : 'EVEN'}
+                EVEN
               </span>
             </motion.div>
 

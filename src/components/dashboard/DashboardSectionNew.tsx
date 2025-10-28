@@ -347,7 +347,7 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
 
   return (
     <motion.div 
-      className="flex flex-col items-center justify-center gap-[2rem] py-[2rem] md:py-[2rem] pt-[1rem] md:pt-[2rem] mx-auto"
+      className="flex flex-col items-center justify-center gap-[2rem] py-[2rem] md:py-[2rem] pt-[1rem] md:pt-[2rem] mx-auto mt-[7vh] md:mt-0"
       initial={{ opacity: 1, scale: 1, x: 0 }}
       animate={{ 
         opacity: isExiting ? 1 : 1, 

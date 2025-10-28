@@ -113,7 +113,7 @@ export default function FriendsList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mt-[7vh] md:mt-0">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

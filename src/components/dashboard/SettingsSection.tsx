@@ -57,7 +57,7 @@ export const SettingsSection: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-[80rem] flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide px-4" style={{
+    <div className="w-full max-w-[80rem] flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide px-4 mt-[7vh] md:mt-0" style={{
       touchAction: 'pan-y',
       WebkitOverflowScrolling: 'touch'
     }}>
