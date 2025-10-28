@@ -133,8 +133,36 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
       const finalAbilities = ALL_PREDEFINED_ABILITIES;
       setAllAbilities(finalAbilities);
       
+      // Ensure siphon is always available to every user
+      let finalUserAbilities = userAbils;
+      
+      // Check if user already has siphon unlocked
+      const hasSiphon = userAbils.some(ua => ua.abilityId === 'siphon');
+      if (!hasSiphon) {
+        // Add siphon as an unlocked ability
+        const siphonAbility: UserAbility = {
+          id: `siphon_${user.uid}`,
+          userId: user.uid,
+          abilityId: 'siphon',
+          unlockedAt: new Date() as any,
+          timesUsed: 0,
+          successRate: 0,
+          isEquipped: true,
+          equippedSlot: 'attack'
+        };
+        finalUserAbilities = [...userAbils, siphonAbility];
+        
+        // Also unlock it in the database
+        try {
+          await AbilitiesService.unlockAbility(user.uid, 'siphon');
+          console.log('🔮 Siphon automatically unlocked for user:', user.uid);
+        } catch (error) {
+          console.error('❌ Failed to unlock siphon in database:', error);
+        }
+      }
+      
       // If no user abilities, create some mock ones for development
-      if (userAbils.length === 0 && finalAbilities.length > 0) {
+      if (finalUserAbilities.length === 0 && finalAbilities.length > 0) {
         const mockUserAbilities: UserAbility[] = [
           {
             id: 'user_ability_1',
@@ -149,20 +177,20 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
         ];
         setUserAbilities(mockUserAbilities);
       } else {
-        setUserAbilities(userAbils);
+        setUserAbilities(finalUserAbilities);
       }
       
-      // If no loadouts, create a mock one
+      // If no loadouts, create a default one with siphon
       if (userLoadouts.length === 0) {
         const mockLoadout: UserLoadout = {
           id: 'loadout_1',
           userId: user.uid,
           name: 'Default Loadout',
           abilities: {
-            attack: finalAbilities[0]?.id || 'siphon'
+            attack: 'siphon'  // Always include siphon in default loadout
           },
           totalStarCost: 3,
-          maxStarPoints: 5,
+          maxStarPoints: 15,
           isActive: true,
           createdAt: new Date() as any,
           lastUsed: new Date() as any
@@ -170,8 +198,30 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
         setLoadouts([mockLoadout]);
         setActiveLoadoutState(mockLoadout);
       } else {
-        setLoadouts(userLoadouts);
-        const active = userLoadouts.find((l: UserLoadout) => l.isActive);
+        // Ensure at least one loadout has siphon equipped
+        let updatedLoadouts = userLoadouts;
+        const hasLoadoutWithSiphon = userLoadouts.some(loadout => 
+          Object.values(loadout.abilities || {}).includes('siphon')
+        );
+        
+        if (!hasLoadoutWithSiphon && userLoadouts.length > 0) {
+          // Add siphon to the first loadout if none have it
+          updatedLoadouts = userLoadouts.map((loadout, index) => {
+            if (index === 0) {
+              return {
+                ...loadout,
+                abilities: {
+                  ...loadout.abilities,
+                  attack: 'siphon'
+                }
+              };
+            }
+            return loadout;
+          });
+        }
+        
+        setLoadouts(updatedLoadouts);
+        const active = updatedLoadouts.find((l: UserLoadout) => l.isActive);
         setActiveLoadoutState(active || null);
       }
       
@@ -232,13 +282,13 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
       ];
       setUserAbilities(mockUserAbilities);
       
-      // Create mock loadout
+      // Create mock loadout with siphon
       const mockLoadout: UserLoadout = {
         id: 'loadout_1',
         userId: user.uid,
         name: 'Default Loadout',
         abilities: {
-          attack: 'siphon'
+          attack: 'siphon'  // Guarantee siphon is available
         },
         totalStarCost: 3,
         maxStarPoints: 15,

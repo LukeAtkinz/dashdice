@@ -372,63 +372,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               className="text-center relative"
             >
-              {/* Container for Total, Turn Score, and Multiplier - Using Flexbox */}
-              <div className="flex items-center justify-center gap-4 md:gap-8">
-                {/* Potential Total Score Counter - LEFT of Turn Score */}
-                {matchData.gameData.turnScore > 0 && (() => {
-                  const totalScore = (currentPlayer.playerScore || 0) + (matchData.gameData.turnScore || 0);
-                  const isThreeDigits = totalScore >= 100;
-                  const isLastLine = matchData.gameMode === 'last-line';
-                  
-                  return (
-                    <motion.div
-                      key={`potential-total-${matchData.gameData.turnScore}-${currentPlayer.playerScore || 0}`}
-                      initial={{ opacity: 0, scale: 0.5, x: 10 }}
-                      animate={{ 
-                        opacity: 1, 
-                        scale: 1, 
-                        x: isScoreShooting ? [0, 16, 0] : 0, // Desktop: horizontal shooting animation (reversed)
-                        y: 0
-                      }}
-                      transition={{ 
-                        duration: isScoreShooting ? 0.6 : 0.4, 
-                        ease: isScoreShooting ? "easeInOut" : "backOut",
-                        x: isScoreShooting ? { duration: 0.6, ease: "easeInOut" } : undefined
-                      }}
-                      className={`bg-blue-600/40 border-2 border-blue-400 rounded-xl backdrop-blur-sm shadow-xl`}
-                      style={{
-                        padding: '8px 12px',
-                        minWidth: isThreeDigits ? 'auto' : '64px',
-                        minHeight: isThreeDigits ? 'auto' : '64px',
-                        aspectRatio: isThreeDigits ? 'auto' : '1 / 1',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                      }}
-                    >
-                      <p 
-                        className="text-xs md:text-sm text-blue-300 mb-1" 
-                        style={{ fontFamily: "Audiowide" }}
-                      >
-                        Total
-                      </p>
-                      <motion.p 
-                        key={`total-value-${totalScore}`}
-                        initial={{ scale: 1.3, color: "#60A5FA" }}
-                        animate={{ scale: 1, color: "#93C5FD" }}
-                        transition={{ duration: 0.3, ease: "easeOut" }}
-                        className="text-lg md:text-xl font-bold text-blue-300" 
-                        style={{ fontFamily: "Audiowide" }}
-                      >
-                        {totalScore}
-                      </motion.p>
-                    </motion.div>
-                  );
-                })()}
-
-              {/* Turn Score Container - CENTER - Dynamic Colors */}
-              {(() => {
+              {/* Turn Score Container - CENTER - ALWAYS CENTERED */}
+              {React.useMemo(() => {
                 const turnScore = matchData.gameData.turnScore || 0;
                 const dice1 = matchData.gameData.diceOne;
                 const dice2 = matchData.gameData.diceTwo;
@@ -502,101 +447,152 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     </motion.p>
                   </motion.div>
                 );
-              })()}
+              }, [matchData.gameData.turnScore, matchData.gameData.diceOne, matchData.gameData.diceTwo, matchData.gameData.isRolling])}
 
-                {/* Multiplier Indicators - RIGHT of Turn Score */}
-                {/* Zero Hour Enhanced Multiplier */}
-                {matchData.gameData.hasDoubleMultiplier && matchData.gameMode === 'zero-hour' && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.5, x: -10 }}
-                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                    transition={{ duration: 0.4, ease: "backOut" }}
-                    className="bg-purple-600/40 border-2 border-purple-400 rounded-xl backdrop-blur-sm shadow-xl"
-                    style={{
-                      padding: '8px 12px',
-                      minWidth: '64px',
-                      minHeight: '64px',
-                      aspectRatio: '1 / 1',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      alignItems: 'center'
-                    }}
-                  >
-                    <motion.p 
-                      initial={{ scale: 1.3, color: "#C084FC" }}
-                      animate={{ scale: 1, color: "#D8B4FE" }}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
-                      className="text-lg md:text-xl font-bold text-purple-300" 
-                      style={{ fontFamily: "Audiowide" }}
-                    >
-                      {matchData.gameData.multiplierLevel || 2}X
-                    </motion.p>
-                  </motion.div>
-                )}
+              {/* Potential Total Score Counter - ABSOLUTE LEFT of Turn Score */}
+              {matchData.gameData.turnScore > 0 && React.useMemo(() => {
+                const totalScore = (currentPlayer.playerScore || 0) + (matchData.gameData.turnScore || 0);
+                const isThreeDigits = totalScore >= 100;
+                const isLastLine = matchData.gameMode === 'last-line';
                 
-                {/* Classic Mode 2X Multiplier */}
-                {matchData.gameData.hasDoubleMultiplier && matchData.gameMode !== 'true-grit' && matchData.gameMode !== 'zero-hour' && (
+                return (
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.5, x: -10 }}
-                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                    transition={{ duration: 0.4, ease: "backOut" }}
-                    className="bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
+                    key={`potential-total-${matchData.gameData.turnScore}-${currentPlayer.playerScore || 0}`}
+                    initial={{ opacity: 0, scale: 0.5, x: 10 }}
+                    animate={{ 
+                      opacity: 1, 
+                      scale: 1, 
+                      x: isScoreShooting ? [0, 16, 0] : 0,
+                      y: 0
+                    }}
+                    transition={{ 
+                      duration: isScoreShooting ? 0.6 : 0.4, 
+                      ease: isScoreShooting ? "easeInOut" : "backOut",
+                      x: isScoreShooting ? { duration: 0.6, ease: "easeInOut" } : undefined
+                    }}
+                    className={`absolute left-[-120px] md:left-[-140px] top-1/2 transform -translate-y-1/2 bg-blue-600/40 border-2 border-blue-400 rounded-xl backdrop-blur-sm shadow-xl`}
                     style={{
                       padding: '8px 12px',
-                      minWidth: '64px',
-                      minHeight: '64px',
-                      aspectRatio: '1 / 1',
+                      minWidth: isThreeDigits ? 'auto' : '64px',
+                      minHeight: isThreeDigits ? 'auto' : '64px',
+                      aspectRatio: isThreeDigits ? 'auto' : '1 / 1',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'center',
                       alignItems: 'center'
                     }}
                   >
-                    <motion.p 
-                      initial={{ scale: 1.3, color: "#F87171" }}
-                      animate={{ scale: 1, color: "#FCA5A5" }}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
-                      className="text-lg md:text-xl font-bold text-red-300" 
+                    <p 
+                      className="text-xs md:text-sm text-blue-300 mb-1" 
                       style={{ fontFamily: "Audiowide" }}
                     >
-                      2X
+                      Total
+                    </p>
+                    <motion.p 
+                      key={`total-value-${totalScore}`}
+                      initial={{ scale: 1.3, color: "#60A5FA" }}
+                      animate={{ scale: 1, color: "#93C5FD" }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                      className="text-lg md:text-xl font-bold text-blue-300" 
+                      style={{ fontFamily: "Audiowide" }}
+                    >
+                      {totalScore}
                     </motion.p>
                   </motion.div>
-                )}
-                
-                {/* True Grit Multiplier */}
-                {matchData.gameMode === 'true-grit' && matchData.gameData.trueGritMultiplier && matchData.gameData.trueGritMultiplier > 1 && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.5, x: -10 }}
-                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                    transition={{ duration: 0.4, ease: "backOut" }}
-                    className="bg-orange-600/40 border-2 border-orange-400 rounded-xl backdrop-blur-sm shadow-xl"
-                    style={{
-                      padding: '8px 12px',
-                      minWidth: '64px',
-                      minHeight: '64px',
-                      aspectRatio: '1 / 1',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      alignItems: 'center'
-                    }}
+                );
+              }, [matchData.gameData.turnScore, currentPlayer.playerScore, isScoreShooting])}
+
+              {/* Multiplier Indicators - ABSOLUTE RIGHT of Turn Score */}
+              {/* Zero Hour Enhanced Multiplier */}
+              {matchData.gameData.hasDoubleMultiplier && matchData.gameMode === 'zero-hour' && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5, x: -10 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ duration: 0.4, ease: "backOut" }}
+                  className="absolute right-[-120px] md:right-[-140px] top-1/2 transform -translate-y-1/2 bg-purple-600/40 border-2 border-purple-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  style={{
+                    padding: '8px 12px',
+                    minWidth: '64px',
+                    minHeight: '64px',
+                    aspectRatio: '1 / 1',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                >
+                  <motion.p 
+                    initial={{ scale: 1.3, color: "#C084FC" }}
+                    animate={{ scale: 1, color: "#D8B4FE" }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="text-lg md:text-xl font-bold text-purple-300" 
+                    style={{ fontFamily: "Audiowide" }}
                   >
-                    <motion.p 
-                      initial={{ scale: 1.3, color: "#FB923C" }}
-                      animate={{ scale: 1, color: "#FDBA74" }}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
-                      className="text-lg md:text-xl font-bold text-orange-300" 
-                      style={{ fontFamily: "Audiowide" }}
-                    >
-                      {matchData.gameData.trueGritMultiplier}X
-                    </motion.p>
-                  </motion.div>
-                )}
-              </div>
+                    {matchData.gameData.multiplierLevel || 2}X
+                  </motion.p>
+                </motion.div>
+              )}
+              
+              {/* Classic Mode 2X Multiplier */}
+              {matchData.gameData.hasDoubleMultiplier && matchData.gameMode !== 'true-grit' && matchData.gameMode !== 'zero-hour' && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5, x: -10 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ duration: 0.4, ease: "backOut" }}
+                  className="absolute right-[-120px] md:right-[-140px] top-1/2 transform -translate-y-1/2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  style={{
+                    padding: '8px 12px',
+                    minWidth: '64px',
+                    minHeight: '64px',
+                    aspectRatio: '1 / 1',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                >
+                  <motion.p 
+                    initial={{ scale: 1.3, color: "#F87171" }}
+                    animate={{ scale: 1, color: "#FCA5A5" }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="text-lg md:text-xl font-bold text-red-300" 
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    2X
+                  </motion.p>
+                </motion.div>
+              )}
+              
+              {/* True Grit Multiplier */}
+              {matchData.gameMode === 'true-grit' && (matchData.gameData.trueGritMultiplier ?? 0) > 1 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5, x: -10 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ duration: 0.4, ease: "backOut" }}
+                  className="absolute right-[-120px] md:right-[-140px] top-1/2 transform -translate-y-1/2 bg-orange-600/40 border-2 border-orange-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  style={{
+                    padding: '8px 12px',
+                    minWidth: '64px',
+                    minHeight: '64px',
+                    aspectRatio: '1 / 1',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                >
+                  <motion.p 
+                    initial={{ scale: 1.3, color: "#FB923C" }}
+                    animate={{ scale: 1, color: "#FDBA74" }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="text-lg md:text-xl font-bold text-orange-300" 
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    {matchData.gameData.trueGritMultiplier || 1}X
+                  </motion.p>
+                </motion.div>
+              )}
             </motion.div>
-
           </div>
           
           {/* Dice 2 - Enhanced Slot Machine */}
