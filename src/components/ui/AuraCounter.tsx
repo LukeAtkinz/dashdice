@@ -1,5 +1,6 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 interface AuraCounterProps {
   auraValue: number;
@@ -14,21 +15,33 @@ export default function AuraCounter({
   size = 'medium',
   showIcon = true 
 }: AuraCounterProps) {
-  // Size configurations
+  const [previousValue, setPreviousValue] = useState(auraValue);
+  const [shouldPop, setShouldPop] = useState(false);
+
+  // Trigger pop animation when value increases
+  useEffect(() => {
+    if (auraValue > previousValue) {
+      setShouldPop(true);
+      setTimeout(() => setShouldPop(false), 300);
+    }
+    setPreviousValue(auraValue);
+  }, [auraValue, previousValue]);
+
+  // Size configurations - made bigger
   const sizeConfig = {
     small: {
-      iconSize: 16,
-      textSize: 'text-sm',
+      iconSize: 20,
+      textSize: 'text-base',
       gap: 'gap-1'
     },
     medium: {
-      iconSize: 20,
-      textSize: 'text-base',
-      gap: 'gap-2'
+      iconSize: 28,
+      textSize: 'text-xl',
+      gap: 'gap-1'
     },
     large: {
-      iconSize: 24,
-      textSize: 'text-lg',
+      iconSize: 32,
+      textSize: 'text-2xl',
       gap: 'gap-2'
     }
   };
@@ -67,28 +80,45 @@ export default function AuraCounter({
         </motion.div>
       )}
       
-      <motion.span 
-        className={`${config.textSize} font-bold text-white select-none`}
-        style={{ 
-          fontFamily: 'Audiowide',
-          textShadow: '0 0 8px rgba(139, 92, 246, 0.8), 0 0 16px rgba(139, 92, 246, 0.4)',
-          WebkitFontSmoothing: 'antialiased'
-        }}
-        animate={{
-          textShadow: auraValue > 0 ? [
-            '0 0 8px rgba(139, 92, 246, 0.8), 0 0 16px rgba(139, 92, 246, 0.4)',
-            '0 0 12px rgba(139, 92, 246, 1), 0 0 24px rgba(139, 92, 246, 0.6)',
-            '0 0 8px rgba(139, 92, 246, 0.8), 0 0 16px rgba(139, 92, 246, 0.4)'
-          ] : '0 0 4px rgba(139, 92, 246, 0.4)'
-        }}
-        transition={{ 
-          duration: 2,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      >
-        {auraValue}
-      </motion.span>
+      <AnimatePresence mode="wait">
+        <motion.span 
+          key={auraValue} // This ensures the component re-renders when value changes
+          className={`${config.textSize} font-bold text-white select-none`}
+          style={{ 
+            fontFamily: 'Audiowide',
+            textShadow: '0 0 8px rgba(139, 92, 246, 0.8), 0 0 16px rgba(139, 92, 246, 0.4)',
+            WebkitFontSmoothing: 'antialiased'
+          }}
+          initial={{ 
+            scale: shouldPop ? 0.8 : 1,
+            opacity: 0
+          }}
+          animate={{
+            scale: shouldPop ? [1, 1.3, 1] : 1,
+            opacity: 1,
+            textShadow: auraValue > 0 ? [
+              '0 0 8px rgba(139, 92, 246, 0.8), 0 0 16px rgba(139, 92, 246, 0.4)',
+              '0 0 12px rgba(139, 92, 246, 1), 0 0 24px rgba(139, 92, 246, 0.6)',
+              '0 0 8px rgba(139, 92, 246, 0.8), 0 0 16px rgba(139, 92, 246, 0.4)'
+            ] : '0 0 4px rgba(139, 92, 246, 0.4)'
+          }}
+          exit={{ 
+            scale: 0.8,
+            opacity: 0
+          }}
+          transition={{ 
+            scale: { duration: 0.3, ease: "easeOut" },
+            opacity: { duration: 0.15 },
+            textShadow: { 
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }
+          }}
+        >
+          {auraValue}
+        </motion.span>
+      </AnimatePresence>
     </motion.div>
   );
 }

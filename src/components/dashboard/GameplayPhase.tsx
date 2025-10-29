@@ -455,13 +455,15 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
 
               {/* Potential Total Score Counter - ABSOLUTE LEFT of Turn Score */}
               {matchData.gameData.turnScore > 0 && (() => {
-                const totalScore = (currentPlayer.playerScore || 0) + (matchData.gameData.turnScore || 0);
+                // Get the active player's score (whoever's turn it is)
+                const activePlayer = currentPlayer.turnActive ? currentPlayer : opponent;
+                const totalScore = (activePlayer.playerScore || 0) + (matchData.gameData.turnScore || 0);
                 const isThreeDigits = totalScore >= 100;
                 const isLastLine = matchData.gameMode === 'last-line';
                 
                 return (
                   <motion.div
-                    key={`potential-total-${matchData.gameData.turnScore}-${currentPlayer.playerScore || 0}`}
+                    key={`potential-total-${matchData.gameData.turnScore}-${activePlayer.playerScore || 0}`}
                     initial={{ opacity: 0, scale: 0.5, x: 10 }}
                     animate={{ 
                       opacity: 1, 
@@ -474,7 +476,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       ease: isScoreShooting ? "easeInOut" : "backOut",
                       x: isScoreShooting ? { duration: 0.6, ease: "easeInOut" } : undefined
                     }}
-                    className={`absolute left-[-120px] md:left-[-140px] top-1/2 transform -translate-y-1/2 bg-blue-600/40 border-2 border-blue-400 rounded-xl backdrop-blur-sm shadow-xl`}
+                    className={`absolute left-[-85px] md:left-[-90px] top-1/2 transform -translate-y-1/2 bg-blue-600/40 border-2 border-blue-400 rounded-xl backdrop-blur-sm shadow-xl`}
                     style={{
                       padding: '8px 12px',
                       minWidth: isThreeDigits ? 'auto' : '64px',
@@ -513,7 +515,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut" }}
-                  className="absolute right-[-120px] md:right-[-140px] top-1/2 transform -translate-y-1/2 bg-purple-600/40 border-2 border-purple-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 bg-purple-600/40 border-2 border-purple-400 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
                     padding: '8px 12px',
                     minWidth: '64px',
@@ -543,7 +545,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut" }}
-                  className="absolute right-[-120px] md:right-[-140px] top-1/2 transform -translate-y-1/2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
                     padding: '8px 12px',
                     minWidth: '64px',
@@ -573,7 +575,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut" }}
-                  className="absolute right-[-120px] md:right-[-140px] top-1/2 transform -translate-y-1/2 bg-orange-600/40 border-2 border-orange-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 bg-orange-600/40 border-2 border-orange-400 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
                     padding: '8px 12px',
                     minWidth: '64px',
@@ -819,7 +821,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 <motion.div
                   className="flex items-center justify-center text-white"
                   style={{ 
-                    width: '30%',
+                    width: '25%',
                     height: '100%',
                     display: 'flex',
                     justifyContent: 'center',
@@ -859,7 +861,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                         : 'cursor-not-allowed'
                     }`}
                     style={{ 
-                      width: '35%',
+                      width: '37.5%',
                       height: '100%',
                       display: 'flex',
                       justifyContent: 'center',
@@ -902,7 +904,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       : 'cursor-not-allowed'
                   }`}
                   style={{ 
-                    width: (matchData.gameMode === 'true-grit') ? '70%' : '35%',
+                    width: (matchData.gameMode === 'true-grit') ? '75%' : '37.5%',
                     height: '100%',
                     display: 'flex',
                     justifyContent: 'center',
@@ -934,26 +936,58 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 </motion.button>
               </>
             ) : (
-              <motion.div 
-                className="w-full h-full flex items-center justify-center"
-                style={{ background: 'transparent' }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <motion.p 
-                  className="text-gray-300 text-lg"
+              <>
+                {/* AURA Counter - LEFT SIDE (always visible) */}
+                <motion.div
+                  className="flex items-center justify-center text-white"
                   style={{ 
-                    fontFamily: "Audiowide",
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+                    width: '25%',
+                    height: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    border: 'none',
+                    borderRadius: '0',
+                    background: 'transparent',
+                    backdropFilter: 'none',
                   }}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.1 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  Waiting for {opponent.playerDisplayName}...
-                </motion.p>
-              </motion.div>
+                  <AuraCounter 
+                    auraValue={currentUserAura} 
+                    size="medium"
+                    className="flex items-center"
+                  />
+                </motion.div>
+
+                {/* Waiting Message - CENTER */}
+                <motion.div 
+                  className="flex items-center justify-center"
+                  style={{ 
+                    width: '75%',
+                    height: '100%',
+                    background: 'transparent' 
+                  }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <motion.p 
+                    className="text-gray-300 text-lg"
+                    style={{ 
+                      fontFamily: "Audiowide",
+                      textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+                    }}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.1 }}
+                  >
+                    Waiting for {opponent.playerDisplayName}...
+                  </motion.p>
+                </motion.div>
+              </>
             )}
         </motion.div>
       </div>
