@@ -615,7 +615,7 @@ export class AbilitiesService {
   /**
    * Calculate aura gain for match events
    */
-  static calculateAuraGain(eventType: 'ROLL' | 'BANK' | 'DOUBLE' | 'SNAKE_EYES' | 'OPPONENT_BUST', value?: number): number {
+  static calculateAuraGain(eventType: 'ROLL' | 'BANK' | 'DOUBLE' | 'SNAKE_EYES' | 'OPPONENT_BUST' | 'BUST', value?: number): number {
     switch (eventType) {
       case 'ROLL':
         return AURA_RATES.ROLL;
@@ -627,6 +627,8 @@ export class AbilitiesService {
         return AURA_RATES.SNAKE_EYES;
       case 'OPPONENT_BUST':
         return AURA_RATES.OPPONENT_BUST;
+      case 'BUST':
+        return AURA_RATES.BUST;
       default:
         return value || 0;
     }

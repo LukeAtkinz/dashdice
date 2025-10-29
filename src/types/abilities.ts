@@ -278,11 +278,12 @@ export const CATEGORY_COLORS = {
  * Standard rates for aura generation during matches
  */
 export const AURA_RATES = {
-  ROLL: 1,
-  BANK: 2,
-  DOUBLE: 3,
-  SNAKE_EYES: 4,
-  OPPONENT_BUST: 3,
+  ROLL: 1,           // +1 AURA per roll
+  BANK: 2,           // +2 AURA for banking
+  DOUBLE: 1,         // +1 AURA for doubles (in addition to ROLL)
+  SNAKE_EYES: 0,     // +0 AURA for bust (snake eyes)
+  OPPONENT_BUST: 0,  // +0 AURA when opponent busts
+  BUST: 0,           // +0 AURA for any bust
   // Ability-specific aura grants
   ABILITY_GRANT: (value: number) => value
 } as const;

@@ -5,6 +5,7 @@ import { SlotMachineDice } from './SlotMachineDice';
 import { useBackground } from '@/context/BackgroundContext';
 import { useAuth } from '@/context/AuthContext';
 import InlineAbilitiesDisplay from '@/components/match/InlineAbilitiesDisplay';
+import AuraCounter from '@/components/ui/AuraCounter';
 
 interface GameplayPhaseProps {
   matchData: MatchData;
@@ -44,6 +45,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   const isMyTurn = currentPlayer.turnActive;
   const canRoll = isMyTurn && !matchData.gameData.isRolling;
   const canBank = isMyTurn && !matchData.gameData.isRolling && matchData.gameData.turnScore > 0;
+  
+  // Get current user's AURA from match data
+  const currentUserAura = user ? (matchData.gameData.playerAura?.[user.uid] || 0) : 0;
   
   // State for score shooting animation
   const [isScoreShooting, setIsScoreShooting] = React.useState(false);
@@ -811,7 +815,40 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           >
             {isMyTurn ? (
               <>
-                {/* Only show save/attack button for modes other than True Grit on mobile - LEFT SIDE */}
+                {/* AURA Counter - LEFT SIDE */}
+                <motion.div
+                  className="flex items-center justify-center text-white"
+                  style={{ 
+                    width: '30%',
+                    height: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    border: 'none',
+                    borderRadius: '0',
+                    background: 'transparent',
+                    backdropFilter: 'none',
+                  }}
+                  initial={{ opacity: 0, x: -50, scale: 0.9 }}
+                  animate={{ 
+                    opacity: 1,
+                    x: 0,
+                    scale: 1
+                  }}
+                  transition={{ 
+                    duration: 0.4, 
+                    ease: [0.4, 0, 0.2, 1],
+                    delay: 0.1
+                  }}
+                >
+                  <AuraCounter 
+                    auraValue={currentUserAura} 
+                    size="medium"
+                    className="flex items-center"
+                  />
+                </motion.div>
+
+                {/* SAVE button for modes other than True Grit - MIDDLE */}
                 {matchData.gameMode !== 'true-grit' && (
                   <motion.button
                     onClick={handleBankScore}
@@ -822,7 +859,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                         : 'cursor-not-allowed'
                     }`}
                     style={{ 
-                      width: '50%',
+                      width: '35%',
                       height: '100%',
                       display: 'flex',
                       justifyContent: 'center',
@@ -834,10 +871,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       background: 'transparent',
                       backdropFilter: 'none',
                     }}
-                    initial={{ opacity: 0, x: -50, scale: 0.9 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ 
                       opacity: canBank ? 1 : 0.5,
-                      x: 0,
                       scale: 1
                     }}
                     whileTap={canBank ? { 
@@ -847,7 +883,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     transition={{ 
                       duration: 0.4, 
                       ease: [0.4, 0, 0.2, 1],
-                      delay: 0.1
+                      delay: 0.15
                     }}
                   >
                     <span>
@@ -866,7 +902,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       : 'cursor-not-allowed'
                   }`}
                   style={{ 
-                    width: (matchData.gameMode === 'true-grit') ? '100%' : '50%',
+                    width: (matchData.gameMode === 'true-grit') ? '70%' : '35%',
                     height: '100%',
                     display: 'flex',
                     justifyContent: 'center',

@@ -19,6 +19,7 @@ import { CompletedMatchService } from './completedMatchService';
 import { GameModeService } from './gameModeService';
 import { FriendStatsService } from './friendStatsService';
 import AchievementTrackingService from './achievementTrackingService';
+import { AbilitiesService } from './abilitiesService';
 
 export class MatchService {
   /**
@@ -338,6 +339,15 @@ export class MatchService {
           // Ensure chooserPlayerIndex is set for turn decider (defensive programming)
           'gameData.chooserPlayerIndex': matchData.gameData.chooserPlayerIndex || Math.floor(Math.random() * 2) + 1
         };
+        
+        // ✨ Initialize AURA counters for both players (start at 0)
+        if (!matchData.gameData.playerAura) {
+          updates['gameData.playerAura'] = {
+            [matchData.hostData.playerId]: 0,
+            [matchData.opponentData.playerId]: 0
+          };
+          console.log('✨ AURA system initialized: Both players start with 0 AURA');
+        }
         
         await updateDoc(matchRef, updates);
         console.log('🎮 Initialized game phase for match:', matchId);
@@ -847,6 +857,37 @@ export class MatchService {
         updates[`${playerStatsPath}.doubles`] = currentStats.doubles + 1;
       }
       
+      // ✨ AURA TRACKING: Award AURA for dice rolls
+      const playerId = currentPlayer.playerId;
+      const currentPlayerAura = matchData.gameData.playerAura?.[playerId] || 0;
+      let auraGainThisRoll = 0;
+      
+      // +1 AURA per roll (unless it's a bust)
+      if (!isSingleOne) {
+        auraGainThisRoll += AbilitiesService.calculateAuraGain('ROLL');
+      } else {
+        // +0 AURA for bust (single 1)
+        auraGainThisRoll += AbilitiesService.calculateAuraGain('BUST');
+      }
+      
+      // +1 AURA for doubles (in addition to roll AURA)
+      if (isDouble && !isSingleOne) {
+        auraGainThisRoll += AbilitiesService.calculateAuraGain('DOUBLE');
+      }
+      
+      // Update player AURA
+      if (auraGainThisRoll > 0) {
+        const newPlayerAura = currentPlayerAura + auraGainThisRoll;
+        
+        // Initialize playerAura if it doesn't exist
+        if (!matchData.gameData.playerAura) {
+          updates['gameData.playerAura'] = {};
+        }
+        
+        updates[`gameData.playerAura.${playerId}`] = newPlayerAura;
+        console.log(`✨ AURA awarded: Player ${playerId} gained ${auraGainThisRoll} AURA for rolling ${isSingleOne ? '(bust)' : ''}${isDouble ? ' (double)' : ''}. New total: ${newPlayerAura}`);
+      }
+      
       if (newTurnScore > currentStats.biggestTurnScore) {
         updates[`${playerStatsPath}.biggestTurnScore`] = newTurnScore;
       }
@@ -1288,6 +1329,21 @@ export class MatchService {
       
       if (bankingSuccess) {
         updates[`${playerStatsPath}.banks`] = currentStats.banks + 1;
+      }
+      
+      // ✨ AURA TRACKING: Award AURA for banking (only for successful banks)
+      if (bankingSuccess) {
+        const auraGain = AbilitiesService.calculateAuraGain('BANK');
+        const currentPlayerAura = matchData.gameData.playerAura?.[playerId] || 0;
+        const newPlayerAura = currentPlayerAura + auraGain;
+        
+        // Initialize playerAura if it doesn't exist
+        if (!matchData.gameData.playerAura) {
+          updates['gameData.playerAura'] = {};
+        }
+        
+        updates[`gameData.playerAura.${playerId}`] = newPlayerAura;
+        console.log(`✨ AURA awarded: Player ${playerId} gained ${auraGain} AURA for banking. New total: ${newPlayerAura}`);
       }
       
       // Update player score (only if banking was successful)
