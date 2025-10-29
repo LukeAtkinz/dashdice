@@ -373,7 +373,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               className="text-center relative"
             >
               {/* Turn Score Container - CENTER - ALWAYS CENTERED */}
-              {React.useMemo(() => {
+              {(() => {
                 const turnScore = matchData.gameData.turnScore || 0;
                 const dice1 = matchData.gameData.diceOne;
                 const dice2 = matchData.gameData.diceTwo;
@@ -447,10 +447,10 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     </motion.p>
                   </motion.div>
                 );
-              }, [matchData.gameData.turnScore, matchData.gameData.diceOne, matchData.gameData.diceTwo, matchData.gameData.isRolling])}
+              })()}
 
               {/* Potential Total Score Counter - ABSOLUTE LEFT of Turn Score */}
-              {matchData.gameData.turnScore > 0 && React.useMemo(() => {
+              {matchData.gameData.turnScore > 0 && (() => {
                 const totalScore = (currentPlayer.playerScore || 0) + (matchData.gameData.turnScore || 0);
                 const isThreeDigits = totalScore >= 100;
                 const isLastLine = matchData.gameMode === 'last-line';
@@ -500,7 +500,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     </motion.p>
                   </motion.div>
                 );
-              }, [matchData.gameData.turnScore, currentPlayer.playerScore, isScoreShooting])}
+              })()}
 
               {/* Multiplier Indicators - ABSOLUTE RIGHT of Turn Score */}
               {/* Zero Hour Enhanced Multiplier */}
