@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAbilities } from '@/context/AbilitiesContext';
+import { useAbilities } from '../../hooks/useAbilities';
 import { useAuth } from '@/context/AuthContext';
 import { UserService, PowerLoadout } from '@/services/userService';
 import PowerCard from './PowerCard';
-import { ABILITY_CATEGORIES, CATEGORY_COLORS } from '@/types/abilities';
+import { ABILITY_CATEGORIES } from '../../types/abilities';
 
 // Game modes configuration
 const GAME_MODES = [
@@ -64,9 +64,8 @@ export default function PowerTab({
 }) {
   const {
     allAbilities,
-    userAbilities,
-    isLoading,
-    isInitialized
+    playerAbilities,
+    loading
   } = useAbilities();
   
   const { user } = useAuth();
@@ -83,10 +82,10 @@ export default function PowerTab({
 
   // Load loadouts from Firebase when user is available
   useEffect(() => {
-    if (user && isInitialized) {
+    if (user) {
       loadUserLoadouts();
     }
-  }, [user, isInitialized]);
+  }, [user]);
 
   const loadUserLoadouts = async () => {
     if (!user) return;
@@ -185,7 +184,7 @@ export default function PowerTab({
     }
   };
 
-  if (!isInitialized || isLoading || isLoadingLoadouts) {
+  if (loading || isLoadingLoadouts) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -780,7 +779,7 @@ export default function PowerTab({
             <div>
               {categoryGroups.map(({ category, categoryInfo, abilities }, categoryIndex) => {
                 const userCategoryAbilities = abilities.filter(ability => 
-                  userAbilities.some(ua => ua.abilityId === ability.id)
+                  playerAbilities.unlocked.includes(ability.id)
                 );
                 
                 return (
@@ -978,7 +977,7 @@ export default function PowerTab({
         <div>
           {categoryGroups.map(({ category, categoryInfo, abilities }, categoryIndex) => {
             const userCategoryAbilities = abilities.filter(ability => 
-              userAbilities.some(ua => ua.abilityId === ability.id)
+              playerAbilities.unlocked.includes(ability.id)
             );
             
             return (

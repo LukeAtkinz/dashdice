@@ -2,52 +2,63 @@ import { Ability } from '@/types/abilities';
 
 /**
  * Predefined Abilities Collection
- * Currently featuring only Siphon for focused testing
+ * Updated to use our new ability system - Luck Turner
  */
 
-// ATTACK ABILITIES
-export const ATTACK_ABILITIES: Ability[] = [
+// TACTICAL ABILITIES
+export const TACTICAL_ABILITIES: Ability[] = [
   {
-    id: 'siphon',
-    name: 'Siphon',
-    description: 'Steal half of opponent\'s banked turn points',
-    longDescription: 'Can only be played during opponent\'s turn. If they bank, you steal 50% of their turn points. If they bust, ability is consumed but has no effect.',
-    rarity: 'rare',
-    starCost: 3,
-    category: 'attack',
-    cooldown: 0,
-    maxUses: 1,
-    auraCost: 8,
+    id: 'luck_turner',
+    name: 'Luck Turner',
+    description: 'Manipulate dice probability to reduce failure chance or increase doubles.',
+    longDescription: 'Luck Turner lets you take control of chance itself, mechanically adjusting the odds of your dice rolls for a full turn. Spend 3 AURA to reduce bust chance by 50%, or 6 AURA to also increase double chance by 50%.',
+    rarity: 'epic',
+    starCost: 4,
+    category: 'tactical',
+    cooldown: 2,
+    maxUses: -1, // Unlimited uses but has cooldown
+    auraCost: 3, // Base cost, can be 6 for advanced
     hidden: false,
     unlockLevel: 1,
-    timing: 'opponent_turn',
-    iconUrl: '/Abilities/Catagories/Attack/Siphon.webp',
+    timing: 'own_turn',
+    iconUrl: '/abilities/tactical/hand_holding_screwdriver.webp',
     effects: [
       {
-        type: 'steal_points',
+        type: 'dice_reroll',
         value: 50,
-        target: 'opponent',
-        condition: 'on_bank'
+        target: 'self',
+        condition: 'reduce_ones'
+      },
+      {
+        type: 'bonus_roll',
+        value: 50,
+        target: 'self',
+        condition: 'increase_doubles'
       }
     ],
     isActive: true
   }
 ];
 
+// ATTACK ABILITIES - Removed Siphon
+export const ATTACK_ABILITIES: Ability[] = [];
+
 // Legacy arrays (empty for focused testing)
 export const COMMON_ABILITIES: Ability[] = [];
 export const RARE_ABILITIES: Ability[] = [];
-export const EPIC_ABILITIES: Ability[] = [];
+export const EPIC_ABILITIES: Ability[] = [
+  ...TACTICAL_ABILITIES
+];
 export const LEGENDARY_ABILITIES: Ability[] = [];
 
-// ALL ABILITIES - Currently only Siphon
+// ALL ABILITIES - Currently only Luck Turner
 export const ALL_PREDEFINED_ABILITIES: Ability[] = [
-  ...ATTACK_ABILITIES
+  ...TACTICAL_ABILITIES
 ];
 
 // Export by category
 export const ABILITIES_BY_CATEGORY = {
-  tactical: [],
+  tactical: TACTICAL_ABILITIES,
   attack: ATTACK_ABILITIES,
   defense: [],
   utility: [],
@@ -57,7 +68,7 @@ export const ABILITIES_BY_CATEGORY = {
 // Export by rarity
 export const ABILITIES_BY_RARITY = {
   common: COMMON_ABILITIES,
-  rare: ATTACK_ABILITIES,
+  rare: [],
   epic: EPIC_ABILITIES,
   legendary: LEGENDARY_ABILITIES
 };

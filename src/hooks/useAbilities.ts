@@ -8,7 +8,7 @@ import {
   AbilityRarity
 } from '../types/abilityBlueprint';
 import abilityService from '../services/abilityFirebaseService';
-import { ALL_ABILITIES, getAbilityById, STARTER_ABILITIES } from '../constants/abilities';
+import { ALL_ABILITIES } from '../constants/abilities';
 
 /**
  * Comprehensive Ability Management Hook
@@ -73,7 +73,7 @@ export function useAbilities(
   };
   
   // State
-  const [allAbilities, setAllAbilities] = useState<DashDiceAbility[]>(ALL_ABILITIES);
+  const [allAbilities, setAllAbilities] = useState<DashDiceAbility[]>([]);
   const [playerAbilities, setPlayerAbilities] = useState<{
     unlocked: string[];
     equipped: { [category in AbilityCategory]?: string };
@@ -127,22 +127,31 @@ export function useAbilities(
       
       const result = await abilityService.searchAbilities(criteria);
       
-      // Merge with code constants for immediate access
-      const mergedAbilities = [...ALL_ABILITIES];
-      result.abilities.forEach(firebaseAbility => {
-        const existingIndex = mergedAbilities.findIndex(a => a.id === firebaseAbility.id);
-        if (existingIndex >= 0) {
-          mergedAbilities[existingIndex] = firebaseAbility;
-        } else {
-          mergedAbilities.push(firebaseAbility);
+      // If Firebase has no abilities, seed with constants
+      if (result.abilities.length === 0) {
+        console.log('🌱 No abilities found in Firebase, seeding with constants...');
+        
+        // Seed Firebase with our constants
+        for (const ability of ALL_ABILITIES) {
+          try {
+            await abilityService.createAbility(ability);
+            console.log(`✅ Seeded ability: ${ability.name}`);
+          } catch (error) {
+            console.error(`❌ Failed to seed ability ${ability.name}:`, error);
+          }
         }
-      });
-      
-      setAllAbilities(mergedAbilities);
+        
+        // Reload after seeding
+        const reloadResult = await abilityService.searchAbilities(criteria);
+        setAllAbilities(reloadResult.abilities);
+      } else {
+        setAllAbilities(result.abilities);
+      }
     } catch (err) {
       console.error('Error loading abilities from Firebase:', err);
-      // Fallback to constants if Firebase fails
-      setAllAbilities(ALL_ABILITIES);
+      setError('Failed to load abilities from Firebase');
+      // No fallback to constants - Firebase should be the source of truth
+      setAllAbilities([]);
     } finally {
       setLoading(false);
     }
@@ -177,74 +186,18 @@ export function useAbilities(
     try {
       setRefreshing(true);
       
-      // Search in Firebase first
+      // Search only in Firebase - single source of truth
       const result = await abilityService.searchAbilities(criteria);
-      
-      // If no results from Firebase, search in constants
-      if (result.abilities.length === 0) {
-        let filteredAbilities = [...allAbilities];
-        
-        // Apply client-side filters
-        if (criteria.categories?.length) {
-          filteredAbilities = filteredAbilities.filter(a => 
-            criteria.categories!.includes(a.category)
-          );
-        }
-        
-        if (criteria.rarities?.length) {
-          filteredAbilities = filteredAbilities.filter(a => 
-            criteria.rarities!.includes(a.rarity)
-          );
-        }
-        
-        if (criteria.auraCostRange) {
-          const [min, max] = criteria.auraCostRange;
-          filteredAbilities = filteredAbilities.filter(a => 
-            a.auraCost >= min && a.auraCost <= max
-          );
-        }
-        
-        if (criteria.query) {
-          const query = criteria.query.toLowerCase();
-          filteredAbilities = filteredAbilities.filter(a =>
-            a.name.toLowerCase().includes(query) ||
-            a.description.toLowerCase().includes(query)
-          );
-        }
-        
-        // Sort results
-        filteredAbilities.sort((a, b) => {
-          const field = criteria.sortBy || 'name';
-          const order = criteria.sortOrder || 'asc';
-          
-          let aVal = (a as any)[field];
-          let bVal = (b as any)[field];
-          
-          if (typeof aVal === 'string') {
-            aVal = aVal.toLowerCase();
-            bVal = bVal.toLowerCase();
-          }
-          
-          if (order === 'asc') {
-            return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
-          } else {
-            return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
-          }
-        });
-        
-        setSearchResults(filteredAbilities);
-      } else {
-        setSearchResults(result.abilities);
-      }
-      
+      setSearchResults(result.abilities);
       setSearchCriteria(criteria);
     } catch (err) {
       setError('Failed to search abilities');
       console.error('Error searching abilities:', err);
+      setSearchResults([]);
     } finally {
       setRefreshing(false);
     }
-  }, [allAbilities]);
+  }, []);
 
   // ==================== PLAYER MANAGEMENT ====================
 
@@ -281,7 +234,7 @@ export function useAbilities(
         unlocked: [...prev.unlocked, abilityId]
       }));
       
-      const ability = getAbilityById(abilityId);
+      const ability = allAbilities.find(a => a.id === abilityId);
       showToast(`Unlocked: ${ability?.name || abilityId}!`, 'success');
     } catch (err) {
       setError('Failed to unlock ability');
@@ -305,7 +258,7 @@ export function useAbilities(
         favorites: newFavorites
       }));
       
-      const ability = getAbilityById(abilityId);
+      const ability = allAbilities.find(a => a.id === abilityId);
       showToast(
         `${ability?.name || abilityId} ${isFavorite ? 'removed from' : 'added to'} favorites`,
         'info'
@@ -364,7 +317,7 @@ export function useAbilities(
       );
       
       if (execution.success) {
-        const ability = getAbilityById(abilityId);
+        const ability = allAbilities.find(a => a.id === abilityId);
         showToast(`Used ${ability?.name || abilityId}!`, 'success');
         
         // Update match abilities state
@@ -401,7 +354,7 @@ export function useAbilities(
   // ==================== UTILITY FUNCTIONS ====================
 
   const getDisplayInfo = useCallback((abilityId: string): AbilityDisplayInfo | null => {
-    const ability = getAbilityById(abilityId);
+    const ability = allAbilities.find(a => a.id === abilityId);
     if (!ability) return null;
     
     const isUnlocked = playerAbilities.unlocked.includes(abilityId);
@@ -420,10 +373,10 @@ export function useAbilities(
       newlyUnlocked: false, // TODO: Track newly unlocked abilities
       isRecommended: false // TODO: Implement recommendation logic
     };
-  }, [playerAbilities, matchAbilities]);
+  }, [allAbilities, playerAbilities, matchAbilities]);
 
   const canUseAbility = useCallback((abilityId: string): { canUse: boolean; reason?: string } => {
-    const ability = getAbilityById(abilityId);
+    const ability = allAbilities.find(a => a.id === abilityId);
     if (!ability) {
       return { canUse: false, reason: 'Ability not found' };
     }
@@ -454,7 +407,7 @@ export function useAbilities(
     // TODO: Check activation conditions
     
     return { canUse: true };
-  }, [playerAbilities.unlocked, matchAbilities]);
+  }, [allAbilities, playerAbilities.unlocked, matchAbilities]);
 
   const getRecommendedAbilities = useCallback((playerLevel: number): DashDiceAbility[] => {
     // Get abilities player can unlock at their level
@@ -469,7 +422,7 @@ export function useAbilities(
       .sort((a, b) => {
         // Prefer diverse categories
         const categoryWeight = playerAbilities.unlocked.filter(id => {
-          const unlockedAbility = getAbilityById(id);
+          const unlockedAbility = allAbilities.find(a => a.id === id);
           return unlockedAbility?.category === a.category;
         }).length;
         
@@ -498,14 +451,19 @@ export function useAbilities(
     }
   }, [matchId, loadMatchAbilities]);
 
-  // Initialize new players with starter abilities (when we have them)
+  // Initialize new players with starter abilities from Firebase
   useEffect(() => {
-    if (currentUser?.uid && playerAbilities.unlocked.length === 0 && STARTER_ABILITIES.length > 0) {
-      STARTER_ABILITIES.forEach(ability => {
+    if (currentUser?.uid && playerAbilities.unlocked.length === 0 && allAbilities.length > 0) {
+      // Find starter abilities in Firebase data (abilities that are available to new players)
+      const starterAbilities = allAbilities.filter(ability => 
+        ability.unlockRequirements?.level === 1
+      );
+      
+      starterAbilities.forEach(ability => {
         unlockAbility(ability.id);
       });
     }
-  }, [currentUser?.uid, playerAbilities.unlocked.length, unlockAbility]);
+  }, [currentUser?.uid, playerAbilities.unlocked.length, allAbilities, unlockAbility]);
 
   return {
     // Data
