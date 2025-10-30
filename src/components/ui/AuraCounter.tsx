@@ -30,17 +30,17 @@ export default function AuraCounter({
   // Size configurations - made bigger
   const sizeConfig = {
     small: {
-      iconSize: 20,
+      iconSize: 22,
       textSize: 'text-base',
       gap: 'gap-1'
     },
     medium: {
-      iconSize: 28,
+      iconSize: 32,
       textSize: 'text-xl',
       gap: 'gap-1'
     },
     large: {
-      iconSize: 32,
+      iconSize: 36,
       textSize: 'text-2xl',
       gap: 'gap-2'
     }

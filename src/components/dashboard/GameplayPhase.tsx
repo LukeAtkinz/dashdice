@@ -802,7 +802,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         
         {/* Buttons Section - Enhanced Mobile Animations */}
         <motion.div 
-          className="w-full flex flex-row items-stretch"
+          className="w-full flex flex-row items-stretch px-6 gap-2"
             style={{ 
               height: 'max(70px, env(safe-area-inset-bottom) + 70px)'
             }}
@@ -821,7 +821,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 <motion.div
                   className="flex items-center justify-center text-white"
                   style={{ 
-                    width: '25%',
+                    width: '28%',
                     height: '100%',
                     display: 'flex',
                     justifyContent: 'center',
@@ -861,7 +861,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                         : 'cursor-not-allowed'
                     }`}
                     style={{ 
-                      width: '37.5%',
+                      width: '36%',
                       height: '100%',
                       display: 'flex',
                       justifyContent: 'center',
@@ -904,7 +904,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       : 'cursor-not-allowed'
                   }`}
                   style={{ 
-                    width: (matchData.gameMode === 'true-grit') ? '75%' : '37.5%',
+                    width: (matchData.gameMode === 'true-grit') ? '72%' : '36%',
                     height: '100%',
                     display: 'flex',
                     justifyContent: 'center',
@@ -941,7 +941,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 <motion.div
                   className="flex items-center justify-center text-white"
                   style={{ 
-                    width: '25%',
+                    width: '28%',
                     height: '100%',
                     display: 'flex',
                     justifyContent: 'center',
@@ -966,7 +966,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 <motion.div 
                   className="flex items-center justify-center"
                   style={{ 
-                    width: '75%',
+                    width: '72%',
                     height: '100%',
                     background: 'transparent' 
                   }}
