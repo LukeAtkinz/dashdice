@@ -76,15 +76,103 @@ function createBaseAbility(
 // 4. Add tactical abilities (Scout)
 // 5. Add complex gamechanger abilities last
 
-// Placeholder for abilities - will be populated as we implement and test each one
+// ==================== TACTICAL ABILITIES ====================
+
+export const LUCK_TURNER: DashDiceAbility = {
+  ...createBaseAbility('luck_turner', 'Luck Turner', AbilityCategory.TACTICAL, AbilityRarity.EPIC, 3, 4),
+  description: 'Manipulate dice probability to reduce failure chance or increase doubles.',
+  longDescription: 'Luck Turner lets you take control of chance itself, mechanically adjusting the odds of your dice rolls for a full turn. Spend 3 AURA to reduce bust chance by 50%, or 6 AURA to also increase double chance by 50%.',
+  flavorText: 'Fortune favors the prepared mind that knows how to tune the odds.',
+  iconUrl: '/abilities/tactical/hand_holding_screwdriver.webp',
+  cooldown: 2, // 2 turns cooldown
+  
+  targeting: {
+    type: 'self',
+    allowSelfTarget: true,
+    maxTargets: 1
+  },
+  
+  timing: {
+    usableWhen: [TimingConstraint.MY_TURN_START, TimingConstraint.BEFORE_ROLL]
+  },
+  
+  effects: [
+    {
+      id: 'luck_turner_basic',
+      name: 'Basic Luck Manipulation',
+      description: '50% less chance to roll a 1 (reduces bust risk)',
+      type: EffectType.MODIFY_DICE_PROBABILITY,
+      magnitude: 'luck_basic', // Custom magnitude for luck manipulation
+      target: {
+        type: 'self',
+        property: 'diceRollProbability'
+      },
+      duration: 1 // Lasts for one turn
+    },
+    {
+      id: 'luck_turner_advanced',
+      name: 'Advanced Luck Manipulation',
+      description: '50% less chance to roll a 1 AND 50% increased chance of doubles',
+      type: EffectType.MODIFY_DICE_PROBABILITY,
+      magnitude: 'luck_advanced', // Custom magnitude for advanced luck manipulation
+      target: {
+        type: 'self',
+        property: 'diceRollProbability'
+      },
+      duration: 1, // Lasts for one turn
+      conditions: [
+        {
+          type: 'aura_cost',
+          comparison: 'greater_than',
+          value: 5, // Requires 6 AURA total
+          target: 'currentAura'
+        }
+      ]
+    }
+  ],
+  
+  // Special conditions for variable AURA cost
+  conditions: [
+    {
+      type: 'variable_aura_cost',
+      description: 'Costs 3 AURA for basic effect, 6 AURA for advanced effect',
+      checkFunction: 'checkVariableAuraCost',
+      parameters: {
+        basicCost: 3,
+        advancedCost: 6,
+        basicEffect: 'luck_basic',
+        advancedEffect: 'luck_advanced'
+      }
+    }
+  ],
+  
+  persistence: {
+    duration: 1, // One turn duration
+    stackable: false, // Cannot stack multiple luck effects
+    dispellable: true // Can be removed by dispel effects
+  },
+  
+  // Custom interactions for probability manipulation
+  interactions: {
+    synergiesWith: ['focus', 'foresight'], // Works well with other dice control
+    counters: [], // Doesn't directly counter abilities
+    counteredBy: ['dispel', 'chaos'], // Dispel effects and chaos abilities counter it
+    blockedBy: ['silence', 'lock'] // Silence or lock effects prevent use
+  },
+  
+  tags: ['probability', 'tactical', 'risk-management', 'turn-modifier']
+} as DashDiceAbility;
+
+// Add to collections
+// addAbilityToCollections(LUCK_TURNER); // Will be called after collections are defined
 
 // ==================== ABILITY COLLECTIONS ====================
 
-// Empty arrays - will be populated as we implement abilities one by one
-export const ALL_ABILITIES: DashDiceAbility[] = [];
+// Populated with implemented abilities
+export const ALL_ABILITIES: DashDiceAbility[] = [LUCK_TURNER];
 
 export const ABILITIES_BY_CATEGORY: { [key in AbilityCategory]: DashDiceAbility[] } = {
-  [AbilityCategory.TACTICAL]: [],
+  [AbilityCategory.TACTICAL]: [LUCK_TURNER],
   [AbilityCategory.ATTACK]: [],
   [AbilityCategory.DEFENSE]: [],
   [AbilityCategory.UTILITY]: [],
@@ -94,13 +182,13 @@ export const ABILITIES_BY_CATEGORY: { [key in AbilityCategory]: DashDiceAbility[
 export const ABILITIES_BY_RARITY: { [key in AbilityRarity]: DashDiceAbility[] } = {
   [AbilityRarity.COMMON]: [],
   [AbilityRarity.RARE]: [],
-  [AbilityRarity.EPIC]: [],
+  [AbilityRarity.EPIC]: [LUCK_TURNER],
   [AbilityRarity.LEGENDARY]: [],
   [AbilityRarity.MYTHIC]: []
 };
 
-// Empty starter set - will add basic abilities as we implement them
-export const STARTER_ABILITIES: DashDiceAbility[] = [];
+// Starter abilities for new players - add basic abilities as we implement them
+export const STARTER_ABILITIES: DashDiceAbility[] = [LUCK_TURNER];
 
 // ==================== ABILITY MAP ====================
 

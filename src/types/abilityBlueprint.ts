@@ -70,6 +70,7 @@ export enum EffectType {
   REROLL_DICE = 'reroll_dice',
   FORCE_DICE_VALUE = 'force_dice_value',
   ADD_DICE = 'add_dice',
+  MODIFY_DICE_PROBABILITY = 'modify_dice_probability',
   
   // Aura manipulation
   GAIN_AURA = 'gain_aura',

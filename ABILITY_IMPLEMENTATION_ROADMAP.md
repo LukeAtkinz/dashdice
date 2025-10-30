@@ -1,8 +1,8 @@
 # Ability Implementation Roadmap
 
-## 🎯 Current Status: Ready for Iterative Implementation
+## 🎯 Current Status: Luck Turner Implemented
 
-We have successfully cleaned up the ability system and prepared it for implementing abilities one by one. All example abilities have been removed, leaving us with a clean foundation to build upon.
+We have successfully implemented our first ability! **Luck Turner** is now added to the system and ready for testing and integration.
 
 ## 🏗️ Clean Foundation
 
@@ -10,15 +10,19 @@ We have successfully cleaned up the ability system and prepared it for implement
 - ✅ **Complete type system** in `src/types/abilityBlueprint.ts`
 - ✅ **Firebase service** with all CRUD operations
 - ✅ **React hook** for state management
-- ✅ **Empty ability collections** ready to be populated
+- ✅ **Luck Turner ability** fully implemented
 - ✅ **Helper function** `addAbilityToCollections()` for easy ability addition
 - ✅ **No TypeScript errors** - clean compilation
 
-### What's Empty (Intentionally):
-- 🔧 `ALL_ABILITIES` array - empty, ready for implementation
-- 🔧 `ABILITIES_BY_CATEGORY` - empty collections per category
-- 🔧 `ABILITIES_BY_RARITY` - empty collections per rarity
-- 🔧 `STARTER_ABILITIES` - empty, will add basic abilities as we go
+### What's Implemented:
+- ✅ **LUCK_TURNER** - Epic tactical ability with variable AURA cost (3/6)
+  - Risk-reward probability manipulation
+  - 2-turn cooldown system
+  - Reduces bust chance and/or increases doubles
+
+### What's Empty (Ready for Next Abilities):
+- 🔧 More abilities to be added one by one
+- 🔧 `STARTER_ABILITIES` - will add basic abilities as we go
 
 ## 🚀 Implementation Strategy
 
