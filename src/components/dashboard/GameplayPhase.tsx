@@ -49,6 +49,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   // Get current user's AURA from match data
   const currentUserAura = user ? (matchData.gameData.playerAura?.[user.uid] || 0) : 0;
   
+  // Check if multiplier is active
+  const hasMultiplier = matchData.gameData.hasDoubleMultiplier || false;
+  
   // State for score shooting animation
   const [isScoreShooting, setIsScoreShooting] = React.useState(false);
 
@@ -138,7 +141,6 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   const getGameRuleResult = () => {
     const dice1 = matchData.gameData.diceOne;
     const dice2 = matchData.gameData.diceTwo;
-    const hasMultiplier = matchData.gameData.hasDoubleMultiplier || false;
     
     if (!dice1 || !dice2) return null;
     
@@ -391,7 +393,12 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 let borderColor = 'border-gray-500';
                 let bgColor = 'bg-gray-600/30';
                 
-                if (turnScore >= 50) {
+                // Override all colors when multiplier is active
+                if (hasMultiplier) {
+                  textColor = 'text-red-300';
+                  borderColor = 'border-red-500';
+                  bgColor = 'bg-gradient-to-br from-red-600/50 to-purple-600/50';
+                } else if (turnScore >= 50) {
                   textColor = areDoublesGold ? 'text-yellow-400' : 'text-yellow-400'; // Gold
                   borderColor = areDoublesGold ? 'border-yellow-500' : 'border-yellow-500';
                   bgColor = areDoublesGold ? 'bg-yellow-600/30' : 'bg-yellow-600/30';

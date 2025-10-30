@@ -228,8 +228,12 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
     return numbers;
   };
   
+  // Check if multiplier is active for border styling
+  const hasMultiplier = matchData?.gameData?.hasDoubleMultiplier || false;
+  const borderClass = hasMultiplier ? 'border-red-500/70' : 'border-white/0';
+  
   return (
-    <div className="relative rounded-[30px] border border-white/0 overflow-hidden"
+    <div className={`relative rounded-[30px] border overflow-hidden ${borderClass}`}
          style={{
            display: 'flex',
            height: 'clamp(150px, 35vw, 300px)', // Reduced from 50vw to 35vw for mobile
@@ -320,12 +324,42 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             }}
           />
 
+          {/* Multiplier active glow effect */}
+          {hasMultiplier && (
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-br from-red-400/30 via-purple-400/20 to-red-400/30"
+              animate={{
+                opacity: [0.4, 0.8, 0.4]
+              }}
+              transition={{
+                duration: 1.0,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          )}
+
           {/* Slot machine window frame effect - REMOVED gold border */}
           {/* <div className="absolute inset-0 border-2 border-yellow-400/50 rounded-[30px] pointer-events-none" /> */}
         </div>
       ) : (
         // Static dice display - completely still when not rolling
         <div className="w-full h-full flex items-center justify-center relative">
+          {/* Multiplier active background glow for static dice */}
+          {hasMultiplier && (
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-br from-red-400/25 via-purple-400/15 to-red-400/25 rounded-[30px]"
+              animate={{
+                opacity: [0.3, 0.6, 0.3]
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          )}
+          
           {/* Dice number with conditional glow */}
           {glowInfo.shouldGlow ? (
             <motion.span
