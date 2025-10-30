@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAbilities } from '@/context/AbilitiesContext';
 import { MatchData } from '@/types/match';
@@ -14,6 +14,47 @@ interface InlineAbilitiesDisplayProps {
   playerId: string;
   className?: string;
 }
+
+// Function to shuffle abilities by category for random stacking
+const shuffleAbilitiesByCategory = (
+  abilities: Array<{ category: keyof typeof ABILITY_CATEGORIES; ability: Ability }>,
+  matchId: string
+): Array<{ category: keyof typeof ABILITY_CATEGORIES; ability: Ability }> => {
+  // Create a seed from matchId for consistent randomization per match
+  let seed = 0;
+  for (let i = 0; i < matchId.length; i++) {
+    seed += matchId.charCodeAt(i);
+  }
+  
+  // Simple seeded random function
+  const seededRandom = (seed: number) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  };
+  
+  // Group abilities by category
+  const abilityGroups: { [key: string]: Array<{ category: keyof typeof ABILITY_CATEGORIES; ability: Ability }> } = {};
+  abilities.forEach(item => {
+    if (!abilityGroups[item.category]) {
+      abilityGroups[item.category] = [];
+    }
+    abilityGroups[item.category].push(item);
+  });
+  
+  // Shuffle each category group and flatten
+  const shuffledAbilities: Array<{ category: keyof typeof ABILITY_CATEGORIES; ability: Ability }> = [];
+  Object.entries(abilityGroups).forEach(([category, categoryAbilities], categoryIndex) => {
+    // Shuffle within category using seeded random
+    const shuffled = [...categoryAbilities];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const randomIndex = Math.floor(seededRandom(seed + categoryIndex * 100 + i) * (i + 1));
+      [shuffled[i], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[i]];
+    }
+    shuffledAbilities.push(...shuffled);
+  });
+  
+  return shuffledAbilities;
+};
 
 export default function InlineAbilitiesDisplay({ 
   matchData, 
@@ -31,6 +72,7 @@ export default function InlineAbilitiesDisplay({
   const [cooldowns, setCooldowns] = useState<{ [key: string]: number }>({});
   const [isUsing, setIsUsing] = useState<string | null>(null);
   const [activatingAbility, setActivatingAbility] = useState<string | null>(null);
+  const [pulsingAbility, setPulsingAbility] = useState<string | null>(null);
   const [siphonActive, setSiphonActive] = useState<boolean>(false);
 
   // Get player's power loadout from match metadata
@@ -156,15 +198,20 @@ export default function InlineAbilitiesDisplay({
     );
   }
 
-  // Get equipped abilities (max 5 slots)
+  // Get equipped abilities (max 5 slots) with random stacking by category
   // PowerLoadout structure: { tactical?: string, attack?: string, defense?: string, utility?: string, gamechanger?: string }
-  const equippedAbilities = Object.entries(playerPowerLoadout || {})
-    .filter(([_, abilityId]) => abilityId)
-    .map(([category, abilityId]) => {
-      const ability = allAbilities.find(a => a.id === abilityId);
-      return ability ? { category: category as keyof typeof ABILITY_CATEGORIES, ability } : null;
-    })
-    .filter(Boolean) as Array<{ category: keyof typeof ABILITY_CATEGORIES; ability: Ability }>;
+  const equippedAbilities = useMemo(() => {
+    const abilities = Object.entries(playerPowerLoadout || {})
+      .filter(([_, abilityId]) => abilityId)
+      .map(([category, abilityId]) => {
+        const ability = allAbilities.find(a => a.id === abilityId);
+        return ability ? { category: category as keyof typeof ABILITY_CATEGORIES, ability } : null;
+      })
+      .filter(Boolean) as Array<{ category: keyof typeof ABILITY_CATEGORIES; ability: Ability }>;
+    
+    // Apply random stacking by category for each match
+    return shuffleAbilitiesByCategory(abilities, matchData.id || 'default');
+  }, [playerPowerLoadout, allAbilities, matchData.id]);
 
   const handleAbilityClick = async (ability: Ability) => {
     console.log(`🎯 ABILITY CLICKED: ${ability.id}`, {
@@ -213,6 +260,10 @@ export default function InlineAbilitiesDisplay({
       if (result.success) {
         console.log('🎯 Calling onAbilityUsed with effect:', result.effect);
         onAbilityUsed(result.effect);
+        
+        // Trigger pulse down animation when ability is actually used
+        setPulsingAbility(ability.id);
+        setTimeout(() => setPulsingAbility(null), 600); // Reset after pulse animation
         
         // Set siphon as active if it's the siphon ability
         if (ability.id === 'siphon') {
@@ -318,20 +369,7 @@ export default function InlineAbilitiesDisplay({
                   ease: "linear"
                 }}
               />
-              <motion.div 
-                className="text-gray-500 text-xl md:text-2xl relative z-10"
-                animate={{ 
-                  scale: [1, 1.1, 1],
-                  opacity: [0.5, 0.7, 0.5]
-                }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  delay: index * 0.2
-                }}
-              >
-                +
-              </motion.div>
+              {/* Empty slot - no plus symbol */}
             </motion.div>
           );
         }
@@ -386,14 +424,17 @@ export default function InlineAbilitiesDisplay({
             initial={{ opacity: 0, scale: 0.8, y: 20, rotateY: -15 }}
             animate={{ 
               opacity: 1, 
-              scale: activatingAbility === ability.id ? [1, 1.15, 1] : 1, 
-              y: activatingAbility === ability.id ? [0, -8, 0] : siphonIsActive ? -8 : 0, // Move up when siphon is active
+              scale: pulsingAbility === ability.id ? [1, 0.9, 1] : 1, // Pulse down when used
+              y: pulsingAbility === ability.id ? [0, 8, 0] : // Pulse down past original position when used
+                  activatingAbility === ability.id ? -5 : // Slight raise when activated
+                  siphonIsActive ? -8 : 0, // Move up when siphon is active
               rotateY: 0 
             }}
             transition={{ 
-              duration: activatingAbility === ability.id ? 0.8 : 0.3, 
-              ease: [0.4, 0, 0.2, 1],
-              delay: activatingAbility === ability.id ? 0 : index * 0.1
+              duration: pulsingAbility === ability.id ? 0.6 : // Pulse duration for used effect
+                       activatingAbility === ability.id ? 0.3 : 0.3, // Quicker animation for activation
+              ease: pulsingAbility === ability.id ? [0.2, 0, 0.2, 1] : [0.4, 0, 0.2, 1], // Different easing for pulse
+              delay: activatingAbility === ability.id || pulsingAbility === ability.id ? 0 : index * 0.1
             }}
             whileHover={!shouldDisable ? { 
               y: siphonIsActive ? -10 : -2, // Higher when siphon is active
@@ -413,7 +454,7 @@ export default function InlineAbilitiesDisplay({
               <img
                 src={ability.iconUrl || categoryInfo.icon}
                 alt={ability.name}
-                className="w-10 h-10 md:w-12 md:h-12 object-contain"
+                className="w-14 h-14 md:w-16 md:h-16 object-contain"
                 style={{
                   filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))'
                 }}

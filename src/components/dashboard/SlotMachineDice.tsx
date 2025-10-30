@@ -228,12 +228,13 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
     return numbers;
   };
   
-  // Check if multiplier is active for border styling
+  // Check if multiplier is active for border styling and background
   const hasMultiplier = matchData?.gameData?.hasDoubleMultiplier || false;
   const borderClass = hasMultiplier ? 'border-red-500/70' : 'border-white/0';
+  const backgroundClass = hasMultiplier ? 'bg-gradient-to-br from-red-600/50 to-purple-600/50' : '';
   
   return (
-    <div className={`relative rounded-[30px] border overflow-hidden ${borderClass}`}
+    <div className={`relative rounded-[30px] border overflow-hidden ${borderClass} ${backgroundClass}`}
          style={{
            display: 'flex',
            height: 'clamp(150px, 35vw, 300px)', // Reduced from 50vw to 35vw for mobile
