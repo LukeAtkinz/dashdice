@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import { 
   DashDiceAbility, 
   AbilitySearchCriteria, 
@@ -64,8 +65,7 @@ export function useAbilities(
   matchId?: string,
   options: UseAbilitiesOptions = {}
 ): UseAbilitiesReturn {
-  // Mock user for now - replace with actual auth context later
-  const currentUser = { uid: 'mock-user-id' };
+  const { user: currentUser } = useAuth();
   
   // Mock toast function - replace with actual toast hook later
   const showToast = (message: string, type: 'success' | 'error' | 'info') => {
@@ -100,7 +100,7 @@ export function useAbilities(
     
     try {
       setLoading(true);
-      const abilities = await abilityService.getPlayerAbilities(currentUser.uid);
+      const abilities = await abilityService.getPlayerAbilities(currentUser!.uid);
       
       // Map Firebase response to local state structure
       setPlayerAbilities({
@@ -164,7 +164,7 @@ export function useAbilities(
       // TODO: Implement getting match abilities from Firebase
       // For now, create a mock structure
       const mockMatchAbilities: MatchPlayerAbilities = {
-        playerId: currentUser.uid,
+        playerId: currentUser!.uid,
         matchId,
         equippedAbilities: playerAbilities.equipped,
         abilityStates: {},
@@ -208,7 +208,7 @@ export function useAbilities(
     }
     
     try {
-      await abilityService.updatePlayerLoadout(currentUser.uid, loadout);
+      await abilityService.updatePlayerLoadout(currentUser!.uid, loadout);
       setPlayerAbilities(prev => ({
         ...prev,
         equipped: loadout
@@ -228,7 +228,7 @@ export function useAbilities(
     }
     
     try {
-      await abilityService.unlockAbilityForPlayer(currentUser.uid, abilityId);
+      await abilityService.unlockAbilityForPlayer(currentUser!.uid, abilityId);
       setPlayerAbilities(prev => ({
         ...prev,
         unlocked: [...prev.unlocked, abilityId]
@@ -280,7 +280,7 @@ export function useAbilities(
       const abilities = equippedAbilities || playerAbilities.equipped;
       await abilityService.initializeMatchAbilities(
         matchId,
-        currentUser.uid,
+        currentUser!.uid,
         abilities,
         20 // Initial aura
       );
@@ -311,7 +311,7 @@ export function useAbilities(
     try {
       const execution = await abilityService.executeMatchAbility(
         matchId,
-        currentUser.uid,
+        currentUser!.uid,
         abilityId,
         targetPlayerIds
       );
@@ -339,7 +339,7 @@ export function useAbilities(
     if (!matchId || !currentUser?.uid) return;
     
     try {
-      await abilityService.updateMatchPlayerAura(matchId, currentUser.uid, auraChange);
+      await abilityService.updateMatchPlayerAura(matchId, currentUser!.uid, auraChange);
       
       // Update local state
       setMatchAbilities(prev => prev ? {
