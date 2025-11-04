@@ -288,7 +288,7 @@ export const ABILITIES_BY_RARITY: { [key in AbilityRarity]: DashDiceAbility[] } 
 };
 
 // Starter abilities for new players - add basic abilities as we implement them
-export const STARTER_ABILITIES: DashDiceAbility[] = [LUCK_TURNER];
+export const STARTER_ABILITIES: DashDiceAbility[] = [LUCK_TURNER, PAN_SLAP];
 
 // ==================== ABILITY MAP ====================
 
