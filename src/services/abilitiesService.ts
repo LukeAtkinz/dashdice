@@ -25,7 +25,8 @@ import {
   STAR_POINT_PROGRESSION,
   XP_PROGRESSION
 } from '@/types/abilities';
-import { ALL_PREDEFINED_ABILITIES, STARTER_ABILITIES } from '@/data/predefinedAbilities';
+import { ALL_PREDEFINED_ABILITIES } from '@/data/predefinedAbilities';
+import { STARTER_ABILITIES } from '@/constants/abilities';
 
 /**
  * Core Abilities Service
@@ -419,8 +420,8 @@ export class AbilitiesService {
       await setDoc(docRef, initialProgression);
       
       // Unlock starter abilities
-      for (const abilityId of STARTER_ABILITIES) {
-        await this.unlockAbility(userId, abilityId);
+      for (const ability of STARTER_ABILITIES) {
+        await this.unlockAbility(userId, ability.id);
       }
 
       return initialProgression;

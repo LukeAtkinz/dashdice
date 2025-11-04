@@ -9,7 +9,7 @@ import {
   AbilityRarity
 } from '../types/abilityBlueprint';
 import abilityService from '../services/abilityFirebaseService';
-import { ALL_ABILITIES } from '../constants/abilities';
+import { ALL_ABILITIES, STARTER_ABILITIES } from '../constants/abilities';
 
 /**
  * Comprehensive Ability Management Hook
@@ -454,12 +454,8 @@ export function useAbilities(
   // Initialize new players with starter abilities from Firebase
   useEffect(() => {
     if (currentUser?.uid && playerAbilities.unlocked.length === 0 && allAbilities.length > 0) {
-      // Find starter abilities in Firebase data (abilities that are available to new players)
-      const starterAbilities = allAbilities.filter(ability => 
-        ability.unlockRequirements?.level === 1
-      );
-      
-      starterAbilities.forEach(ability => {
+      // Use the defined starter abilities
+      STARTER_ABILITIES.forEach(ability => {
         unlockAbility(ability.id);
       });
     }
