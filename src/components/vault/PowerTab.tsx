@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { UserService, PowerLoadout } from '@/services/userService';
 import PowerCard from './PowerCard';
 import { ABILITY_CATEGORIES } from '../../types/abilities';
+import { resetAbilitiesCollection } from '@/utils/resetAbilities';
 
 // Game modes configuration
 const GAME_MODES = [
@@ -74,6 +75,14 @@ export default function PowerTab({
   console.log('🔍 PowerTab Debug - allAbilities:', allAbilities.length, allAbilities);
   console.log('🔍 PowerTab Debug - playerAbilities:', playerAbilities);
   console.log('🔍 PowerTab Debug - loading:', loading);
+  
+  // Make reset function available globally
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).resetAbilities = resetAbilitiesCollection;
+      console.log('🛠️ Reset function available: Call window.resetAbilities() in console to reset abilities collection');
+    }
+  }, []);
   
   const [currentGameModeIndex, setCurrentGameModeIndex] = useState(0);
   const [gameModeLoadouts, setGameModeLoadouts] = useState<Record<string, Record<string, string>>>({
