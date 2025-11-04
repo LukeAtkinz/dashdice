@@ -189,6 +189,43 @@ export default function PowerTab({
       console.log('  - window.fixAbilitiesCompletely() - Run complete fix');
       console.log('  - window.debugUserAbilities() - Debug and fix user abilities');
       console.log('  - window.testAbilityInMatch() - Test ability usage with AURA deduction');
+      console.log('  - window.fixAbilityIcons() - Update Firebase abilities with correct icon paths');
+      
+      // Fix ability icons in Firebase
+      (window as any).fixAbilityIcons = async () => {
+        try {
+          if (!user?.uid) {
+            console.error('❌ No user logged in');
+            return;
+          }
+          
+          console.log('🔧 FIXING ABILITY ICONS IN FIREBASE...');
+          
+          // Force refresh abilities collection with corrected constants
+          await AbilitiesService.refreshAllAbilities();
+          console.log('✅ Abilities collection refreshed with correct icon paths');
+          
+          // Also update any cached abilities
+          const abilities = await AbilitiesService.getAllAbilities();
+          console.log(`📚 Loaded ${abilities.length} abilities from Firebase`);
+          
+          // Check specific abilities
+          const luckTurner = abilities.find(a => a.id === 'luck_turner');
+          const panSlap = abilities.find(a => a.id === 'pan_slap');
+          
+          if (luckTurner) {
+            console.log(`🔧 Luck Turner icon: ${luckTurner.iconUrl}`);
+          }
+          if (panSlap) {
+            console.log(`🔧 Pan Slap icon: ${panSlap.iconUrl}`);
+          }
+          
+          console.log('🎉 Icon fix complete! Hard refresh page to see updated icons.');
+          
+        } catch (error) {
+          console.error('❌ Icon fix failed:', error);
+        }
+      };
       
       // Test ability usage in match context
       (window as any).testAbilityInMatch = async (abilityId = 'luck_turner', matchId = 'test_match') => {
