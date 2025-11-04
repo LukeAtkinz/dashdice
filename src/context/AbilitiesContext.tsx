@@ -129,9 +129,29 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
         AbilitiesService.getProgressionSummary(user.uid)
       ]);
 
-      // Always use predefined abilities to ensure correct iconUrls and latest definitions
-      const finalAbilities = ALL_PREDEFINED_ABILITIES;
-      setAllAbilities(finalAbilities);
+      // Check if we have all expected abilities (including Pan Slap)
+      const expectedAbilities = ['luck_turner', 'pan_slap'];
+      const missingAbilities = expectedAbilities.filter(id => 
+        !abilities.some(ability => ability.id === id)
+      );
+      
+      if (missingAbilities.length > 0) {
+        console.log(`🔄 Missing abilities detected: ${missingAbilities.join(', ')}. Refreshing Firebase...`);
+        try {
+          await AbilitiesService.refreshAllAbilities();
+          // Reload abilities after refresh
+          const refreshedAbilities = await AbilitiesService.getAllAbilities();
+          setAllAbilities(refreshedAbilities);
+          console.log(`✅ Abilities refreshed! Now have ${refreshedAbilities.length} total abilities`);
+        } catch (refreshError) {
+          console.error('❌ Failed to refresh abilities, using predefined fallback:', refreshError);
+          setAllAbilities(ALL_PREDEFINED_ABILITIES);
+        }
+      } else {
+        // Use Firebase abilities (includes Pan Slap and other new abilities)
+        setAllAbilities(abilities);
+        console.log(`✅ Using ${abilities.length} abilities from Firebase`);
+      }
       
       // Ensure siphon is always available to every user
       let finalUserAbilities = userAbils;
@@ -162,12 +182,13 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
       }
       
       // If no user abilities, create some mock ones for development
-      if (finalUserAbilities.length === 0 && finalAbilities.length > 0) {
+      const currentAbilitiesForMock = allAbilities.length > 0 ? allAbilities : ALL_PREDEFINED_ABILITIES;
+      if (finalUserAbilities.length === 0 && currentAbilitiesForMock.length > 0) {
         const mockUserAbilities: UserAbility[] = [
           {
             id: 'user_ability_1',
             userId: user.uid,
-            abilityId: finalAbilities[0]?.id || 'siphon',
+            abilityId: currentAbilitiesForMock[0]?.id || 'siphon',
             unlockedAt: new Date() as any,
             timesUsed: 5,
             successRate: 80,
@@ -226,6 +247,7 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
       }
       
       // Set progression or mock data
+      const currentAbilities = allAbilities.length > 0 ? allAbilities : ALL_PREDEFINED_ABILITIES;
       if (!userProgression) {
         const mockProgression: UserProgression = {
           userId: user.uid,
@@ -236,10 +258,10 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
           totalMatches: 8,
           winStreak: 1,
           maxStarPoints: 5,
-          unlockedAbilities: [finalAbilities[0]?.id || 'lucky_reroll', finalAbilities[1]?.id || 'focus_shot'],
+          unlockedAbilities: [currentAbilities[0]?.id || 'lucky_reroll', currentAbilities[1]?.id || 'focus_shot'],
           stats: {
             abilitiesUsed: 8,
-            mostUsedAbility: finalAbilities[0]?.id || 'siphon',
+            mostUsedAbility: currentAbilities[0]?.id || 'siphon',
             favoriteCategory: 'attack',
             averageMatchXP: 45
           },
@@ -251,10 +273,11 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
       }
       
       // Set progression summary or mock data
+      const currentAbilitiesForSummary = allAbilities.length > 0 ? allAbilities : ALL_PREDEFINED_ABILITIES;
       const finalSummary = summary || {
         currentLevel: 1,
         unlockedAbilities: 1,
-        totalAbilities: finalAbilities.length,
+        totalAbilities: currentAbilitiesForSummary.length,
         starPoints: 5,
         maxStarPoints: 15
       };

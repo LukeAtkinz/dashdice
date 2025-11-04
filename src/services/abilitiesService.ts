@@ -26,6 +26,7 @@ import {
   XP_PROGRESSION
 } from '@/types/abilities';
 import { ALL_PREDEFINED_ABILITIES } from '@/data/predefinedAbilities';
+import { ALL_ABILITIES } from '@/constants/abilities'; // Import our new comprehensive abilities
 import { STARTER_ABILITIES } from '@/constants/abilities';
 
 /**
@@ -80,16 +81,102 @@ export class AbilitiesService {
   }
 
   /**
+   * Convert DashDiceAbility to simpler Ability format for Firebase
+   */
+  static convertDashDiceToSimpleAbility(dashDiceAbility: any): Ability {
+    return {
+      id: dashDiceAbility.id,
+      name: dashDiceAbility.name,
+      description: dashDiceAbility.description,
+      longDescription: dashDiceAbility.longDescription,
+      rarity: dashDiceAbility.rarity,
+      starCost: dashDiceAbility.starCost,
+      category: dashDiceAbility.category,
+      cooldown: dashDiceAbility.cooldown,
+      maxUses: -1, // Unlimited uses with cooldown
+      auraCost: dashDiceAbility.auraCost,
+      hidden: false,
+      unlockLevel: dashDiceAbility.unlockRequirements?.level || 1,
+      timing: dashDiceAbility.timing?.usableWhen?.[0]?.includes('opponent') ? 'opponent_turn' : 'own_turn',
+      iconUrl: dashDiceAbility.iconUrl,
+      effects: dashDiceAbility.effects?.map((effect: any) => ({
+        type: effect.type,
+        value: effect.magnitude === 'instant_with_banking' ? 100 : 50,
+        target: effect.target?.type || 'self',
+        condition: effect.description || 'always'
+      })) || [],
+      isActive: dashDiceAbility.isActive
+    };
+  }
+
+  /**
    * Initialize predefined abilities in Firestore (run once)
    */
   static async initializePredefinedAbilities(): Promise<void> {
     try {
+      // Seed old predefined abilities (Luck Turner compatible format)
       for (const ability of ALL_PREDEFINED_ABILITIES) {
         await setDoc(doc(db, 'abilities', ability.id), ability);
       }
-      console.log('Predefined abilities initialized successfully');
+      
+      // Seed new comprehensive abilities (Pan Slap, etc.)
+      for (const dashDiceAbility of ALL_ABILITIES) {
+        // Skip if already added from predefined (avoid duplicate Luck Turner)
+        if (!ALL_PREDEFINED_ABILITIES.some(existing => existing.id === dashDiceAbility.id)) {
+          const convertedAbility = this.convertDashDiceToSimpleAbility(dashDiceAbility);
+          await setDoc(doc(db, 'abilities', convertedAbility.id), convertedAbility);
+          console.log(`✅ Seeded new ability: ${convertedAbility.name}`);
+        }
+      }
+      
+      console.log('All abilities initialized successfully');
     } catch (error) {
       console.error('Error initializing predefined abilities:', error);
+    }
+  }
+
+  /**
+   * Force refresh all abilities in Firebase (includes new abilities like Pan Slap)
+   */
+  static async refreshAllAbilities(): Promise<void> {
+    try {
+      console.log('🔄 Refreshing all abilities in Firebase...');
+      
+      // Get existing abilities to avoid duplicating
+      const existingAbilities = await this.getAllAbilities();
+      const existingIds = existingAbilities.map(a => a.id);
+      
+      let addedCount = 0;
+      let updatedCount = 0;
+      
+      // Add/update old predefined abilities
+      for (const ability of ALL_PREDEFINED_ABILITIES) {
+        await setDoc(doc(db, 'abilities', ability.id), ability);
+        if (existingIds.includes(ability.id)) {
+          updatedCount++;
+        } else {
+          addedCount++;
+        }
+      }
+      
+      // Add/update new comprehensive abilities (Pan Slap, etc.)
+      for (const dashDiceAbility of ALL_ABILITIES) {
+        const convertedAbility = this.convertDashDiceToSimpleAbility(dashDiceAbility);
+        await setDoc(doc(db, 'abilities', convertedAbility.id), convertedAbility);
+        
+        if (existingIds.includes(convertedAbility.id)) {
+          updatedCount++;
+          console.log(`🔄 Updated ability: ${convertedAbility.name}`);
+        } else {
+          addedCount++;
+          console.log(`✅ Added new ability: ${convertedAbility.name}`);
+        }
+      }
+      
+      console.log(`🎉 Abilities refresh complete! Added: ${addedCount}, Updated: ${updatedCount}`);
+    } catch (error) {
+      console.error('❌ Error refreshing abilities:', error);
+      throw error;
     }
   }
 
