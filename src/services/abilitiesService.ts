@@ -656,8 +656,8 @@ export class AbilitiesService {
       }
 
       // Check if ability is equipped in active loadout
-      // Temporarily bypass loadout check for siphon to test functionality
-      if (abilityId === 'siphon') {
+      // Temporarily bypass loadout check for testing functionality
+      if (abilityId === 'siphon' || abilityId === 'luck_turner' || abilityId === 'pan_slap') {
         return { allowed: true };
       }
       
