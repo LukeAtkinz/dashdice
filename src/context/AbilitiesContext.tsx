@@ -329,10 +329,11 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
 
       // For variable cost abilities like Luck Turner, calculate cost based on dice values
       let auraCostOverride: number | undefined;
-      if (abilityId === 'luck_turner' && gameState.diceValues) {
-        const [dice1, dice2] = gameState.diceValues;
-        const sum = dice1 + dice2;
-        auraCostOverride = sum >= 7 ? 6 : 3; // 6 AURA for 7+, 3 AURA for below 7
+      if (abilityId === 'luck_turner') {
+        // For now, use minimum cost. In full implementation, this would be player choice
+        // TODO: Add UI for players to choose between 3 AURA (basic) and 6 AURA (advanced) effects
+        auraCostOverride = 3; // Use minimum cost for testing
+        console.log('🎯 Luck Turner using minimum cost: 3 AURA');
       }
 
       // Execute the ability with AURA cost checking and deduction

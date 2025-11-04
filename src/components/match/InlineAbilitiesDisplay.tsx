@@ -204,7 +204,17 @@ export default function InlineAbilitiesDisplay({
   // Get equipped abilities (max 5 slots) with random stacking by category
   // PowerLoadout structure: { tactical?: string, attack?: string, defense?: string, utility?: string, gamechanger?: string }
   const equippedAbilities = useMemo(() => {
-    const abilities = Object.entries(playerPowerLoadout || {})
+    // For testing, use a static loadout with our abilities if no loadout exists
+    const testLoadout = {
+      tactical: 'luck_turner',
+      defense: 'pan_slap'
+    };
+    
+    const loadoutToUse = playerPowerLoadout && Object.keys(playerPowerLoadout).length > 0 
+      ? playerPowerLoadout 
+      : testLoadout;
+    
+    const abilities = Object.entries(loadoutToUse || {})
       .filter(([_, abilityId]) => abilityId)
       .map(([category, abilityId]) => {
         const ability = allAbilities.find(a => a.id === abilityId);
@@ -212,9 +222,9 @@ export default function InlineAbilitiesDisplay({
       })
       .filter(Boolean) as Array<{ category: keyof typeof ABILITY_CATEGORIES; ability: Ability }>;
     
-    // Apply random stacking by category for each match (seeded by matchId for consistency)
+    // Only shuffle once per match using matchId as seed
     return shuffleAbilitiesByCategory(abilities, matchData.id || 'default');
-  }, [playerPowerLoadout, matchData.id]); // Removed allAbilities to prevent reshuffling
+  }, [matchData.id]); // Only depend on matchId - static for the entire match
 
   const handleAbilityClick = async (ability: Ability) => {
     console.log(`🎯 ABILITY CLICKED: ${ability.id}`, {
