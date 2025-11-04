@@ -79,12 +79,19 @@ function createBaseAbility(
 // ==================== TACTICAL ABILITIES ====================
 
 export const LUCK_TURNER: DashDiceAbility = {
-  ...createBaseAbility('luck_turner', 'Luck Turner', AbilityCategory.TACTICAL, AbilityRarity.EPIC, 3, 4),
-  description: 'Manipulate dice probability to reduce failure chance or increase doubles.',
-  longDescription: 'Luck Turner lets you take control of chance itself, mechanically adjusting the odds of your dice rolls for a full turn. Spend 3 AURA to reduce bust chance by 50%, or 6 AURA to also increase double chance by 50%.',
-  flavorText: 'Fortune favors the prepared mind that knows how to tune the odds.',
-  iconUrl: '/abilities/tactical/hand_holding_screwdriver.webp',
+  id: 'luck_turner',
+  name: 'Luck Turner',
+  version: 1,
+  category: AbilityCategory.TACTICAL,
+  type: AbilityType.ACTIVE,
+  rarity: AbilityRarity.EPIC,
+  description: 'Risk–Reward Probability Manipulation: Take control of chance itself.',
+  longDescription: 'Luck Turner lets players take control of chance itself, mechanically adjusting the odds of their dice rolls for a full turn. By "tuning" the dice, a player can reduce the risk of failure or amplify the potential for high-impact outcomes. This ability embodies skill, timing, and strategic risk management — a perfect tool for turning momentum in critical moments.',
+  flavorText: '"A twist here, a tweak there — sometimes fortune just needs a little guidance."',
+  iconUrl: '/abilities/tactical/hand_holding_screwdriver.png',
   cooldown: 2, // 2 turns cooldown
+  auraCost: 3, // Base cost, can spend 6 for enhanced effect
+  starCost: 4, // Power Rating: 4
   
   targeting: {
     type: 'self',
@@ -99,39 +106,30 @@ export const LUCK_TURNER: DashDiceAbility = {
   effects: [
     {
       id: 'luck_turner_basic',
-      name: 'Basic Luck Manipulation',
-      description: '50% less chance to roll a 1 (reduces bust risk)',
+      name: 'Basic Luck Manipulation (3 Aura)',
+      description: '50% less chance to roll a 1 - Reduces the likelihood of a bust on risky turns',
       type: EffectType.MODIFY_DICE_PROBABILITY,
-      magnitude: 'luck_basic', // Custom magnitude for luck manipulation
+      magnitude: 'reduce_bust_50', 
       target: {
         type: 'self',
-        property: 'diceRollProbability'
+        property: 'bustProbability'
       },
       duration: 1 // Lasts for one turn
     },
     {
       id: 'luck_turner_advanced',
-      name: 'Advanced Luck Manipulation',
-      description: '50% less chance to roll a 1 AND 50% increased chance of doubles',
+      name: 'Advanced Luck Manipulation (6 Aura)',
+      description: '50% less chance to roll a 1 AND 50% increased chance of rolling a double - Higher risk, higher reward',
       type: EffectType.MODIFY_DICE_PROBABILITY,
-      magnitude: 'luck_advanced', // Custom magnitude for advanced luck manipulation
+      magnitude: 'luck_advanced_combo',
       target: {
         type: 'self',
         property: 'diceRollProbability'
       },
-      duration: 1, // Lasts for one turn
-      conditions: [
-        {
-          type: 'aura_cost',
-          comparison: 'greater_than',
-          value: 5, // Requires 6 AURA total
-          target: 'currentAura'
-        }
-      ]
+      duration: 1 // Lasts for one turn
     }
   ],
   
-  // Special conditions for variable AURA cost
   conditions: [
     {
       type: 'variable_aura_cost',
@@ -139,29 +137,34 @@ export const LUCK_TURNER: DashDiceAbility = {
       checkFunction: 'checkVariableAuraCost',
       parameters: {
         basicCost: 3,
-        advancedCost: 6,
-        basicEffect: 'luck_basic',
-        advancedEffect: 'luck_advanced'
+        advancedCost: 6
       }
     }
   ],
   
-  persistence: {
-    duration: 1, // One turn duration
-    stackable: false, // Cannot stack multiple luck effects
-    dispellable: true // Can be removed by dispel effects
+  unlockRequirements: {
+    level: 1
   },
   
-  // Custom interactions for probability manipulation
-  interactions: {
-    synergiesWith: ['focus', 'foresight'], // Works well with other dice control
-    counters: [], // Doesn't directly counter abilities
-    counteredBy: ['dispel', 'chaos'], // Dispel effects and chaos abilities counter it
-    blockedBy: ['silence', 'lock'] // Silence or lock effects prevent use
+  // Required balancing data
+  balancing: {
+    powerLevel: 75, // High power level (1-100 scale)
+    winRateImpact: 0.15, // 15% estimated win rate improvement
+    usageFrequency: 'medium', // Expected medium usage
+    lastBalanceUpdate: new Date() as any
   },
   
-  tags: ['probability', 'tactical', 'risk-management', 'turn-modifier']
-} as DashDiceAbility;
+  // Metadata
+  isActive: true,
+  isHidden: false,
+  isDevelopment: false,
+  tags: ['probability', 'tactical', 'risk-management', 'turn-modifier'],
+  
+  // Timestamps
+  createdAt: new Date() as any,
+  updatedAt: new Date() as any,
+  createdBy: 'system'
+};
 
 // Add to collections
 // addAbilityToCollections(LUCK_TURNER); // Will be called after collections are defined
