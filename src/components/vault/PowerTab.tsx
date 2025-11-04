@@ -188,6 +188,45 @@ export default function PowerTab({
       console.log('  - window.unlockPanSlapForMe() - Unlock Pan Slap for current user');
       console.log('  - window.fixAbilitiesCompletely() - Run complete fix');
       console.log('  - window.debugUserAbilities() - Debug and fix user abilities');
+      console.log('  - window.testAbilityInMatch() - Test ability usage with AURA deduction');
+      
+      // Test ability usage in match context
+      (window as any).testAbilityInMatch = async (abilityId = 'luck_turner', matchId = 'test_match') => {
+        try {
+          if (!user?.uid) {
+            console.error('❌ No user logged in');
+            return;
+          }
+          
+          console.log(`🧪 TESTING ABILITY: ${abilityId} in match ${matchId}`);
+          
+          // Import the executeMatchAbility function
+          const { executeMatchAbility } = await import('@/services/abilityFirebaseService');
+          
+          // Test the ability execution with AURA deduction
+          console.log('⚡ Executing ability with AURA deduction...');
+          const result = await executeMatchAbility(
+            matchId,
+            user.uid,
+            abilityId,
+            [], // No targets for these abilities
+            undefined // Use default AURA cost
+          );
+          
+          console.log('🎯 Result:', result);
+          
+          if (result.success) {
+            console.log('✅ Ability executed successfully!');
+            console.log(`💰 AURA spent: ${result.resourcesSpent.aura}`);
+            console.log(`📊 Effects applied: ${result.effectsApplied.join(', ')}`);
+          } else {
+            console.log('❌ Ability execution failed:', result.errorMessage);
+          }
+          
+        } catch (error) {
+          console.error('❌ Test failed:', error);
+        }
+      };
     }
   }, [user]);
   

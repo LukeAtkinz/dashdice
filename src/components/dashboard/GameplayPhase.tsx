@@ -464,8 +464,13 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               {matchData.gameData.turnScore > 0 && (() => {
                 // Get the active player's score (whoever's turn it is)
                 const activePlayer = currentPlayer.turnActive ? currentPlayer : opponent;
-                const totalScore = (activePlayer.playerScore || 0) + (matchData.gameData.turnScore || 0);
-                const isThreeDigits = totalScore >= 100;
+                
+                // Calculate total score based on game mode
+                const totalScore = matchData.gameMode === 'zero-hour' 
+                  ? (activePlayer.playerScore || 0) - (matchData.gameData.turnScore || 0) // Zero Hour: subtract turn score
+                  : (activePlayer.playerScore || 0) + (matchData.gameData.turnScore || 0); // Normal: add turn score
+                  
+                const isThreeDigits = Math.abs(totalScore) >= 100; // Use absolute value for digit count
                 const isLastLine = matchData.gameMode === 'last-line';
                 
                 return (

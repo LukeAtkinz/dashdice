@@ -212,9 +212,9 @@ export default function InlineAbilitiesDisplay({
       })
       .filter(Boolean) as Array<{ category: keyof typeof ABILITY_CATEGORIES; ability: Ability }>;
     
-    // Apply random stacking by category for each match
+    // Apply random stacking by category for each match (seeded by matchId for consistency)
     return shuffleAbilitiesByCategory(abilities, matchData.id || 'default');
-  }, [playerPowerLoadout, allAbilities, matchData.id]);
+  }, [playerPowerLoadout, matchData.id]); // Removed allAbilities to prevent reshuffling
 
   const handleAbilityClick = async (ability: Ability) => {
     console.log(`🎯 ABILITY CLICKED: ${ability.id}`, {
