@@ -10,7 +10,6 @@ import {
   UserProgression,
   ABILITY_CATEGORIES
 } from '@/types/abilities';
-import { ALL_PREDEFINED_ABILITIES } from '@/data/predefinedAbilities';
 
 interface AbilitiesContextType {
   // Core Data
@@ -79,15 +78,8 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
     if (user) {
       initializeAbilitiesData();
     } else {
-      // For guest users, provide read-only access to predefined abilities
-      setAllAbilities(ALL_PREDEFINED_ABILITIES);
-      setProgressionSummary({
-        currentLevel: 1,
-        unlockedAbilities: 0,
-        totalAbilities: ALL_PREDEFINED_ABILITIES.length,
-        starPoints: 5,
-        maxStarPoints: 15
-      });
+      // For guest users, we'll load from Firebase too
+      initializeAbilitiesData();
       setIsLoading(false);
       setIsInitialized(true);
     }
@@ -144,8 +136,9 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
           setAllAbilities(refreshedAbilities);
           console.log(`✅ Abilities refreshed! Now have ${refreshedAbilities.length} total abilities`);
         } catch (refreshError) {
-          console.error('❌ Failed to refresh abilities, using predefined fallback:', refreshError);
-          setAllAbilities(ALL_PREDEFINED_ABILITIES);
+          console.error('❌ Failed to refresh abilities:', refreshError);
+          // Use what we have from Firebase instead of predefined fallback
+          setAllAbilities(abilities);
         }
       } else {
         // Use Firebase abilities (includes Pan Slap and other new abilities)
@@ -182,13 +175,12 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
       }
       
       // If no user abilities, create some mock ones for development
-      const currentAbilitiesForMock = allAbilities.length > 0 ? allAbilities : ALL_PREDEFINED_ABILITIES;
-      if (finalUserAbilities.length === 0 && currentAbilitiesForMock.length > 0) {
+      if (finalUserAbilities.length === 0 && allAbilities.length > 0) {
         const mockUserAbilities: UserAbility[] = [
           {
             id: 'user_ability_1',
             userId: user.uid,
-            abilityId: currentAbilitiesForMock[0]?.id || 'siphon',
+            abilityId: allAbilities[0]?.id || 'luck_turner',
             unlockedAt: new Date() as any,
             timesUsed: 5,
             successRate: 80,
@@ -247,7 +239,6 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
       }
       
       // Set progression or mock data
-      const currentAbilities = allAbilities.length > 0 ? allAbilities : ALL_PREDEFINED_ABILITIES;
       if (!userProgression) {
         const mockProgression: UserProgression = {
           userId: user.uid,
@@ -258,10 +249,10 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
           totalMatches: 8,
           winStreak: 1,
           maxStarPoints: 5,
-          unlockedAbilities: [currentAbilities[0]?.id || 'lucky_reroll', currentAbilities[1]?.id || 'focus_shot'],
+          unlockedAbilities: [allAbilities[0]?.id || 'luck_turner', allAbilities[1]?.id || 'pan_slap'],
           stats: {
             abilitiesUsed: 8,
-            mostUsedAbility: currentAbilities[0]?.id || 'siphon',
+            mostUsedAbility: allAbilities[0]?.id || 'luck_turner',
             favoriteCategory: 'attack',
             averageMatchXP: 45
           },
@@ -273,11 +264,10 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
       }
       
       // Set progression summary or mock data
-      const currentAbilitiesForSummary = allAbilities.length > 0 ? allAbilities : ALL_PREDEFINED_ABILITIES;
       const finalSummary = summary || {
         currentLevel: 1,
         unlockedAbilities: 1,
-        totalAbilities: currentAbilitiesForSummary.length,
+        totalAbilities: allAbilities.length,
         starPoints: 5,
         maxStarPoints: 15
       };
@@ -287,49 +277,20 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('❌ AbilitiesContext: Error initializing abilities data:', error);
       
-      // Fallback to predefined abilities - this should always work
-      setAllAbilities(ALL_PREDEFINED_ABILITIES);
-      
-      // Create mock user abilities 
-      const mockUserAbilities: UserAbility[] = [
-        {
-          id: 'user_ability_1',
-          userId: user.uid,
-          abilityId: 'siphon',
-          unlockedAt: new Date() as any,
-          timesUsed: 0,
-          successRate: 0,
-          isEquipped: false,
-          equippedSlot: undefined
-        }
-      ];
-      setUserAbilities(mockUserAbilities);
-      
-      // Create mock loadout with siphon
-      const mockLoadout: UserLoadout = {
-        id: 'loadout_1',
-        userId: user.uid,
-        name: 'Default Loadout',
-        abilities: {
-          attack: 'siphon'  // Guarantee siphon is available
-        },
-        totalStarCost: 3,
-        maxStarPoints: 15,
-        isActive: true,
-        createdAt: new Date() as any,
-        lastUsed: new Date() as any
-      };
-      setLoadouts([mockLoadout]);
-      setActiveLoadoutState(mockLoadout);
+      // Firebase error - use empty state until it can be resolved
+      setAllAbilities([]);
+      setUserAbilities([]);
+      setLoadouts([]);
+      setActiveLoadoutState(null);
       
       setProgressionSummary({
         currentLevel: 1,
-        unlockedAbilities: 1,
-        totalAbilities: ALL_PREDEFINED_ABILITIES.length,
+        unlockedAbilities: 0,
+        totalAbilities: 0,
         starPoints: 5,
         maxStarPoints: 15
       });
-      console.log('✅ AbilitiesContext: Fallback initialization completed');
+      console.log('❌ AbilitiesContext: Firebase error - using empty state');
       setIsInitialized(true);
     } finally {
       setIsLoading(false);

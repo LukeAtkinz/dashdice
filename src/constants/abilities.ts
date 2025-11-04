@@ -88,7 +88,7 @@ export const LUCK_TURNER: DashDiceAbility = {
   description: 'Risk–Reward Probability Manipulation: Take control of chance itself.',
   longDescription: 'Luck Turner lets players take control of chance itself, mechanically adjusting the odds of their dice rolls for a full turn. By "tuning" the dice, a player can reduce the risk of failure or amplify the potential for high-impact outcomes. This ability embodies skill, timing, and strategic risk management — a perfect tool for turning momentum in critical moments.',
   flavorText: '"A twist here, a tweak there — sometimes fortune just needs a little guidance."',
-  iconUrl: '/abilities/tactical/hand_holding_screwdriver.png',
+  iconUrl: '/Abilities/Base Images/hand holding screwdriver.png',
   cooldown: 2, // 2 turns cooldown
   auraCost: 3, // Base cost, can spend 6 for enhanced effect
   starCost: 4, // Power Rating: 4
@@ -178,7 +178,7 @@ export const PAN_SLAP: DashDiceAbility = {
   description: 'Turn Control / Instant Stop: Deliver a swift and decisive intervention — instantly ending your opponent\'s turn.',
   longDescription: 'Pan Slap delivers a swift and decisive intervention — instantly ending your opponent\'s turn and auto-banking their current turn score. With the iconic frying pan in hand, the player asserts control over the flow of the match, stopping momentum, thwarting combos, and creating space to strike back. It\'s high-impact, high-risk, and high-fun: timing is everything, and a misplay could mean spending 6 aura for minimal disruption if the opponent\'s turn was already weak.',
   flavorText: '"One swing to stop them in their tracks. The pan is heavy, the timing heavier, but victory waits for the bold."',
-  iconUrl: '/abilities/defense/hand_holding_pan.png',
+  iconUrl: '/Abilities/Base Images/hand holding pan.png',
   cooldown: 2, // 2 turns before it can be used again
   auraCost: 6, // High cost reflects its powerful turn-ending capability
   starCost: 5, // Power Rating: 5
