@@ -87,12 +87,12 @@ export class NewMatchmakingService {
         },
         displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped || {
           name: 'Relax',
-          file: CDNOptimizationService.getAssetUrl('backgrounds', 'Relax.png'),
+          file: '/backgrounds/Relax.png',
           type: 'image'
         },
         matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped || {
           name: 'Relax',
-          file: CDNOptimizationService.getAssetUrl('backgrounds', 'Relax.png'),
+          file: '/backgrounds/Relax.png',
           type: 'image'
         },
         ready: false,
