@@ -236,10 +236,45 @@ export async function getPlayerAbilities(playerId: string): Promise<{
   favoriteAbilities: string[];
 }> {
   try {
+    // Check the userAbilities collection first (new system)
+    console.log('🔍 getPlayerAbilities: Checking userAbilities collection for:', playerId);
+    
+    const userAbilitiesQuery = query(
+      collection(db, 'userAbilities'),
+      where('userId', '==', playerId)
+    );
+    const userAbilitiesSnap = await getDocs(userAbilitiesQuery);
+    
+    if (!userAbilitiesSnap.empty) {
+      console.log('🔍 getPlayerAbilities: Found userAbilities, converting to playerAbilities format');
+      
+      // Convert userAbilities format to playerAbilities format
+      const unlockedAbilities: string[] = [];
+      
+      userAbilitiesSnap.docs.forEach(doc => {
+        const data = doc.data();
+        if (data.abilityId) {
+          unlockedAbilities.push(data.abilityId);
+        }
+      });
+      
+      console.log('🔍 getPlayerAbilities: Converted abilities:', unlockedAbilities);
+      
+      return {
+        unlockedAbilities,
+        equippedAbilities: {}, // Will be populated from loadouts
+        favoriteAbilities: []
+      };
+    }
+    
+    // Fallback to playerAbilities collection (old system)
+    console.log('🔍 getPlayerAbilities: No userAbilities found, checking playerAbilities collection');
+    
     const playerAbilitiesRef = doc(db, COLLECTIONS.playerAbilities, playerId);
     const playerAbilitiesSnap = await getDoc(playerAbilitiesRef);
     
     if (!playerAbilitiesSnap.exists()) {
+      console.log('🔍 getPlayerAbilities: No playerAbilities found, returning empty');
       // Return default structure for new players
       return {
         unlockedAbilities: [],
@@ -248,6 +283,7 @@ export async function getPlayerAbilities(playerId: string): Promise<{
       };
     }
     
+    console.log('🔍 getPlayerAbilities: Found playerAbilities, using directly');
     return playerAbilitiesSnap.data() as {
       unlockedAbilities: string[];
       equippedAbilities: { [category in AbilityCategory]?: string };
