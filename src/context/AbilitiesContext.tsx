@@ -523,11 +523,15 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
       return { canUse: false, reason: 'Ability not unlocked' };
     }
     
-    // Temporarily bypass loadout check for siphon to test functionality
-    if (abilityId === 'siphon') {
-      // Still check AURA for siphon
-      if (auraAvailable !== undefined && auraAvailable < ability.auraCost) {
-        return { canUse: false, reason: `Insufficient AURA (need ${ability.auraCost}, have ${auraAvailable})` };
+    // Temporarily bypass loadout check for testing functionality
+    if (abilityId === 'siphon' || abilityId === 'luck_turner' || abilityId === 'pan_slap') {
+      // Still check AURA for these abilities
+      if (auraAvailable !== undefined) {
+        // For variable cost abilities like Luck Turner, use minimum cost for UI checking
+        const requiredAura = abilityId === 'luck_turner' ? 3 : ability.auraCost;
+        if (auraAvailable < requiredAura) {
+          return { canUse: false, reason: `Insufficient AURA (need ${requiredAura}, have ${auraAvailable})` };
+        }
       }
       return { canUse: true };
     }
