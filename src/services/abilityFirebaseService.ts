@@ -500,8 +500,8 @@ export async function executeMatchAbility(
     execution.completedAt = Timestamp.now();
     execution.gameStateAfterExecution = {
       playerAura: { ...matchData.gameData?.playerAura, [playerId]: newAura },
-      currentPlayer: matchData.gameData?.currentPlayer,
-      turnPhase: matchData.gameData?.turnPhase
+      currentPlayer: matchData.gameData?.currentPlayer || playerId, // Use executing player as fallback
+      turnPhase: matchData.gameData?.turnPhase || 'unknown'
     };
     
     // 9. Store execution record

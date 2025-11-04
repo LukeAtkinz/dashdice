@@ -190,6 +190,56 @@ export default function PowerTab({
       console.log('  - window.debugUserAbilities() - Debug and fix user abilities');
       console.log('  - window.testAbilityInMatch() - Test ability usage with AURA deduction');
       console.log('  - window.fixAbilityIcons() - Update Firebase abilities with correct icon paths');
+      console.log('  - window.debugAbilityIcons() - Check current icon URLs in Firebase');
+      
+      // Debug current ability icons in Firebase
+      (window as any).debugAbilityIcons = async () => {
+        try {
+          console.log('🔍 DEBUGGING ABILITY ICONS IN FIREBASE...');
+          
+          // Get abilities from Firebase
+          const abilities = await AbilitiesService.getAllAbilities();
+          console.log(`📚 Found ${abilities.length} abilities in Firebase`);
+          
+          // Check specific abilities
+          const luckTurner = abilities.find(a => a.id === 'luck_turner');
+          const panSlap = abilities.find(a => a.id === 'pan_slap');
+          
+          if (luckTurner) {
+            console.log('🔧 LUCK TURNER:');
+            console.log(`  - Current icon: ${luckTurner.iconUrl}`);
+            console.log(`  - Should be: /Abilities/Base Images/hand holding screwdriver.png`);
+            console.log(`  - Match: ${luckTurner.iconUrl === '/Abilities/Base Images/hand holding screwdriver.png' ? '✅' : '❌'}`);
+          } else {
+            console.log('❌ Luck Turner not found in Firebase');
+          }
+          
+          if (panSlap) {
+            console.log('🍳 PAN SLAP:');
+            console.log(`  - Current icon: ${panSlap.iconUrl}`);
+            console.log(`  - Should be: /Abilities/Base Images/hand holding pan.png`);
+            console.log(`  - Match: ${panSlap.iconUrl === '/Abilities/Base Images/hand holding pan.png' ? '✅' : '❌'}`);
+          } else {
+            console.log('❌ Pan Slap not found in Firebase');
+          }
+          
+          // Test if the image files exist
+          console.log('🌐 Testing image file accessibility...');
+          
+          const testImage1 = new Image();
+          testImage1.onload = () => console.log('✅ Screwdriver image loads successfully');
+          testImage1.onerror = () => console.log('❌ Screwdriver image failed to load');
+          testImage1.src = '/Abilities/Base Images/hand holding screwdriver.png';
+          
+          const testImage2 = new Image();
+          testImage2.onload = () => console.log('✅ Pan image loads successfully');
+          testImage2.onerror = () => console.log('❌ Pan image failed to load');
+          testImage2.src = '/Abilities/Base Images/hand holding pan.png';
+          
+        } catch (error) {
+          console.error('❌ Debug failed:', error);
+        }
+      };
       
       // Fix ability icons in Firebase
       (window as any).fixAbilityIcons = async () => {
