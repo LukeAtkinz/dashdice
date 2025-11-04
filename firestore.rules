@@ -589,10 +589,11 @@ service cloud.firestore {
 
     // ==================== ABILITIES SYSTEM ====================
     
-    // Abilities Collection - all users can read abilities, only admin can write
+    // Abilities Collection - all users can read abilities, authenticated users can create/update
     match /abilities/{abilityId} {
       allow read: if request.auth != null;
-      allow write: if false; // Only server-side operations
+      allow create, update: if request.auth != null; // Allow seeding by authenticated users
+      allow delete: if false; // Only admins can delete (would need admin check)
     }
     
     // User Abilities - users can only access their own abilities
