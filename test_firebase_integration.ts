@@ -5,28 +5,38 @@
 console.log('=== FIREBASE-ONLY ABILITY SYSTEM TEST ===\n');
 
 // Test that the test_luck_turner.ts still works with Firebase as single source
-import testLuckTurner from './test_luck_turner';
+import testAbilities from './test_luck_turner';
 
 async function testFirebaseIntegration() {
   try {
-    // The test_luck_turner function should now be using Firebase data
+    // The testAbilities function should now be using Firebase data
     // instead of hardcoded constants (after useAbilities hook loads from Firebase)
-    const result = testLuckTurner();
+    const result = testAbilities();
     
     console.log('Test Results:');
-    console.log('- Available in system:', result.isAvailable);
-    console.log('- In all abilities:', result.inAllAbilities);  
-    console.log('- In tactical category:', result.inTacticalCategory);
-    console.log('- In epic rarity:', result.inEpicRarity);
-    console.log('- In starter abilities:', result.inStarterAbilities);
+    console.log('- Total abilities:', result.totalAbilities);
+    console.log('- Luck Turner available:', result.luckTurnerAvailable);  
+    console.log('- Pan Slap available:', result.panSlapAvailable);
+    console.log('- Tactical abilities count:', result.tacticalCount);
+    console.log('- Defense abilities count:', result.defenseCount);
+    console.log('- Epic abilities count:', result.epicCount);
     
-    if (result.ability) {
-      console.log('\nAbility Details:');
-      console.log('- Name:', result.ability.name);
-      console.log('- Category:', result.ability.category);
-      console.log('- Rarity:', result.ability.rarity);
-      console.log('- AURA Cost:', result.ability.auraCost);
-      console.log('- Star Cost:', result.ability.starCost);
+    if (result.luckTurner) {
+      console.log('\nLuck Turner Details:');
+      console.log('- Name:', result.luckTurner.name);
+      console.log('- Category:', result.luckTurner.category);
+      console.log('- Rarity:', result.luckTurner.rarity);
+      console.log('- AURA Cost:', result.luckTurner.auraCost);
+      console.log('- Star Cost:', result.luckTurner.starCost);
+    }
+    
+    if (result.panSlap) {
+      console.log('\nPan Slap Details:');
+      console.log('- Name:', result.panSlap.name);
+      console.log('- Category:', result.panSlap.category);
+      console.log('- Rarity:', result.panSlap.rarity);
+      console.log('- AURA Cost:', result.panSlap.auraCost);
+      console.log('- Star Cost:', result.panSlap.starCost);
     }
     
     console.log('\n✅ Test completed successfully');

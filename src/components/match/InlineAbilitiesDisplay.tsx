@@ -80,6 +80,9 @@ export default function InlineAbilitiesDisplay({
                            (matchData.hostData.playerId === playerId ? (matchData.hostData as any).powerLoadout : (matchData.opponentData as any)?.powerLoadout) ||
                            null;
 
+  // Get player's current AURA from match data
+  const currentPlayerAura = matchData.gameData?.playerAura?.[playerId] || 0;
+
   // Get ability cooldowns from match data
   const serverCooldowns = matchData.gameData.abilityCooldowns?.[playerId] || {};
   
@@ -223,9 +226,14 @@ export default function InlineAbilitiesDisplay({
 
     if (isUsing) return;
     
-    // Check timing constraints properly
-    if (ability.timing === 'opponent_turn') {
-      // Siphon and other opponent_turn abilities should only work during opponent's turn
+    // Check timing constraints properly  
+    const isOpponentTurnAbility = ability.timing === 'opponent_turn' || 
+                                 (ability.timing && typeof ability.timing === 'object' && 
+                                  (ability.timing as any).usableWhen?.some((constraint: any) => 
+                                    String(constraint).toLowerCase().includes('opponent_turn')));
+    
+    if (isOpponentTurnAbility) {
+      // Siphon, Pan Slap and other opponent_turn abilities should only work during opponent's turn
       if (isPlayerTurn) return;
     } else {
       // Normal abilities require player turn
@@ -239,6 +247,13 @@ export default function InlineAbilitiesDisplay({
     // Simple once per match limit
     if (usageCount >= 1) return;
 
+    // Check AURA affordability before attempting to use ability
+    const canAfford = canUseAbilityInMatch(ability.id, currentPlayerAura);
+    if (!canAfford.canUse) {
+      console.log(`❌ Cannot use ${ability.name}: ${canAfford.reason}`);
+      return;
+    }
+
     // Trigger visual activation animation
     setActivatingAbility(ability.id);
     setTimeout(() => setActivatingAbility(null), 800); // Reset after animation
@@ -246,13 +261,13 @@ export default function InlineAbilitiesDisplay({
     setIsUsing(ability.id);
     
     try {
-      console.log('🎯 Calling useAbility for:', ability.id);
+      console.log('🎯 Calling useAbility for:', ability.id, `| Current AURA: ${currentPlayerAura}`);
       const result = await useAbility(ability.id, matchData.id || 'unknown', {
         round: 1, // This should come from match state
         userScore: getCurrentPlayer()?.playerScore || 0,
         opponentScore: getOpponent()?.playerScore || 0,
         diceValues: [matchData.gameData.diceOne, matchData.gameData.diceTwo],
-        playerAura: 0 // No longer using aura system
+        playerAura: currentPlayerAura // Pass current AURA to enable cost calculation
       });
       
       console.log('🎯 useAbility result:', result);
@@ -310,8 +325,21 @@ export default function InlineAbilitiesDisplay({
     
     if (cooldown > 0) return { disabled: true, reason: `${cooldown}s` };
     
-    // Special timing check for Siphon (opponent_turn timing)
-    if (ability.timing === 'opponent_turn') {
+    // Check AURA affordability
+    const canAfford = canUseAbilityInMatch(ability.id, currentPlayerAura);
+    if (!canAfford.canUse && canAfford.reason?.includes('AURA')) {
+      // For variable cost abilities like Luck Turner, show minimum cost
+      const auraCost = ability.id === 'luck-turner' ? 3 : ability.auraCost;
+      return { disabled: true, reason: `${auraCost} AURA` };
+    }
+    
+    // Special timing check for opponent_turn abilities (Siphon, Pan Slap, etc.)
+    const isOpponentTurnAbility = ability.timing === 'opponent_turn' || 
+                                 (ability.timing && typeof ability.timing === 'object' && 
+                                  (ability.timing as any).usableWhen?.some((constraint: any) => 
+                                    String(constraint).toLowerCase().includes('opponent_turn')));
+    
+    if (isOpponentTurnAbility) {
       if (isPlayerTurn) return { disabled: true, reason: 'Opponent turn only' };
     } else {
       // Normal abilities require player turn
@@ -380,9 +408,14 @@ export default function InlineAbilitiesDisplay({
         const categoryInfo = ABILITY_CATEGORIES[category];
 
         // Check if ability can be used right now (for visual active state)
+        const isOpponentTurnAbility = ability.timing === 'opponent_turn' || 
+                                     (ability.timing && typeof ability.timing === 'object' && 
+                                      (ability.timing as any).usableWhen?.some((constraint: any) => 
+                                        String(constraint).toLowerCase().includes('opponent_turn')));
+        
         const canUseRightNow = !status.disabled && (
-          (ability.timing === 'opponent_turn' && !isPlayerTurn) ||
-          (ability.timing !== 'opponent_turn' && isPlayerTurn)
+          (isOpponentTurnAbility && !isPlayerTurn) ||
+          (!isOpponentTurnAbility && isPlayerTurn)
         );
 
         // Special handling for siphon
@@ -498,6 +531,28 @@ export default function InlineAbilitiesDisplay({
             {(usageCounts[ability.id] || 0) >= 1 && (
               <div className="absolute bottom-0 right-0 bg-gray-600 text-white text-xs rounded-tl px-1">
                 USED
+              </div>
+            )}
+
+            {/* AURA Cost Display */}
+            <div className={`absolute top-0 left-0 text-xs font-bold px-1 py-0.5 rounded-br ${
+              // Show red if not affordable, blue if affordable
+              currentPlayerAura < (ability.id === 'luck-turner' ? 3 : ability.auraCost)
+                ? 'bg-red-600/90 text-white'
+                : 'bg-blue-600/90 text-white'
+            }`}>
+              {ability.id === 'luck-turner' ? '3-6' : ability.auraCost}
+            </div>
+
+            {/* AURA Insufficient Overlay */}
+            {status.disabled && status.reason?.includes('AURA') && (
+              <div className="absolute inset-0 bg-red-900/70 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-red-300 text-xs font-bold">NEED</div>
+                  <div className="text-red-100 text-sm font-bold">
+                    {ability.id === 'luck-turner' ? '3' : ability.auraCost} ⚡
+                  </div>
+                </div>
               </div>
             )}
           </motion.button>

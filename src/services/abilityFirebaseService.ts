@@ -388,46 +388,116 @@ export async function initializeMatchAbilities(
 }
 
 /**
- * Execute an ability in a match
+ * Execute an ability in a match with AURA cost checking and deduction
  */
 export async function executeMatchAbility(
   matchId: string,
   playerId: string,
   abilityId: string,
-  targetPlayerIds: string[] = []
+  targetPlayerIds: string[] = [],
+  auraCostOverride?: number // For variable cost abilities like Luck Turner
 ): Promise<MatchAbilityExecution> {
   try {
+    // 1. Get the ability definition
+    const abilityDoc = await getDoc(doc(db, 'abilities', abilityId));
+    if (!abilityDoc.exists()) {
+      throw new Error(`Ability ${abilityId} not found`);
+    }
+    const ability = abilityDoc.data() as DashDiceAbility;
+    
+    // 2. Get current match data to check player's AURA
+    const matchDoc = await getDoc(doc(db, 'matches', matchId));
+    if (!matchDoc.exists()) {
+      throw new Error(`Match ${matchId} not found`);
+    }
+    const matchData = matchDoc.data();
+    const currentPlayerAura = matchData.gameData?.playerAura?.[playerId] || 0;
+    
+    // 3. Determine AURA cost (use override for variable costs, otherwise use ability's base cost)
+    const auraCost = auraCostOverride || ability.auraCost;
+    
+    // 4. Check if player has enough AURA
+    if (currentPlayerAura < auraCost) {
+      throw new Error(`Insufficient AURA: need ${auraCost}, have ${currentPlayerAura}`);
+    }
+    
+    // 5. Create execution record
     const execution: MatchAbilityExecution = {
       matchId,
       playerId,
       abilityId,
       targetPlayerIds,
-      status: 'pending',
+      status: 'executing',
       startedAt: Timestamp.now(),
       success: false,
       effectsApplied: [],
-      resourcesSpent: {},
-      gameStateBeforeExecution: null, // TODO: Capture actual game state
-      gameStateAfterExecution: null,  // TODO: Capture actual game state
+      resourcesSpent: {
+        aura: auraCost
+      },
+      gameStateBeforeExecution: {
+        playerAura: matchData.gameData?.playerAura || {},
+        currentPlayer: matchData.gameData?.currentPlayer,
+        turnPhase: matchData.gameData?.turnPhase
+      },
+      gameStateAfterExecution: null,
       impactMetrics: {
         scoreChange: 0,
-        auraChange: 0
+        auraChange: -auraCost
       }
     };
     
-    // Store execution record
+    // 6. Deduct AURA cost from player
+    const newAura = currentPlayerAura - auraCost;
+    await updateDoc(doc(db, 'matches', matchId), {
+      [`gameData.playerAura.${playerId}`]: newAura
+    });
+    
+    console.log(`💫 Ability executed: ${ability.name} | Cost: ${auraCost} AURA | Remaining: ${newAura} AURA`);
+    
+    // 7. Apply ability effects (placeholder for now - would integrate with ability engine)
+    const effectsApplied = await applyAbilityEffects(ability, matchId, playerId, targetPlayerIds);
+    
+    // 8. Update execution with results
+    execution.status = 'completed';
+    execution.success = true;
+    execution.effectsApplied = effectsApplied;
+    execution.completedAt = Timestamp.now();
+    execution.gameStateAfterExecution = {
+      playerAura: { ...matchData.gameData?.playerAura, [playerId]: newAura },
+      currentPlayer: matchData.gameData?.currentPlayer,
+      turnPhase: matchData.gameData?.turnPhase
+    };
+    
+    // 9. Store execution record
     const executionRef = doc(db, 'abilityExecutions', 
       `${matchId}_${playerId}_${abilityId}_${Date.now()}`);
     await setDoc(executionRef, execution);
-    
-    // TODO: Implement actual ability execution logic here
-    // This would integrate with the enhanced ability execution engine
     
     return execution;
   } catch (error) {
     console.error('Error executing match ability:', error);
     throw new Error(`Failed to execute ability ${abilityId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
+}
+
+/**
+ * Apply ability effects (placeholder for ability engine integration)
+ */
+async function applyAbilityEffects(
+  ability: DashDiceAbility,
+  matchId: string,
+  playerId: string,
+  targetPlayerIds: string[]
+): Promise<any[]> {
+  // This is where the actual ability effects would be applied
+  // For now, just return a basic effect applied record
+  return [{
+    effectId: ability.effects[0]?.id || 'unknown',
+    appliedTo: playerId,
+    magnitude: ability.effects[0]?.magnitude || 'default',
+    duration: ability.effects[0]?.duration || 1,
+    appliedAt: Timestamp.now()
+  }];
 }
 
 /**
@@ -457,6 +527,45 @@ export async function updateMatchPlayerAura(
   } catch (error) {
     console.error('Error updating match player aura:', error);
     throw new Error(`Failed to update aura for player ${playerId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Check if a player can afford an ability
+ */
+export async function canPlayerAffordAbility(
+  matchId: string,
+  playerId: string,
+  abilityId: string,
+  auraCostOverride?: number
+): Promise<{ canAfford: boolean; currentAura: number; requiredAura: number }> {
+  try {
+    // Get the ability definition
+    const abilityDoc = await getDoc(doc(db, 'abilities', abilityId));
+    if (!abilityDoc.exists()) {
+      throw new Error(`Ability ${abilityId} not found`);
+    }
+    const ability = abilityDoc.data() as DashDiceAbility;
+    
+    // Get current match data to check player's AURA
+    const matchDoc = await getDoc(doc(db, 'matches', matchId));
+    if (!matchDoc.exists()) {
+      throw new Error(`Match ${matchId} not found`);
+    }
+    const matchData = matchDoc.data();
+    const currentPlayerAura = matchData.gameData?.playerAura?.[playerId] || 0;
+    
+    // Determine AURA cost
+    const requiredAura = auraCostOverride || ability.auraCost;
+    
+    return {
+      canAfford: currentPlayerAura >= requiredAura,
+      currentAura: currentPlayerAura,
+      requiredAura
+    };
+  } catch (error) {
+    console.error('Error checking ability affordability:', error);
+    throw new Error(`Failed to check affordability for ability ${abilityId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

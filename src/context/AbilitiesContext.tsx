@@ -334,43 +334,79 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
     if (!user) return { success: false, error: 'Not authenticated' };
     
     try {
-      // This would typically be handled by a Cloud Function
-      // For now, we'll simulate the validation
-      const canUse = await AbilitiesService.canUseAbility(user.uid, abilityId, matchId);
-      if (!canUse.allowed) {
-        return { success: false, error: canUse.reason };
+      // Import the new ability service with AURA cost checking
+      const { executeMatchAbility } = await import('@/services/abilityFirebaseService');
+      
+      // Get the ability for cost determination
+      const ability = allAbilities.find(a => a.id === abilityId);
+      if (!ability) {
+        return { success: false, error: 'Ability not found' };
       }
 
-      // Log the usage
-      const ability = allAbilities.find(a => a.id === abilityId);
-      if (ability) {
+      // For variable cost abilities like Luck Turner, calculate cost based on dice values
+      let auraCostOverride: number | undefined;
+      if (abilityId === 'luck-turner' && gameState.diceValues) {
+        const [dice1, dice2] = gameState.diceValues;
+        const sum = dice1 + dice2;
+        auraCostOverride = sum >= 7 ? 6 : 3; // 6 AURA for 7+, 3 AURA for below 7
+      }
+
+      // Execute the ability with AURA cost checking and deduction
+      const execution = await executeMatchAbility(
+        matchId,
+        user.uid,
+        abilityId,
+        [], // targetPlayerIds - would be populated for targeted abilities
+        auraCostOverride
+      );
+
+      if (execution.success) {
+        console.log(`✅ Ability ${ability.name} executed successfully! AURA cost: ${execution.resourcesSpent.aura}`);
+        
+        // Log the usage for analytics
         await AbilitiesService.logAbilityUsage({
           matchId,
           userId: user.uid,
           abilityId,
-          auraSpent: ability.auraCost,
+          auraSpent: execution.resourcesSpent.aura || ability.auraCost,
           gameState,
-          result: { success: true }
+          result: { 
+            success: true,
+            effectValue: ability.effects[0]?.value || 0,
+            scoreImpact: execution.impactMetrics?.scoreChange || 0,
+            auraGranted: 0
+          }
         });
         
         // Update ability stats
         await AbilitiesService.updateAbilityStats(user.uid, abilityId, true);
+        
+        // Return effect data compatible with existing system
+        return { 
+          success: true, 
+          effect: { 
+            abilityId,
+            type: ability.effects[0]?.type || 'unknown',
+            value: ability.effects[0]?.value || 0,
+            target: ability.effects[0]?.target || 'self',
+            condition: ability.effects[0]?.condition || 'always',
+            auraCost: execution.resourcesSpent.aura,
+            execution
+          } 
+        };
+      } else {
+        throw new Error('Ability execution failed');
       }
-      
-      // Return proper effect data with abilityId
-      return { 
-        success: true, 
-        effect: { 
-          abilityId,
-          type: ability?.effects[0]?.type || 'unknown',
-          value: ability?.effects[0]?.value || 0,
-          target: ability?.effects[0]?.target || 'self',
-          condition: ability?.effects[0]?.condition || 'always'
-        } 
-      };
     } catch (error) {
       console.error('Error using ability:', error);
-      return { success: false, error: 'Failed to use ability' };
+      const errorMessage = error instanceof Error ? error.message : 'Failed to use ability';
+      
+      // Check for insufficient AURA specifically
+      if (errorMessage.includes('Insufficient AURA')) {
+        return { success: false, error: errorMessage };
+      }
+      
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -505,6 +541,10 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
     
     // Temporarily bypass loadout check for siphon to test functionality
     if (abilityId === 'siphon') {
+      // Still check AURA for siphon
+      if (auraAvailable !== undefined && auraAvailable < ability.auraCost) {
+        return { canUse: false, reason: `Insufficient AURA (need ${ability.auraCost}, have ${auraAvailable})` };
+      }
       return { canUse: true };
     }
     
@@ -512,7 +552,17 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
       return { canUse: false, reason: 'Ability not equipped' };
     }
     
-    // No aura check - abilities can be used once per match
+    // Check AURA cost if AURA is available
+    if (auraAvailable !== undefined) {
+      // For variable cost abilities like Luck Turner, use minimum cost for UI checking
+      // (actual cost will be calculated during execution)
+      const requiredAura = abilityId === 'luck-turner' ? 3 : ability.auraCost;
+      
+      if (auraAvailable < requiredAura) {
+        return { canUse: false, reason: `Insufficient AURA (need ${requiredAura}, have ${auraAvailable})` };
+      }
+    }
+    
     return { canUse: true };
   };
 

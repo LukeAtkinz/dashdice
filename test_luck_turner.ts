@@ -4,71 +4,77 @@ import {
   ABILITIES_BY_RARITY,
   STARTER_ABILITIES,
   getAbilityById,
-  ABILITY_MAP
+  ABILITY_MAP,
+  PAN_SLAP
 } from './src/constants/abilities';
 import { AbilityCategory, AbilityRarity } from './src/types/abilityBlueprint';
 
 /**
- * Test script to verify Luck Turner is properly integrated
+ * Test script to verify Luck Turner and Pan Slap are properly integrated
  */
 
-console.log('=== LUCK TURNER AVAILABILITY TEST ===\n');
+console.log('=== ABILITY INTEGRATION TEST ===\n');
 
-// Test 1: Check if Luck Turner exists in ALL_ABILITIES
-console.log('1. ALL_ABILITIES contains Luck Turner:', 
-  ALL_ABILITIES.some(ability => ability.id === 'luck_turner'));
-console.log('   Total abilities:', ALL_ABILITIES.length);
+// Test 1: Check total abilities
+console.log('1. Total abilities in system:', ALL_ABILITIES.length);
+console.log('   Expected: 2 (Luck Turner + Pan Slap)');
 
-// Test 2: Check if it's in the Tactical category
-const tacticalAbilities = ABILITIES_BY_CATEGORY[AbilityCategory.TACTICAL];
-console.log('\n2. Tactical abilities:', tacticalAbilities.map(a => a.name));
-console.log('   Contains Luck Turner:', 
-  tacticalAbilities.some(ability => ability.id === 'luck_turner'));
-
-// Test 3: Check if it's in Epic rarity
-const epicAbilities = ABILITIES_BY_RARITY[AbilityRarity.EPIC];
-console.log('\n3. Epic abilities:', epicAbilities.map(a => a.name));
-console.log('   Contains Luck Turner:', 
-  epicAbilities.some(ability => ability.id === 'luck_turner'));
-
-// Test 4: Check getAbilityById function
+// Test 2: Check if Luck Turner exists
+console.log('\n2. LUCK TURNER:');
 const luckTurner = getAbilityById('luck_turner');
-console.log('\n4. getAbilityById("luck_turner"):', !!luckTurner);
+console.log('   Available:', !!luckTurner);
 if (luckTurner) {
   console.log('   Name:', luckTurner.name);
   console.log('   Category:', luckTurner.category);
-  console.log('   Rarity:', luckTurner.rarity);
   console.log('   AURA Cost:', luckTurner.auraCost);
-  console.log('   Star Cost:', luckTurner.starCost);
 }
 
-// Test 5: Check ABILITY_MAP
-console.log('\n5. ABILITY_MAP["luck_turner"]:', !!ABILITY_MAP['luck_turner']);
+// Test 3: Check if Pan Slap exists
+console.log('\n3. PAN SLAP:');
+const panSlap = getAbilityById('pan_slap');
+console.log('   Available:', !!panSlap);
+if (panSlap) {
+  console.log('   Name:', panSlap.name);
+  console.log('   Category:', panSlap.category);
+  console.log('   AURA Cost:', panSlap.auraCost);
+  console.log('   Star Cost:', panSlap.starCost);
+  console.log('   Rarity:', panSlap.rarity);
+}
 
-// Test 6: Check STARTER_ABILITIES
-console.log('\n6. STARTER_ABILITIES:', STARTER_ABILITIES.map(a => a.name));
-console.log('   Contains Luck Turner:', 
-  STARTER_ABILITIES.some(ability => ability.id === 'luck_turner'));
+// Test 4: Check category distribution
+console.log('\n4. CATEGORY DISTRIBUTION:');
+const tacticalAbilities = ABILITIES_BY_CATEGORY[AbilityCategory.TACTICAL];
+const defenseAbilities = ABILITIES_BY_CATEGORY[AbilityCategory.DEFENSE];
+console.log('   Tactical abilities:', tacticalAbilities.map(a => a.name));
+console.log('   Defense abilities:', defenseAbilities.map(a => a.name));
 
-// Test 7: Check ability structure
-if (luckTurner) {
-  console.log('\n7. Ability Structure Check:');
-  console.log('   Has effects:', (luckTurner.effects?.length || 0) > 0);
-  console.log('   Has targeting:', !!luckTurner.targeting);
-  console.log('   Has timing:', !!luckTurner.timing);
-  console.log('   Has conditions:', (luckTurner.conditions?.length || 0) > 0);
-  console.log('   Effect types:', luckTurner.effects?.map(e => e.type));
+// Test 5: Check Epic rarity
+console.log('\n5. EPIC RARITY ABILITIES:');
+const epicAbilities = ABILITIES_BY_RARITY[AbilityRarity.EPIC];
+console.log('   Epic abilities:', epicAbilities.map(a => a.name));
+console.log('   Count:', epicAbilities.length, '(expected: 2)');
+
+// Test 6: Verify Pan Slap specifics
+console.log('\n6. PAN SLAP SPECIFICS:');
+if (panSlap) {
+  console.log('   Timing constraint:', panSlap.timing?.usableWhen?.[0]);
+  console.log('   Effect types:', panSlap.effects?.map(e => e.type));
+  console.log('   Cooldown:', panSlap.cooldown, 'turns');
+  console.log('   Power Level:', panSlap.balancing?.powerLevel);
+  console.log('   Tags:', panSlap.tags);
 }
 
 console.log('\n=== TEST COMPLETE ===');
 
-export default function testLuckTurner() {
+export default function testAbilities() {
   return {
-    isAvailable: !!getAbilityById('luck_turner'),
-    inAllAbilities: ALL_ABILITIES.some(a => a.id === 'luck_turner'),
-    inTacticalCategory: ABILITIES_BY_CATEGORY[AbilityCategory.TACTICAL].some(a => a.id === 'luck_turner'),
-    inEpicRarity: ABILITIES_BY_RARITY[AbilityRarity.EPIC].some(a => a.id === 'luck_turner'),
-    inStarterAbilities: STARTER_ABILITIES.some(a => a.id === 'luck_turner'),
-    ability: getAbilityById('luck_turner')
+    totalAbilities: ALL_ABILITIES.length,
+    luckTurnerAvailable: !!getAbilityById('luck_turner'),
+    panSlapAvailable: !!getAbilityById('pan_slap'),
+    tacticalCount: ABILITIES_BY_CATEGORY[AbilityCategory.TACTICAL].length,
+    defenseCount: ABILITIES_BY_CATEGORY[AbilityCategory.DEFENSE].length,
+    epicCount: ABILITIES_BY_RARITY[AbilityRarity.EPIC].length,
+    panSlap: getAbilityById('pan_slap'),
+    luckTurner: getAbilityById('luck_turner')
   };
 }

@@ -166,18 +166,115 @@ export const LUCK_TURNER: DashDiceAbility = {
   createdBy: 'system'
 };
 
+// ==================== PAN SLAP ====================
+
+export const PAN_SLAP: DashDiceAbility = {
+  id: 'pan_slap',
+  name: 'Pan Slap',
+  version: 1,
+  category: AbilityCategory.DEFENSE,
+  type: AbilityType.ACTIVE, // Changed from INSTANT to ACTIVE
+  rarity: AbilityRarity.EPIC,
+  description: 'Turn Control / Instant Stop: Deliver a swift and decisive intervention — instantly ending your opponent\'s turn.',
+  longDescription: 'Pan Slap delivers a swift and decisive intervention — instantly ending your opponent\'s turn and auto-banking their current turn score. With the iconic frying pan in hand, the player asserts control over the flow of the match, stopping momentum, thwarting combos, and creating space to strike back. It\'s high-impact, high-risk, and high-fun: timing is everything, and a misplay could mean spending 6 aura for minimal disruption if the opponent\'s turn was already weak.',
+  flavorText: '"One swing to stop them in their tracks. The pan is heavy, the timing heavier, but victory waits for the bold."',
+  iconUrl: '/abilities/defense/hand_holding_pan.png',
+  cooldown: 2, // 2 turns before it can be used again
+  auraCost: 6, // High cost reflects its powerful turn-ending capability
+  starCost: 5, // Power Rating: 5
+  
+  targeting: {
+    type: 'opponent',
+    allowSelfTarget: false,
+    maxTargets: 1
+  },
+  
+  timing: {
+    usableWhen: [TimingConstraint.OPPONENT_TURN_END]
+  },
+  
+  effects: [
+    {
+      id: 'pan_slap_end_turn',
+      name: 'Instant Turn End',
+      description: 'Immediately ends the opponent\'s turn and auto-banks their current turn score',
+      type: EffectType.SKIP_TURN, // Changed to available effect type
+      magnitude: 'instant_with_banking',
+      target: {
+        type: 'opponent',
+        property: 'turnState'
+      },
+      duration: 0 // Instant effect
+    },
+    {
+      id: 'pan_slap_momentum_break',
+      name: 'Momentum Disruption',
+      description: 'Breaks combo chains and disrupts opponent strategy',
+      type: EffectType.FREEZE_OPPONENT, // Changed to available effect type
+      magnitude: 'full_disruption',
+      target: {
+        type: 'opponent',
+        property: 'momentum'
+      },
+      duration: 0 // Instant effect
+    }
+  ],
+  
+  conditions: [
+    {
+      type: 'timing_restriction',
+      description: 'Can only be used during opponent\'s turn',
+      checkFunction: 'checkOpponentTurnOnly',
+      parameters: {
+        allowedPhases: ['opponent_turn_active']
+      }
+    },
+    {
+      type: 'cooldown_restriction',
+      description: 'Cannot be used for 2 turns after activation to prevent abuse',
+      checkFunction: 'checkCooldownRestriction',
+      parameters: {
+        cooldownTurns: 2
+      }
+    }
+  ],
+  
+  unlockRequirements: {
+    level: 1
+  },
+  
+  // Required balancing data
+  balancing: {
+    powerLevel: 85, // Very high power level due to turn control capability
+    winRateImpact: 0.20, // 20% estimated win rate improvement when used strategically
+    usageFrequency: 'medium', // Changed to valid enum value
+    lastBalanceUpdate: new Date() as any
+  },
+  
+  // Metadata
+  isActive: true,
+  isHidden: false,
+  isDevelopment: false,
+  tags: ['defensive', 'turn-control', 'momentum-breaker', 'instant-stop', 'high-cost'],
+  
+  // Timestamps
+  createdAt: new Date() as any,
+  updatedAt: new Date() as any,
+  createdBy: 'system'
+};
+
 // Add to collections
 // addAbilityToCollections(LUCK_TURNER); // Will be called after collections are defined
 
 // ==================== ABILITY COLLECTIONS ====================
 
 // Populated with implemented abilities
-export const ALL_ABILITIES: DashDiceAbility[] = [LUCK_TURNER];
+export const ALL_ABILITIES: DashDiceAbility[] = [LUCK_TURNER, PAN_SLAP];
 
 export const ABILITIES_BY_CATEGORY: { [key in AbilityCategory]: DashDiceAbility[] } = {
   [AbilityCategory.TACTICAL]: [LUCK_TURNER],
   [AbilityCategory.ATTACK]: [],
-  [AbilityCategory.DEFENSE]: [],
+  [AbilityCategory.DEFENSE]: [PAN_SLAP],
   [AbilityCategory.UTILITY]: [],
   [AbilityCategory.GAMECHANGER]: []
 };
@@ -185,7 +282,7 @@ export const ABILITIES_BY_CATEGORY: { [key in AbilityCategory]: DashDiceAbility[
 export const ABILITIES_BY_RARITY: { [key in AbilityRarity]: DashDiceAbility[] } = {
   [AbilityRarity.COMMON]: [],
   [AbilityRarity.RARE]: [],
-  [AbilityRarity.EPIC]: [LUCK_TURNER],
+  [AbilityRarity.EPIC]: [LUCK_TURNER, PAN_SLAP],
   [AbilityRarity.LEGENDARY]: [],
   [AbilityRarity.MYTHIC]: []
 };
