@@ -135,11 +135,59 @@ export default function PowerTab({
         }
       };
       
-      console.log('🛠️ Browser utilities available:');
+      // Add utility to debug current user abilities
+      (window as any).debugUserAbilities = async () => {
+        try {
+          if (!user?.uid) {
+            console.error('❌ No user logged in');
+            return;
+          }
+          
+          console.log('🔍 DEBUG USER ABILITIES');
+          console.log('👤 User ID:', user.uid.substring(0, 8) + '...');
+          
+          // Get user abilities from service
+          const userAbilities = await AbilitiesService.getUserAbilities(user.uid);
+          console.log(`� User has ${userAbilities.length} abilities unlocked:`);
+          
+          userAbilities.forEach(ua => {
+            console.log(`  - ${ua.abilityId} (times used: ${ua.timesUsed})`);
+          });
+          
+          // Check for specific abilities
+          const hasLuckTurner = userAbilities.find(ua => ua.abilityId === 'luck_turner');
+          const hasPanSlap = userAbilities.find(ua => ua.abilityId === 'pan_slap');
+          
+          console.log('🎯 Specific Abilities:');
+          console.log(`  - Luck Turner: ${hasLuckTurner ? '✅ Unlocked' : '❌ Missing'}`);
+          console.log(`  - Pan Slap: ${hasPanSlap ? '✅ Unlocked' : '❌ Missing'}`);
+          
+          // If missing, unlock them
+          if (!hasLuckTurner) {
+            console.log('🔓 Unlocking Luck Turner...');
+            await AbilitiesService.unlockAbility(user.uid, 'luck_turner');
+            console.log('✅ Luck Turner unlocked!');
+          }
+          
+          if (!hasPanSlap) {
+            console.log('🔓 Unlocking Pan Slap...');
+            await AbilitiesService.unlockAbility(user.uid, 'pan_slap');
+            console.log('✅ Pan Slap unlocked!');
+          }
+          
+          console.log('🎉 Debug complete! Refresh page to see changes.');
+          
+        } catch (error) {
+          console.error('❌ Debug failed:', error);
+        }
+      };
+      
+      console.log('�🛠️ Browser utilities available:');
       console.log('  - window.resetAbilities() - Reset abilities collection');
       console.log('  - window.forceRefreshAbilities() - Update abilities with correct icons');
       console.log('  - window.unlockPanSlapForMe() - Unlock Pan Slap for current user');
       console.log('  - window.fixAbilitiesCompletely() - Run complete fix');
+      console.log('  - window.debugUserAbilities() - Debug and fix user abilities');
     }
   }, [user]);
   
