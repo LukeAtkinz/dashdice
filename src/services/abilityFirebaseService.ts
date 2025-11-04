@@ -472,8 +472,8 @@ export async function executeMatchAbility(
       },
       gameStateBeforeExecution: {
         playerAura: matchData.gameData?.playerAura || {},
-        currentPlayer: matchData.gameData?.currentPlayer,
-        turnPhase: matchData.gameData?.turnPhase
+        currentPlayer: matchData.gameData?.currentPlayer || playerId, // Use executing player as fallback
+        turnPhase: matchData.gameData?.turnPhase || 'unknown'
       },
       gameStateAfterExecution: null,
       impactMetrics: {
