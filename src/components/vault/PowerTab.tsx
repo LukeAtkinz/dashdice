@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAbilities } from '../../hooks/useAbilities';
 import { useAuth } from '@/context/AuthContext';
 import { UserService, PowerLoadout } from '@/services/userService';
+import { AbilitiesService } from '@/services/abilitiesService';
 import PowerCard from './PowerCard';
 import { ABILITY_CATEGORIES } from '../../types/abilities';
 import { resetAbilitiesCollection } from '@/utils/resetAbilities';
@@ -80,9 +81,67 @@ export default function PowerTab({
   useEffect(() => {
     if (typeof window !== 'undefined') {
       (window as any).resetAbilities = resetAbilitiesCollection;
-      console.log('🛠️ Reset function available: Call window.resetAbilities() in console to reset abilities collection');
+      
+      // Add utility to force refresh abilities with correct icon paths
+      (window as any).forceRefreshAbilities = async () => {
+        try {
+          console.log('� Force refreshing abilities...');
+          await AbilitiesService.refreshAllAbilities();
+          console.log('✅ Abilities refreshed! Reload page to see changes.');
+        } catch (error) {
+          console.error('❌ Failed to refresh abilities:', error);
+        }
+      };
+      
+      // Add utility to unlock Pan Slap for current user
+      (window as any).unlockPanSlapForMe = async () => {
+        try {
+          if (!user?.uid) {
+            console.error('❌ No user logged in');
+            return;
+          }
+          console.log('🔓 Unlocking Pan Slap for current user...');
+          const success = await AbilitiesService.unlockAbility(user.uid, 'pan_slap');
+          if (success) {
+            console.log('✅ Pan Slap unlocked! Refresh page to see it.');
+          } else {
+            console.log('❌ Failed to unlock Pan Slap');
+          }
+        } catch (error) {
+          console.error('❌ Error unlocking Pan Slap:', error);
+        }
+      };
+      
+      // Complete fix utility
+      (window as any).fixAbilitiesCompletely = async () => {
+        try {
+          console.log('🔧 Running complete abilities fix...');
+          
+          // Step 1: Refresh abilities
+          console.log('1. Refreshing abilities...');
+          await AbilitiesService.refreshAllAbilities();
+          
+          // Step 2: Unlock Pan Slap for current user
+          if (user?.uid) {
+            console.log('2. Unlocking Pan Slap...');
+            await AbilitiesService.unlockAbility(user.uid, 'pan_slap');
+          }
+          
+          console.log('🎉 Complete fix done! Refresh page to see all changes.');
+          console.log('💡 Pan Slap should now appear in Defense category with proper icon');
+          
+        } catch (error) {
+          console.error('❌ Complete fix failed:', error);
+        }
+      };
+      
+      console.log('🛠️ Browser utilities available:');
+      console.log('  - window.resetAbilities() - Reset abilities collection');
+      console.log('  - window.forceRefreshAbilities() - Update abilities with correct icons');
+      console.log('  - window.unlockPanSlapForMe() - Unlock Pan Slap for current user');
+      console.log('  - window.fixAbilitiesCompletely() - Run complete fix');
     }
-  }, []);
+  }, [user]);
   
   const [currentGameModeIndex, setCurrentGameModeIndex] = useState(0);
   const [gameModeLoadouts, setGameModeLoadouts] = useState<Record<string, Record<string, string>>>({
