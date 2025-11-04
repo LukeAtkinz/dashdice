@@ -100,10 +100,19 @@ export function useAbilities(
     
     try {
       setLoading(true);
+      console.log('🔍 useAbilities: Loading player abilities for user:', currentUser!.uid);
+      
       const abilities = await abilityService.getPlayerAbilities(currentUser!.uid);
+      console.log('🔍 useAbilities: Player abilities response:', abilities);
       
       // Map Firebase response to local state structure
       setPlayerAbilities({
+        unlocked: abilities.unlockedAbilities,
+        equipped: abilities.equippedAbilities,
+        favorites: abilities.favoriteAbilities
+      });
+      
+      console.log('🔍 useAbilities: Mapped player abilities:', {
         unlocked: abilities.unlockedAbilities,
         equipped: abilities.equippedAbilities,
         favorites: abilities.favoriteAbilities
@@ -119,6 +128,8 @@ export function useAbilities(
   const loadAllAbilities = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('🔍 useAbilities: Starting to load abilities from Firebase...');
+      
       const criteria: AbilitySearchCriteria = {
         sortBy: 'name',
         sortOrder: 'asc',
@@ -126,14 +137,17 @@ export function useAbilities(
       };
       
       const result = await abilityService.searchAbilities(criteria);
+      console.log('🔍 useAbilities: Firebase search result:', result);
       
       // If Firebase has no abilities, seed with constants
       if (result.abilities.length === 0) {
         console.log('🌱 No abilities found in Firebase, seeding with constants...');
+        console.log('🌱 Available constants to seed:', ALL_ABILITIES);
         
         // Seed Firebase with our constants
         for (const ability of ALL_ABILITIES) {
           try {
+            console.log(`🌱 Attempting to seed: ${ability.name}`);
             await abilityService.createAbility(ability);
             console.log(`✅ Seeded ability: ${ability.name}`);
           } catch (error) {
@@ -142,9 +156,12 @@ export function useAbilities(
         }
         
         // Reload after seeding
+        console.log('🔄 Reloading abilities after seeding...');
         const reloadResult = await abilityService.searchAbilities(criteria);
+        console.log('🔍 useAbilities: After seeding, result:', reloadResult);
         setAllAbilities(reloadResult.abilities);
       } else {
+        console.log('✅ Found abilities in Firebase:', result.abilities);
         setAllAbilities(result.abilities);
       }
     } catch (err) {

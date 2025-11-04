@@ -70,6 +70,11 @@ export default function PowerTab({
   
   const { user } = useAuth();
   
+  // Debug logging for abilities
+  console.log('🔍 PowerTab Debug - allAbilities:', allAbilities.length, allAbilities);
+  console.log('🔍 PowerTab Debug - playerAbilities:', playerAbilities);
+  console.log('🔍 PowerTab Debug - loading:', loading);
+  
   const [currentGameModeIndex, setCurrentGameModeIndex] = useState(0);
   const [gameModeLoadouts, setGameModeLoadouts] = useState<Record<string, Record<string, string>>>({
     'quick-fire': {},
