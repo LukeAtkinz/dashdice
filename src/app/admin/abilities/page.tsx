@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { syncAbilitiesToFirebase, syncSingleAbility } from '../../../scripts/syncAbilitiesToFirebase';
+import { useState } from 'react';
 import { ALL_ABILITIES, ABILITIES_BY_CATEGORY, ABILITIES_BY_RARITY } from '../../../constants/abilities';
 import { AbilityCategory, AbilityRarity, DashDiceAbility } from '../../../types/abilityBlueprint';
-import { getAbility } from '../../../services/abilityFirebaseService';
+import { getAbility, createAbility } from '../../../services/abilityFirebaseService';
 
 /**
  * Ability Management Dashboard
@@ -45,9 +44,13 @@ export default function AbilityManagementPage() {
     setSyncMessage('Syncing all abilities to Firebase...');
     
     try {
-      await syncAbilitiesToFirebase();
+      let successCount = 0;
+      for (const ability of ALL_ABILITIES) {
+        await createAbility(ability);
+        successCount++;
+      }
       setSyncStatus('success');
-      setSyncMessage(`Successfully synced ${ALL_ABILITIES.length} abilities!`);
+      setSyncMessage(`Successfully synced ${successCount} abilities!`);
     } catch (error) {
       setSyncStatus('error');
       setSyncMessage(`Error syncing abilities: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -60,7 +63,10 @@ export default function AbilityManagementPage() {
     setSyncMessage(`Syncing ${abilityId}...`);
     
     try {
-      await syncSingleAbility(abilityId);
+      const ability = ALL_ABILITIES.find(a => a.id === abilityId);
+      if (!ability) throw new Error('Ability not found');
+      
+      await createAbility(ability);
       setSyncStatus('success');
       setSyncMessage(`Successfully synced ${abilityId}!`);
       
