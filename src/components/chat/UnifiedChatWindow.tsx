@@ -8,7 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useFriends } from '@/context/FriendsContext';
 import { useNavigation } from '@/context/NavigationContext';
 import MessageList from './MessageList';
-import MessageInput from './MessageInput';
+import ChatInput from './ChatInput';
 
 interface ChatTab {
   id: string;
@@ -665,11 +665,14 @@ export default function UnifiedChatWindow({
                 </div>
               )}
               
-              <MessageInput
-                roomId={activeTab?.roomId || ''}
-                onSend={handleSendMessage}
+              <ChatInput
+                onSendMessage={handleSendMessage}
                 disabled={!activeTab}
                 placeholder={`Message ${activeTab?.type === 'global' ? 'Everyone' : activeTab?.title || 'chat'}...`}
+                showVoiceChat={true}
+                voiceLanguage="en-US"
+                maxLength={500}
+                autoFocus={false}
               />
             </div>
           </div>

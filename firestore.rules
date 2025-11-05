@@ -635,5 +635,11 @@ service cloud.firestore {
       allow create: if request.auth != null && 
         request.resource.data.userId == request.auth.uid;
     }
+    
+    // Ability Executions - allow authenticated users to create execution logs
+    match /abilityExecutions/{executionId} {
+      allow read, write: if request.auth != null;
+      allow create: if request.auth != null;
+    }
   }
 }
