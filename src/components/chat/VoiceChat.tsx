@@ -15,6 +15,7 @@ export interface VoiceChatProps {
   showTranscript?: boolean; // Show live transcript
   autoSend?: boolean; // Automatically send completed messages
   minWordCount?: number; // Minimum words before auto-send
+  mode?: 'push-to-talk' | 'toggle'; // Push-to-talk (hold) or toggle (click once to start/stop)
 }
 
 export const VoiceChat: React.FC<VoiceChatProps> = ({
@@ -25,9 +26,11 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
   className = '',
   showTranscript = true,
   autoSend = true, // Changed default to true for real-time
-  minWordCount = 1  // Changed default to 1 for real-time
+  minWordCount = 1,  // Changed default to 1 for real-time
+  mode = 'toggle' // Default to toggle mode for easier use
 }) => {
   const [isPressed, setIsPressed] = useState(false);
+  const [isToggled, setIsToggled] = useState(false); // For toggle mode
   const [lastSentTranscript, setLastSentTranscript] = useState('');
   const [currentTranscript, setCurrentTranscript] = useState('');
   const lastSentRef = useRef('');
@@ -75,19 +78,47 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
     setLanguage(language);
   }, [language, setLanguage]);
 
-  // Handle push-to-talk button press
+  // Handle push-to-talk OR toggle button press
   const handleMouseDown = async (event?: React.MouseEvent) => {
     // Prevent default to stop any propagation
     event?.preventDefault();
     event?.stopPropagation();
     
-    console.log('🎤 handleMouseDown called:', { disabled, isSupported, isPressed, isListening });
+    console.log('🎤 handleMouseDown called:', { disabled, isSupported, isPressed, isListening, mode, isToggled });
     
     if (disabled || !isSupported) {
       console.log('🎤 Cannot start - disabled:', disabled, 'supported:', isSupported);
       return;
     }
     
+    // TOGGLE MODE: Click once to start, click again to stop
+    if (mode === 'toggle') {
+      if (isToggled || isListening) {
+        // Already recording - stop it
+        console.log('🎤 Toggle mode: Stopping recording');
+        setIsToggled(false);
+        stopListening();
+        return;
+      } else {
+        // Not recording - start it
+        console.log('🎤 Toggle mode: Starting recording');
+        setIsToggled(true);
+        try {
+          const success = await startListening();
+          console.log('🎤 startListening result:', success);
+          if (!success) {
+            console.log('🎤 Failed to start listening, resetting isToggled');
+            setIsToggled(false);
+          }
+        } catch (error) {
+          console.error('🎤 Error in handleMouseDown:', error);
+          setIsToggled(false);
+        }
+        return;
+      }
+    }
+    
+    // PUSH-TO-TALK MODE: Hold to record
     // If already pressed or listening, don't start again
     if (isPressed || isListening) {
       console.log('🎤 Already recording, ignoring duplicate call');
@@ -115,7 +146,13 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
     event?.preventDefault();
     event?.stopPropagation();
     
-    console.log('🎤 handleMouseUp called:', { isPressed });
+    console.log('🎤 handleMouseUp called:', { isPressed, mode });
+    
+    // Only handle mouse up in push-to-talk mode
+    if (mode === 'toggle') {
+      console.log('🎤 Toggle mode: Ignoring mouseUp');
+      return;
+    }
     
     if (!isPressed) return;
     
@@ -251,7 +288,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
 
   const buttonClasses = `
     relative overflow-hidden transition-all duration-200 ease-in-out
-    ${isPressed || isListening 
+    ${isPressed || isListening || isToggled
       ? 'bg-red-500 hover:bg-red-600 shadow-lg scale-105' 
       : 'bg-blue-500 hover:bg-blue-600'
     }
@@ -261,6 +298,11 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
 
   const displayTranscript = interimTranscript || transcript;
   const hasTranscript = displayTranscript.trim().length > 0;
+  
+  // Button title based on mode
+  const buttonTitle = mode === 'toggle' 
+    ? (isToggled || isListening ? "Click to stop recording" : "Click to start recording")
+    : (isPressed ? "Release to stop recording" : "Hold to speak (or hold Space)");
 
   return (
     <div 
