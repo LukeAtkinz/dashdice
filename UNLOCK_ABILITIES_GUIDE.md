@@ -1,5 +1,20 @@
 # 🔓 Unlock All Abilities - Complete Guide
 
+## ⚠️ FIRST: Set Yourself as Admin
+
+Before you can unlock abilities for all players, you need admin permissions.
+
+### Step 0: Get Admin Access
+1. Visit: **https://dashdice-j4plvf3mr-dash-dice.vercel.app/admin/set-admin**
+2. Make sure you're logged in
+3. Click: **👑 Set as Admin**
+4. Wait for success message
+5. **Refresh the page** (F5)
+
+✅ You now have admin permissions!
+
+---
+
 ## What This Does
 
 This admin tool unlocks **all 5 abilities** for **every player** in your DashDice database:
@@ -12,7 +27,7 @@ This admin tool unlocks **all 5 abilities** for **every player** in your DashDic
 ## Step-by-Step Instructions
 
 ### 1. Navigate to Admin Page
-Visit: **https://dashdice-l9ulxmcgc-dash-dice.vercel.app/admin/unlock-abilities**
+Visit: **https://dashdice-j4plvf3mr-dash-dice.vercel.app/admin/unlock-abilities**
 
 ### 2. Click the Big Green Button
 Click: **🔓 Unlock All Abilities for All Players**
@@ -101,9 +116,10 @@ If a user already has a `playerAbilities` document:
 
 ## Quick Links
 
-- **Unlock Abilities Admin**: https://dashdice-l9ulxmcgc-dash-dice.vercel.app/admin/unlock-abilities
-- **Ability Management Admin**: https://dashdice-l9ulxmcgc-dash-dice.vercel.app/admin/abilities
-- **Main App**: https://dashdice-l9ulxmcgc-dash-dice.vercel.app
+- **Set Admin Role**: https://dashdice-j4plvf3mr-dash-dice.vercel.app/admin/set-admin ⚠️ DO THIS FIRST
+- **Unlock Abilities Admin**: https://dashdice-j4plvf3mr-dash-dice.vercel.app/admin/unlock-abilities
+- **Ability Management Admin**: https://dashdice-j4plvf3mr-dash-dice.vercel.app/admin/abilities
+- **Main App**: https://dashdice-j4plvf3mr-dash-dice.vercel.app
 
 ---
 
