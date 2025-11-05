@@ -39,6 +39,22 @@ class SpeechRecognitionService {
 
   constructor() {
     this.initializeRecognition();
+    this.initializeAudioContext();
+  }
+
+  private initializeAudioContext() {
+    try {
+      // Initialize AudioContext for voice activity detection
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContext) {
+        this.audioContext = new AudioContext();
+        console.log('🎤 AudioContext initialized for voice activity detection');
+      } else {
+        console.warn('🎤 AudioContext not supported - voice activity detection disabled');
+      }
+    } catch (error) {
+      console.warn('🎤 Failed to initialize AudioContext:', error);
+    }
   }
 
   private initializeRecognition() {
@@ -238,39 +254,56 @@ class SpeechRecognitionService {
   }
 
   public async startListening(): Promise<boolean> {
+    console.log('🎤 SpeechRecognitionService.startListening called');
+    
     if (!this.isSupported) {
-      this.callbacks.onError?.('Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.');
+      const errorMsg = 'Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.';
+      console.error('🎤', errorMsg);
+      this.callbacks.onError?.(errorMsg);
       return false;
     }
 
     if (this.isListening) {
-      console.warn('⚠️ Already listening');
+      console.warn('🎤 Already listening');
       return true;
     }
 
+    console.log('🎤 Requesting microphone permission...');
     // Request microphone permission first
     const hasPermission = await this.requestMicrophonePermission();
     if (!hasPermission) {
+      console.error('🎤 Microphone permission denied');
       return false;
     }
 
     try {
-      // Start voice activity detection if enabled
-      if (this.voiceActivityDetection) {
-        await this.startVoiceActivityDetection();
-      }
-
+      console.log('🎤 Starting speech recognition...');
+      
+      // Clear any previous state
+      this.isListening = false;
+      
+      // Start recognition
       this.recognition.start();
-      return true;
-    } catch (error) {
-      console.error('❌ Failed to start speech recognition:', error);
-      this.callbacks.onError?.('Failed to start voice recognition. Please try again.');
       
-      // Clean up voice activity detection on error
-      if (this.voiceActivityDetection) {
-        this.stopVoiceActivityDetection();
+      // Wait a bit to ensure it started
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      console.log('🎤 Speech recognition started successfully');
+      return true;
+    } catch (error: any) {
+      console.error('🎤 Failed to start speech recognition:', error);
+      
+      let errorMessage = 'Failed to start voice recognition.';
+      
+      if (error.name === 'InvalidStateError') {
+        errorMessage = 'Voice recognition is already running. Please wait and try again.';
+      } else if (error.name === 'NotAllowedError') {
+        errorMessage = 'Microphone permission denied. Please enable microphone access.';
+      } else if (error.name === 'ServiceNotAllowedError') {
+        errorMessage = 'Speech recognition service not allowed. Please check your browser settings.';
       }
       
+      this.callbacks.onError?.(errorMessage);
       return false;
     }
   }
@@ -425,7 +458,17 @@ class SpeechRecognitionService {
   }
 
   private async startVoiceActivityDetection(): Promise<void> {
-    if (!this.voiceActivityDetection || !this.audioContext) return;
+    console.log('🎤 Starting voice activity detection...');
+    
+    if (!this.voiceActivityDetection) {
+      console.log('🎤 Voice activity detection disabled');
+      return;
+    }
+    
+    if (!this.audioContext) {
+      console.warn('🎤 AudioContext not available for voice activity detection');
+      return;
+    }
 
     try {
       // Get microphone stream
@@ -441,14 +484,33 @@ class SpeechRecognitionService {
       const source = this.audioContext.createMediaStreamSource(this.microphoneStream);
       this.analyser = this.audioContext.createAnalyser();
       this.analyser.fftSize = 256;
-      this.analyser.smoothingTimeConstant = 0.8;
+      
       source.connect(this.analyser);
-
-      console.log('🎤 Voice activity detection started');
-      this.monitorVoiceActivity();
+      
+      console.log('🎤 Voice activity detection started successfully');
     } catch (error) {
-      console.error('❌ Failed to start voice activity detection:', error);
+      console.error('🎤 Failed to start voice activity detection:', error);
     }
+  }
+
+  private stopVoiceActivityDetection(): void {
+    console.log('🎤 Stopping voice activity detection...');
+    
+    if (this.microphoneStream) {
+      this.microphoneStream.getTracks().forEach(track => {
+        track.stop();
+        console.log('🎤 Audio track stopped');
+      });
+      this.microphoneStream = null;
+    }
+    
+    if (this.silenceTimer) {
+      clearTimeout(this.silenceTimer);
+      this.silenceTimer = null;
+    }
+    
+    this.analyser = null;
+    console.log('🎤 Voice activity detection stopped');
   }
 
   private monitorVoiceActivity(): void {
@@ -496,25 +558,6 @@ class SpeechRecognitionService {
     };
 
     checkAudioLevel();
-  }
-
-  private stopVoiceActivityDetection(): void {
-    // Clear silence timer
-    if (this.silenceTimer) {
-      clearTimeout(this.silenceTimer);
-      this.silenceTimer = null;
-    }
-
-    // Stop microphone stream
-    if (this.microphoneStream) {
-      this.microphoneStream.getTracks().forEach(track => track.stop());
-      this.microphoneStream = null;
-    }
-
-    // Clean up analyser
-    this.analyser = null;
-
-    console.log('🛑 Voice activity detection stopped');
   }
 
   public static getInstance(): SpeechRecognitionService {

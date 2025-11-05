@@ -66,25 +66,44 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
 
   // Handle push-to-talk button press
   const handleMouseDown = async () => {
-    if (disabled || !isSupported) return;
+    console.log('🎤 handleMouseDown called:', { disabled, isSupported, isPressed });
     
+    if (disabled || !isSupported) {
+      console.log('🎤 Cannot start - disabled:', disabled, 'supported:', isSupported);
+      return;
+    }
+    
+    console.log('🎤 Setting isPressed to true and starting listening...');
     setIsPressed(true);
-    const success = await startListening();
-    if (!success) {
+    
+    try {
+      const success = await startListening();
+      console.log('🎤 startListening result:', success);
+      if (!success) {
+        console.log('🎤 Failed to start listening, resetting isPressed');
+        setIsPressed(false);
+      }
+    } catch (error) {
+      console.error('🎤 Error in handleMouseDown:', error);
       setIsPressed(false);
     }
   };
 
   const handleMouseUp = () => {
+    console.log('🎤 handleMouseUp called:', { isPressed });
+    
     if (!isPressed) return;
     
+    console.log('🎤 Setting isPressed to false and stopping listening...');
     setIsPressed(false);
     stopListening();
     
     // Send message if we have a transcript and not using auto-send
     if (!autoSend && transcript.trim()) {
       const wordCount = transcript.trim().split(/\s+/).length;
+      console.log('🎤 Transcript available:', transcript, 'wordCount:', wordCount, 'minWordCount:', minWordCount);
       if (wordCount >= minWordCount) {
+        console.log('🎤 Sending message:', transcript.trim());
         onMessage(transcript.trim());
         clearTranscript();
         setLastSentTranscript('');
@@ -95,27 +114,81 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
   // Handle keyboard events for space bar push-to-talk
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.code === 'Space' && !event.repeat && !disabled) {
-        event.preventDefault();
-        if (!isPressed) {
-          handleMouseDown();
-        }
+      // Only handle space bar
+      if (event.code !== 'Space') return;
+      
+      const activeElement = document.activeElement;
+      console.log('🎤 Space key down:', {
+        disabled,
+        repeat: event.repeat,
+        isPressed,
+        activeElement: activeElement?.tagName,
+        activeElementType: (activeElement as HTMLInputElement)?.type,
+        activeElementId: activeElement?.id,
+        activeElementClass: activeElement?.className
+      });
+      
+      // Skip if user is typing in an input field, textarea, or contenteditable
+      if (activeElement && (
+        activeElement.tagName === 'INPUT' || 
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.getAttribute('contenteditable') === 'true' ||
+        activeElement.getAttribute('role') === 'textbox'
+      )) {
+        console.log('🎤 Skipping - user is typing in input field');
+        return;
+      }
+      
+      // Prevent default space bar behavior (scrolling)
+      event.preventDefault();
+      event.stopPropagation();
+      
+      if (!event.repeat && !disabled && !isPressed) {
+        console.log('🎤 Space bar pressed - starting voice chat');
+        handleMouseDown();
       }
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
-      if (event.code === 'Space' && !disabled) {
-        event.preventDefault();
+      // Only handle space bar
+      if (event.code !== 'Space') return;
+      
+      const activeElement = document.activeElement;
+      console.log('🎤 Space key up:', {
+        disabled,
+        activeElement: activeElement?.tagName,
+        isPressed
+      });
+      
+      // Skip if user is typing in an input field, textarea, or contenteditable
+      if (activeElement && (
+        activeElement.tagName === 'INPUT' || 
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.getAttribute('contenteditable') === 'true' ||
+        activeElement.getAttribute('role') === 'textbox'
+      )) {
+        console.log('🎤 Skipping - user is typing in input field');
+        return;
+      }
+      
+      // Prevent default space bar behavior
+      event.preventDefault();
+      event.stopPropagation();
+      
+      if (!disabled && isPressed) {
+        console.log('🎤 Space bar released - stopping voice chat');
         handleMouseUp();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+    console.log('🎤 Adding keyboard event listeners for voice chat');
+    document.addEventListener('keydown', handleKeyDown, { capture: true });
+    document.addEventListener('keyup', handleKeyUp, { capture: true });
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
+      console.log('🎤 Removing keyboard event listeners for voice chat');
+      document.removeEventListener('keydown', handleKeyDown, { capture: true });
+      document.removeEventListener('keyup', handleKeyUp, { capture: true });
     };
   }, [isPressed, disabled, transcript, autoSend, minWordCount]);
 
