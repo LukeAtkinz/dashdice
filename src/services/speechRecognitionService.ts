@@ -275,7 +275,7 @@ class SpeechRecognitionService {
 
     // If already listening, just return true
     if (this.isListening) {
-      console.warn('🎤 Already listening, returning true');
+      console.warn('🎤 Already listening, returning true without restarting');
       return true;
     }
 
@@ -287,16 +287,20 @@ class SpeechRecognitionService {
       return false;
     }
 
+    // Double-check we're not already listening (permission request is async)
+    if (this.isListening) {
+      console.warn('🎤 Started during permission request, skipping start');
+      return true;
+    }
+
     try {
       console.log('🎤 Starting speech recognition...');
       
-      // Start recognition
+      // Start recognition - DO NOT set isListening here
+      // It will be set by the onstart event handler
       this.recognition.start();
       
-      // Mark as listening immediately (will be confirmed by onstart event)
-      this.isListening = true;
-      
-      console.log('🎤 Speech recognition start() called successfully');
+      console.log('🎤 Speech recognition start() called, waiting for onstart event');
       return true;
     } catch (error: any) {
       console.error('🎤 Failed to start speech recognition:', error);
@@ -319,7 +323,6 @@ class SpeechRecognitionService {
       }
       
       this.callbacks.onError?.(errorMessage);
-      this.isListening = false;
       return false;
     }
   }
