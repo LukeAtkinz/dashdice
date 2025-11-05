@@ -81,15 +81,16 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
     event?.preventDefault();
     event?.stopPropagation();
     
-    console.log('🎤 handleMouseDown called:', { disabled, isSupported, isPressed });
+    console.log('🎤 handleMouseDown called:', { disabled, isSupported, isPressed, isListening });
     
     if (disabled || !isSupported) {
       console.log('🎤 Cannot start - disabled:', disabled, 'supported:', isSupported);
       return;
     }
     
+    // If already pressed or listening, don't start again
     if (isPressed || isListening) {
-      console.log('🎤 Already recording');
+      console.log('🎤 Already recording, ignoring duplicate call');
       return;
     }
     

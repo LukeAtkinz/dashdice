@@ -122,35 +122,52 @@ class SpeechRecognitionService {
 
     this.recognition.onerror = (event: any) => {
       let errorMessage = 'Speech recognition error';
+      let shouldStopRecognition = true;
       
       switch (event.error) {
         case 'not-allowed':
           errorMessage = 'Microphone access denied. Please enable microphone permissions.';
+          shouldStopRecognition = true;
           break;
         case 'no-speech':
-          errorMessage = 'No speech detected. Please try speaking again.';
-          break;
+          // Don't treat no-speech as a critical error - just log it
+          console.log('🎤 No speech detected yet, waiting for user to speak...');
+          shouldStopRecognition = false;
+          return; // Don't call error callback for no-speech
         case 'audio-capture':
           errorMessage = 'No microphone found. Please check your audio devices.';
+          shouldStopRecognition = true;
           break;
         case 'network':
           errorMessage = 'Network error occurred during speech recognition.';
+          shouldStopRecognition = true;
           break;
         case 'service-not-allowed':
           errorMessage = 'Speech recognition service not allowed.';
+          shouldStopRecognition = true;
           break;
         case 'bad-grammar':
           errorMessage = 'Speech recognition grammar error.';
+          shouldStopRecognition = false;
           break;
         case 'language-not-supported':
           errorMessage = 'Language not supported for speech recognition.';
+          shouldStopRecognition = true;
           break;
+        case 'aborted':
+          // User or app aborted - this is normal
+          console.log('🎤 Recognition aborted');
+          shouldStopRecognition = false;
+          return; // Don't call error callback for aborted
         default:
           errorMessage = `Speech recognition error: ${event.error}`;
+          shouldStopRecognition = true;
       }
 
-      this.callbacks.onError?.(errorMessage);
-      console.error('🚫 Speech recognition error:', event.error, errorMessage);
+      if (shouldStopRecognition) {
+        this.callbacks.onError?.(errorMessage);
+        console.error('🚫 Speech recognition error:', event.error, errorMessage);
+      }
     };
   }
 
@@ -247,7 +264,7 @@ class SpeechRecognitionService {
   }
 
   public async startListening(): Promise<boolean> {
-    console.log('🎤 SpeechRecognitionService.startListening called');
+    console.log('🎤 SpeechRecognitionService.startListening called', { isListening: this.isListening });
     
     if (!this.isSupported) {
       const errorMsg = 'Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.';
@@ -256,14 +273,10 @@ class SpeechRecognitionService {
       return false;
     }
 
+    // If already listening, just return true
     if (this.isListening) {
-      console.warn('🎤 Already listening, aborting previous session');
-      try {
-        this.recognition.abort();
-        await new Promise(resolve => setTimeout(resolve, 100));
-      } catch (e) {
-        console.log('🎤 Error aborting previous session:', e);
-      }
+      console.warn('🎤 Already listening, returning true');
+      return true;
     }
 
     console.log('🎤 Requesting microphone permission...');
@@ -277,9 +290,6 @@ class SpeechRecognitionService {
     try {
       console.log('🎤 Starting speech recognition...');
       
-      // Clear any previous state
-      this.isListening = false;
-      
       // Start recognition
       this.recognition.start();
       
@@ -291,21 +301,16 @@ class SpeechRecognitionService {
     } catch (error: any) {
       console.error('🎤 Failed to start speech recognition:', error);
       
+      // If already started, that's actually okay - just return true
+      if (error.name === 'InvalidStateError') {
+        console.log('🎤 InvalidStateError - already running, treating as success');
+        this.isListening = true;
+        return true;
+      }
+      
       let errorMessage = 'Failed to start voice recognition.';
       
-      if (error.name === 'InvalidStateError') {
-        console.log('🎤 InvalidStateError - recognition already started, aborting and retrying...');
-        try {
-          this.recognition.abort();
-          await new Promise(resolve => setTimeout(resolve, 200));
-          this.recognition.start();
-          this.isListening = true;
-          console.log('🎤 Successfully restarted after InvalidStateError');
-          return true;
-        } catch (retryError) {
-          errorMessage = 'Voice recognition is busy. Please wait a moment and try again.';
-        }
-      } else if (error.name === 'NotAllowedError') {
+      if (error.name === 'NotAllowedError') {
         errorMessage = 'Microphone permission denied. Please allow microphone access when prompted.';
       } else if (error.name === 'ServiceNotAllowedError') {
         errorMessage = 'Speech recognition service not allowed. Please check your browser settings.';
