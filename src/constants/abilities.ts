@@ -269,7 +269,7 @@ export const SCORE_SAW: DashDiceAbility = {
   id: 'score_saw',
   name: 'Score Saw',
   version: 1,
-  category: AbilityCategory.TACTICAL,
+  category: AbilityCategory.ATTACK,
   type: AbilityType.ACTIVE,
   rarity: AbilityRarity.EPIC,
   description: 'Risk–Reward Score Sabotage: Channel AURA into devastating strikes against opponent scores. The more you invest, the deeper you cut.',
@@ -410,7 +410,7 @@ export const SCORE_SIPHON: DashDiceAbility = {
   id: 'score_siphon',
   name: 'Score Siphon',
   version: 1,
-  category: AbilityCategory.TACTICAL,
+  category: AbilityCategory.ATTACK,
   type: AbilityType.ACTIVE,
   rarity: AbilityRarity.EPIC,
   description: 'Risk–Reward Turn Steal: Siphon points from opponent\'s current turn — but timing is critical. Strike during their first roll.',
@@ -702,8 +702,8 @@ export const HARD_HAT: DashDiceAbility = {
 export const ALL_ABILITIES: DashDiceAbility[] = [LUCK_TURNER, PAN_SLAP, SCORE_SAW, SCORE_SIPHON, HARD_HAT];
 
 export const ABILITIES_BY_CATEGORY: { [key in AbilityCategory]: DashDiceAbility[] } = {
-  [AbilityCategory.TACTICAL]: [LUCK_TURNER, SCORE_SAW, SCORE_SIPHON],
-  [AbilityCategory.ATTACK]: [],
+  [AbilityCategory.TACTICAL]: [LUCK_TURNER],
+  [AbilityCategory.ATTACK]: [SCORE_SAW, SCORE_SIPHON],
   [AbilityCategory.DEFENSE]: [PAN_SLAP, HARD_HAT],
   [AbilityCategory.UTILITY]: [],
   [AbilityCategory.GAMECHANGER]: []
