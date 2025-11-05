@@ -55,22 +55,25 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
     onTranscript: (newTranscript: string, isFinal: boolean) => {
       console.log('🎤 onTranscript:', { newTranscript, isFinal, autoSend, length: newTranscript.length });
       
-      // Send immediately for both interim AND final results in real-time mode
+      // CONTINUOUS REAL-TIME: Send EVERY update (both interim and final)
       if (autoSend && newTranscript.trim()) {
         const trimmed = newTranscript.trim();
         
-        // Only send if it's different from what we last sent
-        if (trimmed !== lastSentRef.current) {
-          console.log('🎤 Sending real-time message:', trimmed);
-          onMessage(trimmed);
-          lastSentRef.current = trimmed;
+        // Send EVERY transcript change for truly continuous flow
+        // The ChatInput component will handle deduplication
+        console.log('🎤 Sending continuous real-time transcript:', trimmed);
+        onMessage(trimmed);
+        
+        // Update local state for display
+        if (isFinal) {
           setLastSentTranscript(trimmed);
+          lastSentRef.current = trimmed;
         }
       }
       
       setCurrentTranscript(newTranscript);
     },
-    minConfidence: 0.4 // Lower confidence for real-time
+    minConfidence: 0.3 // Lower confidence for more real-time updates
   });
 
   // Update language when prop changes
@@ -444,8 +447,8 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
                     )}
                   </p>
                   {autoSend && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      Auto-send enabled • Min {minWordCount} words
+                    <p className="text-xs text-green-600 dark:text-green-400 mt-1 font-medium">
+                      ✨ Continuous real-time mode • Messages auto-send as you speak
                     </p>
                   )}
                 </div>
@@ -466,7 +469,11 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
 
       {/* Instructions */}
       <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-        💡 Hold button or press <kbd className="px-1 bg-gray-200 dark:bg-gray-700 rounded">Space</kbd> to speak
+        {mode === 'toggle' ? (
+          <span>💡 Click <strong>once</strong> to start recording, click again to stop • Real-time transcription enabled</span>
+        ) : (
+          <span>💡 Hold button or press <kbd className="px-1 bg-gray-200 dark:bg-gray-700 rounded">Space</kbd> to speak • Real-time transcription</span>
+        )}
       </div>
     </div>
   );

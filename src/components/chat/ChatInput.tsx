@@ -29,7 +29,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 }) => {
   const [message, setMessage] = useState('');
   const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [voiceTranscript, setVoiceTranscript] = useState(''); // Real-time voice transcript
   const inputRef = useRef<HTMLInputElement>(null);
+  const lastSentVoiceRef = useRef('');
 
   // Auto-focus input when component mounts
   useEffect(() => {
@@ -68,12 +70,22 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  // Handle voice message
+  // Handle voice message - REAL-TIME CONTINUOUS
   const handleVoiceMessage = (voiceText: string) => {
     const trimmedVoiceText = voiceText.trim();
+    console.log('🎤 handleVoiceMessage:', trimmedVoiceText);
+    
     if (trimmedVoiceText && trimmedVoiceText.length > 0) {
-      onSendMessage(trimmedVoiceText);
-      console.log('📤 Voice message sent:', trimmedVoiceText);
+      // Update the transcript display in real-time
+      setVoiceTranscript(trimmedVoiceText);
+      
+      // Auto-send EVERY update immediately - continuous flow
+      // Only send if it's different from last sent to avoid duplicates
+      if (trimmedVoiceText !== lastSentVoiceRef.current) {
+        console.log('📤 Auto-sending voice message:', trimmedVoiceText);
+        onSendMessage(trimmedVoiceText);
+        lastSentVoiceRef.current = trimmedVoiceText;
+      }
     }
   };
 
