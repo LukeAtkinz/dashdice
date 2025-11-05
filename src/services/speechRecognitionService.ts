@@ -183,19 +183,8 @@ class SpeechRecognitionService {
 
   public async requestMicrophonePermission(): Promise<boolean> {
     try {
-      // Check for existing permissions first
-      if (navigator.permissions) {
-        try {
-          const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName });
-          if (permissionStatus.state === 'granted') {
-            console.log('✅ Microphone permission already granted');
-            return true;
-          }
-        } catch (error) {
-          console.log('⚠️ Permissions API not available, proceeding with getUserMedia');
-        }
-      }
-
+      console.log('🎤 Requesting microphone permission...');
+      
       // Request microphone access
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
@@ -207,6 +196,8 @@ class SpeechRecognitionService {
           channelCount: 1
         } 
       });
+      
+      console.log('✅ Microphone permission granted, stream obtained');
       
       // Stop the stream immediately as we just needed permission
       stream.getTracks().forEach(track => {
@@ -223,29 +214,31 @@ class SpeechRecognitionService {
       
       return true;
     } catch (error: any) {
-      console.error('❌ Microphone permission denied:', error);
+      console.error('❌ Microphone permission error:', error);
       
       let errorMessage = 'Microphone permission denied.';
       
-      if (error.name === 'NotAllowedError') {
-        errorMessage = 'Microphone access denied. Please enable microphone permissions in your browser settings.';
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        errorMessage = 'Microphone access denied. Please click "Allow" when prompted, or enable microphone permissions in your browser settings.';
         
         // Mobile-specific instructions
         if (this.isMobile()) {
           if (this.isIOS()) {
-            errorMessage += ' On iOS: Settings > Safari > Microphone.';
+            errorMessage += '\n\nOn iOS: Settings > Safari > Microphone > Allow';
           } else if (this.isAndroid()) {
-            errorMessage += ' On Android: Site Settings > Microphone.';
+            errorMessage += '\n\nOn Android: Site Settings > Microphone > Allow';
           }
         }
       } else if (error.name === 'NotFoundError') {
-        errorMessage = 'No microphone found. Please check your audio devices.';
+        errorMessage = 'No microphone found. Please connect a microphone and try again.';
       } else if (error.name === 'NotSupportedError') {
-        errorMessage = 'Microphone not supported on this device.';
+        errorMessage = 'Microphone not supported on this device or browser.';
       } else if (error.name === 'SecurityError') {
-        errorMessage = 'Microphone access blocked by security policy. Please use HTTPS.';
+        errorMessage = 'Microphone access blocked by security policy. Make sure you are using HTTPS.';
       } else if (error.name === 'AbortError') {
-        errorMessage = 'Microphone request was aborted.';
+        errorMessage = 'Microphone request was cancelled. Please try again.';
+      } else {
+        errorMessage = `Microphone error: ${error.message || error.name || 'Unknown error'}`;
       }
       
       this.callbacks.onError?.(errorMessage);
@@ -264,8 +257,13 @@ class SpeechRecognitionService {
     }
 
     if (this.isListening) {
-      console.warn('🎤 Already listening');
-      return true;
+      console.warn('🎤 Already listening, aborting previous session');
+      try {
+        this.recognition.abort();
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (e) {
+        console.log('🎤 Error aborting previous session:', e);
+      }
     }
 
     console.log('🎤 Requesting microphone permission...');
@@ -285,10 +283,10 @@ class SpeechRecognitionService {
       // Start recognition
       this.recognition.start();
       
-      // Wait a bit to ensure it started
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Mark as listening immediately (will be confirmed by onstart event)
+      this.isListening = true;
       
-      console.log('🎤 Speech recognition started successfully');
+      console.log('🎤 Speech recognition start() called successfully');
       return true;
     } catch (error: any) {
       console.error('🎤 Failed to start speech recognition:', error);
@@ -296,14 +294,27 @@ class SpeechRecognitionService {
       let errorMessage = 'Failed to start voice recognition.';
       
       if (error.name === 'InvalidStateError') {
-        errorMessage = 'Voice recognition is already running. Please wait and try again.';
+        console.log('🎤 InvalidStateError - recognition already started, aborting and retrying...');
+        try {
+          this.recognition.abort();
+          await new Promise(resolve => setTimeout(resolve, 200));
+          this.recognition.start();
+          this.isListening = true;
+          console.log('🎤 Successfully restarted after InvalidStateError');
+          return true;
+        } catch (retryError) {
+          errorMessage = 'Voice recognition is busy. Please wait a moment and try again.';
+        }
       } else if (error.name === 'NotAllowedError') {
-        errorMessage = 'Microphone permission denied. Please enable microphone access.';
+        errorMessage = 'Microphone permission denied. Please allow microphone access when prompted.';
       } else if (error.name === 'ServiceNotAllowedError') {
         errorMessage = 'Speech recognition service not allowed. Please check your browser settings.';
+      } else {
+        errorMessage = `Voice recognition error: ${error.message || error.name}`;
       }
       
       this.callbacks.onError?.(errorMessage);
+      this.isListening = false;
       return false;
     }
   }

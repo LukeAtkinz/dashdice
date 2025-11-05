@@ -24,11 +24,12 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
   language = 'en-US',
   className = '',
   showTranscript = true,
-  autoSend = false,
-  minWordCount = 2
+  autoSend = true, // Changed default to true for real-time
+  minWordCount = 1  // Changed default to 1 for real-time
 }) => {
   const [isPressed, setIsPressed] = useState(false);
   const [lastSentTranscript, setLastSentTranscript] = useState('');
+  const [currentTranscript, setCurrentTranscript] = useState('');
 
   const {
     isListening,
@@ -48,15 +49,27 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
       interimResults: true
     },
     onTranscript: (newTranscript: string, isFinal: boolean) => {
+      console.log('🎤 onTranscript:', { newTranscript, isFinal, autoSend });
+      
+      // For real-time: send interim results as they come
+      if (!isFinal && newTranscript.trim()) {
+        setCurrentTranscript(newTranscript);
+      }
+      
+      // For final results: send and clear
       if (isFinal && autoSend) {
         const wordCount = newTranscript.trim().split(/\s+/).length;
-        if (wordCount >= minWordCount && newTranscript !== lastSentTranscript) {
-          onMessage(newTranscript);
-          setLastSentTranscript(newTranscript);
+        console.log('🎤 Final transcript:', { newTranscript, wordCount, minWordCount });
+        
+        if (wordCount >= minWordCount && newTranscript.trim() !== lastSentTranscript.trim()) {
+          console.log('🎤 Sending final message:', newTranscript.trim());
+          onMessage(newTranscript.trim());
+          setLastSentTranscript(newTranscript.trim());
+          setCurrentTranscript('');
         }
       }
     },
-    minConfidence: 0.7
+    minConfidence: 0.5 // Lower confidence for real-time
   });
 
   // Update language when prop changes
@@ -65,11 +78,20 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
   }, [language, setLanguage]);
 
   // Handle push-to-talk button press
-  const handleMouseDown = async () => {
+  const handleMouseDown = async (event?: React.MouseEvent) => {
+    // Prevent default to stop any propagation
+    event?.preventDefault();
+    event?.stopPropagation();
+    
     console.log('🎤 handleMouseDown called:', { disabled, isSupported, isPressed });
     
     if (disabled || !isSupported) {
       console.log('🎤 Cannot start - disabled:', disabled, 'supported:', isSupported);
+      return;
+    }
+    
+    if (isPressed || isListening) {
+      console.log('🎤 Already recording');
       return;
     }
     
@@ -89,7 +111,11 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
     }
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (event?: React.MouseEvent) => {
+    // Prevent default to stop any propagation
+    event?.preventDefault();
+    event?.stopPropagation();
+    
     console.log('🎤 handleMouseUp called:', { isPressed });
     
     if (!isPressed) return;
@@ -113,9 +139,12 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
 
   // Handle keyboard events for space bar push-to-talk
   useEffect(() => {
+    // Don't add keyboard listeners if disabled or not supported
+    if (disabled || !isSupported) return;
+    
     const handleKeyDown = (event: KeyboardEvent) => {
       // Only handle space bar
-      if (event.code !== 'Space') return;
+      if (event.code !== 'Space' && event.key !== ' ') return;
       
       const activeElement = document.activeElement;
       console.log('🎤 Space key down:', {
@@ -139,11 +168,12 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
         return;
       }
       
-      // Prevent default space bar behavior (scrolling)
+      // IMPORTANT: Prevent default space bar behavior
       event.preventDefault();
       event.stopPropagation();
+      event.stopImmediatePropagation();
       
-      if (!event.repeat && !disabled && !isPressed) {
+      if (!event.repeat && !disabled && !isPressed && !isListening) {
         console.log('🎤 Space bar pressed - starting voice chat');
         handleMouseDown();
       }
@@ -151,7 +181,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
 
     const handleKeyUp = (event: KeyboardEvent) => {
       // Only handle space bar
-      if (event.code !== 'Space') return;
+      if (event.code !== 'Space' && event.key !== ' ') return;
       
       const activeElement = document.activeElement;
       console.log('🎤 Space key up:', {
@@ -171,9 +201,10 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
         return;
       }
       
-      // Prevent default space bar behavior
+      // IMPORTANT: Prevent default space bar behavior
       event.preventDefault();
       event.stopPropagation();
+      event.stopImmediatePropagation();
       
       if (!disabled && isPressed) {
         console.log('🎤 Space bar released - stopping voice chat');
@@ -190,7 +221,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
       document.removeEventListener('keydown', handleKeyDown, { capture: true });
       document.removeEventListener('keyup', handleKeyUp, { capture: true });
     };
-  }, [isPressed, disabled, transcript, autoSend, minWordCount]);
+  }, [isPressed, disabled, isListening, transcript, autoSend, minWordCount]);
 
   // Manual send function for non-auto-send mode
   const handleSendMessage = () => {
@@ -233,14 +264,37 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
   const hasTranscript = displayTranscript.trim().length > 0;
 
   return (
-    <div className={`voice-chat ${className}`}>
+    <div className={`voice-chat ${className}`} onClick={(e) => e.stopPropagation()}>
       {/* Voice Chat Button */}
       <div className="flex items-center gap-3">
         <button
+          type="button"
           className={buttonClasses}
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp} // Stop if mouse leaves button
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleMouseDown(e);
+          }}
+          onMouseUp={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleMouseUp(e);
+          }}
+          onMouseLeave={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleMouseUp(e);
+          }}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleMouseDown();
+          }}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleMouseUp();
+          }}
           disabled={disabled}
           title={isPressed ? "Release to stop recording" : "Hold to speak (or hold Space)"}
         >
