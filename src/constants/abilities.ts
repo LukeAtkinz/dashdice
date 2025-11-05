@@ -263,16 +263,157 @@ export const PAN_SLAP: DashDiceAbility = {
   createdBy: 'system'
 };
 
+// ==================== SCORE SAW ====================
+
+export const SCORE_SAW: DashDiceAbility = {
+  id: 'score_saw',
+  name: 'Score Saw',
+  version: 1,
+  category: AbilityCategory.TACTICAL,
+  type: AbilityType.ACTIVE,
+  rarity: AbilityRarity.EPIC,
+  description: 'Risk–Reward Score Sabotage: Channel AURA into devastating strikes against opponent scores. The more you invest, the deeper you cut.',
+  longDescription: 'Score Saw channels a player\'s aura into a sharp, decisive strike against an opponent\'s current turn score — and with higher investment, their banked points. The more aura spent, the more destructive the strike: from minor disruption to a devastating reset. Timing and strategy are critical: use it too early, and your opponent may recover; spend too much aura, and your own resources are at risk.',
+  flavorText: '"A well-timed strike can undo an empire built in a single turn. Precision is everything — slice carefully, or bleed yourself dry."',
+  iconUrl: '/Abilities/Base Images/hand holding saw.webp',
+  cooldown: 0, // No cooldown, limited by AURA cost
+  auraCost: 2, // Minimum cost, scales up to 10
+  starCost: 4, // Power Rating: 4
+  
+  targeting: {
+    type: 'opponent',
+    allowSelfTarget: false,
+    maxTargets: 1
+  },
+  
+  timing: {
+    usableWhen: [TimingConstraint.OPPONENT_TURN_END]
+  },
+  
+  effects: [
+    {
+      id: 'score_saw_light_cut',
+      name: 'Light Cut (2 Aura)',
+      description: 'Reduce opponent\'s current turn score by 25% - Low risk disruption',
+      type: EffectType.MODIFY_SCORE,
+      magnitude: 'reduce_turn_score_25',
+      target: {
+        type: 'opponent',
+        property: 'currentTurnScore'
+      },
+      duration: 0 // Instant effect
+    },
+    {
+      id: 'score_saw_deep_cut',
+      name: 'Deep Cut (4 Aura)',
+      description: 'Reduce opponent\'s current turn score by 50% - Moderate risk disruption',
+      type: EffectType.MODIFY_SCORE,
+      magnitude: 'reduce_turn_score_50',
+      target: {
+        type: 'opponent',
+        property: 'currentTurnScore'
+      },
+      duration: 0 // Instant effect
+    },
+    {
+      id: 'score_saw_reset_cut',
+      name: 'Reset Cut (6 Aura)',
+      description: 'Reset opponent\'s current turn score to 0 - High risk turn destruction',
+      type: EffectType.MODIFY_SCORE,
+      magnitude: 'reset_turn_score',
+      target: {
+        type: 'opponent',
+        property: 'currentTurnScore'
+      },
+      duration: 0 // Instant effect
+    },
+    {
+      id: 'score_saw_bank_devastation',
+      name: 'Bank Devastation (10 Aura)',
+      description: 'Remove 50% of opponent\'s banked score - Very high risk game changer',
+      type: EffectType.MODIFY_SCORE,
+      magnitude: 'reduce_banked_score_50',
+      target: {
+        type: 'opponent',
+        property: 'bankedScore'
+      },
+      duration: 0 // Instant effect
+    }
+  ],
+  
+  conditions: [
+    {
+      type: 'variable_aura_cost',
+      description: 'Costs 2/4/6/10 AURA for different effect levels',
+      checkFunction: 'checkScoreSawAuraCost',
+      parameters: {
+        lightCut: 2,
+        deepCut: 4,
+        resetCut: 6,
+        bankDevastiation: 10
+      }
+    },
+    {
+      type: 'opponent_turn_only',
+      description: 'Can only be used during opponent\'s turn',
+      checkFunction: 'checkOpponentTurnOnly',
+      parameters: {
+        allowedPhases: ['opponent_turn_active']
+      }
+    },
+    {
+      type: 'no_stacking',
+      description: 'Cannot stack with other score-altering abilities on the same turn',
+      checkFunction: 'checkNoScoreStackingThisTurn',
+      parameters: {
+        conflictingTypes: ['score_modification', 'turn_alteration']
+      }
+    },
+    {
+      type: 'backfire_risk',
+      description: 'Rolling a double after activation triggers backfire',
+      checkFunction: 'checkScoreSawBackfire',
+      parameters: {
+        backfireChance: 0.15,
+        backfireEffect: 'opponent_recovers_half_and_player_loses_10_percent'
+      }
+    }
+  ],
+  
+  unlockRequirements: {
+    level: 1
+  },
+  
+  // Required balancing data
+  balancing: {
+    powerLevel: 90, // Very high power level due to scaling devastation
+    winRateImpact: 0.25, // 25% estimated win rate improvement when used strategically
+    usageFrequency: 'medium', // High cost limits overuse
+    lastBalanceUpdate: new Date() as any
+  },
+  
+  // Metadata
+  isActive: true,
+  isHidden: false,
+  isDevelopment: false,
+  tags: ['tactical', 'score-sabotage', 'scaling-cost', 'high-risk', 'comeback-mechanic'],
+  
+  // Timestamps
+  createdAt: new Date() as any,
+  updatedAt: new Date() as any,
+  createdBy: 'system'
+};
+
 // Add to collections
 // addAbilityToCollections(LUCK_TURNER); // Will be called after collections are defined
 
 // ==================== ABILITY COLLECTIONS ====================
 
 // Populated with implemented abilities
-export const ALL_ABILITIES: DashDiceAbility[] = [LUCK_TURNER, PAN_SLAP];
+export const ALL_ABILITIES: DashDiceAbility[] = [LUCK_TURNER, PAN_SLAP, SCORE_SAW];
 
 export const ABILITIES_BY_CATEGORY: { [key in AbilityCategory]: DashDiceAbility[] } = {
-  [AbilityCategory.TACTICAL]: [LUCK_TURNER],
+  [AbilityCategory.TACTICAL]: [LUCK_TURNER, SCORE_SAW],
   [AbilityCategory.ATTACK]: [],
   [AbilityCategory.DEFENSE]: [PAN_SLAP],
   [AbilityCategory.UTILITY]: [],
@@ -282,13 +423,13 @@ export const ABILITIES_BY_CATEGORY: { [key in AbilityCategory]: DashDiceAbility[
 export const ABILITIES_BY_RARITY: { [key in AbilityRarity]: DashDiceAbility[] } = {
   [AbilityRarity.COMMON]: [],
   [AbilityRarity.RARE]: [],
-  [AbilityRarity.EPIC]: [LUCK_TURNER, PAN_SLAP],
+  [AbilityRarity.EPIC]: [LUCK_TURNER, PAN_SLAP, SCORE_SAW],
   [AbilityRarity.LEGENDARY]: [],
   [AbilityRarity.MYTHIC]: []
 };
 
 // Starter abilities for new players - add basic abilities as we implement them
-export const STARTER_ABILITIES: DashDiceAbility[] = [LUCK_TURNER, PAN_SLAP];
+export const STARTER_ABILITIES: DashDiceAbility[] = [LUCK_TURNER, PAN_SLAP, SCORE_SAW];
 
 // ==================== ABILITY MAP ====================
 

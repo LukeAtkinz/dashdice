@@ -525,15 +525,148 @@ async function applyAbilityEffects(
   playerId: string,
   targetPlayerIds: string[]
 ): Promise<any[]> {
-  // This is where the actual ability effects would be applied
-  // For now, just return a basic effect applied record
-  return [{
-    effectId: ability.effects[0]?.id || 'unknown',
-    appliedTo: playerId,
-    magnitude: ability.effects[0]?.magnitude || 'default',
-    duration: ability.effects[0]?.duration || 1,
-    appliedAt: Timestamp.now()
-  }];
+  const effectsApplied: any[] = [];
+  
+  try {
+    // Handle Score Saw specific effects
+    if (ability.id === 'score_saw') {
+      const matchDoc = await getDoc(doc(db, 'matches', matchId));
+      if (!matchDoc.exists()) {
+        throw new Error(`Match ${matchId} not found for Score Saw execution`);
+      }
+      
+      const matchData = matchDoc.data();
+      const targetPlayerId = targetPlayerIds[0]; // Score Saw targets one opponent
+      
+      if (!targetPlayerId) {
+        throw new Error('Score Saw requires a target player');
+      }
+      
+      // Get current scores
+      const currentTurnScore = matchData.gameData?.currentTurnScore?.[targetPlayerId] || 0;
+      const bankedScore = matchData.gameData?.bankedScore?.[targetPlayerId] || 0;
+      
+      // Determine effect based on AURA cost (passed via ability execution)
+      const auraCost = matchData.gameData?.playerAura?.[playerId] ? 
+        matchData.gameData.playerAura[playerId] + ability.auraCost : ability.auraCost;
+      
+      let scoreDamage = 0;
+      let effectType = '';
+      
+      if (auraCost >= 10) {
+        // Bank Devastation (10 AURA) - Remove 50% of banked score
+        scoreDamage = Math.floor(bankedScore * 0.5);
+        effectType = 'bank_devastation';
+        
+        await updateDoc(doc(db, 'matches', matchId), {
+          [`gameData.bankedScore.${targetPlayerId}`]: bankedScore - scoreDamage
+        });
+        
+        console.log(`🪚 Score Saw - Bank Devastation: Removed ${scoreDamage} from ${targetPlayerId}'s banked score`);
+        
+      } else if (auraCost >= 6) {
+        // Reset Cut (6 AURA) - Reset current turn score to 0
+        scoreDamage = currentTurnScore;
+        effectType = 'reset_cut';
+        
+        await updateDoc(doc(db, 'matches', matchId), {
+          [`gameData.currentTurnScore.${targetPlayerId}`]: 0
+        });
+        
+        console.log(`🪚 Score Saw - Reset Cut: Reset ${targetPlayerId}'s turn score (was ${currentTurnScore})`);
+        
+      } else if (auraCost >= 4) {
+        // Deep Cut (4 AURA) - Reduce current turn score by 50%
+        scoreDamage = Math.floor(currentTurnScore * 0.5);
+        effectType = 'deep_cut';
+        
+        await updateDoc(doc(db, 'matches', matchId), {
+          [`gameData.currentTurnScore.${targetPlayerId}`]: currentTurnScore - scoreDamage
+        });
+        
+        console.log(`🪚 Score Saw - Deep Cut: Reduced ${targetPlayerId}'s turn score by ${scoreDamage}`);
+        
+      } else {
+        // Light Cut (2 AURA) - Reduce current turn score by 25%
+        scoreDamage = Math.floor(currentTurnScore * 0.25);
+        effectType = 'light_cut';
+        
+        await updateDoc(doc(db, 'matches', matchId), {
+          [`gameData.currentTurnScore.${targetPlayerId}`]: currentTurnScore - scoreDamage
+        });
+        
+        console.log(`🪚 Score Saw - Light Cut: Reduced ${targetPlayerId}'s turn score by ${scoreDamage}`);
+      }
+      
+      effectsApplied.push({
+        effectId: `score_saw_${effectType}`,
+        appliedTo: targetPlayerId,
+        magnitude: scoreDamage,
+        effectType,
+        auraCost,
+        appliedAt: Timestamp.now()
+      });
+      
+      // Check for backfire (simplified for now - would need dice roll logic)
+      const backfireChance = 0.15; // 15% base chance
+      const backfireRoll = Math.random();
+      
+      if (backfireRoll < backfireChance) {
+        console.log(`💥 Score Saw backfire! Opponent recovers half damage, player loses 10% turn score`);
+        
+        // Opponent recovers half the damage
+        const recovery = Math.floor(scoreDamage * 0.5);
+        if (effectType === 'bank_devastation') {
+          await updateDoc(doc(db, 'matches', matchId), {
+            [`gameData.bankedScore.${targetPlayerId}`]: bankedScore - scoreDamage + recovery
+          });
+        } else {
+          await updateDoc(doc(db, 'matches', matchId), {
+            [`gameData.currentTurnScore.${targetPlayerId}`]: 
+              Math.max(0, (currentTurnScore - scoreDamage) + recovery)
+          });
+        }
+        
+        // Player loses 10% of their current turn score
+        const playerTurnScore = matchData.gameData?.currentTurnScore?.[playerId] || 0;
+        const playerLoss = Math.floor(playerTurnScore * 0.1);
+        await updateDoc(doc(db, 'matches', matchId), {
+          [`gameData.currentTurnScore.${playerId}`]: Math.max(0, playerTurnScore - playerLoss)
+        });
+        
+        effectsApplied.push({
+          effectId: 'score_saw_backfire',
+          appliedTo: playerId,
+          magnitude: playerLoss,
+          effectType: 'backfire',
+          recoveryAmount: recovery,
+          appliedAt: Timestamp.now()
+        });
+      }
+      
+    } else {
+      // Default effect for other abilities
+      effectsApplied.push({
+        effectId: ability.effects[0]?.id || 'unknown',
+        appliedTo: playerId,
+        magnitude: ability.effects[0]?.magnitude || 'default',
+        duration: ability.effects[0]?.duration || 1,
+        appliedAt: Timestamp.now()
+      });
+    }
+    
+  } catch (error) {
+    console.error('Error applying ability effects:', error);
+    effectsApplied.push({
+      effectId: 'error',
+      appliedTo: playerId,
+      magnitude: 'failed',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      appliedAt: Timestamp.now()
+    });
+  }
+  
+  return effectsApplied;
 }
 
 /**
