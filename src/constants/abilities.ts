@@ -404,18 +404,307 @@ export const SCORE_SAW: DashDiceAbility = {
   createdBy: 'system'
 };
 
+// ==================== SCORE SIPHON ====================
+
+export const SCORE_SIPHON: DashDiceAbility = {
+  id: 'score_siphon',
+  name: 'Score Siphon',
+  version: 1,
+  category: AbilityCategory.TACTICAL,
+  type: AbilityType.ACTIVE,
+  rarity: AbilityRarity.EPIC,
+  description: 'Risk–Reward Turn Steal: Siphon points from opponent\'s current turn — but timing is critical. Strike during their first roll.',
+  longDescription: 'Score Siphon lets a player siphon points directly from their opponent\'s current turn score — but timing is critical. It must be played during the opponent\'s first roll or before their second throw. If the opponent busts or avoids rolling, the ability fails and is lost. This makes it a high-risk, high-reward tool that rewards careful observation and predictive skill.',
+  flavorText: '"Strike while they hesitate. Seize what could have been theirs, before it slips away."',
+  iconUrl: '/Abilities/Base Images/score-siphon.webp',
+  cooldown: 0, // No cooldown, limited by AURA cost and timing
+  auraCost: 2, // Minimum cost, scales up to 6
+  starCost: 4, // Power Rating: 4
+  
+  targeting: {
+    type: 'opponent',
+    allowSelfTarget: false,
+    maxTargets: 1
+  },
+  
+  timing: {
+    usableWhen: [TimingConstraint.AFTER_ROLL, TimingConstraint.OPPONENT_TURN_START],
+    triggerEvents: ['opponent_first_roll_complete']
+  },
+  
+  effects: [
+    {
+      id: 'siphon_moderate',
+      name: 'Moderate Siphon (2 Aura)',
+      description: 'Steal 25% of opponent\'s current turn score - Moderate risk: low reward if opponent busts',
+      type: EffectType.STEAL_SCORE,
+      magnitude: 'steal_turn_score_25',
+      target: {
+        type: 'opponent',
+        property: 'currentTurnScore'
+      },
+      duration: 0, // Instant effect
+      probability: 1.0 // Always succeeds if conditions met
+    },
+    {
+      id: 'siphon_medium',
+      name: 'Medium Siphon (4 Aura)',
+      description: 'Steal 50% of opponent\'s current turn score - Medium risk: larger impact if opponent survives',
+      type: EffectType.STEAL_SCORE,
+      magnitude: 'steal_turn_score_50',
+      target: {
+        type: 'opponent',
+        property: 'currentTurnScore'
+      },
+      duration: 0,
+      probability: 1.0
+    },
+    {
+      id: 'siphon_full',
+      name: 'Full Siphon (6 Aura)',
+      description: 'Steal 100% of opponent\'s current turn score - High risk: full turn steal, but lost if opponent busts',
+      type: EffectType.STEAL_SCORE,
+      magnitude: 'steal_turn_score_100',
+      target: {
+        type: 'opponent',
+        property: 'currentTurnScore'
+      },
+      duration: 0,
+      probability: 1.0
+    }
+  ],
+  
+  conditions: [
+    {
+      type: 'variable_aura_cost',
+      description: 'Costs 2/4/6 AURA for different steal percentages',
+      checkFunction: 'checkScoreSiphonAuraCost',
+      parameters: {
+        moderateSiphon: 2,
+        mediumSiphon: 4,
+        fullSiphon: 6
+      }
+    },
+    {
+      type: 'timing_restriction',
+      description: 'Can only be played after opponent\'s first roll but before second throw',
+      checkFunction: 'checkSiphonTiming',
+      parameters: {
+        allowedPhases: ['opponent_after_first_roll', 'opponent_before_second_roll'],
+        requiredState: 'opponent_has_rolled_once'
+      }
+    },
+    {
+      type: 'failure_on_bust',
+      description: 'Fails and ability is lost if opponent busts',
+      checkFunction: 'checkOpponentBustStatus',
+      parameters: {
+        onBust: 'ability_lost',
+        refundAura: false
+      }
+    },
+    {
+      type: 'no_stacking',
+      description: 'Cannot stack with other Tactical buffs on same opponent turn',
+      checkFunction: 'checkNoTacticalStackingSameTurn',
+      parameters: {
+        conflictingCategories: ['tactical'],
+        scope: 'opponent_current_turn'
+      }
+    }
+  ],
+  
+  unlockRequirements: {
+    level: 1 // Available from start
+  },
+  
+  // Synergies and counterplay
+  interactions: {
+    synergiesWith: [
+      'pulse_shield', // Protects your turn points if countered
+      'echo_veil',    // Hides activation cue to reduce counterplay
+      'adrenal_surge' // Adds bonus to your next turn after successful steal
+    ],
+    counters: [
+      'dicebreaker',  // Reduces opponent turn score potential
+      'null_pulse',   // Cancels tactical buffs for the turn
+      'mirror_veil'   // Reflects portion of stolen points back
+    ],
+    counteredBy: [
+      'opponent_bust', // Automatic failure if opponent busts
+      'early_bank'     // Opponent banks before siphon can activate
+    ],
+    blockedBy: []
+  },
+  
+  // Required balancing data
+  balancing: {
+    powerLevel: 85, // High power level due to direct score manipulation
+    winRateImpact: 0.22, // 22% estimated win rate improvement with good timing
+    usageFrequency: 'medium', // Timing restriction prevents overuse
+    lastBalanceUpdate: new Date() as any
+  },
+  
+  // Metadata
+  isActive: true,
+  isHidden: false,
+  isDevelopment: false,
+  tags: ['tactical', 'turn-steal', 'timing-based', 'risk-reward', 'prediction-skill', 'momentum-shift'],
+  
+  // Timestamps
+  createdAt: new Date() as any,
+  updatedAt: new Date() as any,
+  createdBy: 'system'
+};
+
+// ==================== HARD HAT ====================
+
+export const HARD_HAT: DashDiceAbility = {
+  id: 'hard_hat',
+  name: 'Hard Hat',
+  version: 1,
+  category: AbilityCategory.DEFENSE,
+  type: AbilityType.REACTIVE,
+  rarity: AbilityRarity.EPIC,
+  description: 'Tactical Block: Fortify yourself against opponent\'s next ability. Blocks their effect entirely but halves your aura gain while active.',
+  longDescription: 'Hard Hat puts your opponent on notice. By activating it, you fortify yourself against their next ability, blocking its effect entirely until they trigger an ability of their own. It\'s a high-stakes strategic play: you sacrifice part of your aura gain in exchange for control, timing, and protection. This ability rewards foresight, anticipation, and risk–reward decision-making, making it a critical tool for tactical mastery.',
+  flavorText: '"Fortify your mind, brace your hand — nothing gets through this time."',
+  iconUrl: '/Abilities/Base Images/hard-hat.webp',
+  cooldown: 0,
+  auraCost: 4,
+  starCost: 4, // Power Rating: 4
+  
+  targeting: {
+    type: 'self',
+    allowSelfTarget: true,
+    maxTargets: 1
+  },
+  
+  timing: {
+    usableWhen: [TimingConstraint.OPPONENT_TURN_START, TimingConstraint.OPPONENT_TURN_END],
+    triggerEvents: ['opponent_ability_activation']
+  },
+  
+  effects: [
+    {
+      id: 'hard_hat_block',
+      name: 'Ability Block',
+      description: 'Blocks opponent\'s next ability completely until they activate one',
+      type: EffectType.IMMUNITY,
+      magnitude: 'block_next_ability',
+      target: {
+        type: 'self',
+        property: 'abilityResistance'
+      },
+      duration: -1, // Persists until opponent uses ability
+      probability: 1.0
+    },
+    {
+      id: 'hard_hat_penalty',
+      name: 'Aura Gain Reduction',
+      description: 'Player gains 50% less aura while Hard Hat is active',
+      type: EffectType.MODIFY_SCORE, // Using as modifier for aura gain
+      magnitude: 'reduce_aura_gain_50',
+      target: {
+        type: 'self',
+        property: 'auraGeneration'
+      },
+      duration: -1, // Persists until ability blocks something
+      probability: 1.0
+    }
+  ],
+  
+  conditions: [
+    {
+      type: 'opponent_turn_only',
+      description: 'Can only be played during opponent\'s turn',
+      checkFunction: 'checkOpponentTurnOnly',
+      parameters: {
+        allowedPhases: ['opponent_turn_active']
+      }
+    },
+    {
+      type: 'no_stacking',
+      description: 'Cannot stack with other Defensive or Block abilities',
+      checkFunction: 'checkNoDefensiveStacking',
+      parameters: {
+        conflictingCategories: ['defense'],
+        conflictingTypes: ['block', 'immunity']
+      }
+    },
+    {
+      type: 'persistent_until_triggered',
+      description: 'Remains active until opponent triggers an ability',
+      checkFunction: 'checkHardHatPersistence',
+      parameters: {
+        endCondition: 'opponent_ability_used',
+        autoRemove: true
+      }
+    }
+  ],
+  
+  // Persistence configuration
+  persistence: {
+    duration: -1, // Indefinite until triggered
+    stackable: false,
+    dispellable: true // Can be removed by certain abilities
+  },
+  
+  unlockRequirements: {
+    level: 1 // Available from start
+  },
+  
+  // Synergies and counterplay
+  interactions: {
+    synergiesWith: [
+      'vital_rush',  // Block opponent counter while making big play
+      'safe_dose',   // Protect the points you save
+      'anticipate'   // Predict when opponent will use ability
+    ],
+    counters: [
+      'opponent_delay', // Opponent can delay ability use to extend penalty
+      'aura_pressure'   // Forces difficult choice between blocking and gaining aura
+    ],
+    counteredBy: [
+      'aura_burst',   // Bypasses halved aura penalty temporarily
+      'null_pulse',   // Cancels block effects for one turn
+      'dicebreaker'   // Reduces effectiveness of abilities under Hard Hat
+    ],
+    blockedBy: []
+  },
+  
+  // Required balancing data
+  balancing: {
+    powerLevel: 80, // High defensive power but significant drawback
+    winRateImpact: 0.18, // 18% win rate improvement when timed correctly
+    usageFrequency: 'medium', // Aura penalty prevents constant use
+    lastBalanceUpdate: new Date() as any
+  },
+  
+  // Metadata
+  isActive: true,
+  isHidden: false,
+  isDevelopment: false,
+  tags: ['defense', 'tactical-block', 'ability-denial', 'risk-reward', 'anticipation', 'psychological'],
+  
+  // Timestamps
+  createdAt: new Date() as any,
+  updatedAt: new Date() as any,
+  createdBy: 'system'
+};
+
 // Add to collections
 // addAbilityToCollections(LUCK_TURNER); // Will be called after collections are defined
 
 // ==================== ABILITY COLLECTIONS ====================
 
 // Populated with implemented abilities
-export const ALL_ABILITIES: DashDiceAbility[] = [LUCK_TURNER, PAN_SLAP, SCORE_SAW];
+export const ALL_ABILITIES: DashDiceAbility[] = [LUCK_TURNER, PAN_SLAP, SCORE_SAW, SCORE_SIPHON, HARD_HAT];
 
 export const ABILITIES_BY_CATEGORY: { [key in AbilityCategory]: DashDiceAbility[] } = {
-  [AbilityCategory.TACTICAL]: [LUCK_TURNER, SCORE_SAW],
+  [AbilityCategory.TACTICAL]: [LUCK_TURNER, SCORE_SAW, SCORE_SIPHON],
   [AbilityCategory.ATTACK]: [],
-  [AbilityCategory.DEFENSE]: [PAN_SLAP],
+  [AbilityCategory.DEFENSE]: [PAN_SLAP, HARD_HAT],
   [AbilityCategory.UTILITY]: [],
   [AbilityCategory.GAMECHANGER]: []
 };
@@ -423,13 +712,13 @@ export const ABILITIES_BY_CATEGORY: { [key in AbilityCategory]: DashDiceAbility[
 export const ABILITIES_BY_RARITY: { [key in AbilityRarity]: DashDiceAbility[] } = {
   [AbilityRarity.COMMON]: [],
   [AbilityRarity.RARE]: [],
-  [AbilityRarity.EPIC]: [LUCK_TURNER, PAN_SLAP, SCORE_SAW],
+  [AbilityRarity.EPIC]: [LUCK_TURNER, PAN_SLAP, SCORE_SAW, SCORE_SIPHON, HARD_HAT],
   [AbilityRarity.LEGENDARY]: [],
   [AbilityRarity.MYTHIC]: []
 };
 
 // Starter abilities for new players - add basic abilities as we implement them
-export const STARTER_ABILITIES: DashDiceAbility[] = [LUCK_TURNER, PAN_SLAP, SCORE_SAW];
+export const STARTER_ABILITIES: DashDiceAbility[] = [LUCK_TURNER, PAN_SLAP, SCORE_SAW, SCORE_SIPHON, HARD_HAT];
 
 // ==================== ABILITY MAP ====================
 
