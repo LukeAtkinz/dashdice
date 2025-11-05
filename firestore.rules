@@ -2,6 +2,12 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
     // Users can read and write their own user document
     // Match operations: authenticated users can update any user's stats
     match /users/{userId} {
@@ -604,12 +610,11 @@ service cloud.firestore {
         request.resource.data.userId == request.auth.uid;
     }
     
-    // Player Abilities - users can only access their own abilities
+    // Player Abilities - users can only access their own abilities, admins can access all
     match /playerAbilities/{playerId} {
-      allow read, write: if request.auth != null && 
-        (resource == null || playerId == request.auth.uid);
-      allow create: if request.auth != null && 
-        playerId == request.auth.uid;
+      allow read: if request.auth != null;
+      allow write: if (request.auth != null && playerId == request.auth.uid) || isAdmin();
+      allow create: if (request.auth != null && playerId == request.auth.uid) || isAdmin();
     }
     
     // User Progression - users can only access their own progression
