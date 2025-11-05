@@ -196,7 +196,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
       {/* Voice Input Mode */}
       {isVoiceMode && showVoiceChat && (
-        <div className="voice-input-container">
+        <div 
+          className="voice-input-container"
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+          style={{ touchAction: 'none' }}
+        >
           <VoiceChat
             onMessage={handleVoiceMessage}
             disabled={disabled}

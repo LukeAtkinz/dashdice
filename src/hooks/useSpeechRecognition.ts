@@ -87,23 +87,26 @@ export const useSpeechRecognition = (
         setError(null);
 
         if (isFinal) {
-          // Final result
-          if (newConfidence >= minConfidence) {
-            setTranscript(prev => {
-              const updatedTranscript = prev + (prev ? ' ' : '') + newTranscript;
-              
-              // Call onTranscript callback
+          // Final result - always call callback, let component decide what to do
+          setTranscript(prev => {
+            const updatedTranscript = prev + (prev ? ' ' : '') + newTranscript;
+            
+            // Always call onTranscript callback for final results
+            if (newConfidence >= minConfidence) {
               onTranscript?.(newTranscript, true);
-              
-              return updatedTranscript;
-            });
-            setInterimTranscript('');
-          } else {
-            console.warn(`🔇 Low confidence transcript ignored: "${newTranscript}" (${newConfidence})`);
-          }
+            } else {
+              console.warn(`🔇 Low confidence final transcript: "${newTranscript}" (${newConfidence})`);
+              // Still send it but mark as low confidence
+              onTranscript?.(newTranscript, true);
+            }
+            
+            return updatedTranscript;
+          });
+          setInterimTranscript('');
         } else {
-          // Interim result
+          // Interim result - always send for real-time feedback
           setInterimTranscript(newTranscript);
+          // Always call onTranscript for interim results regardless of confidence
           onTranscript?.(newTranscript, false);
         }
       },

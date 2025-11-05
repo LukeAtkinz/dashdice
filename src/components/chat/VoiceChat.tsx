@@ -3,7 +3,7 @@
  * Push-to-talk button with visual feedback and real-time transcription
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 
 export interface VoiceChatProps {
@@ -30,6 +30,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
   const [isPressed, setIsPressed] = useState(false);
   const [lastSentTranscript, setLastSentTranscript] = useState('');
   const [currentTranscript, setCurrentTranscript] = useState('');
+  const lastSentRef = useRef('');
 
   const {
     isListening,
@@ -49,27 +50,24 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
       interimResults: true
     },
     onTranscript: (newTranscript: string, isFinal: boolean) => {
-      console.log('🎤 onTranscript:', { newTranscript, isFinal, autoSend });
+      console.log('🎤 onTranscript:', { newTranscript, isFinal, autoSend, length: newTranscript.length });
       
-      // For real-time: send interim results as they come
-      if (!isFinal && newTranscript.trim()) {
-        setCurrentTranscript(newTranscript);
-      }
-      
-      // For final results: send and clear
-      if (isFinal && autoSend) {
-        const wordCount = newTranscript.trim().split(/\s+/).length;
-        console.log('🎤 Final transcript:', { newTranscript, wordCount, minWordCount });
+      // Send immediately for both interim AND final results in real-time mode
+      if (autoSend && newTranscript.trim()) {
+        const trimmed = newTranscript.trim();
         
-        if (wordCount >= minWordCount && newTranscript.trim() !== lastSentTranscript.trim()) {
-          console.log('🎤 Sending final message:', newTranscript.trim());
-          onMessage(newTranscript.trim());
-          setLastSentTranscript(newTranscript.trim());
-          setCurrentTranscript('');
+        // Only send if it's different from what we last sent
+        if (trimmed !== lastSentRef.current) {
+          console.log('🎤 Sending real-time message:', trimmed);
+          onMessage(trimmed);
+          lastSentRef.current = trimmed;
+          setLastSentTranscript(trimmed);
         }
       }
+      
+      setCurrentTranscript(newTranscript);
     },
-    minConfidence: 0.5 // Lower confidence for real-time
+    minConfidence: 0.4 // Lower confidence for real-time
   });
 
   // Update language when prop changes
@@ -264,9 +262,20 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
   const hasTranscript = displayTranscript.trim().length > 0;
 
   return (
-    <div className={`voice-chat ${className}`} onClick={(e) => e.stopPropagation()}>
+    <div 
+      className={`voice-chat ${className}`} 
+      onClick={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+    >
       {/* Voice Chat Button */}
-      <div className="flex items-center gap-3">
+      <div 
+        className="flex items-center gap-3"
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+      >
         <button
           type="button"
           className={buttonClasses}
@@ -286,17 +295,22 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
             handleMouseUp(e);
           }}
           onTouchStart={(e) => {
-            e.preventDefault();
             e.stopPropagation();
+            e.nativeEvent.stopImmediatePropagation();
             handleMouseDown();
           }}
-          onTouchEnd={(e) => {
-            e.preventDefault();
+          onTouchMove={(e) => {
             e.stopPropagation();
+            e.nativeEvent.stopImmediatePropagation();
+          }}
+          onTouchEnd={(e) => {
+            e.stopPropagation();
+            e.nativeEvent.stopImmediatePropagation();
             handleMouseUp();
           }}
           disabled={disabled}
           title={isPressed ? "Release to stop recording" : "Hold to speak (or hold Space)"}
+          style={{ touchAction: 'none' }}
         >
           {/* Pulsing animation when listening */}
           {(isPressed || isListening) && (
