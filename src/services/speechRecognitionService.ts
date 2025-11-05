@@ -100,6 +100,8 @@ class SpeechRecognitionService {
     };
 
     this.recognition.onresult = (event: any) => {
+      console.log('🎤 onresult event fired!', { resultLength: event.results?.length });
+      
       const results = event.results;
       const lastResult = results[results.length - 1];
       
@@ -108,15 +110,20 @@ class SpeechRecognitionService {
         const confidence = lastResult[0].confidence;
         const isFinal = lastResult.isFinal;
 
+        console.log(`🗣️ Raw result - Transcript: "${transcript}" (${isFinal ? 'FINAL' : 'interim'}, confidence: ${confidence?.toFixed(2) || 'N/A'})`);
+
         const result: SpeechRecognitionResult = {
           transcript: transcript.trim(),
           confidence,
           isFinal
         };
 
+        console.log('🎤 Calling onResult callback with:', result);
         this.callbacks.onResult?.(result);
         
-        console.log(`🗣️ Transcript: "${transcript}" (${isFinal ? 'final' : 'interim'}, confidence: ${confidence?.toFixed(2) || 'N/A'})`);
+        console.log(`🗣️ Transcript sent: "${transcript}" (${isFinal ? 'final' : 'interim'}, confidence: ${confidence?.toFixed(2) || 'N/A'})`);
+      } else {
+        console.warn('🎤 onresult fired but no lastResult found');
       }
     };
 
