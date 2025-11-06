@@ -49,8 +49,11 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   // Get current user's AURA from match data
   const currentUserAura = user ? (matchData.gameData.playerAura?.[user.uid] || 0) : 0;
   
-  // Check if multiplier is active
-  const hasMultiplier = matchData.gameData.hasDoubleMultiplier || false;
+  // Check if any multiplier is active
+  const hasDoubleMultiplier = matchData.gameData.hasDoubleMultiplier || false;
+  const hasTripleMultiplier = matchData.gameData.hasTripleMultiplier || false;
+  const hasQuadMultiplier = matchData.gameData.hasQuadMultiplier || false;
+  const hasMultiplier = hasDoubleMultiplier || hasTripleMultiplier || hasQuadMultiplier;
   
   // State for score shooting animation
   const [isScoreShooting, setIsScoreShooting] = React.useState(false);
@@ -393,10 +396,19 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 let textColor = 'text-white'; // Default white text
                 let bgColor = 'rgba(125, 125, 125, 0.7)'; // Grey (<10)
                 
-                // Override all colors when multiplier is active
-                if (hasMultiplier) {
-                  textColor = 'text-red-300';
-                  bgColor = 'linear-gradient(to bottom right, rgba(220, 38, 38, 0.5), rgba(147, 51, 234, 0.5))';
+                // Override all colors when multiplier is active with specific gradients
+                if (hasQuadMultiplier) {
+                  // x4 Multiplier - White Themed
+                  textColor = 'text-black';
+                  bgColor = 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.7), rgba(174, 238, 238, 0.7))';
+                } else if (hasTripleMultiplier) {
+                  // x3 Multiplier - Red Themed
+                  textColor = 'text-white';
+                  bgColor = 'linear-gradient(to bottom right, rgba(255, 0, 0, 0.7), rgba(255, 69, 0, 0.7))';
+                } else if (hasDoubleMultiplier) {
+                  // x2 Multiplier - Purple Themed
+                  textColor = 'text-white';
+                  bgColor = 'linear-gradient(to bottom right, rgba(155, 48, 255, 0.7), rgba(255, 51, 255, 0.7))';
                 } else if (turnScore >= 50) {
                   textColor = 'text-black'; // Gold (50+) - Black text
                   bgColor = 'rgba(255, 215, 0, 0.7)';
@@ -475,11 +487,24 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 const isThreeDigits = Math.abs(totalScore) >= 100; // Use absolute value for digit count
                 const isLastLine = matchData.gameMode === 'last-line';
                 
-                // Determine color based on total score - Same logic as turn score
+                // Determine color based on total score - Same multiplier logic as turn score
                 let totalTextColor = 'text-white'; // Default white text
                 let totalBgColor = 'rgba(125, 125, 125, 0.7)'; // Grey (<10)
                 
-                if (totalScore >= 50) {
+                // Override with multiplier colors first (same as turn score)
+                if (hasQuadMultiplier) {
+                  // x4 Multiplier - White Themed
+                  totalTextColor = 'text-black';
+                  totalBgColor = 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.7), rgba(174, 238, 238, 0.7))';
+                } else if (hasTripleMultiplier) {
+                  // x3 Multiplier - Red Themed
+                  totalTextColor = 'text-white';
+                  totalBgColor = 'linear-gradient(to bottom right, rgba(255, 0, 0, 0.7), rgba(255, 69, 0, 0.7))';
+                } else if (hasDoubleMultiplier) {
+                  // x2 Multiplier - Purple Themed
+                  totalTextColor = 'text-white';
+                  totalBgColor = 'linear-gradient(to bottom right, rgba(155, 48, 255, 0.7), rgba(255, 51, 255, 0.7))';
+                } else if (totalScore >= 50) {
                   totalTextColor = 'text-black'; // Gold (50+) - Black text
                   totalBgColor = 'rgba(255, 215, 0, 0.7)';
                 } else if (totalScore >= 40) {
@@ -513,7 +538,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     }}
                     className="absolute left-[-85px] md:left-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-gray-500 rounded-xl backdrop-blur-sm shadow-xl"
                     style={{
-                      backgroundColor: totalBgColor,
+                      background: totalBgColor.startsWith('linear') ? totalBgColor : undefined,
+                      backgroundColor: !totalBgColor.startsWith('linear') ? totalBgColor : undefined,
                       padding: '8px 12px',
                       minWidth: isThreeDigits ? 'auto' : '64px',
                       minHeight: isThreeDigits ? 'auto' : '64px',
