@@ -8,6 +8,30 @@ export interface Background {
   tags?: string[];
 }
 
+// Extended background interface with size variants for optimization
+export interface BackgroundVariants {
+  full: string;      // Desktop full-size (images only)
+  mobile: string;    // Mobile optimized (includes desktop videos)
+  preview: string;   // Preview/thumbnail for cards and selectors
+}
+
+export interface OptimizedBackground extends Background {
+  variants: BackgroundVariants;
+}
+
+// Context types for background selection
+export type BackgroundContext = 
+  | 'dashboard-desktop'     // Full-size desktop dashboard
+  | 'dashboard-mobile'      // Mobile dashboard
+  | 'match-desktop'         // Full-size match background
+  | 'match-mobile'          // Mobile match background
+  | 'waiting-room-desktop'  // Waiting room desktop
+  | 'waiting-room-mobile'   // Waiting room mobile
+  | 'preview'               // Preview cards, selectors, player cards
+  | 'leaderboard'           // Leaderboard entries
+  | 'friend-card'           // Friend list cards
+  | 'profile-viewer';       // Profile viewer
+
 export const AVAILABLE_BACKGROUNDS: Background[] = [
   {
     id: 'all-for-glory',
@@ -93,3 +117,128 @@ export const toUserBackground = (background: Background) => ({
   file: `/backgrounds/${background.filename}`,
   type: background.type as 'image' | 'video'
 });
+
+// ============================================================================
+// OPTIMIZED BACKGROUNDS WITH SIZE VARIANTS
+// ============================================================================
+
+/**
+ * Get optimized background variants for a given background
+ * Returns paths to FULL, MOBILE, and PREVIEW versions
+ */
+export const getBackgroundVariants = (background: Background): BackgroundVariants => {
+  const ext = background.type === 'video' ? '.mp4' : background.filename.split('.').pop();
+  const baseName = background.filename.replace(/\.(jpg|png|mp4)$/i, '');
+  
+  // For videos: desktop and mobile use same video, images use different sizes
+  if (background.type === 'video') {
+    return {
+      full: `/backgrounds/MOBILE/${background.filename}`,      // Videos in MOBILE folder (same for desktop)
+      mobile: `/backgrounds/MOBILE/${background.filename}`,    // Same video for mobile
+      preview: `/backgrounds/PREVIEW/${baseName}.png`,         // Preview is always PNG thumbnail
+    };
+  }
+  
+  // For images: use different sizes
+  return {
+    full: `/backgrounds/FULL/${background.filename}`,          // Full-size for desktop
+    mobile: `/backgrounds/MOBILE/${background.filename}`,      // Optimized for mobile
+    preview: `/backgrounds/PREVIEW/${background.filename}`,    // Small preview
+  };
+};
+
+/**
+ * Get the appropriate background path based on context
+ * This is the main function to use throughout the app
+ */
+export const getOptimizedBackgroundPath = (
+  background: Background | { name: string; file: string; type: 'image' | 'video' },
+  context: BackgroundContext
+): string => {
+  // Handle legacy background format (direct file path)
+  if ('file' in background && !('filename' in background)) {
+    // Legacy format - return as-is for backwards compatibility
+    return background.file;
+  }
+  
+  // Find the background in our config
+  const bgConfig = 'id' in background 
+    ? background as Background
+    : AVAILABLE_BACKGROUNDS.find(bg => bg.name === background.name) || AVAILABLE_BACKGROUNDS[0];
+  
+  const variants = getBackgroundVariants(bgConfig);
+  
+  // Determine which variant to use based on context
+  switch (context) {
+    // Desktop full-size contexts
+    case 'dashboard-desktop':
+    case 'match-desktop':
+    case 'waiting-room-desktop':
+      return bgConfig.type === 'video' ? variants.mobile : variants.full;
+    
+    // Mobile contexts
+    case 'dashboard-mobile':
+    case 'match-mobile':
+    case 'waiting-room-mobile':
+      return variants.mobile;
+    
+    // Preview contexts (always use preview variant)
+    case 'preview':
+    case 'leaderboard':
+    case 'friend-card':
+    case 'profile-viewer':
+      return variants.preview;
+    
+    default:
+      return variants.mobile; // Safe default
+  }
+};
+
+/**
+ * Detect if user is on mobile device
+ */
+export const isMobileDevice = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
+/**
+ * Get background path with automatic mobile detection
+ * Use this when you want automatic device detection
+ */
+export const getSmartBackgroundPath = (
+  background: Background | { name: string; file: string; type: 'image' | 'video' },
+  baseContext: 'dashboard' | 'match' | 'waiting-room' | 'preview'
+): string => {
+  const isMobile = isMobileDevice();
+  
+  let context: BackgroundContext;
+  
+  if (baseContext === 'preview') {
+    context = 'preview';
+  } else {
+    context = isMobile 
+      ? `${baseContext}-mobile` as BackgroundContext
+      : `${baseContext}-desktop` as BackgroundContext;
+  }
+  
+  return getOptimizedBackgroundPath(background, context);
+};
+
+/**
+ * Convert a background to the optimized format with variants
+ */
+export const toOptimizedBackground = (background: Background): OptimizedBackground => {
+  return {
+    ...background,
+    variants: getBackgroundVariants(background)
+  };
+};
+
+/**
+ * Get all backgrounds with optimized variants
+ */
+export const getOptimizedBackgrounds = (): OptimizedBackground[] => {
+  return AVAILABLE_BACKGROUNDS.map(toOptimizedBackground);
+};
+

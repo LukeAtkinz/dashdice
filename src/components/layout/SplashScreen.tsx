@@ -10,11 +10,36 @@ interface SplashScreenProps {
 const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isVideoEnded, setIsVideoEnded] = useState(false);
+  const [appLoaded, setAppLoaded] = useState(false); // NEW: Track if app content is loaded
   const [isMobile, setIsMobile] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [isPWA, setIsPWA] = useState(false);
   const [videoInitialized, setVideoInitialized] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false); // Prevent multiple retry attempts
+  const videoRef = React.useRef<HTMLVideoElement>(null); // NEW: Video ref for freeze control
+
+  // NEW: Monitor app loading state
+  useEffect(() => {
+    const checkAppLoaded = () => {
+      // Check if critical resources are loaded
+      if (document.readyState === 'complete') {
+        console.log('✅ App resources loaded');
+        setAppLoaded(true);
+      }
+    };
+
+    if (document.readyState === 'complete') {
+      setAppLoaded(true);
+    } else {
+      window.addEventListener('load', checkAppLoaded);
+      // Also check periodically
+      const interval = setInterval(checkAppLoaded, 100);
+      return () => {
+        window.removeEventListener('load', checkAppLoaded);
+        clearInterval(interval);
+      };
+    }
+  }, []);
 
   // Detect mobile device and PWA
   useEffect(() => {
@@ -39,23 +64,35 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
     }
   }, []);
 
-  // Get splash video source
+  // Get splash video source - CHANGED TO WEBM
   const getVideoSource = useCallback(() => {
-    return '/splash.mp4';
+    return '/splash-screen.webm';
   }, []);
 
-  // Handle video end
+  // Handle video end - CHANGED: Freeze on last frame until app loads
   const handleVideoEnd = useCallback(() => {
+    console.log('🎬 Video ended, freezing on last frame...');
     setIsVideoEnded(true);
-    // Start fade and grow animation immediately after video ends
-    setTimeout(() => {
-      setIsLoading(false);
-      // Complete splash screen after animation finishes
+    
+    // Pause video on last frame
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+  }, []);
+
+  // NEW: When both video ended AND app loaded, start fade
+  useEffect(() => {
+    if (isVideoEnded && appLoaded) {
+      console.log('✅ Video ended + App loaded, starting fade...');
       setTimeout(() => {
-        onComplete();
-      }, 1200); // Wait for the full 1.2s animation to complete
-    }, 100); // Very small delay to ensure smooth transition
-  }, [onComplete]);
+        setIsLoading(false);
+        // Complete splash screen after animation finishes
+        setTimeout(() => {
+          onComplete();
+        }, 1200); // Wait for the full 1.2s animation to complete
+      }, 300); // Brief delay on last frame
+    }
+  }, [isVideoEnded, appLoaded, onComplete]);
 
   // Force video playback for mobile/PWA with enhanced retry logic
   const forceVideoPlay = useCallback(async (video: HTMLVideoElement) => {
@@ -193,6 +230,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
         >
           {/* Main splash video */}
           <video
+            ref={videoRef}
             id="main-splash-video"
             autoPlay
             muted
@@ -220,9 +258,19 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
               pointerEvents: 'none' // Prevent any clicks that might show controls
             }}
           >
-            <source src={getVideoSource()} type="video/mp4" />
+            <source src={getVideoSource()} type="video/webm" />
             Your browser does not support the video tag.
           </video>
+
+          {/* Loading indicator - show only after video ends while waiting for app to load */}
+          {isVideoEnded && !appLoaded && (
+            <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
+              <div className="flex flex-col items-center gap-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white/50"></div>
+                <p className="text-white/70 text-sm font-audiowide">Loading...</p>
+              </div>
+            </div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>

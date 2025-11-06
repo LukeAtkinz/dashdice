@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { usePlayerCardBackground } from '@/hooks/useOptimizedBackground';
 
 interface FriendCardPreviewProps {
   username?: string;
@@ -17,28 +18,26 @@ export const FriendCardPreview: React.FC<FriendCardPreviewProps> = ({
   MatchBackgroundEquip = null,
   className = ''
 }) => {
+  // Get optimized background path
+  const { backgroundPath, isVideo } = usePlayerCardBackground(MatchBackgroundEquip as any);
+  
   // Handle different background types safely
-  const getBackgroundStyle = (bg: any) => {
-    if (!bg) return { background: '#3533CD' };
+  const getBackgroundStyle = () => {
+    if (!backgroundPath || isVideo) return { background: '#3533CD' };
     
-    // If it's from MatchBackgroundEquip (has file property)
-    if ('file' in bg && bg.file) {
-      return {
-        backgroundImage: `url(${bg.file})`,
-        backgroundColor: 'transparent',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      };
-    }
-    
-    return { background: '#3533CD' };
+    return {
+      backgroundImage: `url(${backgroundPath})`,
+      backgroundColor: 'transparent',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    };
   };
 
   return (
     <div className={`w-full ${className}`}>
       <div 
         className="relative w-full h-[80px] rounded-[15px] overflow-hidden border border-white/30"
-        style={getBackgroundStyle(MatchBackgroundEquip)}
+        style={getBackgroundStyle()}
       >
         {/* Dark overlay for text readability */}
         <div 

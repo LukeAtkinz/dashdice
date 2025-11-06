@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { usePlayerCardBackground } from '@/hooks/useOptimizedBackground';
 
 interface MatchPreviewProps {
   background: {
@@ -72,31 +73,31 @@ export const MatchPreview: React.FC<MatchPreviewProps> = ({
   // Use DisplayBackgroundEquip for container background if available, otherwise fallback to the background prop
   const containerBackground = DisplayBackgroundEquip || background;
   
+  // Get optimized background paths
+  const { backgroundPath, isVideo } = usePlayerCardBackground(containerBackground as any);
+  const { backgroundPath: matchBgPath, isVideo: matchBgIsVideo } = usePlayerCardBackground(MatchBackgroundEquip as any);
+  
   // Handle different background types safely
-  const getBackgroundStyle = (bg: any) => {
-    if (!bg) return {};
+  const getBackgroundStyle = () => {
+    if (!backgroundPath || isVideo) return {};
     
-    // If it's from DisplayBackgroundEquip (has file property)
-    if ('file' in bg && bg.file) {
-      return {
-        backgroundImage: `url(${bg.file})`,
-        backgroundColor: 'transparent',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      };
-    }
+    return {
+      backgroundImage: `url(${backgroundPath})`,
+      backgroundColor: 'transparent',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    };
+  };
+  
+  const getMatchBackgroundStyle = () => {
+    if (!matchBgPath || matchBgIsVideo) return { backgroundColor: '#3533CD' };
     
-    // If it's from the background prop (has preview property)
-    if ('preview' in bg && bg.preview) {
-      return {
-        backgroundImage: bg.preview.includes('.') ? `url(${bg.preview})` : 'none',
-        backgroundColor: !bg.preview.includes('.') ? bg.preview : 'transparent',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      };
-    }
-    
-    return {};
+    return {
+      backgroundImage: `url(${matchBgPath})`,
+      backgroundColor: 'transparent',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    };
   };
   
   return (
@@ -104,7 +105,7 @@ export const MatchPreview: React.FC<MatchPreviewProps> = ({
       {/* Match Preview */}
       <div 
         className={`relative ${config.container} rounded-[15px] overflow-hidden border-2 ${className}`}
-        style={getBackgroundStyle(containerBackground)}
+        style={getBackgroundStyle()}
       >
         {/* Match Layout - Copying Match.tsx styling */}
         <div className="absolute inset-0 p-2 flex items-center justify-center gap-4">
@@ -290,7 +291,7 @@ export const MatchPreview: React.FC<MatchPreviewProps> = ({
         <div className="mt-4">
           <div 
             className="relative w-full h-[80px] rounded-[15px] overflow-hidden border border-white/30"
-            style={getBackgroundStyle(MatchBackgroundEquip || { preview: '#3533CD' })}
+            style={getMatchBackgroundStyle()}
           >
             {/* Dark overlay for text readability */}
             <div 

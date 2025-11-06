@@ -11,6 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { MatchHistory } from '@/components/profile/MatchHistory';
 import { ProfilePicture } from '@/components/ui/ProfilePicture';
+import { usePlayerCardBackground } from '@/hooks/useOptimizedBackground';
 
 interface UserProfileViewerProps {
   userId: string;
@@ -27,6 +28,13 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
   const [sendingRequest, setSendingRequest] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [outgoingRequests, setOutgoingRequests] = useState<any[]>([]);
+
+  // Get optimized background for profile card display
+  const viewingOwnProfile = user?.uid === userId;
+  const profileBackground = userProfile?.inventory?.displayBackgroundEquipped || userProfile?.inventory?.matchBackgroundEquipped;
+  const { backgroundPath: profileBgPath, isVideo: profileBgIsVideo } = usePlayerCardBackground(
+    (viewingOwnProfile ? DisplayBackgroundEquip : profileBackground) as any
+  );
 
   // Check if this user is already a friend
   const isAlreadyFriend = friends.some(friend => friend.friendId === userId);
@@ -445,8 +453,8 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
           >
             {/* Video Background for current user or other users */}
             {(() => {
-              // For viewing the current user's own profile, use the background context
-              if (isOwnProfile && DisplayBackgroundEquip?.type === 'video') {
+              // Use optimized background path from hook
+              if (profileBgIsVideo) {
                 return (
                   <video
                     autoPlay
@@ -456,27 +464,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     className="absolute inset-0 w-full h-full object-cover"
                     style={{ zIndex: 0 }}
                   >
-                    <source src={DisplayBackgroundEquip.file} type="video/mp4" />
-                  </video>
-                );
-              }
-              
-              // For viewing other users' profiles, check their video backgrounds
-              const matchBg = userProfile.inventory?.matchBackgroundEquipped;
-              const displayBg = userProfile.inventory?.displayBackgroundEquipped;
-              const bgEquipped = matchBg || displayBg;
-              
-              if (bgEquipped && typeof bgEquipped === 'object' && bgEquipped.type === 'video' && bgEquipped.file) {
-                return (
-                  <video
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    className="absolute inset-0 w-full h-full object-cover"
-                    style={{ zIndex: 0 }}
-                  >
-                    <source src={bgEquipped.file} type="video/mp4" />
+                    <source src={profileBgPath ?? undefined} type="video/mp4" />
                   </video>
                 );
               }
@@ -490,73 +478,14 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
               style={{
                 zIndex: 0,
                 ...(() => {
-                  // For viewing the current user's own profile, use the background context
-                  if (isOwnProfile && DisplayBackgroundEquip) {
-                    if (DisplayBackgroundEquip.type === 'video') {
-                      // Video is handled above, just add overlay
-                      return {};
-                    }
+                  // Use optimized background path from hook for images
+                  if (!profileBgIsVideo && profileBgPath) {
                     return {
-                      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("${DisplayBackgroundEquip.file}")`,
+                      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("${profileBgPath}")`,
                       backgroundSize: 'cover',
-                      backgroundPosition: 'center'
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat'
                     };
-                  }
-                  
-                  // For viewing other users' profiles, try both match and display backgrounds
-                  const matchBg = userProfile.inventory?.matchBackgroundEquipped;
-                  const displayBg = userProfile.inventory?.displayBackgroundEquipped;
-                  const bgEquipped = matchBg || displayBg;
-                  
-                  if (bgEquipped) {
-                    // Handle background object with name, file, and type properties
-                    if (typeof bgEquipped === 'object' && bgEquipped.file) {
-                      // For video backgrounds, they're handled above, no background needed
-                      if (bgEquipped.type === 'video') {
-                        return {};
-                      }
-                      
-                      // For image backgrounds, use the file path with proper path fixing
-                      if (bgEquipped.type === 'image' || !bgEquipped.type) {
-                        let backgroundPath = bgEquipped.file;
-                        
-                        // Fix common background paths (same logic as FriendCard)
-                        if (backgroundPath === 'All For Glory.jpg' || backgroundPath === '/backgrounds/All For Glory.jpg') {
-                          backgroundPath = '/backgrounds/All For Glory.jpg';
-                        } else if (backgroundPath === 'Long Road Ahead.jpg' || backgroundPath === '/backgrounds/Long Road Ahead.jpg') {
-                          backgroundPath = '/backgrounds/Long Road Ahead.jpg';
-                        } else if (backgroundPath === 'Relax.png' || backgroundPath === '/backgrounds/Relax.png') {
-                          backgroundPath = '/backgrounds/Relax.png';
-                        } else if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
-                          // If it's a filename without path, prepend /backgrounds/
-                          backgroundPath = `/backgrounds/${backgroundPath}`;
-                        }
-                        
-                        return {
-                          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("${backgroundPath}")`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                          backgroundRepeat: 'no-repeat'
-                        };
-                      }
-                    }
-                    
-                    // Handle string file path (legacy format)
-                    if (typeof bgEquipped === 'string') {
-                      let backgroundPath: string = bgEquipped;
-                      
-                      // Fix paths for legacy format
-                      if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
-                        backgroundPath = `/backgrounds/${backgroundPath}`;
-                      }
-                      
-                      return {
-                        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("${backgroundPath}")`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        backgroundRepeat: 'no-repeat'
-                      };
-                    }
                   }
                   
                   // Fallback gradient
@@ -565,7 +494,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                   };
                 })()
               }}
-            />
+            ></div>
             {/* Dark overlay gradient for text readability */}
             <div
               className="absolute inset-0"

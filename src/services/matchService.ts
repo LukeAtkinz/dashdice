@@ -380,9 +380,6 @@ export class MatchService {
       // Generate dice immediately when choice is made
       const dice = Math.floor(Math.random() * 6) + 1;
       
-      console.log(`🎯 Turn decider choice: ${choice}, Dice rolled: ${dice}`);
-      console.log('📝 Updating match document with choice and dice...');
-      
       // Update choice and dice
       await updateDoc(matchRef, {
         'gameData.turnDeciderChoice': choice,
@@ -390,11 +387,8 @@ export class MatchService {
         'gameData.isRolling': true, // Start dice animation
       });
       
-      console.log('✅ Firebase update completed successfully');
-      
       // Process turn decider result after animation delay
       setTimeout(async () => {
-        console.log('⏰ Processing turn decider result after animation delay...');
         await this.processTurnDecider(matchId);
       }, 2000); // Reduced from 3000ms to 2000ms for faster gameplay
       
@@ -418,7 +412,6 @@ export class MatchService {
       
       // Ensure we have both choice and dice
       if (!matchData.gameData.turnDeciderChoice || !matchData.gameData.turnDeciderDice) {
-        console.log('⚠️ Missing choice or dice for turn decider');
         return;
       }
       
@@ -438,9 +431,6 @@ export class MatchService {
         // Opponent made choice
         hostGoesFirst = !choiceCorrect;
       }
-      
-      console.log(`🎯 Turn decider result: ${choice} on ${dice} (${isOdd ? 'odd' : 'even'}) - ${choiceCorrect ? 'Correct' : 'Incorrect'}`);
-      console.log(`🎮 ${hostGoesFirst ? 'Host' : 'Opponent'} goes first`);
       
       // Process turn decider result after animation delay
       setTimeout(async () => {
@@ -494,7 +484,6 @@ export class MatchService {
         const doubleValue = Math.floor(Math.random() * 6) + 1;
         dice1 = doubleValue;
         dice2 = doubleValue;
-        console.log('🎲 Zero Hour Enhancement: Forced doubles rolled!', { dice1, dice2 });
       }
       
       // 🏆 TRACK DICE ROLL ACHIEVEMENTS: Update total dice rolled count (2 dice per roll)
@@ -505,8 +494,6 @@ export class MatchService {
         // await achievementService.updateMetric(playerId, 'total_dice_rolled', 2, 'increment');
         // await achievementService.updateMetric(playerId, `dice_${this.numberToWord(dice1)}s_rolled`, 1, 'increment');
         // await achievementService.updateMetric(playerId, `dice_${this.numberToWord(dice2)}s_rolled`, 1, 'increment');
-        
-        console.log(`🎲 Dice rolled: Player ${playerId} rolled [${dice1}, ${dice2}] (achievements batched)`);
       } catch (achievementError) {
         console.error('❌ Error in dice roll:', achievementError);
         // Don't throw - achievements failing shouldn't break gameplay
@@ -586,18 +573,14 @@ export class MatchService {
       
       // Process roll using game mode service for special elimination rules
       if (isSingleOne && gameMode.rules.eliminationRules.singleOne) {
-        console.log('🎲 Single 1 rolled - Player eliminated');
         eliminatePlayer = true;
         turnOver = true;
         newTurnScore = 0;
       }
       // Zero Hour specific processing
       else if (gameMode.id === 'zero-hour') {
-        console.log('🎲 Zero Hour Mode Processing');
-        
         // In Zero Hour, single 1s end the turn and reset turn score (but don't eliminate player)
         if (isSingleOne) {
-          console.log('🎲 Zero Hour - Single 1 rolled, turn ends and turn score resets to 0');
           turnOver = true;
           newTurnScore = 0;
         }
@@ -611,7 +594,6 @@ export class MatchService {
             // Snake Eyes: +20 to turn score and opponent, activate/increase multiplier
             const newDoublesCount = doublesThisTurn + 1;
             const newMultiplier = 2 + (newDoublesCount - 1); // 2x + additional doubles
-            console.log(`🎲 Zero Hour - Snake Eyes: +20 to turn score, +20 to opponent, ${newMultiplier}x multiplier active`);
             newTurnScore = currentTurnScore + 20;
             
             // Update multiplier tracking
@@ -635,7 +617,6 @@ export class MatchService {
             // Any other double: add dice sum to turn score and opponent, activate/increase multiplier
             const newDoublesCount = doublesThisTurn + 1;
             const newMultiplier = 2 + (newDoublesCount - 1); // 2x + additional doubles
-            console.log(`🎲 Zero Hour - Double ${dice1}s: +${diceSum} to turn score, +${diceSum} to opponent, ${newMultiplier}x multiplier active`);
             
             // Add dice sum to turn score (not doubled yet)
             newTurnScore = currentTurnScore + diceSum;
@@ -661,21 +642,17 @@ export class MatchService {
             // Normal roll: add to turn score (apply current multiplier if active)
             const scoreToAdd = hasMultiplier ? diceSum * currentMultiplier : diceSum;
             newTurnScore = currentTurnScore + scoreToAdd;
-            console.log(`🎲 Zero Hour - Normal roll: ${dice1} + ${dice2} = ${diceSum}${hasMultiplier ? ` (x${currentMultiplier} = ${scoreToAdd})` : ''}, Turn score: ${newTurnScore}`);
             turnOver = false;
           }
         }
       }
       // True Grit specific processing
       else if (gameMode.id === 'true-grit') {
-        console.log('🎲 True Grit Mode Processing');
-        
         // Get current multiplier from game state (defaults to 1)
         const currentMultiplier = matchData.gameData.trueGritMultiplier || 1;
         
         if (isSingleOne) {
           // Single 1 ends turn immediately and auto-banks the current turn score
-          console.log('🎲 True Grit - Single 1: Turn ends, auto-banking score');
           
           // Auto-bank the current turn score to player's total
           const currentPlayerScore = currentPlayer.playerScore || 0;
@@ -687,8 +664,6 @@ export class MatchService {
             updates['opponentData.playerScore'] = newPlayerScore;
           }
           
-          console.log(`💰 True Grit - Auto-banked ${currentTurnScore} points, new total: ${newPlayerScore}`);
-          
           turnOver = true;
           newTurnScore = 0; // Reset turn score since it's been banked
           
@@ -697,7 +672,6 @@ export class MatchService {
         }
         else if (isDoubleOne) {
           // Double 1 = add 20 to turn score and set active x2 multiplier
-          console.log('🎲 True Grit - Double 1s: +20 to turn score, x2 multiplier active');
           
           // Add 20 to turn score
           newTurnScore = currentTurnScore + 20;
@@ -705,12 +679,10 @@ export class MatchService {
           // Set x2 multiplier for future rolls (don't stack, just set to 2)
           updates['gameData.trueGritMultiplier'] = 2;
           
-          console.log(`🎲 True Grit - Added 20 points, Turn score: ${newTurnScore}, Multiplier set to 2x`);
           turnOver = false;
         }
         else if (isDouble) {
           // Other doubles: add dice total to turn score and set x2 multiplier
-          console.log(`🎲 True Grit - Double ${dice1}s: +${diceSum} to turn score, x2 multiplier active`);
           
           // Add dice total to turn score
           newTurnScore = currentTurnScore + diceSum;
@@ -718,30 +690,24 @@ export class MatchService {
           // Set x2 multiplier for future rolls (don't stack, just set to 2)
           updates['gameData.trueGritMultiplier'] = 2;
           
-          console.log(`🎲 True Grit - Added ${diceSum} points, Turn score: ${newTurnScore}, Multiplier set to 2x`);
           turnOver = false;
         }
         else {
           // Normal roll: add dice sum multiplied by current multiplier
           const scoreToAdd = diceSum * currentMultiplier;
           newTurnScore = currentTurnScore + scoreToAdd;
-          console.log(`🎲 True Grit - Normal roll: ${dice1} + ${dice2} = ${diceSum} × ${currentMultiplier} = ${scoreToAdd}, Turn score: ${newTurnScore}`);
           turnOver = false;
         }
       }
       // Last Line (Tug-of-War) specific processing
       else if (gameMode.id === 'last-line') {
-        console.log('🎲 Last Line (Tug-of-War) Mode Processing');
-        
         if (isSingleOne) {
           // Single 1 ends turn immediately - no score added to turn score
-          console.log('🎲 Last Line - Single 1: Turn ends immediately, no score added');
           turnOver = true;
           newTurnScore = 0; // Turn score stays 0
         }
         else if (isDoubleOne) {
           // Double 1: special rule - add 20 to turn score
-          console.log('🎲 Last Line - Double 1s: +20 to turn score');
           newTurnScore = currentTurnScore + 20;
           turnOver = false; // Continue turn after double 1
         }
@@ -750,7 +716,6 @@ export class MatchService {
           const multiplier = 2; // Fixed 2x multiplier for all doubles
           const effectiveRoll = diceSum * multiplier;
           
-          console.log(`🎲 Last Line - Double ${dice1}s: ${diceSum} × ${multiplier} = ${effectiveRoll} added to turn score, 2x multiplier activated`);
           newTurnScore = currentTurnScore + effectiveRoll;
           
           // Activate multiplier for subsequent rolls in this turn
@@ -763,7 +728,6 @@ export class MatchService {
           const hasMultiplier = matchData.gameData.hasDoubleMultiplier || false;
           const scoreToAdd = hasMultiplier ? diceSum * 2 : diceSum;
           
-          console.log(`🎲 Last Line - Normal roll: ${dice1} + ${dice2} = ${diceSum}${hasMultiplier ? ' (2x = ' + scoreToAdd + ')' : ''} added to turn score`);
           newTurnScore = currentTurnScore + scoreToAdd;
           turnOver = false; // Continue turn
         }
@@ -772,19 +736,16 @@ export class MatchService {
       else if (isDoubleSix) {
         switch (gameMode.rules.eliminationRules.doubleSix) {
           case 'reset':
-            console.log('🎲 Double 6 rolled - Player score reset to starting score');
             resetPlayerScore = true;
             turnOver = true;
             newTurnScore = 0;
             break;
           case 'score':
-            console.log('🎲 Double 6 rolled - Scores normally');
             newTurnScore = currentTurnScore + diceSum;
             turnOver = false;
             break;
           default:
             // Classic mode behavior - reset score
-            console.log('🎲 Double 6 rolled - Player score reset to 0');
             resetPlayerScore = true;
             turnOver = true;
             newTurnScore = 0;
@@ -801,18 +762,14 @@ export class MatchService {
             } else {
               updates['opponentData.playerScore'] = newPlayerScore;
             }
-            console.log(`💰 Single 1 rolled (elimination mode) - Auto-banked ${currentTurnScore} points, new total: ${newPlayerScore}`);
             
             // Update bank statistics
             const playerStatsPath = isHost ? 'hostData.matchStats' : 'opponentData.matchStats';
             const currentStats = currentPlayer.matchStats || { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0 };
             updates[`${playerStatsPath}.banks`] = currentStats.banks + 1;
-          } else {
-            console.log('🎲 Single 1 rolled (elimination mode) - Turn over, no score to bank');
           }
         } else {
           // Non-elimination modes (Classic, Quickfire) - just end turn, lose the turn score
-          console.log(`🎲 Single 1 rolled - Turn over, ${currentTurnScore} points lost (no auto-banking in ${gameMode.name})`);
         }
         
         // End the turn in both cases
@@ -824,11 +781,9 @@ export class MatchService {
         if (dice1 === 1) {
           // Double 1 (Snake Eyes) - +20 to turn score and activate x2 multiplier
           newTurnScore = currentTurnScore + 20;
-          console.log(`🎲 Double 1s (Snake Eyes) rolled - +20 points added, 2x multiplier activated`);
         } else {
           // All other doubles (2-6) - add dice sum and activate x2 multiplier
           newTurnScore = currentTurnScore + diceSum;
-          console.log(`🎲 Double ${dice1}s rolled - +${diceSum} points added, 2x multiplier activated`);
         }
         turnOver = false; // Continue turn
       }
@@ -837,7 +792,6 @@ export class MatchService {
         const currentMultiplier = matchData.gameData.hasDoubleMultiplier || false;
         const scoreToAdd = currentMultiplier ? diceSum * 2 : diceSum;
         newTurnScore = currentTurnScore + scoreToAdd;
-        console.log(`🎲 Normal roll: ${dice1} + ${dice2} = ${diceSum}${currentMultiplier ? ' (x2 = ' + scoreToAdd + ')' : ''}, Turn score: ${newTurnScore}`);
         turnOver = false;
       }
       
@@ -885,7 +839,6 @@ export class MatchService {
         }
         
         updates[`gameData.playerAura.${playerId}`] = newPlayerAura;
-        console.log(`✨ AURA awarded: Player ${playerId} gained ${auraGainThisRoll} AURA for rolling ${isSingleOne ? '(bust)' : ''}${isDouble ? ' (double)' : ''}. New total: ${newPlayerAura}`);
       }
       
       if (newTurnScore > currentStats.biggestTurnScore) {
@@ -966,7 +919,6 @@ export class MatchService {
         const newScore = currentPlayerScore - newTurnScore;
         
         if (newScore <= 0) {
-          console.log(`🏆 ZERO HOUR WIN! ${currentPlayer.playerDisplayName} reached ${newScore <= 0 ? '0 or below' : 'exactly 0'}!`);
           gameOver = true;
           winner = currentPlayer.playerDisplayName;
           gameOverReason = 'Zero Hour completed!';
@@ -991,7 +943,6 @@ export class MatchService {
         } else if (newScore < 0) {
           // Note: We no longer reset for going below 0 since players can win at 0 or below
           // Auto-win when reaching 0 or below
-          console.log(`� ZERO HOUR WIN! ${currentPlayer.playerDisplayName} reached 0 or below (${newScore})!`);
           gameOver = true;
           winner = currentPlayer.playerDisplayName;
           gameOverReason = 'Zero Hour completed!';
@@ -1026,7 +977,6 @@ export class MatchService {
           (updates['opponentData.playerScore'] !== undefined ? updates['opponentData.playerScore'] : matchData.opponentData.playerScore);
         
         if (hostScore <= 0) {
-          console.log(`🏆 LAST LINE WIN! ${matchData.opponentData.playerDisplayName} wins! (Host reached 0)`);
           gameOver = true;
           winner = matchData.opponentData.playerDisplayName;
           gameOverReason = 'Last Line completed - opponent eliminated!';
@@ -1043,7 +993,6 @@ export class MatchService {
           updates['opponentData.turnActive'] = false;
           turnOver = true;
         } else if (opponentScore <= 0) {
-          console.log(`🏆 LAST LINE WIN! ${matchData.hostData.playerDisplayName} wins! (Opponent reached 0)`);
           gameOver = true;
           winner = matchData.hostData.playerDisplayName;
           gameOverReason = 'Last Line completed - opponent eliminated!';
@@ -1104,8 +1053,6 @@ export class MatchService {
             } else {
               updates['opponentData.playerScore'] = newPlayerScore;
             }
-            
-            console.log(`🎯 True Grit - Auto-banked score: ${newTurnScore}, new total: ${newPlayerScore}`);
           }
           
           // Reset True Grit multiplier for next player

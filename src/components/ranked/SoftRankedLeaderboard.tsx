@@ -7,6 +7,7 @@ import { db } from '@/services/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
 import { BackgroundService } from '@/services/backgroundService';
+import { usePlayerCardBackground } from '@/hooks/useOptimizedBackground';
 
 interface PlayerStats {
   uid: string;
@@ -19,6 +20,168 @@ interface PlayerStats {
   rank: number;
   equippedBackground?: string;
 }
+
+// Player card component with optimized background
+interface PlayerCardProps {
+  player: PlayerStats;
+  index: number;
+  colors: any;
+  isCurrentUser: boolean;
+  userCardRef?: React.RefObject<HTMLDivElement>;
+  handleViewProfile: (uid: string, name: string) => void;
+}
+
+const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurrentUser, userCardRef, handleViewProfile }) => {
+  // Get player's background and optimize it
+  const playerBackground = player.equippedBackground ? 
+    BackgroundService.getBackgroundSafely(player.equippedBackground) : 
+    null;
+  const { backgroundPath, isVideo } = usePlayerCardBackground(playerBackground);
+
+  return (
+    <motion.div
+      key={player.uid}
+      ref={isCurrentUser ? userCardRef : undefined}
+      initial={{ opacity: 0, x: -50, scale: 0.9 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      exit={{ opacity: 0, x: 50, scale: 0.9 }}
+      transition={{ 
+        duration: 0.5, 
+        delay: index * 0.05,
+        type: "spring",
+        stiffness: 100
+      }}
+      whileHover={{ 
+        scale: 1.02, 
+        transition: { duration: 0.2 } 
+      }}
+      onClick={() => handleViewProfile(player.uid, player.displayName || 'Anonymous')}
+      className={`
+        relative bg-gradient-to-r ${colors.bg} 
+        rounded-xl border ${colors.border} 
+        shadow-lg ${colors.glow}
+        ${isCurrentUser ? 'ring-2 ring-blue-500/50' : ''} p-4
+        ${player.rank <= 3 ? 'shadow-2xl' : ''}
+        group cursor-pointer overflow-hidden
+      `}
+    >
+      {/* Player Background - Optimized */}
+      {backgroundPath && (
+        <>
+          {isVideo ? (
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-80"
+            >
+              <source src={backgroundPath} type="video/mp4" />
+            </video>
+          ) : (
+            <div 
+              className="absolute inset-0 rounded-xl opacity-80"
+              style={{
+                backgroundImage: `url('${backgroundPath}')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }}
+            />
+          )}
+        </>
+      )}
+
+      {/* Rest of player card content */}
+      <div className="relative z-10 flex items-center justify-between">
+        {/* Rank and Player Info */}
+        <div className="flex items-center space-x-4">
+          {/* Rank Icon/Number */}
+          <div 
+            className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold ${
+              player.rank <= 3 ? 'text-yellow-400' : 'text-white'
+            }`}
+            style={{ 
+              fontFamily: 'Audiowide',
+              ...(player.rank <= 3 ? {
+                textShadow: "0 0 15px rgba(255, 215, 0, 0.8)"
+              } : {})
+            }}
+          >
+            {player.rank <= 3 ? (
+              <img 
+                src={player.rank === 1 ? "/Leaderboards/CrownLogo.webp" : player.rank === 2 ? "/Leaderboards/Second.png" : "/Leaderboards/Third.png"} 
+                alt={`Rank ${player.rank}`} 
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              `#${player.rank}`
+            )}
+          </div>
+
+          {/* Player Name */}
+          <div>
+            <h3 
+              className={`text-lg font-bold ${player.rank <= 3 ? 'text-yellow-400' : 'text-white'}`}
+              style={{ 
+                fontFamily: 'Audiowide',
+                ...(player.rank <= 3 ? {
+                  textShadow: "0 0 10px rgba(255, 215, 0, 0.6)"
+                } : {})
+              }}
+            >
+              {player.displayName}
+            </h3>
+            <p 
+              className="text-sm text-gray-300"
+              style={{ fontFamily: 'Montserrat' }}
+            >
+              {player.totalGames} game{player.totalGames !== 1 ? 's' : ''} played
+            </p>
+          </div>
+        </div>
+
+        {/* Stats - more compact on mobile */}
+        <div className="flex flex-col sm:flex-row items-end sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+          <div className="text-right">
+            <p 
+              className="text-2xl font-bold text-green-400"
+              style={{ 
+                fontFamily: 'Audiowide',
+                textShadow: "0 0 8px rgba(74, 222, 128, 0.5)"
+              }}
+            >
+              {player.matchWins}W
+            </p>
+            <p 
+              className="text-xs text-gray-400"
+              style={{ fontFamily: 'Montserrat' }}
+            >
+              {player.matchLosses}L
+            </p>
+          </div>
+          <div className="text-right">
+            <p 
+              className="text-2xl font-bold text-blue-400"
+              style={{ 
+                fontFamily: 'Audiowide',
+                textShadow: "0 0 8px rgba(96, 165, 250, 0.5)"
+              }}
+            >
+              {player.winPercentage.toFixed(0)}%
+            </p>
+            <p 
+              className="text-xs text-gray-400"
+              style={{ fontFamily: 'Montserrat' }}
+            >
+              Win Rate
+            </p>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 export function SoftRankedLeaderboard() {
   const { user } = useAuth();
@@ -398,155 +561,18 @@ export function SoftRankedLeaderboard() {
           <AnimatePresence>
             {players.map((player, index) => {
               const colors = getRankColors(player.rank);
-              const isCurrentUser = user && player.uid === user.uid;
-              
-              // Get player's background
-              const playerBackground = player.equippedBackground ? 
-                BackgroundService.getBackgroundSafely(player.equippedBackground) : 
-                null;
+              const isCurrentUser = Boolean(user && player.uid === user.uid);
               
               return (
-                <motion.div
+                <PlayerCard
                   key={player.uid}
-                  ref={isCurrentUser ? userCardRef : undefined}
-                  initial={{ opacity: 0, x: -50, scale: 0.9 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: 50, scale: 0.9 }}
-                  transition={{ 
-                    duration: 0.5, 
-                    delay: index * 0.05,
-                    type: "spring",
-                    stiffness: 100
-                  }}
-                  whileHover={{ 
-                    scale: 1.02, 
-                    transition: { duration: 0.2 } 
-                  }}
-                  onClick={() => handleViewProfile(player.uid, player.displayName || 'Anonymous')}
-                  className={`
-                    relative bg-gradient-to-r ${colors.bg} 
-                    rounded-xl border ${colors.border} 
-                    shadow-lg ${colors.glow}
-                    ${isCurrentUser ? 'ring-2 ring-blue-500/50' : ''} p-4
-                    ${player.rank <= 3 ? 'shadow-2xl' : ''}
-                    group cursor-pointer overflow-hidden
-                  `}
-                >
-                  {/* Player Background */}
-                  {playerBackground && (
-                    <>
-                      {playerBackground.type === 'video' ? (
-                        <video
-                          autoPlay
-                          loop
-                          muted
-                          playsInline
-                          className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-80"
-                        >
-                          <source src={BackgroundService.getBackgroundUrl(playerBackground)} type="video/mp4" />
-                        </video>
-                      ) : (
-                        <div 
-                          className="absolute inset-0 rounded-xl opacity-80"
-                          style={{
-                            backgroundImage: `url('${BackgroundService.getBackgroundUrl(playerBackground)}')`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                            backgroundRepeat: 'no-repeat'
-                          }}
-                        />
-                      )}
-                      
-
-                    </>
-                  )}
-
-
-                  <div className="relative z-10 flex items-center justify-between">
-                    {/* Rank and Player Info */}
-                    <div className="flex items-center space-x-4">
-                      {/* Rank Icon/Number - Full opacity for rank 1 */}
-                      <div 
-                        className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold ${
-                          player.rank === 1 ? 'bg-yellow-400/20' :
-                          player.rank === 2 ? 'bg-gray-300/20' :
-                          player.rank === 3 ? 'bg-amber-600/20' :
-                          'bg-gray-600/20'
-                        }`}
-                        style={{ 
-                          fontFamily: 'Audiowide',
-                          color: player.rank === 1 ? '#FFD700' :
-                                 player.rank === 2 ? '#D1D5DB' :
-                                 player.rank === 3 ? '#D97706' :
-                                 '#D1D5DB',
-                          opacity: 1
-                        }}
-                      >
-                        {getRankIcon(player.rank)}
-                      </div>
-
-                      {/* Player Details */}
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <h3 className={`font-bold text-lg ${colors.text} group-hover:text-white transition-colors`} 
-                              style={{ 
-                                fontFamily: 'Audiowide',
-                                textShadow: isCurrentUser 
-                                  ? '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4)' 
-                                  : '0 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.5)',
-                                color: isCurrentUser ? '#FFD700' : undefined,
-                                opacity: 1
-                              }}>
-                            {isCurrentUser ? 'YOU' : player.displayName}
-                          </h3>
-                        </div>
-                        <div 
-                          className="text-sm"
-                          style={{ 
-                            textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)',
-                            color: player.rank === 1 ? '#D1D5DB' : '#9CA3AF',
-                            opacity: 1
-                          }}
-                        >
-                          <div className="md:flex md:space-x-4">
-                            <span>Wins: <span className="font-semibold" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)', color: '#4ADE80', opacity: 1 }}>{player.matchWins}</span></span>
-                            <span className="block md:inline">Win Rate: <span className="font-semibold" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)', color: '#60A5FA', opacity: 1 }}>{player.winPercentage.toFixed(1)}%</span></span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Rating - Full opacity for rank 1 */}
-                    <motion.div 
-                      className="text-right"
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div 
-                        className={`text-2xl font-bold ${colors.text} group-hover:text-white transition-colors`} 
-                        style={{ 
-                          fontFamily: 'Audiowide',
-                          textShadow: '0 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.5)',
-                          opacity: 1
-                        }}
-                      >
-                        {player.rating}
-                      </div>
-                      <div 
-                        className="text-xs" 
-                        style={{ 
-                          textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)',
-                          color: player.rank === 1 ? '#D1D5DB' : '#9CA3AF',
-                          opacity: 1
-                        }}
-                      >
-                        Rating
-                      </div>
-                    </motion.div>
-                  </div>
-
-                  {/* Special crown animation for #1 - removed gold star animation per user request */}
-                </motion.div>
+                  player={player}
+                  index={index}
+                  colors={colors}
+                  isCurrentUser={isCurrentUser}
+                  userCardRef={isCurrentUser ? userCardRef : undefined}
+                  handleViewProfile={handleViewProfile}
+                />
               );
             })}
           </AnimatePresence>

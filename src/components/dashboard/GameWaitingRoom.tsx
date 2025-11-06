@@ -18,6 +18,7 @@ import MatchAbandonmentNotification from '@/components/notifications/MatchAbando
 import { MatchTransition } from '@/components/match/MatchTransition';
 import { MatchLifecycleService } from '@/services/matchLifecycleService';
 import { analyticsService } from '@/services/analyticsService';
+import { useWaitingRoomBackground } from '@/hooks/useOptimizedBackground';
 
 interface GameWaitingRoomProps {
   gameMode: string;
@@ -141,6 +142,11 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   // Match transition state
   const [showMatchTransition, setShowMatchTransition] = useState(false);
   const [transitionMatchData, setTransitionMatchData] = useState<any>(null);
+  
+  // Get optimized background for opponent
+  const opponentData = waitingRoomEntry?.opponentData || goBackendOpponentData;
+  const opponentBackground = opponentData?.matchBackgroundEquipped || opponentData?.displayBackgroundEquipped;
+  const { backgroundPath: opponentBgPath, isVideo: opponentBgIsVideo } = useWaitingRoomBackground(opponentBackground as any);
   
   // Handle transition completion
   const handleTransitionComplete = () => {
@@ -376,7 +382,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
     const background = opponentData.matchBackgroundEquipped || opponentData.displayBackgroundEquipped;
     
-    if (!background || !background.file) {
+    if (!opponentBgPath) {
       console.log('✅ Display Check: No background to load, opponent ready');
       setOpponentDisplayReady(true);
       setOpponentDisplayLoading(false);
@@ -384,7 +390,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     }
 
     // Check if it's a video or image
-    if (background.type === 'video') {
+    if (opponentBgIsVideo) {
       console.log('🎥 Display Check: Checking video background readiness');
       const video = document.createElement('video');
       video.preload = 'metadata';
@@ -408,7 +414,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       
       video.addEventListener('loadeddata', handleVideoReady);
       video.addEventListener('error', handleVideoError);
-      video.src = background.file;
+      video.src = opponentBgPath;
       
       // Timeout fallback after 2 seconds (reduced from 5)
       setTimeout(() => {
@@ -441,7 +447,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       
       img.addEventListener('load', handleImageReady);
       img.addEventListener('error', handleImageError);
-      img.src = background.file;
+      img.src = opponentBgPath;
       
       // Timeout fallback after 2 seconds (reduced from 5)
       setTimeout(() => {
@@ -3388,8 +3394,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   borderRadius: '15px',
                   position: 'relative',
                   overflow: 'hidden',
-                  background: getOpponentData()?.matchBackgroundEquipped?.type !== 'video' && getOpponentData()?.matchBackgroundEquipped?.file 
-                    ? `url('${getOpponentData()?.matchBackgroundEquipped?.file}') center/cover no-repeat` 
+                  background: !opponentBgIsVideo && opponentBgPath 
+                    ? `url('${opponentBgPath}') center/cover no-repeat` 
                     : '#332A63'
                 }}
               >
@@ -3436,7 +3442,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   </div>
                 )}
                 {/* Render opponent video background if it's a video */}
-                {getOpponentData()?.matchBackgroundEquipped?.type === 'video' && (
+                {opponentBgIsVideo && opponentBgPath && (
                   <video
                     autoPlay
                     loop
@@ -3461,7 +3467,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       outline: 'none'
                     }}
                   >
-                    <source src={getOpponentData()?.matchBackgroundEquipped?.file} type="video/mp4" />
+                    <source src={opponentBgPath} type="video/mp4" />
                   </video>
                 )}
                 

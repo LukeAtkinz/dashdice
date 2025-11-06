@@ -12,6 +12,7 @@ import MiniGameModeSelector from './MiniGameModeSelector';
 import { useBackground } from '@/context/BackgroundContext';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { ProfilePicture } from '@/components/ui/ProfilePicture';
+import { usePlayerCardBackground } from '@/hooks/useOptimizedBackground';
 
 // Game mode icon mapping
 const getGameModeIcon = (gameType: string): string => {
@@ -234,6 +235,15 @@ export default function FriendCard({ friend, compact = false, showActions = true
   const [isInviting, setIsInviting] = useState(false);
   const [isGameSelectorExpanded, setIsGameSelectorExpanded] = useState(false);
 
+  // Get optimized background for friend card (always uses preview variant)
+  const inventory = friend.friendData?.inventory;
+  const friendBackground = inventory && typeof inventory === 'object' && !Array.isArray(inventory) 
+    ? inventory.displayBackgroundEquipped 
+    : undefined;
+  // Handle both object and string backgrounds
+  const bgForHook = typeof friendBackground === 'string' ? null : (friendBackground as any);
+  const { backgroundPath, isVideo } = usePlayerCardBackground(bgForHook);
+
   // Get presence from context with safety checks
   const presence = friendPresences?.[friend.friendId];
   const presenceStatus = presence?.status || 'offline';
@@ -344,33 +354,35 @@ export default function FriendCard({ friend, compact = false, showActions = true
       <div 
         className="relative overflow-hidden transition-colors"
         style={{
-          ...getFriendBackgroundStyle(friend),
-          borderRadius: '20px'
+          borderRadius: '20px',
+          ...(!isVideo && backgroundPath ? {
+            backgroundImage: `url("${backgroundPath}")`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            WebkitBackgroundSize: 'cover',
+            MozBackgroundSize: 'cover',
+            backgroundAttachment: 'scroll'
+          } : {})
         }}
       >
         {/* Video background for friends with video display backgrounds */}
-        {(() => {
-          const videoBackground = getFriendVideoBackground(friend);
-          if (videoBackground) {
-            return (
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                controls={false}
-                webkit-playsinline="true"
-                x5-playsinline="true"
-                preload="metadata"
-                className="absolute inset-0 w-full h-full object-cover z-0"
-                style={{ borderRadius: '20px' }}
-              >
-                <source src={videoBackground.file} type="video/mp4" />
-              </video>
-            );
-          }
-          return null;
-        })()}
+        {isVideo && backgroundPath && (
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            controls={false}
+            webkit-playsinline="true"
+            x5-playsinline="true"
+            preload="metadata"
+            className="absolute inset-0 w-full h-full object-cover z-0"
+            style={{ borderRadius: '20px' }}
+          >
+            <source src={backgroundPath} type="video/mp4" />
+          </video>
+        )}
         
         {/* Dark overlay gradient for text readability - left (black) to right (transparent) */}
         <div 
@@ -407,12 +419,20 @@ export default function FriendCard({ friend, compact = false, showActions = true
     <motion.div 
       className="relative overflow-hidden touch-manipulation"
       style={{
-        ...getFriendBackgroundStyle(friend),
         borderRadius: '20px',
         // Enhanced mobile support
         WebkitTransform: 'translateZ(0)', // Hardware acceleration
         transform: 'translateZ(0)',
-        willChange: 'transform'
+        willChange: 'transform',
+        ...(!isVideo && backgroundPath ? {
+          backgroundImage: `url("${backgroundPath}")`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          WebkitBackgroundSize: 'cover',
+          MozBackgroundSize: 'cover',
+          backgroundAttachment: 'scroll'
+        } : {})
       }}
       animate={{
         height: isGameSelectorExpanded ? 'auto' : 'auto'
@@ -424,28 +444,22 @@ export default function FriendCard({ friend, compact = false, showActions = true
       layout
     >
       {/* Video background for friends with video display backgrounds */}
-      {(() => {
-        const videoBackground = getFriendVideoBackground(friend);
-        if (videoBackground) {
-          return (
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              controls={false}
-              webkit-playsinline="true"
-              x5-playsinline="true"
-              preload="metadata"
-              className="absolute inset-0 w-full h-full object-cover z-0"
-              style={{ borderRadius: '20px' }}
-            >
-              <source src={videoBackground.file} type="video/mp4" />
-            </video>
-          );
-        }
-        return null;
-      })()}
+      {isVideo && backgroundPath && (
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          controls={false}
+          webkit-playsinline="true"
+          x5-playsinline="true"
+          preload="metadata"
+          className="absolute inset-0 w-full h-full object-cover z-0"
+          style={{ borderRadius: '20px' }}
+        >
+          <source src={backgroundPath} type="video/mp4" />
+        </video>
+      )}
       
       {/* Dark overlay gradient for text readability - left (black) to right (transparent) */}
       <div 

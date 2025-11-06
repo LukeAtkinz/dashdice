@@ -16,6 +16,7 @@ import { db } from '@/services/firebase';
 import { doc, updateDoc, Timestamp, arrayUnion } from 'firebase/firestore';
 import MatchAbandonmentNotification from '@/components/notifications/MatchAbandonmentNotification';
 import { useToast } from '@/context/ToastContext';
+import { useMatchBackground } from '@/hooks/useOptimizedBackground';
 
 interface MatchProps {
   gameMode?: string;
@@ -454,7 +455,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
   }, []);
 
-  const VideoBackground = useCallback(({ background, className }: { background: any; className: string }) => (
+  const VideoBackground = useCallback(({ src, className }: { src: string; className: string }) => (
     <video
       autoPlay
       loop
@@ -473,14 +474,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         outline: 'none'
       }}
     >
-      <source src={background.file} type="video/mp4" />
+      <source src={src} type="video/mp4" />
     </video>
   ), []);
 
-  const ImageBackground = useCallback(({ background, className }: { background: any; className: string }) => (
+  const ImageBackground = useCallback(({ src, alt, className }: { src: string; alt: string; className: string }) => (
     <img
-      src={background.file}
-      alt={background.name}
+      src={src}
+      alt={alt}
       className={className}
     />
   ), []);
@@ -509,6 +510,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     });
     return getValidBackgroundObject(opponent.matchBackgroundEquipped);
   }, [matchData, user, getValidBackgroundObject]);
+
+  // Get optimized backgrounds for both players
+  const { backgroundPath: currentPlayerBgPath, isVideo: currentPlayerBgIsVideo } = useMatchBackground(currentPlayerBackground as any);
+  const { backgroundPath: opponentBgPath, isVideo: opponentBgIsVideo } = useMatchBackground(opponentBackground as any);
 
   // Subscribe to match updates
   useEffect(() => {
@@ -1165,15 +1170,16 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 }}
               >
                 {/* Player Background */}
-                {currentPlayerBackground ? (
-                  currentPlayerBackground.type === 'video' ? (
+                {currentPlayerBgPath ? (
+                  currentPlayerBgIsVideo ? (
                     <VideoBackground 
-                      background={currentPlayerBackground}
+                      src={currentPlayerBgPath}
                       className="absolute inset-0 w-full h-full object-cover"
                     />
                   ) : (
                     <ImageBackground
-                      background={currentPlayerBackground}
+                      src={currentPlayerBgPath}
+                      alt="Current Player Background"
                       className="absolute inset-0 w-full h-full object-cover"
                     />
                   )
@@ -1401,8 +1407,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 }}
               >
                 {/* Player Background */}
-                {opponentBackground ? (
-                  opponentBackground.type === 'video' ? (
+                {opponentBgPath ? (
+                  opponentBgIsVideo ? (
                     <video
                       autoPlay
                       loop
@@ -1419,12 +1425,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         pointerEvents: 'none'
                       }}
                     >
-                      <source src={opponentBackground.file} type="video/mp4" />
+                      <source src={opponentBgPath} type="video/mp4" />
                     </video>
                   ) : (
                     <img
-                      src={opponentBackground.file}
-                      alt={opponentBackground.name}
+                      src={opponentBgPath}
+                      alt="Opponent Background"
                       className="absolute inset-0 w-full h-full object-cover"
                     />
                   )
@@ -1568,8 +1574,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   }}
                 >
                   {/* Player Background */}
-                  {currentPlayerBackground ? (
-                    currentPlayerBackground.type === 'video' ? (
+                  {currentPlayerBgPath ? (
+                    currentPlayerBgIsVideo ? (
                       <video
                         autoPlay
                         loop
@@ -1587,12 +1593,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                           objectPosition: 'center center'
                         }}
                       >
-                        <source src={currentPlayerBackground.file} type="video/mp4" />
+                        <source src={currentPlayerBgPath} type="video/mp4" />
                       </video>
                     ) : (
                       <img
-                        src={currentPlayerBackground.file}
-                        alt={currentPlayerBackground.name}
+                        src={currentPlayerBgPath}
+                        alt="Current Player Background"
                         className="absolute inset-0 w-full h-full object-cover"
                         style={{
                           objectPosition: 'center center'
@@ -1677,8 +1683,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   }}
                 >
                   {/* Player Background */}
-                  {opponentBackground ? (
-                    opponentBackground.type === 'video' ? (
+                  {opponentBgPath ? (
+                    opponentBgIsVideo ? (
                       <video
                         autoPlay
                         loop
@@ -1696,12 +1702,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                           objectPosition: 'center center'
                         }}
                       >
-                        <source src={opponentBackground.file} type="video/mp4" />
+                        <source src={opponentBgPath} type="video/mp4" />
                       </video>
                     ) : (
                       <img
-                        src={opponentBackground.file}
-                        alt={opponentBackground.name}
+                        src={opponentBgPath}
+                        alt="Opponent Background"
                         className="absolute inset-0 w-full h-full object-cover"
                         style={{
                           objectPosition: 'center center'
