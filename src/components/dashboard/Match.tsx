@@ -431,18 +431,26 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   }, [matchData, user, showToast]);
 
   const getValidBackgroundObject = useCallback((background: any) => {
+    console.log('🖼️ getValidBackgroundObject called with:', background);
+    
     if (!background) {
+      console.log('⚠️ Background is null/undefined, using default Relax');
       return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
     }
     
+    // Check if background is already a valid object
     if (typeof background === 'object' && background.name && background.file && background.type) {
+      console.log('✅ Background object is valid:', background);
       return background;
     }
     
+    // If background is a string (background ID from old system)
     if (typeof background === 'string') {
+      console.log('⚠️ Background is a string (ID), using default:', background);
       return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
     }
     
+    console.log('❌ Background format unknown, using default:', background);
     return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
   }, []);
 
@@ -482,6 +490,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     if (!matchData || !user) return null;
     const isHost = matchData.hostData.playerId === user.uid;
     const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
+    console.log('🎮 Current Player Background Data:', {
+      isHost,
+      playerId: currentPlayer.playerId,
+      matchBackgroundEquipped: currentPlayer.matchBackgroundEquipped
+    });
     return getValidBackgroundObject(currentPlayer.matchBackgroundEquipped);
   }, [matchData, user, getValidBackgroundObject]);
   
@@ -489,6 +502,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     if (!matchData || !user) return null;
     const isHost = matchData.hostData.playerId === user.uid;
     const opponent = isHost ? matchData.opponentData : matchData.hostData;
+    console.log('🎮 Opponent Background Data:', {
+      isHost,
+      playerId: opponent.playerId,
+      matchBackgroundEquipped: opponent.matchBackgroundEquipped
+    });
     return getValidBackgroundObject(opponent.matchBackgroundEquipped);
   }, [matchData, user, getValidBackgroundObject]);
 
