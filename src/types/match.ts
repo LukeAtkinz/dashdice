@@ -96,6 +96,8 @@ export interface MatchData {
     winner?: string;
     gameOverReason?: string;
     hasDoubleMultiplier?: boolean; // 2x multiplier active when player rolls doubles
+    hasTripleMultiplier?: boolean; // 3x multiplier active (future feature)
+    hasQuadMultiplier?: boolean; // 4x multiplier active (future feature)
     trueGritMultiplier?: number; // Stacking multiplier for True Grit mode
     // Zero Hour enhancement fields
     multiplierLevel?: number; // Current multiplier level (2, 3, 4, etc.)

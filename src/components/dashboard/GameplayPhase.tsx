@@ -389,37 +389,38 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 // Check if dice are doubles (removed gold flash effect)
                 const areDoublesGold = false; // Disabled gold glow effect
                 
-                // Determine color based on turn score
-                let textColor = 'text-gray-400'; // 9 or below
-                let borderColor = 'border-gray-500';
-                let bgColor = 'bg-gray-600/30';
+                // Determine color based on turn score - Updated color system with 70% opacity
+                let textColor = 'text-white'; // Default white text
+                let bgColor = 'rgba(125, 125, 125, 0.7)'; // Grey (<10)
                 
                 // Override all colors when multiplier is active
                 if (hasMultiplier) {
                   textColor = 'text-red-300';
-                  borderColor = 'border-red-500';
-                  bgColor = 'bg-gradient-to-br from-red-600/50 to-purple-600/50';
+                  bgColor = 'linear-gradient(to bottom right, rgba(220, 38, 38, 0.5), rgba(147, 51, 234, 0.5))';
                 } else if (turnScore >= 50) {
-                  textColor = areDoublesGold ? 'text-yellow-400' : 'text-yellow-400'; // Gold
-                  borderColor = areDoublesGold ? 'border-yellow-500' : 'border-yellow-500';
-                  bgColor = areDoublesGold ? 'bg-yellow-600/30' : 'bg-yellow-600/30';
+                  textColor = 'text-black'; // Gold (50+) - Black text
+                  bgColor = 'rgba(255, 215, 0, 0.7)';
+                } else if (turnScore >= 40) {
+                  textColor = 'text-black'; // White (40-50) - Black text
+                  bgColor = 'rgba(255, 255, 255, 0.7)';
                 } else if (turnScore >= 30) {
-                  textColor = areDoublesGold ? 'text-yellow-400' : 'text-red-400'; // Red
-                  borderColor = areDoublesGold ? 'border-yellow-500' : 'border-red-500';
-                  bgColor = areDoublesGold ? 'bg-yellow-600/30' : 'bg-red-600/30';
+                  textColor = 'text-white'; // Red (30-40)
+                  bgColor = 'rgba(220, 20, 60, 0.7)';
                 } else if (turnScore >= 20) {
-                  textColor = areDoublesGold ? 'text-yellow-400' : 'text-blue-400'; // Blue
-                  borderColor = areDoublesGold ? 'border-yellow-500' : 'border-blue-500';
-                  bgColor = areDoublesGold ? 'bg-yellow-600/30' : 'bg-blue-600/30';
+                  textColor = 'text-white'; // Purple (20-30)
+                  bgColor = 'rgba(138, 43, 226, 0.7)';
                 } else if (turnScore >= 10) {
-                  textColor = areDoublesGold ? 'text-yellow-400' : 'text-purple-400'; // Purple
-                  borderColor = areDoublesGold ? 'border-yellow-500' : 'border-purple-500';
-                  bgColor = areDoublesGold ? 'bg-yellow-600/30' : 'bg-purple-600/30';
+                  textColor = 'text-white'; // Blue (10-20)
+                  bgColor = 'rgba(0, 174, 239, 0.7)';
                 }
                 
                 return (
                   <motion.div 
-                    className={`inline-block px-4 md:px-8 py-3 md:py-4 ${bgColor} border-2 ${borderColor} rounded-2xl backdrop-blur-sm shadow-xl`}
+                    className="inline-block px-4 md:px-8 py-3 md:py-4 border-2 border-gray-500 rounded-2xl backdrop-blur-sm shadow-xl"
+                    style={{
+                      background: hasMultiplier && bgColor.startsWith('linear') ? bgColor : undefined,
+                      backgroundColor: !hasMultiplier || !bgColor.startsWith('linear') ? bgColor : undefined
+                    }}
                     animate={areDoublesGold ? {
                       boxShadow: [
                         '0 0 10px rgba(255, 215, 0, 0.7), 0 0 20px rgba(255, 215, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3)',
@@ -434,7 +435,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     } : {}}
                   >
                     <p 
-                      className={`text-sm md:text-lg ${textColor === 'text-yellow-400' ? 'text-yellow-300' : textColor.replace('400', '300')} mb-1 md:mb-1`}
+                      className={`text-sm md:text-lg ${textColor} mb-1 md:mb-1 opacity-90`}
                       style={{ fontFamily: "Audiowide" }}
                     >
                       Turn Score
@@ -474,6 +475,27 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 const isThreeDigits = Math.abs(totalScore) >= 100; // Use absolute value for digit count
                 const isLastLine = matchData.gameMode === 'last-line';
                 
+                // Determine color based on total score - Same logic as turn score
+                let totalTextColor = 'text-white'; // Default white text
+                let totalBgColor = 'rgba(125, 125, 125, 0.7)'; // Grey (<10)
+                
+                if (totalScore >= 50) {
+                  totalTextColor = 'text-black'; // Gold (50+) - Black text
+                  totalBgColor = 'rgba(255, 215, 0, 0.7)';
+                } else if (totalScore >= 40) {
+                  totalTextColor = 'text-black'; // White (40-50) - Black text
+                  totalBgColor = 'rgba(255, 255, 255, 0.7)';
+                } else if (totalScore >= 30) {
+                  totalTextColor = 'text-white'; // Red (30-40)
+                  totalBgColor = 'rgba(220, 20, 60, 0.7)';
+                } else if (totalScore >= 20) {
+                  totalTextColor = 'text-white'; // Purple (20-30)
+                  totalBgColor = 'rgba(138, 43, 226, 0.7)';
+                } else if (totalScore >= 10) {
+                  totalTextColor = 'text-white'; // Blue (10-20)
+                  totalBgColor = 'rgba(0, 174, 239, 0.7)';
+                }
+                
                 return (
                   <motion.div
                     key={`potential-total-${matchData.gameData.turnScore}-${activePlayer.playerScore || 0}`}
@@ -489,8 +511,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       ease: isScoreShooting ? "easeInOut" : "backOut",
                       x: isScoreShooting ? { duration: 0.6, ease: "easeInOut" } : undefined
                     }}
-                    className={`absolute left-[-85px] md:left-[-90px] top-1/2 transform -translate-y-1/2 bg-blue-600/40 border-2 border-blue-400 rounded-xl backdrop-blur-sm shadow-xl`}
+                    className="absolute left-[-85px] md:left-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-gray-500 rounded-xl backdrop-blur-sm shadow-xl"
                     style={{
+                      backgroundColor: totalBgColor,
                       padding: '8px 12px',
                       minWidth: isThreeDigits ? 'auto' : '64px',
                       minHeight: isThreeDigits ? 'auto' : '64px',
@@ -502,17 +525,17 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     }}
                   >
                     <p 
-                      className="text-xs md:text-sm text-blue-300 mb-1" 
+                      className={`text-xs md:text-sm ${totalTextColor} mb-1 opacity-90`}
                       style={{ fontFamily: "Audiowide" }}
                     >
                       Total
                     </p>
                     <motion.p 
                       key={`total-value-${totalScore}`}
-                      initial={{ scale: 1.3, color: "#60A5FA" }}
-                      animate={{ scale: 1, color: "#93C5FD" }}
+                      initial={{ scale: 1.3 }}
+                      animate={{ scale: 1 }}
                       transition={{ duration: 0.3, ease: "easeOut" }}
-                      className="text-lg md:text-xl font-bold text-blue-300" 
+                      className={`text-lg md:text-xl font-bold ${totalTextColor}`}
                       style={{ fontFamily: "Audiowide" }}
                     >
                       {totalScore}
@@ -528,8 +551,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut" }}
-                  className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 bg-purple-600/40 border-2 border-purple-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-purple-500 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
+                    background: 'linear-gradient(to bottom right, rgba(155, 48, 255, 0.7), rgba(255, 51, 255, 0.7))',
                     padding: '8px 12px',
                     minWidth: '64px',
                     minHeight: '64px',
@@ -541,10 +565,10 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   }}
                 >
                   <motion.p 
-                    initial={{ scale: 1.3, color: "#C084FC" }}
-                    animate={{ scale: 1, color: "#D8B4FE" }}
+                    initial={{ scale: 1.3 }}
+                    animate={{ scale: 1 }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-xl font-bold text-purple-300" 
+                    className="text-lg md:text-xl font-bold text-white" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     {matchData.gameData.multiplierLevel || 2}X
@@ -552,14 +576,15 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 </motion.div>
               )}
               
-              {/* Classic Mode 2X Multiplier */}
+              {/* Classic Mode 2X Multiplier - Purple Themed */}
               {matchData.gameData.hasDoubleMultiplier && matchData.gameMode !== 'true-grit' && matchData.gameMode !== 'zero-hour' && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut" }}
-                  className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 bg-red-600/40 border-2 border-red-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-purple-500 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
+                    background: 'linear-gradient(to bottom right, rgba(155, 48, 255, 0.7), rgba(255, 51, 255, 0.7))',
                     padding: '8px 12px',
                     minWidth: '64px',
                     minHeight: '64px',
@@ -571,13 +596,75 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   }}
                 >
                   <motion.p 
-                    initial={{ scale: 1.3, color: "#F87171" }}
-                    animate={{ scale: 1, color: "#FCA5A5" }}
+                    initial={{ scale: 1.3 }}
+                    animate={{ scale: 1 }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-xl font-bold text-red-300" 
+                    className="text-lg md:text-xl font-bold text-white" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     2X
+                  </motion.p>
+                </motion.div>
+              )}
+              
+              {/* 3X Multiplier - Red Themed */}
+              {matchData.gameData.hasTripleMultiplier && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5, x: -10 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ duration: 0.4, ease: "backOut" }}
+                  className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-red-500 rounded-xl backdrop-blur-sm shadow-xl"
+                  style={{
+                    background: 'linear-gradient(to bottom right, rgba(255, 0, 0, 0.7), rgba(255, 69, 0, 0.7))',
+                    padding: '8px 12px',
+                    minWidth: '64px',
+                    minHeight: '64px',
+                    aspectRatio: '1 / 1',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                >
+                  <motion.p 
+                    initial={{ scale: 1.3 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="text-lg md:text-xl font-bold text-white" 
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    3X
+                  </motion.p>
+                </motion.div>
+              )}
+              
+              {/* 4X Multiplier - White Themed */}
+              {matchData.gameData.hasQuadMultiplier && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5, x: -10 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ duration: 0.4, ease: "backOut" }}
+                  className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-white rounded-xl backdrop-blur-sm shadow-xl"
+                  style={{
+                    background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.7), rgba(174, 238, 238, 0.7))',
+                    padding: '8px 12px',
+                    minWidth: '64px',
+                    minHeight: '64px',
+                    aspectRatio: '1 / 1',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                >
+                  <motion.p 
+                    initial={{ scale: 1.3 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="text-lg md:text-xl font-bold text-black" 
+                    style={{ fontFamily: "Audiowide" }}
+                  >
+                    4X
                   </motion.p>
                 </motion.div>
               )}

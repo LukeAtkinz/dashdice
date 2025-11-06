@@ -259,13 +259,43 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
     return numbers;
   };
   
-  // Check if multiplier is active for border styling and background
-  const hasMultiplier = matchData?.gameData?.hasDoubleMultiplier || false;
-  const borderClass = hasMultiplier ? 'border-red-500/70' : 'border-white/0';
-  const backgroundClass = hasMultiplier ? 'bg-gradient-to-br from-red-600/50 to-purple-600/50' : '';
+  // Check multiplier type and apply appropriate styling
+  const hasDoubleMultiplier = matchData?.gameData?.hasDoubleMultiplier || false;
+  const hasTripleMultiplier = matchData?.gameData?.hasTripleMultiplier || false;
+  const hasQuadMultiplier = matchData?.gameData?.hasQuadMultiplier || false;
+  
+  // Determine dice number color based on multiplier (white for x2/x3, black for x4)
+  const getDiceNumberColor = () => {
+    if (hasQuadMultiplier) return '#000000'; // Black for x4
+    if (hasTripleMultiplier || hasDoubleMultiplier) return '#FFFFFF'; // White for x2 and x3
+    return isTurnDecider ? '#FFD700' : '#000000'; // Default colors
+  };
+  
+  // Determine border and background based on multiplier type
+  let borderStyle = '';
+  let backgroundStyle = '';
+  
+  if (hasQuadMultiplier) {
+    // x4 Multiplier - White Themed
+    borderStyle = 'border-white/70';
+    backgroundStyle = 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.7), rgba(174, 238, 238, 0.7))';
+  } else if (hasTripleMultiplier) {
+    // x3 Multiplier - Red Themed
+    borderStyle = 'border-red-500/70';
+    backgroundStyle = 'linear-gradient(to bottom right, rgba(255, 0, 0, 0.7), rgba(255, 69, 0, 0.7))';
+  } else if (hasDoubleMultiplier) {
+    // x2 Multiplier - Purple Themed
+    borderStyle = 'border-purple-500/70';
+    backgroundStyle = 'linear-gradient(to bottom right, rgba(155, 48, 255, 0.7), rgba(255, 51, 255, 0.7))';
+  } else {
+    borderStyle = 'border-white/0';
+    backgroundStyle = '';
+  }
+  
+  const hasAnyMultiplier = hasDoubleMultiplier || hasTripleMultiplier || hasQuadMultiplier;
   
   return (
-    <div className={`relative rounded-[30px] border overflow-hidden ${borderClass} ${backgroundClass}`}
+    <div className={`relative rounded-[30px] border overflow-hidden ${borderStyle}`}
          style={{
            display: 'flex',
            height: 'clamp(150px, 35vw, 300px)', // Reduced from 50vw to 35vw for mobile
@@ -275,7 +305,8 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
            justifyContent: 'space-between',
            alignItems: 'center',
            alignSelf: 'stretch',
-           backdropFilter: 'blur(5px)'
+           backdropFilter: 'blur(5px)',
+           background: backgroundStyle || undefined
          }}>
       {shouldShowAnimation ? (
         // Slot machine reel effect
@@ -329,7 +360,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             }}
           >
             <span style={{
-              color: isTurnDecider ? '#FFD700' : '#000',
+              color: getDiceNumberColor(),
               fontFamily: 'Orbitron, monospace',
               fontSize: 'clamp(120px, 18vw, 200px)',
               fontStyle: 'normal',
@@ -356,10 +387,17 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             }}
           />
 
-          {/* Multiplier active glow effect */}
-          {hasMultiplier && (
+          {/* Multiplier active glow effect during spin */}
+          {hasAnyMultiplier && (
             <motion.div 
-              className="absolute inset-0 bg-gradient-to-br from-red-400/30 via-purple-400/20 to-red-400/30"
+              className="absolute inset-0"
+              style={{
+                background: hasQuadMultiplier 
+                  ? 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.3), rgba(174, 238, 238, 0.2))'
+                  : hasTripleMultiplier
+                  ? 'linear-gradient(to bottom right, rgba(255, 0, 0, 0.3), rgba(255, 69, 0, 0.2))'
+                  : 'linear-gradient(to bottom right, rgba(155, 48, 255, 0.3), rgba(255, 51, 255, 0.2))'
+              }}
               animate={{
                 opacity: [0.4, 0.8, 0.4]
               }}
@@ -378,9 +416,16 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
         // Static dice display - completely still when not rolling
         <div className="w-full h-full flex items-center justify-center relative">
           {/* Multiplier active background glow for static dice */}
-          {hasMultiplier && (
+          {hasAnyMultiplier && (
             <motion.div 
-              className="absolute inset-0 bg-gradient-to-br from-red-400/25 via-purple-400/15 to-red-400/25 rounded-[30px]"
+              className="absolute inset-0 rounded-[30px]"
+              style={{
+                background: hasQuadMultiplier 
+                  ? 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.25), rgba(174, 238, 238, 0.15))'
+                  : hasTripleMultiplier
+                  ? 'linear-gradient(to bottom right, rgba(255, 0, 0, 0.25), rgba(255, 69, 0, 0.15))'
+                  : 'linear-gradient(to bottom right, rgba(155, 48, 255, 0.25), rgba(255, 51, 255, 0.15))'
+              }}
               animate={{
                 opacity: [0.3, 0.6, 0.3]
               }}
@@ -423,7 +468,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             </motion.span>
           ) : (
             <span style={{
-              color: '#000',
+              color: getDiceNumberColor(),
               fontFamily: 'Orbitron, monospace',
               fontSize: 'clamp(120px, 18vw, 200px)', // Responsive font size for mobile
               fontStyle: 'normal',
