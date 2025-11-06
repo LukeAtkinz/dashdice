@@ -187,7 +187,7 @@ export default function AchievementsDashboard() {
   return (
     <>
       <style jsx>{buttonStyles}</style>
-      <div className="w-[90vw] max-w-[1600px] mx-auto px-2 md:px-6 py-2 md:py-6">
+      <div className="w-[90vw] max-w-[1600px] mx-auto px-2 md:px-6 py-2 md:py-6 mt-[7vh] md:mt-0">
       {/* Header Section */}
       <div className="w-full px-2 md:px-4 py-2 md:py-4 pb-[0.5rem] md:pb-[1rem]">
         <h1

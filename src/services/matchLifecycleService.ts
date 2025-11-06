@@ -149,6 +149,40 @@ export class MatchLifecycleService {
       const createdAt = matchData.createdAt?.toDate() || new Date();
       const duration = Date.now() - createdAt.getTime();
 
+      // Check if this is a match against a BOT player
+      const hostIsBot = matchData.hostData?.playerId?.includes('bot') || false;
+      const opponentIsBot = matchData.opponentData?.playerId?.includes('bot') || false;
+      const hasBot = hostIsBot || opponentIsBot;
+
+      console.log(`🤖 Bot detection:`, {
+        matchId,
+        hostId: matchData.hostData?.playerId,
+        hostIsBot,
+        opponentId: matchData.opponentData?.playerId,
+        opponentIsBot,
+        hasBot
+      });
+
+      // If the match is against a BOT, apply loss penalty to the human player
+      if (hasBot) {
+        const humanPlayerId = hostIsBot 
+          ? matchData.opponentData?.playerId 
+          : matchData.hostData?.playerId;
+
+        if (humanPlayerId && !humanPlayerId.includes('bot')) {
+          console.log(`💔 Applying abandonment loss penalty to ${humanPlayerId} for leaving BOT match`);
+          
+          try {
+            // Import UserService dynamically to avoid circular dependencies
+            const { UserService } = await import('./userService');
+            await UserService.updateMatchLoss(humanPlayerId);
+            console.log(`✅ Successfully applied loss penalty for abandoning BOT match`);
+          } catch (lossError) {
+            console.error(`❌ Error applying loss penalty:`, lossError);
+          }
+        }
+      }
+
       // Create abandoned match record
       const abandonedMatchData: AbandonedMatch = {
         originalMatchId: matchId,

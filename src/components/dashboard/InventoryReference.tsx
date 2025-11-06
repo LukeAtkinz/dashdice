@@ -131,10 +131,15 @@ export const InventorySection: React.FC = () => {
   return (
     <div className="w-full flex flex-col items-center justify-start gap-[0.5rem] md:gap-[2rem] pt-0 md:pt-[1rem] pb-[2rem] h-screen overflow-hidden"
       style={{
-        touchAction: 'pan-y', // Allow vertical scrolling
-        overscrollBehavior: 'contain', // Contain overscroll to this element
+        touchAction: 'none', // Disable all touch scrolling on parent
+        overscrollBehavior: 'none', // Prevent scroll chaining
         minHeight: '100vh',
-        maxHeight: '100vh'
+        maxHeight: '100vh',
+        position: 'fixed', // Fix the container
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0
       }}
     >
       {/* Custom scrollbar styles and navigation animations */}
@@ -373,8 +378,8 @@ export const InventorySection: React.FC = () => {
       {activeTab === 'power' ? (
         <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4"
           style={{
-            touchAction: 'pan-y', // Only allow vertical panning within content
-            overscrollBehavior: 'contain' // Contain scrolling within this element
+            touchAction: 'none', // Disable parent scrolling
+            overscrollBehavior: 'none' // Prevent scroll chaining to parent
           }}
         >
           <div className="flex h-auto w-full md:w-auto pl-[0.5rem] md:pl-0" style={{ minHeight: '600px', height: 'auto', maxHeight: '95vh', maxWidth: '1600px', gap: '20px' }} data-mobile-height="410px" data-desktop-height="auto">
@@ -390,9 +395,9 @@ export const InventorySection: React.FC = () => {
                 <div 
                   className="flex-1 overflow-y-auto overflow-x-hidden relative scrollbar-hide" 
                   style={{ 
-                    touchAction: 'pan-y',
+                    touchAction: 'pan-y', // Allow vertical scrolling ONLY in this container
                     WebkitOverflowScrolling: 'touch',
-                    overscrollBehavior: 'contain',
+                    overscrollBehavior: 'contain', // Stop scroll from bubbling up
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
                     transform: 'translateZ(0)', // Forces hardware acceleration
@@ -416,8 +421,8 @@ export const InventorySection: React.FC = () => {
       ) : (
         <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4 pt-4 md:pt-0"
           style={{
-            touchAction: 'pan-y', // Only allow vertical panning within content
-            overscrollBehavior: 'contain' // Contain scrolling within this element
+            touchAction: 'none', // Disable parent scrolling
+            overscrollBehavior: 'none' // Prevent scroll chaining to parent
           }}
         >
           <div className="flex h-auto w-full md:w-auto pl-[0.5rem] md:pl-0" style={{ minHeight: '600px', height: 'auto', maxHeight: '80vh', maxWidth: '1600px', gap: '20px' }} data-mobile-height="410px" data-desktop-height="auto">
@@ -433,9 +438,9 @@ export const InventorySection: React.FC = () => {
                 <div 
                   className="flex-1 overflow-y-auto overflow-x-hidden relative scrollbar-hide" 
                   style={{ 
-                    touchAction: 'pan-y',
+                    touchAction: 'pan-y', // Allow vertical scrolling ONLY in this container
                     WebkitOverflowScrolling: 'touch',
-                    overscrollBehavior: 'contain',
+                    overscrollBehavior: 'contain', // Stop scroll from bubbling up
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
                     transform: 'translateZ(0)', // Forces hardware acceleration

@@ -193,7 +193,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
   return (
     <>
       <style jsx>{buttonStyles}</style>
-      <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full">
+      <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full mt-[7vh] md:mt-0">
       {/* Header */}
       <div className="text-center mb-8 flex-shrink-0">
         <h1 

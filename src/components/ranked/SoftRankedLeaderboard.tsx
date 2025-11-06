@@ -389,9 +389,9 @@ export function SoftRankedLeaderboard() {
           className="px-6 pb-6 space-y-3 flex-1 overflow-y-auto custom-scrollbar" 
           style={{ 
             maxHeight: 'calc(100vh - 250px)',
-            touchAction: 'pan-y',
+            touchAction: 'pan-y', // Allow vertical scrolling ONLY in this container
             WebkitOverflowScrolling: 'touch',
-            overscrollBehavior: 'auto',
+            overscrollBehavior: 'contain', // Stop scroll from bubbling up to parent
             scrollBehavior: 'smooth'
           }}
         >
@@ -465,15 +465,22 @@ export function SoftRankedLeaderboard() {
                   <div className="relative z-10 flex items-center justify-between">
                     {/* Rank and Player Info */}
                     <div className="flex items-center space-x-4">
-                      {/* Rank Icon/Number */}
+                      {/* Rank Icon/Number - Full opacity for rank 1 */}
                       <div 
                         className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold ${
-                          player.rank === 1 ? 'bg-yellow-400/20 text-yellow-400' :
-                          player.rank === 2 ? 'bg-gray-300/20 text-gray-300' :
-                          player.rank === 3 ? 'bg-amber-600/20 text-amber-600' :
-                          'bg-gray-600/20 text-gray-300'
+                          player.rank === 1 ? 'bg-yellow-400/20' :
+                          player.rank === 2 ? 'bg-gray-300/20' :
+                          player.rank === 3 ? 'bg-amber-600/20' :
+                          'bg-gray-600/20'
                         }`}
-                        style={{ fontFamily: 'Audiowide' }}
+                        style={{ 
+                          fontFamily: 'Audiowide',
+                          color: player.rank === 1 ? '#FFD700' :
+                                 player.rank === 2 ? '#D1D5DB' :
+                                 player.rank === 3 ? '#D97706' :
+                                 '#D1D5DB',
+                          opacity: 1
+                        }}
                       >
                         {getRankIcon(player.rank)}
                       </div>
@@ -487,34 +494,54 @@ export function SoftRankedLeaderboard() {
                                 textShadow: isCurrentUser 
                                   ? '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4)' 
                                   : '0 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.5)',
-                                color: isCurrentUser ? '#FFD700' : undefined
+                                color: isCurrentUser ? '#FFD700' : undefined,
+                                opacity: 1
                               }}>
                             {isCurrentUser ? 'YOU' : player.displayName}
                           </h3>
                         </div>
-                        <div className="text-sm text-gray-400" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)' }}>
+                        <div 
+                          className="text-sm"
+                          style={{ 
+                            textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)',
+                            color: player.rank === 1 ? '#D1D5DB' : '#9CA3AF',
+                            opacity: 1
+                          }}
+                        >
                           <div className="md:flex md:space-x-4">
-                            <span>Wins: <span className="text-green-400 font-semibold" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)' }}>{player.matchWins}</span></span>
-                            <span className="block md:inline">Win Rate: <span className="text-blue-400 font-semibold" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)' }}>{player.winPercentage.toFixed(1)}%</span></span>
+                            <span>Wins: <span className="font-semibold" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)', color: '#4ADE80', opacity: 1 }}>{player.matchWins}</span></span>
+                            <span className="block md:inline">Win Rate: <span className="font-semibold" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)', color: '#60A5FA', opacity: 1 }}>{player.winPercentage.toFixed(1)}%</span></span>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Rating */}
+                    {/* Rating - Full opacity for rank 1 */}
                     <motion.div 
                       className="text-right"
                       whileHover={{ scale: 1.1 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <div className={`text-2xl font-bold ${colors.text} group-hover:text-white transition-colors`} 
-                           style={{ 
-                             fontFamily: 'Audiowide',
-                             textShadow: '0 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.5)'
-                           }}>
+                      <div 
+                        className={`text-2xl font-bold ${colors.text} group-hover:text-white transition-colors`} 
+                        style={{ 
+                          fontFamily: 'Audiowide',
+                          textShadow: '0 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.5)',
+                          opacity: 1
+                        }}
+                      >
                         {player.rating}
                       </div>
-                      <div className="text-xs text-gray-400" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)' }}>Rating</div>
+                      <div 
+                        className="text-xs" 
+                        style={{ 
+                          textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)',
+                          color: player.rank === 1 ? '#D1D5DB' : '#9CA3AF',
+                          opacity: 1
+                        }}
+                      >
+                        Rating
+                      </div>
                     </motion.div>
                   </div>
 

@@ -575,9 +575,10 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               {/* Zero Hour Enhanced Multiplier */}
               {matchData.gameData.hasDoubleMultiplier && matchData.gameMode === 'zero-hour' && (
                 <motion.div
+                  id="multiplier-indicator"
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
-                  transition={{ duration: 0.4, ease: "backOut" }}
+                  transition={{ duration: 0.4, ease: "backOut", delay: 0.2 }}
                   className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-purple-500 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
                     background: 'linear-gradient(to bottom right, rgba(155, 48, 255, 0.7), rgba(255, 51, 255, 0.7))',
@@ -606,9 +607,10 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               {/* Classic Mode 2X Multiplier - Purple Themed */}
               {matchData.gameData.hasDoubleMultiplier && matchData.gameMode !== 'true-grit' && matchData.gameMode !== 'zero-hour' && (
                 <motion.div
+                  id="multiplier-indicator"
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
-                  transition={{ duration: 0.4, ease: "backOut" }}
+                  transition={{ duration: 0.4, ease: "backOut", delay: 0.2 }}
                   className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-purple-500 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
                     background: 'linear-gradient(to bottom right, rgba(155, 48, 255, 0.7), rgba(255, 51, 255, 0.7))',
@@ -637,9 +639,10 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               {/* 3X Multiplier - Red Themed */}
               {matchData.gameData.hasTripleMultiplier && (
                 <motion.div
+                  id="multiplier-indicator"
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
-                  transition={{ duration: 0.4, ease: "backOut" }}
+                  transition={{ duration: 0.4, ease: "backOut", delay: 0.2 }}
                   className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-red-500 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
                     background: 'linear-gradient(to bottom right, rgba(255, 0, 0, 0.7), rgba(255, 69, 0, 0.7))',
@@ -668,9 +671,10 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               {/* 4X Multiplier - White Themed */}
               {matchData.gameData.hasQuadMultiplier && (
                 <motion.div
+                  id="multiplier-indicator"
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
-                  transition={{ duration: 0.4, ease: "backOut" }}
+                  transition={{ duration: 0.4, ease: "backOut", delay: 0.2 }}
                   className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-white rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
                     background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.7), rgba(174, 238, 238, 0.7))',

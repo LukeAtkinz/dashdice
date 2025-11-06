@@ -596,8 +596,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   playerId: opponentPlayerId,
                   playerDisplayName: opponentProfile?.displayName || 'Player 2',
                   playerStats: opponentProfile?.stats || {},
-                  displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped || null,
-                  matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped || null,
+                  displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+                  matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
                 };
                 setGoBackendOpponentData(opponentDisplayData);
                 // Stored Go backend opponent data
@@ -632,8 +632,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     playerId: opponentPlayerId,
                     playerDisplayName: goBackendOpponentData?.playerDisplayName || (opponentPlayerId.includes('bot') ? 'AI Player' : 'Player 2'),
                     playerStats: goBackendOpponentData?.playerStats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
-                    displayBackgroundEquipped: goBackendOpponentData?.displayBackgroundEquipped || null,
-                    matchBackgroundEquipped: goBackendOpponentData?.matchBackgroundEquipped || null,
+                    displayBackgroundEquipped: goBackendOpponentData?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+                    matchBackgroundEquipped: goBackendOpponentData?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
                   };
                   setGoBackendOpponentData(fallbackOpponentData);
                 }
@@ -728,8 +728,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     playerId: user!.uid,
                     playerDisplayName: userProfile.displayName || 'Player 1',
                     playerStats: userProfile.stats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
-                    displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped || null,
-                    matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped || null,
+                    displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+                    matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
                     playerScore: startingScore, // Use proper starting score
                     turnActive: false, // Will be set by turn decider
                     powerLoadout: hostPowerLoadout // Add power loadout for abilities
@@ -739,8 +739,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     playerId: opponentPlayerId,
                     playerDisplayName: goBackendOpponentData?.playerDisplayName || opponentProfile?.displayName || (opponentPlayerId.includes('bot') ? 'AI Player' : 'Player 2'),
                     playerStats: goBackendOpponentData?.playerStats || opponentProfile?.stats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
-                    displayBackgroundEquipped: goBackendOpponentData?.displayBackgroundEquipped || opponentProfile?.inventory?.displayBackgroundEquipped || null,
-                    matchBackgroundEquipped: goBackendOpponentData?.matchBackgroundEquipped || opponentProfile?.inventory?.matchBackgroundEquipped || null,
+                    displayBackgroundEquipped: goBackendOpponentData?.displayBackgroundEquipped || opponentProfile?.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+                    matchBackgroundEquipped: goBackendOpponentData?.matchBackgroundEquipped || opponentProfile?.inventory?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
                     playerScore: startingScore, // Use proper starting score
                     turnActive: false, // Will be set by turn decider
                     powerLoadout: opponentPowerLoadout // Add power loadout for abilities
@@ -794,8 +794,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       playerId: opponentPlayerId,
                       playerDisplayName: opponentProfile?.displayName || 'Player 2',
                       playerStats: opponentProfile?.stats || {},
-                      displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped || null,
-                      matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped || null,
+                      displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+                      matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
                     }
                   };
                   setWaitingRoomEntry(updatedWaitingRoom);
@@ -1758,8 +1758,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             const botOpponentData = {
               playerDisplayName: botResult.bot.displayName,
               playerId: botResult.bot.uid,
-              displayBackgroundEquipped: botResult.bot.inventory?.displayBackgroundEquipped || null,
-              matchBackgroundEquipped: botResult.bot.inventory?.matchBackgroundEquipped || null,
+              displayBackgroundEquipped: botResult.bot.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+              matchBackgroundEquipped: botResult.bot.inventory?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
               playerStats: {
                 bestStreak: botResult.bot.stats?.bestStreak || 0,
                 currentStreak: botResult.bot.stats?.currentStreak || 0,

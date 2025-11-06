@@ -7,15 +7,20 @@ interface MultiplierAnimationProps {
   hasDoubleMultiplier: boolean;
   hasTripleMultiplier: boolean;
   hasQuadMultiplier: boolean;
+  onAnimationStart?: () => void;
+  onAnimationEnd?: () => void;
 }
 
 export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
   hasDoubleMultiplier,
   hasTripleMultiplier,
   hasQuadMultiplier,
+  onAnimationStart,
+  onAnimationEnd,
 }) => {
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [multiplierPosition, setMultiplierPosition] = useState<{ x: number; y: number } | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   
   // Track previous multiplier states to detect activation
@@ -33,18 +38,21 @@ export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
       console.log('🎬 x4 Multiplier activated - playing animation');
       setActiveVideo('/Animations/x4multi.webm');
       setIsPlaying(true);
+      onAnimationStart?.();
     }
     // Detect x3 activation
     else if (hasTripleMultiplier && !prev.triple) {
       console.log('🎬 x3 Multiplier activated - playing animation');
       setActiveVideo('/Animations/x3multi.webm');
       setIsPlaying(true);
+      onAnimationStart?.();
     }
     // Detect x2 activation
     else if (hasDoubleMultiplier && !prev.double) {
       console.log('🎬 x2 Multiplier activated - playing animation');
       setActiveVideo('/Animations/x2multi.webm');
       setIsPlaying(true);
+      onAnimationStart?.();
     }
     
     // Update previous states
@@ -53,7 +61,34 @@ export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
       triple: hasTripleMultiplier,
       quad: hasQuadMultiplier,
     };
-  }, [hasDoubleMultiplier, hasTripleMultiplier, hasQuadMultiplier]);
+  }, [hasDoubleMultiplier, hasTripleMultiplier, hasQuadMultiplier, onAnimationStart]);
+
+  // Find multiplier container position
+  useEffect(() => {
+    if (isPlaying) {
+      const findMultiplierContainer = () => {
+        // Look for the multiplier indicator by ID
+        const multiplierElement = document.getElementById('multiplier-indicator');
+        
+        if (multiplierElement) {
+          const rect = multiplierElement.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          setMultiplierPosition({ x: centerX, y: centerY });
+          console.log('📍 Multiplier container position:', { x: centerX, y: centerY });
+        } else {
+          // Fallback: use viewport center if container not found
+          setMultiplierPosition({ 
+            x: window.innerWidth / 2, 
+            y: window.innerHeight / 2 
+          });
+        }
+      };
+
+      // Wait a tiny moment for DOM to update
+      setTimeout(findMultiplierContainer, 50);
+    }
+  }, [isPlaying]);
 
   useEffect(() => {
     if (activeVideo && videoRef.current && isPlaying) {
@@ -70,6 +105,8 @@ export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
         console.log('🎬 Multiplier animation finished');
         setIsPlaying(false);
         setActiveVideo(null);
+        setMultiplierPosition(null);
+        onAnimationEnd?.();
       };
       
       video.addEventListener('ended', handleVideoEnd);
@@ -78,9 +115,9 @@ export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
         video.removeEventListener('ended', handleVideoEnd);
       };
     }
-  }, [activeVideo, isPlaying]);
+  }, [activeVideo, isPlaying, onAnimationEnd]);
 
-  if (!isPlaying || !activeVideo) {
+  if (!isPlaying || !activeVideo || !multiplierPosition) {
     return null;
   }
 
@@ -91,7 +128,7 @@ export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-none"
+        className="fixed inset-0 z-[9999] pointer-events-none"
         style={{
           width: '100vw',
           height: '100vh',
@@ -106,8 +143,8 @@ export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
             height: 'auto',
             maxHeight: '100vh',
             objectFit: 'contain',
-            top: '50%',
             left: '50%',
+            top: `${multiplierPosition.y}px`,
             transform: 'translate(-50%, -50%)',
           }}
           playsInline

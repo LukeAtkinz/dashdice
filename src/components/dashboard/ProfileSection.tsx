@@ -378,7 +378,7 @@ const ProfileSection: React.FC = () => {
         }
       `}</style>
       
-      <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem]">
+      <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] mt-[7vh] md:mt-0">
         {/* Header */}
         <div className="text-center mb-8 flex-shrink-0">
           <h1 
