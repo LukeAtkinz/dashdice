@@ -180,6 +180,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Create user document in Firestore with validated display name
       await createUserDocument(result.user, { displayName: formattedDisplayName });
       
+      // Initialize starter abilities for new user
+      try {
+        const { initializeStarterAbilities } = await import('@/services/abilityFirebaseService');
+        await initializeStarterAbilities(result.user.uid);
+        console.log('✅ Initialized starter abilities for new user');
+      } catch (abilityError) {
+        console.error('Error initializing starter abilities (non-critical):', abilityError);
+        // Don't throw - this is non-critical, abilities can be initialized on first vault visit
+      }
+      
       // Track signup analytics
       analyticsService.trackSignUp('email');
       analyticsService.trackDailyLogin();
@@ -202,7 +212,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signInWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      await createUserDocument(result.user);
+      const userRef = await createUserDocument(result.user);
+      
+      // Initialize starter abilities for new user (if new)
+      if (userRef) {
+        try {
+          const { initializeStarterAbilities } = await import('@/services/abilityFirebaseService');
+          await initializeStarterAbilities(result.user.uid);
+          console.log('✅ Initialized starter abilities for new Google user');
+        } catch (abilityError) {
+          console.error('Error initializing starter abilities (non-critical):', abilityError);
+        }
+      }
       
       // Track Google login analytics
       analyticsService.trackLogin('google');
@@ -223,7 +244,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signInWithApple = async () => {
     try {
       const result = await signInWithPopup(auth, appleProvider);
-      await createUserDocument(result.user);
+      const userRef = await createUserDocument(result.user);
+      
+      // Initialize starter abilities for new user (if new)
+      if (userRef) {
+        try {
+          const { initializeStarterAbilities } = await import('@/services/abilityFirebaseService');
+          await initializeStarterAbilities(result.user.uid);
+          console.log('✅ Initialized starter abilities for new Apple user');
+        } catch (abilityError) {
+          console.error('Error initializing starter abilities (non-critical):', abilityError);
+        }
+      }
       
       // Track Apple login analytics
       analyticsService.trackLogin('apple');

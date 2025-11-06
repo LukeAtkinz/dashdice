@@ -900,6 +900,69 @@ export function calculatePowerLevel(ability: DashDiceAbility): number {
   return Math.min(100, Math.max(1, Math.round(powerLevel)));
 }
 
+/**
+ * Initialize starter abilities for a new player
+ * Grants all 5 starter abilities automatically
+ */
+export async function initializeStarterAbilities(playerId: string): Promise<void> {
+  try {
+    console.log(`🌟 Initializing starter abilities for player: ${playerId}`);
+    
+    // The 5 starter ability IDs
+    const STARTER_ABILITY_IDS = [
+      'luck_turner',
+      'pan_slap', 
+      'score_saw',
+      'score_siphon',
+      'hard_hat'
+    ];
+    
+    const playerAbilitiesRef = doc(db, COLLECTIONS.playerAbilities, playerId);
+    const playerDoc = await getDoc(playerAbilitiesRef);
+    
+    if (!playerDoc.exists()) {
+      // Create new document with all 5 starter abilities
+      await setDoc(playerAbilitiesRef, {
+        playerId,
+        unlockedAbilities: STARTER_ABILITY_IDS,
+        equippedAbilities: {},
+        favoriteAbilities: [],
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now()
+      });
+      console.log(`✅ Created playerAbilities with ${STARTER_ABILITY_IDS.length} starter abilities for: ${playerId}`);
+    } else {
+      // Check if they already have abilities
+      const data = playerDoc.data();
+      const currentUnlocked = data.unlockedAbilities || [];
+      
+      if (currentUnlocked.length === 0) {
+        // User has no abilities, grant starters
+        await updateDoc(playerAbilitiesRef, {
+          unlockedAbilities: STARTER_ABILITY_IDS,
+          updatedAt: Timestamp.now()
+        });
+        console.log(`✅ Granted ${STARTER_ABILITY_IDS.length} starter abilities to existing player: ${playerId}`);
+      } else {
+        // Add any missing starter abilities
+        const missingAbilities = STARTER_ABILITY_IDS.filter(id => !currentUnlocked.includes(id));
+        if (missingAbilities.length > 0) {
+          await updateDoc(playerAbilitiesRef, {
+            unlockedAbilities: [...currentUnlocked, ...missingAbilities],
+            updatedAt: Timestamp.now()
+          });
+          console.log(`✅ Added ${missingAbilities.length} missing starter abilities for: ${playerId}`);
+        } else {
+          console.log(`✓ Player ${playerId} already has all starter abilities`);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error initializing starter abilities:', error);
+    throw new Error(`Failed to initialize starter abilities for player ${playerId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
 export default {
   createAbility,
   getAbility,
@@ -918,5 +981,6 @@ export default {
   getAbilityAnalytics,
   validateAbility,
   generateAbilityId,
-  calculatePowerLevel
+  calculatePowerLevel,
+  initializeStarterAbilities
 };

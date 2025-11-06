@@ -470,13 +470,23 @@ export function useAbilities(
 
   // Initialize new players with starter abilities from Firebase
   useEffect(() => {
-    if (currentUser?.uid && playerAbilities.unlocked.length === 0 && allAbilities.length > 0) {
-      // Use the defined starter abilities
-      STARTER_ABILITIES.forEach(ability => {
-        unlockAbility(ability.id);
-      });
-    }
-  }, [currentUser?.uid, playerAbilities.unlocked.length, allAbilities, unlockAbility]);
+    const initializeNewPlayer = async () => {
+      if (currentUser?.uid && playerAbilities.unlocked.length === 0 && allAbilities.length > 0) {
+        console.log('🌟 New player detected, initializing starter abilities...');
+        try {
+          // Call the Firebase service to initialize starter abilities
+          await abilityService.initializeStarterAbilities(currentUser.uid);
+          // Reload player abilities to reflect the changes
+          await loadPlayerAbilities();
+          console.log('✅ Starter abilities initialized successfully!');
+        } catch (error) {
+          console.error('❌ Failed to initialize starter abilities:', error);
+        }
+      }
+    };
+    
+    initializeNewPlayer();
+  }, [currentUser?.uid, playerAbilities.unlocked.length, allAbilities.length, loadPlayerAbilities]);
 
   return {
     // Data
