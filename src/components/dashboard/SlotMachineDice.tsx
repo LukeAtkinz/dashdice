@@ -484,6 +484,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             loop
             muted
             playsInline
+            preload="auto"
             className="w-full h-full object-cover"
             style={{
               width: '100%',
@@ -491,7 +492,16 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               objectFit: 'cover',
               transform: isTopDice ? 'none' : 'scaleY(-1)', // Flip vertically for bottom dice
               borderRadius: '30px',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              // Hardware acceleration for better performance
+              willChange: 'transform',
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden'
+            }}
+            // 1.5x speed for snappier animation
+            onLoadedData={(e) => {
+              const video = e.target as HTMLVideoElement;
+              video.playbackRate = 1.5;
             }}
           />
         </motion.div>

@@ -88,7 +88,7 @@ export const LUCK_TURNER: DashDiceAbility = {
   description: 'Risk–Reward Probability Manipulation: Take control of chance itself.',
   longDescription: 'Luck Turner lets players take control of chance itself, mechanically adjusting the odds of their dice rolls for a full turn. By "tuning" the dice, a player can reduce the risk of failure or amplify the potential for high-impact outcomes. This ability embodies skill, timing, and strategic risk management — a perfect tool for turning momentum in critical moments.',
   flavorText: '"A twist here, a tweak there — sometimes fortune just needs a little guidance."',
-  iconUrl: '/Abilities/Base Images/hand holding screwdriver.png',
+  iconUrl: '/Abilities/Formatted/hand holding screwdriver.webp',
   cooldown: 2, // 2 turns cooldown
   auraCost: 3, // Base cost, can spend 6 for enhanced effect
   starCost: 4, // Power Rating: 4
@@ -178,7 +178,7 @@ export const PAN_SLAP: DashDiceAbility = {
   description: 'Turn Control / Instant Stop: Deliver a swift and decisive intervention — instantly ending your opponent\'s turn.',
   longDescription: 'Pan Slap delivers a swift and decisive intervention — instantly ending your opponent\'s turn and auto-banking their current turn score. With the iconic frying pan in hand, the player asserts control over the flow of the match, stopping momentum, thwarting combos, and creating space to strike back. It\'s high-impact, high-risk, and high-fun: timing is everything, and a misplay could mean spending 6 aura for minimal disruption if the opponent\'s turn was already weak.',
   flavorText: '"One swing to stop them in their tracks. The pan is heavy, the timing heavier, but victory waits for the bold."',
-  iconUrl: '/Abilities/Base Images/hand holding pan.png',
+  iconUrl: '/Abilities/Formatted/hand holding pan.webp',
   cooldown: 2, // 2 turns before it can be used again
   auraCost: 6, // High cost reflects its powerful turn-ending capability
   starCost: 5, // Power Rating: 5
@@ -275,7 +275,7 @@ export const SCORE_SAW: DashDiceAbility = {
   description: 'Risk–Reward Score Sabotage: Channel AURA into devastating strikes against opponent scores. The more you invest, the deeper you cut.',
   longDescription: 'Score Saw channels a player\'s aura into a sharp, decisive strike against an opponent\'s current turn score — and with higher investment, their banked points. The more aura spent, the more destructive the strike: from minor disruption to a devastating reset. Timing and strategy are critical: use it too early, and your opponent may recover; spend too much aura, and your own resources are at risk.',
   flavorText: '"A well-timed strike can undo an empire built in a single turn. Precision is everything — slice carefully, or bleed yourself dry."',
-  iconUrl: '/Abilities/Base Images/hand holding saw.webp',
+  iconUrl: '/Abilities/Formatted/hand holding saw.webp',
   cooldown: 0, // No cooldown, limited by AURA cost
   auraCost: 2, // Minimum cost, scales up to 10
   starCost: 4, // Power Rating: 4
@@ -416,7 +416,7 @@ export const SCORE_SIPHON: DashDiceAbility = {
   description: 'Risk–Reward Turn Steal: Siphon points from opponent\'s current turn — but timing is critical. Strike during their first roll.',
   longDescription: 'Score Siphon lets a player siphon points directly from their opponent\'s current turn score — but timing is critical. It must be played during the opponent\'s first roll or before their second throw. If the opponent busts or avoids rolling, the ability fails and is lost. This makes it a high-risk, high-reward tool that rewards careful observation and predictive skill.',
   flavorText: '"Strike while they hesitate. Seize what could have been theirs, before it slips away."',
-  iconUrl: '/Abilities/Base Images/score-siphon.webp',
+  iconUrl: '/Abilities/Formatted/hand holding sprayer.webp',
   cooldown: 0, // No cooldown, limited by AURA cost and timing
   auraCost: 2, // Minimum cost, scales up to 6
   starCost: 4, // Power Rating: 4
@@ -569,7 +569,7 @@ export const HARD_HAT: DashDiceAbility = {
   description: 'Tactical Block: Fortify yourself against opponent\'s next ability. Blocks their effect entirely but halves your aura gain while active.',
   longDescription: 'Hard Hat puts your opponent on notice. By activating it, you fortify yourself against their next ability, blocking its effect entirely until they trigger an ability of their own. It\'s a high-stakes strategic play: you sacrifice part of your aura gain in exchange for control, timing, and protection. This ability rewards foresight, anticipation, and risk–reward decision-making, making it a critical tool for tactical mastery.',
   flavorText: '"Fortify your mind, brace your hand — nothing gets through this time."',
-  iconUrl: '/Abilities/Base Images/hard-hat.webp',
+  iconUrl: '/Abilities/Formatted/hand holding helmet.webp',
   cooldown: 0,
   auraCost: 4,
   starCost: 4, // Power Rating: 4

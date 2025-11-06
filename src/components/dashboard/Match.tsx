@@ -98,6 +98,53 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     };
   }, [showGameOverScreen]);
   
+  // 🍀 REMOVE LUCK TURNER EFFECT WHEN TURN CHANGES (BUST DETECTION)
+  // Track whose turn is active and clear effects when turn switches
+  const previousTurnState = React.useRef<{ hostTurn: boolean; opponentTurn: boolean } | null>(null);
+  
+  useEffect(() => {
+    if (!matchData || !user?.uid) return;
+    
+    const currentTurnState = {
+      hostTurn: matchData.hostData.turnActive,
+      opponentTurn: matchData.opponentData.turnActive
+    };
+    
+    // If turn has changed from previous state
+    if (previousTurnState.current !== null) {
+      // Check if host's turn just ended
+      if (previousTurnState.current.hostTurn && !currentTurnState.hostTurn) {
+        const hostId = matchData.hostData.playerId;
+        if (matchData.gameData.activeEffects?.[hostId]) {
+          console.log('🍀 Host turn ended - removing Luck Turner effect');
+          const matchRef = doc(db, 'matches', matchData.id!);
+          updateDoc(matchRef, {
+            [`gameData.activeEffects.${hostId}`]: []
+          }).catch((err) => {
+            console.error('❌ Failed to remove Luck Turner effect:', err);
+          });
+        }
+      }
+      
+      // Check if opponent's turn just ended
+      if (previousTurnState.current.opponentTurn && !currentTurnState.opponentTurn) {
+        const opponentId = matchData.opponentData.playerId;
+        if (matchData.gameData.activeEffects?.[opponentId]) {
+          console.log('🍀 Opponent turn ended - removing Luck Turner effect');
+          const matchRef = doc(db, 'matches', matchData.id!);
+          updateDoc(matchRef, {
+            [`gameData.activeEffects.${opponentId}`]: []
+          }).catch((err) => {
+            console.error('❌ Failed to remove Luck Turner effect:', err);
+          });
+        }
+      }
+    }
+    
+    // Update previous state
+    previousTurnState.current = currentTurnState;
+  }, [matchData?.hostData.turnActive, matchData?.opponentData.turnActive, matchData?.id, user?.uid]);
+  
   // Turn announcement state
   const [showTurnAnnouncement, setShowTurnAnnouncement] = useState(false);
   const [turnAnnouncementData, setTurnAnnouncementData] = useState<{
@@ -306,6 +353,18 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         
         // Reset Siphon state
         setSiphonActive(false);
+      }
+
+      // 🍀 REMOVE LUCK TURNER EFFECT WHEN BANKING (turn ends)
+      if (matchData.gameData.activeEffects?.[playerId]) {
+        const matchRef = doc(db, 'matches', matchData.id!);
+        updateDoc(matchRef, {
+          [`gameData.activeEffects.${playerId}`]: []
+        }).then(() => {
+          console.log('🍀 Luck Turner effect removed on bank');
+        }).catch((err) => {
+          console.error('❌ Failed to remove Luck Turner effect:', err);
+        });
       }
 
       await MatchService.bankScore(matchData.id!, playerId, siphonEffect);
