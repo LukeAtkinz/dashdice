@@ -96,9 +96,24 @@ export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
       
       // Reset and play video
       video.currentTime = 0;
-      video.play().catch(err => {
-        console.error('Error playing multiplier animation:', err);
-      });
+      
+      // Attempt to play with better error handling
+      const playPromise = video.play();
+      
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log('✅ Multiplier animation video playing successfully');
+          })
+          .catch(err => {
+            console.error('❌ Error playing multiplier animation:', err);
+            // If autoplay fails, try again with muted
+            video.muted = true;
+            video.play().catch(e => {
+              console.error('❌ Failed to play even when muted:', e);
+            });
+          });
+      }
       
       // Handle video end
       const handleVideoEnd = () => {
@@ -148,8 +163,9 @@ export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
             transform: 'translate(-50%, -50%)',
           }}
           playsInline
-          muted={false}
+          muted
           preload="auto"
+          autoPlay
         />
       </motion.div>
     </AnimatePresence>
