@@ -455,6 +455,25 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({
               </div>
             </div>
           )}
+          
+          {/* No Speech Detected Warning - Show after 3 seconds of recording */}
+          {(isListening || isPressed) && !hasTranscript && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3 border-l-4 border-yellow-500 mt-2">
+              <div className="flex items-start gap-2">
+                <span className="text-yellow-600 dark:text-yellow-400 text-xs font-medium mt-0.5">⚠️ No speech detected yet</span>
+                <div className="text-xs text-yellow-700 dark:text-yellow-300">
+                  <p className="font-semibold mb-1">Try these:</p>
+                  <ul className="list-disc list-inside space-y-0.5">
+                    <li>Speak <strong>LOUDER</strong> and <strong>CLEARER</strong></li>
+                    <li>Check Windows Sound Settings → Input device</li>
+                    <li>Ensure mic volume is at 100%</li>
+                    <li>Try selecting different microphone</li>
+                    <li>Visit <a href="/mic-test" className="underline">mic diagnostic page</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
 
           {error && (
             <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 border-l-4 border-red-500 mt-2">

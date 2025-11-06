@@ -13,7 +13,7 @@ import { GameOverWrapper } from './GameOverWrapper';
 import { useGameAchievements } from '@/hooks/useGameAchievements';
 import { useMatchAchievements } from '@/hooks/useMatchAchievements';
 import { db } from '@/services/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, Timestamp, arrayUnion } from 'firebase/firestore';
 import MatchAbandonmentNotification from '@/components/notifications/MatchAbandonmentNotification';
 import { useToast } from '@/context/ToastContext';
 
@@ -322,6 +322,33 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     try {
       console.log('🔮 Ability effect applied:', { effect, matchId: matchData.id });
       
+      // Handle Luck Turner ability - Add to activeEffects
+      if (effect.abilityId === 'luck_turner') {
+        console.log('🍀 Luck Turner ability activated - adding to activeEffects');
+        
+        // Add to Firestore activeEffects
+        const matchRef = doc(db, 'matches', matchData.id!);
+        const newEffect = {
+          effectId: `luck_turner_${Date.now()}`,
+          abilityId: 'luck_turner',
+          type: 'dice_manipulation',
+          value: 1,
+          expiresAt: Timestamp.fromMillis(Date.now() + 60000), // 60 seconds
+          metadata: { activatedBy: user.uid }
+        };
+        
+        updateDoc(matchRef, {
+          [`gameData.activeEffects.${user.uid}`]: arrayUnion(newEffect)
+        }).then(() => {
+          console.log('✅ Luck Turner added to activeEffects in Firestore');
+          showToast('🍀 Luck Turner activated! Watch the dice glow!', 'success', 5000);
+        }).catch((err) => {
+          console.error('❌ Failed to add Luck Turner to activeEffects:', err);
+        });
+        
+        return;
+      }
+      
       // Handle Siphon ability specifically
       if (effect.abilityId === 'siphon') {
         console.log('⚔️ Siphon ability activated - waiting for opponent to bank...');
@@ -342,7 +369,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     } catch (error) {
       console.error('❌ Error applying ability effect:', error);
     }
-  }, [matchData, user]);
+  }, [matchData, user, showToast]);
 
   const getValidBackgroundObject = useCallback((background: any) => {
     if (!background) {

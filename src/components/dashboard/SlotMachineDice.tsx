@@ -98,18 +98,30 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
 
   // Check if Luck Turner ability is active for any player
   const isLuckTurnerActive = React.useMemo(() => {
-    if (!matchData?.gameData?.activeEffects) return false;
+    if (!matchData?.gameData?.activeEffects) {
+      console.log('🍀 Luck Turner check: No activeEffects in matchData');
+      return false;
+    }
+    
+    console.log('🍀 Luck Turner check: activeEffects =', matchData.gameData.activeEffects);
     
     // Check all players' active effects for luck_turner
     for (const playerId in matchData.gameData.activeEffects) {
       const effects = matchData.gameData.activeEffects[playerId];
+      console.log(`🍀 Checking player ${playerId}:`, effects);
       if (effects && Array.isArray(effects)) {
-        const hasLuckTurner = effects.some(effect => 
-          effect.abilityId === 'luck_turner' || effect.effectId?.includes('luck_turner')
-        );
-        if (hasLuckTurner) return true;
+        const hasLuckTurner = effects.some(effect => {
+          const match = effect.abilityId === 'luck_turner' || effect.effectId?.includes('luck_turner');
+          console.log(`🍀 Effect check:`, effect, 'Match:', match);
+          return match;
+        });
+        if (hasLuckTurner) {
+          console.log('✅ LUCK TURNER IS ACTIVE! Showing video overlay');
+          return true;
+        }
       }
     }
+    console.log('❌ Luck Turner NOT active');
     return false;
   }, [matchData]);
 

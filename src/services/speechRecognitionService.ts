@@ -36,6 +36,8 @@ class SpeechRecognitionService {
   private audioContext: AudioContext | null = null;
   private analyser: AnalyserNode | null = null;
   private microphoneStream: MediaStream | null = null;
+  private shouldBeListening: boolean = false; // Track if we WANT to be listening (for auto-restart)
+  private autoRestartOnMobile: boolean = true; // Auto-restart on mobile when recognition ends
 
   constructor() {
     this.initializeRecognition();
@@ -84,9 +86,28 @@ class SpeechRecognitionService {
     };
 
     this.recognition.onend = () => {
+      const wasListening = this.isListening;
       this.isListening = false;
       this.callbacks.onEnd?.();
-      console.log('🎤 Voice recognition ended');
+      console.log('🎤 Voice recognition ended', { shouldBeListening: this.shouldBeListening, wasListening });
+      
+      // MOBILE FIX: Auto-restart if we should still be listening
+      // Mobile browsers often auto-stop recognition after brief silence
+      if (this.shouldBeListening && this.isMobile() && this.autoRestartOnMobile && wasListening) {
+        console.log('📱 Mobile auto-restart: Recognition ended unexpectedly, restarting in 100ms...');
+        setTimeout(() => {
+          if (this.shouldBeListening && !this.isListening) {
+            console.log('📱 Mobile auto-restart: Restarting recognition now');
+            try {
+              this.recognition.start();
+            } catch (error) {
+              console.error('📱 Mobile auto-restart failed:', error);
+              // If restart fails, clear the shouldBeListening flag
+              this.shouldBeListening = false;
+            }
+          }
+        }, 100);
+      }
     };
 
     this.recognition.onsoundstart = () => {
@@ -303,6 +324,9 @@ class SpeechRecognitionService {
     try {
       console.log('🎤 Starting speech recognition...');
       
+      // Set flag that we WANT to be listening (for auto-restart on mobile)
+      this.shouldBeListening = true;
+      
       // Start recognition - DO NOT set isListening here
       // It will be set by the onstart event handler
       this.recognition.start();
@@ -340,6 +364,9 @@ class SpeechRecognitionService {
     }
 
     try {
+      // Clear the shouldBeListening flag to prevent auto-restart
+      this.shouldBeListening = false;
+      
       this.recognition.stop();
       
       // Stop voice activity detection
@@ -355,6 +382,9 @@ class SpeechRecognitionService {
     if (!this.recognition) return;
 
     try {
+      // Clear the shouldBeListening flag to prevent auto-restart
+      this.shouldBeListening = false;
+      
       this.recognition.abort();
       this.isListening = false;
       
@@ -440,15 +470,19 @@ class SpeechRecognitionService {
       // iOS Safari has specific requirements
       this.recognition.continuous = false; // iOS works better with non-continuous mode
       this.recognition.interimResults = false; // Reduce interim results for better performance
-      console.log('🍎 Applied iOS optimizations');
+      console.log('🍎 Applied iOS optimizations (continuous: false)');
     }
 
     // Android-specific optimizations
     if (this.isAndroid()) {
-      // Android Chrome usually handles continuous mode well
+      // Android Chrome usually handles continuous mode well, but may auto-stop
       this.recognition.continuous = true;
       this.recognition.interimResults = true;
-      console.log('🤖 Applied Android optimizations');
+      
+      // CRITICAL: Enable auto-restart for Android
+      this.autoRestartOnMobile = true;
+      
+      console.log('🤖 Applied Android optimizations (continuous: true, auto-restart: enabled)');
     }
 
     // General mobile optimizations
