@@ -6,6 +6,7 @@ import { useBackground } from '@/context/BackgroundContext';
 import { useAuth } from '@/context/AuthContext';
 import InlineAbilitiesDisplay from '@/components/match/InlineAbilitiesDisplay';
 import AuraCounter from '@/components/ui/AuraCounter';
+import { MultiplierAnimation } from '@/components/ui/MultiplierAnimation';
 
 interface GameplayPhaseProps {
   matchData: MatchData;
@@ -1118,6 +1119,13 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             )}
         </motion.div>
       </div>
+
+      {/* Multiplier Activation Animation */}
+      <MultiplierAnimation
+        hasDoubleMultiplier={hasDoubleMultiplier}
+        hasTripleMultiplier={hasTripleMultiplier}
+        hasQuadMultiplier={hasQuadMultiplier}
+      />
     </React.Fragment>
   );
 };
