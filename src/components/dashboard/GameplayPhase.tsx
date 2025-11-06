@@ -366,6 +366,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               actualValue={matchData.gameData.diceOne}
               isGameRolling={matchData.gameData.isRolling || false}
               matchData={matchData}
+              isTopDice={true} // Top dice - normal orientation
             />
           </motion.div>
           
@@ -637,6 +638,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               actualValue={matchData.gameData.diceTwo}
               isGameRolling={matchData.gameData.isRolling || false}
               matchData={matchData}
+              isTopDice={false} // Bottom dice - flipped vertically
             />
           </motion.div>
         </motion.div>

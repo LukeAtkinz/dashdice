@@ -16,7 +16,7 @@
  */
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MatchData } from '@/types/match';
 
 interface SlotMachineDiceProps {
@@ -33,6 +33,7 @@ interface SlotMachineDiceProps {
   isGameRolling: boolean;
   isTurnDecider?: boolean;
   matchData?: MatchData;
+  isTopDice?: boolean; // NEW: Identify if this is the top dice (for animation orientation)
 }
 
 export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({ 
@@ -42,7 +43,8 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   actualValue,
   isGameRolling,
   isTurnDecider = false,
-  matchData
+  matchData,
+  isTopDice = true // Default to top dice
 }) => {
   // For turn decider, handle animation logic differently with proper timing
   const isCurrentlyRolling = isTurnDecider ? 
@@ -93,6 +95,23 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   };
   
   const displayValue = getDisplayValue();
+
+  // Check if Luck Turner ability is active for any player
+  const isLuckTurnerActive = React.useMemo(() => {
+    if (!matchData?.gameData?.activeEffects) return false;
+    
+    // Check all players' active effects for luck_turner
+    for (const playerId in matchData.gameData.activeEffects) {
+      const effects = matchData.gameData.activeEffects[playerId];
+      if (effects && Array.isArray(effects)) {
+        const hasLuckTurner = effects.some(effect => 
+          effect.abilityId === 'luck_turner' || effect.effectId?.includes('luck_turner')
+        );
+        if (hasLuckTurner) return true;
+      }
+    }
+    return false;
+  }, [matchData]);
 
   // Determine if this dice number should glow and what color
   const getDiceNumberGlow = () => {
@@ -436,6 +455,34 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             ease: "easeInOut"
           }}
         />
+      )}
+      
+      {/* 🍀 LUCK TURNER ABILITY ANIMATION 🍀 */}
+      {isLuckTurnerActive && (
+        <motion.div
+          className="absolute inset-0 pointer-events-none z-20"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <video
+            src="/Abilities/Animations/Luck Turner Animation.webm"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              transform: isTopDice ? 'none' : 'scaleY(-1)', // Flip vertically for bottom dice
+              borderRadius: '30px',
+              overflow: 'hidden'
+            }}
+          />
+        </motion.div>
       )}
     </div>
   );
