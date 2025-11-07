@@ -171,16 +171,17 @@ export const getOptimizedBackgroundPath = (
   background: Background | { name: string; file: string; type: 'image' | 'video' },
   context: BackgroundContext
 ): string => {
-  // Handle legacy background format (direct file path)
-  if ('file' in background && !('filename' in background)) {
-    // Legacy format - return as-is for backwards compatibility
-    return background.file;
-  }
-  
-  // Find the background in our config
+  // Find the background in our config by name
   const bgConfig = 'id' in background 
     ? background as Background
-    : AVAILABLE_BACKGROUNDS.find(bg => bg.name === background.name) || AVAILABLE_BACKGROUNDS[0];
+    : AVAILABLE_BACKGROUNDS.find(bg => bg.name === background.name);
+  
+  // If we can't find it in config, return a safe default
+  if (!bgConfig) {
+    console.warn(`Background not found in config: ${background.name}, using Relax as fallback`);
+    const fallback = AVAILABLE_BACKGROUNDS.find(bg => bg.name === 'Relax') || AVAILABLE_BACKGROUNDS[0];
+    return getBackgroundVariants(fallback).preview;
+  }
   
   const variants = getBackgroundVariants(bgConfig);
   

@@ -89,24 +89,16 @@ export default function PowerTab({
       if (missingAbilities.length > 0) {
         console.log('🔓 AUTO-UNLOCKING missing starter abilities:', missingAbilities);
         
-        let unlocked = false;
         for (const abilityId of missingAbilities) {
           try {
             await AbilitiesService.unlockAbility(user.uid, abilityId);
             console.log(`✅ Auto-unlocked: ${abilityId}`);
-            unlocked = true;
           } catch (err) {
             console.error(`❌ Failed to auto-unlock ${abilityId}:`, err);
           }
         }
         
-        if (unlocked) {
-          // Wait a moment for Firebase to update, then reload
-          console.log('✅ Starter abilities unlocked - reloading in 2 seconds...');
-          setTimeout(() => {
-            window.location.reload();
-          }, 2000);
-        }
+        console.log('✅ Starter abilities unlocked - they will appear on next visit');
       }
     };
     

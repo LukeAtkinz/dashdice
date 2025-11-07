@@ -144,8 +144,14 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
             </h3>
             
             {/* Wins and Win Rate below name */}
-            <div className="flex items-center gap-3 mt-1">
-              <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2 mt-2">
+              <div 
+                className="flex items-center gap-2 px-3 py-1 rounded-full"
+                style={{
+                  background: 'rgba(0, 0, 0, 0.7)',
+                  border: '1px solid rgba(74, 222, 128, 0.3)'
+                }}
+              >
                 <p 
                   className="text-sm font-bold text-green-400"
                   style={{ 
@@ -155,23 +161,24 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
                 >
                   {player.matchWins}W
                 </p>
-                <p 
-                  className="text-xs text-gray-400"
-                  style={{ fontFamily: 'Montserrat' }}
-                >
-                  - {player.matchLosses}L
-                </p>
               </div>
-              <div className="w-px h-4 bg-gray-600"></div>
-              <p 
-                className="text-sm font-bold text-blue-400"
-                style={{ 
-                  fontFamily: 'Audiowide',
-                  textShadow: "0 0 4px rgba(96, 165, 250, 0.5)"
+              <div 
+                className="flex items-center gap-2 px-3 py-1 rounded-full"
+                style={{
+                  background: 'rgba(0, 0, 0, 0.7)',
+                  border: '1px solid rgba(96, 165, 250, 0.3)'
                 }}
               >
-                {player.winPercentage.toFixed(0)}% WR
-              </p>
+                <p 
+                  className="text-sm font-bold text-blue-400"
+                  style={{ 
+                    fontFamily: 'Audiowide',
+                    textShadow: "0 0 4px rgba(96, 165, 250, 0.5)"
+                  }}
+                >
+                  {player.winPercentage.toFixed(0)}% WR
+                </p>
+              </div>
             </div>
           </div>
         </div>
