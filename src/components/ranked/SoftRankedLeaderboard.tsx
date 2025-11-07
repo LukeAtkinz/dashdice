@@ -37,6 +37,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
     BackgroundService.getBackgroundSafely(player.equippedBackground) : 
     null;
   const { backgroundPath, isVideo } = usePlayerCardBackground(playerBackground);
+  
+  // State for expanded card
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <motion.div
@@ -55,7 +58,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
         scale: 1.02, 
         transition: { duration: 0.2 } 
       }}
-      onClick={() => handleViewProfile(player.uid, player.displayName || 'Anonymous')}
+      onClick={() => setIsExpanded(!isExpanded)}
       className={`
         relative bg-gradient-to-r ${colors.bg} 
         rounded-xl border ${colors.border} 
@@ -118,9 +121,23 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
           >
             {player.rank <= 3 ? (
               <img 
-                src={player.rank === 1 ? "/Leaderboards/CrownLogo.webp" : player.rank === 2 ? "/Leaderboards/Second.png" : "/Leaderboards/Third.png"} 
+                src={
+                  player.rank === 1 
+                    ? "/Leaderboards/CrownLogo.webp" 
+                    : player.rank === 2 
+                      ? "/Leaderboards/Second.png" 
+                      : "/Leaderboards/Third.png"
+                } 
                 alt={`Rank ${player.rank}`} 
                 className="w-full h-full object-contain"
+                onError={(e) => {
+                  console.error(`Failed to load rank ${player.rank} icon`);
+                  // Fallback to text
+                  const parent = e.currentTarget.parentElement;
+                  if (parent) {
+                    parent.innerHTML = `<span class="text-2xl font-bold">#${player.rank}</span>`;
+                  }
+                }}
               />
             ) : (
               `#${player.rank}`
@@ -142,35 +159,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
             >
               {player.displayName}
             </h3>
-            
-            {/* Wins and Win Rate below name */}
-            <div 
-              className="flex items-center gap-2 mt-2 px-3 py-1.5 rounded-xl"
-              style={{
-                background: 'rgba(0, 0, 0, 0.8)',
-                border: '1px solid rgba(255, 255, 255, 0.1)'
-              }}
-            >
-              <p 
-                className="text-sm font-bold text-green-400"
-                style={{ 
-                  fontFamily: 'Audiowide',
-                  textShadow: "0 0 4px rgba(74, 222, 128, 0.5)"
-                }}
-              >
-                {player.matchWins}W
-              </p>
-              <div className="w-px h-4 bg-gray-600"></div>
-              <p 
-                className="text-sm font-bold text-blue-400"
-                style={{ 
-                  fontFamily: 'Audiowide',
-                  textShadow: "0 0 4px rgba(96, 165, 250, 0.5)"
-                }}
-              >
-                {player.winPercentage.toFixed(0)}% WR
-              </p>
-            </div>
           </div>
         </div>
 
@@ -193,6 +181,96 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
           </p>
         </div>
       </div>
+
+      {/* Expanded Section - Shows Wins, View Profile, Win Rate */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="relative z-10 overflow-hidden"
+          >
+            <div 
+              className="flex items-center justify-between gap-3 mt-4 pt-4 border-t"
+              style={{
+                borderColor: 'rgba(255, 255, 255, 0.1)'
+              }}
+            >
+              {/* Wins */}
+              <div 
+                className="flex-1 text-center px-4 py-3 rounded-xl"
+                style={{
+                  background: 'rgba(74, 222, 128, 0.1)',
+                  border: '1px solid rgba(74, 222, 128, 0.3)'
+                }}
+              >
+                <p 
+                  className="text-2xl font-bold text-green-400"
+                  style={{ 
+                    fontFamily: 'Audiowide',
+                    textShadow: "0 0 8px rgba(74, 222, 128, 0.5)"
+                  }}
+                >
+                  {player.matchWins}
+                </p>
+                <p 
+                  className="text-xs text-green-300 mt-1"
+                  style={{ fontFamily: 'Montserrat' }}
+                >
+                  WINS
+                </p>
+              </div>
+
+              {/* View Profile Button */}
+              <motion.button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewProfile(player.uid, player.displayName || 'Anonymous');
+                }}
+                className="flex-1 px-6 py-3 rounded-xl font-bold text-sm"
+                style={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: '#FFF',
+                  fontFamily: 'Audiowide',
+                  textTransform: 'uppercase',
+                  boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                View Profile
+              </motion.button>
+
+              {/* Win Rate */}
+              <div 
+                className="flex-1 text-center px-4 py-3 rounded-xl"
+                style={{
+                  background: 'rgba(96, 165, 250, 0.1)',
+                  border: '1px solid rgba(96, 165, 250, 0.3)'
+                }}
+              >
+                <p 
+                  className="text-2xl font-bold text-blue-400"
+                  style={{ 
+                    fontFamily: 'Audiowide',
+                    textShadow: "0 0 8px rgba(96, 165, 250, 0.5)"
+                  }}
+                >
+                  {player.winPercentage.toFixed(0)}%
+                </p>
+                <p 
+                  className="text-xs text-blue-300 mt-1"
+                  style={{ fontFamily: 'Montserrat' }}
+                >
+                  WIN RATE
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

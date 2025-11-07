@@ -7,6 +7,8 @@ import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { MobileBackgroundPreview } from '@/components/ui/MobileBackgroundPreview';
 import PowerTab from '@/components/vault/PowerTab';
+import { BackgroundService } from '@/services/backgroundService';
+import { getOptimizedBackgroundPath } from '@/config/backgrounds';
 
 const inventoryCategories = [
   { key: 'backgrounds', name: 'Backgrounds', icon: '🖼️', color: 'linear-gradient(135deg, #667eea, #764ba2)' },
@@ -112,13 +114,19 @@ export const InventorySection: React.FC = () => {
   };
 
   // Convert backgrounds to inventory format with rarity
-  const backgroundItems = availableBackgrounds.map((bg, index) => ({
-    id: index + 1,
-    name: bg.name,
-    preview: bg.file,
-    rarity: index === 0 ? 'epic' : index === 1 ? 'rare' : index === 2 ? 'common' : 'masterpiece',
-    background: bg
-  }));
+  const backgroundItems = availableBackgrounds.map((bg, index) => {
+    // Get the proper background config to access preview paths
+    const bgConfig = BackgroundService.getBackgroundSafely(bg.name);
+    const previewPath = getOptimizedBackgroundPath(bgConfig, 'preview');
+    
+    return {
+      id: index + 1,
+      name: bg.name,
+      preview: previewPath,
+      rarity: index === 0 ? 'epic' : index === 1 ? 'rare' : index === 2 ? 'common' : 'masterpiece',
+      background: bg
+    };
+  });
 
   // Get current items based on category
   const getCurrentItems = () => {
