@@ -776,6 +776,7 @@ export default function PowerTab({
                         <div className="w-full h-full flex flex-col items-center justify-center text-center relative">
                           <div className="w-12 h-12 relative">
                             <img
+                              key={assignedAbility.iconUrl}
                               src={assignedAbility.iconUrl || '/Abilities/placeholder.webp'}
                               alt={assignedAbility.name}
                               className="w-full h-full object-contain opacity-100"
@@ -803,6 +804,7 @@ export default function PowerTab({
                         <div className="w-full h-full flex flex-col items-center justify-center text-center">
                           <div className="w-12 h-12 relative">
                             <img
+                              key={categorySlot.icon}
                               src={categorySlot.icon}
                               alt={categorySlot.name}
                               className="w-full h-full object-contain opacity-100"
@@ -931,6 +933,12 @@ export default function PowerTab({
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
+                    onClick={() => {
+                      // Allow removal on mobile by tapping the equipped ability
+                      if (isAssigned) {
+                        removeAbilityFromCategory(categorySlot.key);
+                      }
+                    }}
                   >
                     <div
                       className="aspect-square rounded-lg p-2 border-2 backdrop-blur-sm transition-all duration-300 cursor-pointer overflow-hidden relative"
@@ -944,6 +952,7 @@ export default function PowerTab({
                         <div className="w-full h-full flex flex-col items-center justify-center text-center">
                           <div className="w-12 h-12 md:w-16 md:h-16 relative">
                             <img
+                              key={assignedAbility.iconUrl}
                               src={assignedAbility.iconUrl || '/Abilities/placeholder.webp'}
                               alt={assignedAbility.name}
                               className="w-full h-full object-contain opacity-100"
@@ -960,11 +969,18 @@ export default function PowerTab({
                               }}
                             />
                           </div>
+                          {/* Remove indicator on hover/touch */}
+                          <div className="absolute inset-0 bg-red-500/20 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-lg">
+                            <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </div>
                         </div>
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center text-center">
                           <div className="w-12 h-12 md:w-16 md:h-16 mb-1 md:mb-2 relative">
                             <img
+                              key={categorySlot.icon}
                               src={categorySlot.icon}
                               alt={categorySlot.name}
                               className="w-full h-full object-contain opacity-100"
