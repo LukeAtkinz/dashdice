@@ -218,6 +218,41 @@ export default function PowerCard({
           </div>
         </div>
 
+        {/* Ability Icon - Right side of card */}
+        <div className="flex-shrink-0">
+          <div 
+            className="w-24 h-24 md:w-28 md:h-28 rounded-2xl flex items-center justify-center border-2 shadow-2xl"
+            style={{ 
+              backgroundColor: `${rarityColors?.primary || '#6B7280'}30`,
+              borderColor: rarityColors?.border || 'rgba(255, 255, 255, 0.3)',
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <img 
+              src={ability.iconUrl || '/Abilities/placeholder.webp'}
+              alt={ability.name}
+              className="w-20 h-20 md:w-24 md:h-24 object-contain"
+              style={{
+                filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5))'
+              }}
+              onError={(e) => {
+                console.log(`Failed to load ability icon: ${ability.iconUrl}`);
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const parent = target.parentElement;
+                if (parent) {
+                  parent.innerHTML = `<div class="text-6xl">${
+                    ability.category === 'tactical' ? '🎯' : 
+                    ability.category === 'attack' ? '⚔️' : 
+                    ability.category === 'defense' ? '🛡️' : 
+                    ability.category === 'utility' ? '🔧' : '💫'
+                  }</div>`;
+                }
+              }}
+            />
+          </div>
+        </div>
+
         {/* Equip Button - only show when ability is unlocked, positioned like background cards */}
         {isUnlocked && showDetails && (
           <button 

@@ -72,30 +72,28 @@ export default function PowerTab({
   
   const { user } = useAuth();
   
-  // State to prevent infinite unlock loops
-  const [hasAutoUnlocked, setHasAutoUnlocked] = useState(false);
-  
   // Debug logging for abilities
   console.log('🔍 PowerTab Debug - allAbilities:', allAbilities.length, allAbilities);
   console.log('🔍 PowerTab Debug - playerAbilities:', playerAbilities);
   console.log('🔍 PowerTab Debug - playerAbilities.unlocked:', playerAbilities.unlocked);
   console.log('🔍 PowerTab Debug - loading:', loading);
-  console.log('🔍 PowerTab Debug - hasAutoUnlocked:', hasAutoUnlocked);
   
-  // Auto-unlock all starter abilities if user is missing any - WITH RELOAD
+  // Auto-unlock all starter abilities if user is missing any - NO RELOAD
+  // Use a ref to prevent infinite loops - only run once per user session
+  const hasCheckedStarterAbilities = React.useRef<Record<string, boolean>>({});
+  
   useEffect(() => {
     const autoUnlockStarterAbilities = async () => {
-      // Skip if already auto-unlocked in this session
-      if (!user?.uid || loading || hasAutoUnlocked) return;
+      // Only run once per user
+      if (!user?.uid || loading || hasCheckedStarterAbilities.current[user.uid]) return;
+      
+      hasCheckedStarterAbilities.current[user.uid] = true;
       
       const starterAbilityIds = ['luck_turner', 'pan_slap', 'score_saw', 'siphon', 'hard_hat'];
       const missingAbilities = starterAbilityIds.filter(id => !playerAbilities.unlocked.includes(id));
       
       if (missingAbilities.length > 0) {
         console.log('🔓 AUTO-UNLOCKING missing starter abilities:', missingAbilities);
-        
-        // Mark that we've attempted auto-unlock
-        setHasAutoUnlocked(true);
         
         for (const abilityId of missingAbilities) {
           try {
@@ -106,16 +104,12 @@ export default function PowerTab({
           }
         }
         
-        console.log('✅ Starter abilities unlocked - reloading page...');
-        // Reload page after a short delay
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        console.log('✅ Starter abilities unlocked - context should update automatically');
       }
     };
     
     autoUnlockStarterAbilities();
-  }, [user?.uid, playerAbilities.unlocked, loading, hasAutoUnlocked]);
+  }, [user?.uid, loading, playerAbilities.unlocked]);
   
   // Make reset function available globally
   useEffect(() => {
