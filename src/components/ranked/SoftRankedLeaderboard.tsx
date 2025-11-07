@@ -29,17 +29,16 @@ interface PlayerCardProps {
   isCurrentUser: boolean;
   userCardRef?: React.RefObject<HTMLDivElement>;
   handleViewProfile: (uid: string, name: string) => void;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
 }
 
-const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurrentUser, userCardRef, handleViewProfile }) => {
+const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurrentUser, userCardRef, handleViewProfile, isExpanded, onToggleExpand }) => {
   // Get player's background and optimize it
   const playerBackground = player.equippedBackground ? 
     BackgroundService.getBackgroundSafely(player.equippedBackground) : 
     null;
   const { backgroundPath, isVideo } = usePlayerCardBackground(playerBackground);
-  
-  // State for expanded card
-  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <motion.div
@@ -58,7 +57,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
         scale: 1.02, 
         transition: { duration: 0.2 } 
       }}
-      onClick={() => setIsExpanded(!isExpanded)}
+      onClick={onToggleExpand}
       className={`
         relative bg-gradient-to-r ${colors.bg} 
         rounded-xl border ${colors.border} 
@@ -208,7 +207,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
                 }}
               >
                 <p 
-                  className="text-3xl font-bold text-green-400 mb-1"
+                  className="text-xl font-bold text-green-400 mb-1"
                   style={{ 
                     fontFamily: 'Audiowide',
                     textShadow: "0 0 12px rgba(74, 222, 128, 0.8)"
@@ -227,30 +226,27 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
                 </p>
               </div>
 
-              {/* View Profile Button */}
-              <motion.button
+              {/* View Profile Text */}
+              <motion.div
                 onClick={(e) => {
                   e.stopPropagation();
                   handleViewProfile(player.uid, player.displayName || 'Anonymous');
                 }}
-                className="flex-1 px-6 py-3 rounded-lg font-bold text-sm"
-                style={{
-                  background: 'linear-gradient(135deg, #192E39, #667eea)',
-                  border: '2px solid rgba(102, 126, 234, 0.5)',
-                  color: '#FFF',
-                  fontFamily: 'Audiowide',
-                  textTransform: 'uppercase',
-                  boxShadow: '0 4px 15px rgba(25, 46, 57, 0.4)',
-                  letterSpacing: '0.05em'
-                }}
-                whileHover={{ 
-                  scale: 1.05,
-                  boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)'
-                }}
+                className="flex-1 text-center cursor-pointer"
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                View Profile
-              </motion.button>
+                <p 
+                  className="text-sm font-bold text-gray-300"
+                  style={{ 
+                    fontFamily: 'Audiowide',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                  }}
+                >
+                  View Profile
+                </p>
+              </motion.div>
 
               {/* Win Rate */}
               <div 
@@ -262,7 +258,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
                 }}
               >
                 <p 
-                  className="text-3xl font-bold text-blue-400 mb-1"
+                  className="text-xl font-bold text-blue-400 mb-1"
                   style={{ 
                     fontFamily: 'Audiowide',
                     textShadow: "0 0 12px rgba(96, 165, 250, 0.8)"
@@ -295,8 +291,21 @@ export function SoftRankedLeaderboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userRank, setUserRank] = useState<number | null>(null);
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const userCardRef = useRef<HTMLDivElement>(null);
+
+  const toggleCardExpanded = (uid: string) => {
+    setExpandedCards(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(uid)) {
+        newSet.delete(uid);
+      } else {
+        newSet.add(uid);
+      }
+      return newSet;
+    });
+  };
 
   // Fetch and calculate player rankings in real-time
   useEffect(() => {
@@ -677,6 +686,8 @@ export function SoftRankedLeaderboard() {
                   isCurrentUser={isCurrentUser}
                   userCardRef={isCurrentUser ? userCardRef : undefined}
                   handleViewProfile={handleViewProfile}
+                  isExpanded={expandedCards.has(player.uid)}
+                  onToggleExpand={() => toggleCardExpanded(player.uid)}
                 />
               );
             })}
