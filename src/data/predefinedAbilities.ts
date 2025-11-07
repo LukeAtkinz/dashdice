@@ -21,7 +21,7 @@ export const TACTICAL_ABILITIES: Ability[] = [
     hidden: false,
     unlockLevel: 1,
     timing: 'own_turn',
-    iconUrl: '/abilities/tactical/hand_holding_screwdriver.webp',
+    iconUrl: '/Abilities/Formatted/hand holding screwdriver.webp',
     effects: [
       {
         type: 'dice_reroll',

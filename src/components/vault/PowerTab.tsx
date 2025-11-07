@@ -75,7 +75,37 @@ export default function PowerTab({
   // Debug logging for abilities
   console.log('🔍 PowerTab Debug - allAbilities:', allAbilities.length, allAbilities);
   console.log('🔍 PowerTab Debug - playerAbilities:', playerAbilities);
+  console.log('🔍 PowerTab Debug - playerAbilities.unlocked:', playerAbilities.unlocked);
   console.log('🔍 PowerTab Debug - loading:', loading);
+  
+  // Auto-unlock all starter abilities if user is missing any
+  useEffect(() => {
+    const autoUnlockStarterAbilities = async () => {
+      if (!user?.uid || loading) return;
+      
+      const starterAbilityIds = ['luck_turner', 'pan_slap', 'score_saw', 'siphon', 'hard_hat'];
+      const missingAbilities = starterAbilityIds.filter(id => !playerAbilities.unlocked.includes(id));
+      
+      if (missingAbilities.length > 0) {
+        console.log('🔓 AUTO-UNLOCKING missing starter abilities:', missingAbilities);
+        
+        for (const abilityId of missingAbilities) {
+          try {
+            await AbilitiesService.unlockAbility(user.uid, abilityId);
+            console.log(`✅ Auto-unlocked: ${abilityId}`);
+          } catch (err) {
+            console.error(`❌ Failed to auto-unlock ${abilityId}:`, err);
+          }
+        }
+        
+        // Reload the page to refresh the abilities list
+        console.log('🔄 Reloading page to show newly unlocked abilities...');
+        setTimeout(() => window.location.reload(), 1000);
+      }
+    };
+    
+    autoUnlockStarterAbilities();
+  }, [user?.uid, loading, playerAbilities.unlocked]);
   
   // Make reset function available globally
   useEffect(() => {
@@ -109,6 +139,32 @@ export default function PowerTab({
           }
         } catch (error) {
           console.error('❌ Error unlocking Pan Slap:', error);
+        }
+      };
+      
+      // Unlock ALL starter abilities for current user
+      (window as any).unlockAllStarterAbilities = async () => {
+        try {
+          if (!user?.uid) {
+            console.error('❌ No user logged in');
+            return;
+          }
+          
+          console.log('🔓 Unlocking all starter abilities for user...');
+          const starterAbilityIds = ['luck_turner', 'pan_slap', 'score_saw', 'siphon', 'hard_hat'];
+          
+          for (const abilityId of starterAbilityIds) {
+            try {
+              await AbilitiesService.unlockAbility(user.uid, abilityId);
+              console.log(`✅ Unlocked: ${abilityId}`);
+            } catch (err) {
+              console.error(`❌ Failed to unlock ${abilityId}:`, err);
+            }
+          }
+          
+          console.log('🎉 All starter abilities unlocked! Refresh the page.');
+        } catch (error) {
+          console.error('❌ Failed to unlock abilities:', error);
         }
       };
       
@@ -776,12 +832,12 @@ export default function PowerTab({
     <div className="w-full space-y-1 md:space-y-8 -mt-16 md:mt-0 h-screen md:h-auto flex flex-col md:block">
       {/* Unified Game Mode and Abilities Card - Mobile & Desktop */}
       <motion.div 
-        className="rounded-2xl p-0 md:p-8 overflow-visible relative flex-1 md:flex-none flex flex-col md:block"
+        className="rounded-2xl p-0 md:p-8 overflow-hidden md:overflow-visible relative flex-1 md:flex-none flex flex-col md:block"
         layout
       >
         <div className="relative z-10">
           {/* Game Mode Header and Loadout - Sticky on mobile */}
-          <div className="md:static sticky top-0 z-30 backdrop-blur-sm rounded-xl p-1 md:p-0 bg-transparent border-b border-white/20 md:border-none pb-2 md:pb-0">
+          <div className="md:static sticky top-0 z-30 backdrop-blur-md rounded-xl p-1 md:p-0 bg-black/60 md:bg-transparent border-b border-white/20 md:border-none pb-2 md:pb-0">
             {/* Navigation */}
             <div className="relative flex items-center justify-center mb-1 md:mb-6">
             {/* Left Arrow */}
@@ -1013,11 +1069,11 @@ export default function PowerTab({
           )}
           </div>
 
-          {/* Spacer to push abilities below sticky loadout on mobile */}
-          <div className="block md:hidden h-4"></div>
+          {/* Spacer to push abilities below sticky loadout on mobile - Increased spacing */}
+          <div className="block md:hidden h-12"></div>
 
           {/* Available Abilities by Category - Scrollable flex container */}
-          <div className="flex-1 md:flex-none overflow-y-auto md:overflow-visible space-y-6 pt-4 md:pt-0" style={{WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+          <div className="flex-1 md:flex-none overflow-y-auto md:overflow-visible space-y-6 pt-8 md:pt-0" style={{WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
             <style jsx>{`
               .flex-1::-webkit-scrollbar {
                 display: none;
@@ -1085,7 +1141,7 @@ export default function PowerTab({
                               }}
                             >
                               <div className="w-full h-full flex flex-col items-center justify-center text-center">
-                                <div className="w-16 h-16 md:w-20 md:h-20 relative">
+                                <div className="w-24 h-24 md:w-28 md:h-28 relative">
                                   <img
                                     src={ability.iconUrl || '/Abilities/placeholder.webp'}
                                     alt={ability.name}

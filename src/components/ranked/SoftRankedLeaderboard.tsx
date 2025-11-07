@@ -74,13 +74,13 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
               loop
               muted
               playsInline
-              className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-80"
+              className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-100"
             >
               <source src={backgroundPath} type="video/mp4" />
             </video>
           ) : (
             <div 
-              className="absolute inset-0 rounded-xl opacity-80"
+              className="absolute inset-0 rounded-xl opacity-100"
               style={{
                 backgroundImage: `url('${backgroundPath}')`,
                 backgroundSize: 'cover',
@@ -91,6 +91,14 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
           )}
         </>
       )}
+
+      {/* Black gradient overlay */}
+      <div 
+        className="absolute inset-0 rounded-xl"
+        style={{
+          background: 'linear-gradient(to right, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.6) 50%, transparent 100%)'
+        }}
+      />
 
       {/* Rest of player card content */}
       <div className="relative z-10 flex items-center justify-between">
@@ -127,56 +135,64 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
                 fontFamily: 'Audiowide',
                 ...(player.rank <= 3 ? {
                   textShadow: "0 0 10px rgba(255, 215, 0, 0.6)"
-                } : {})
+                } : {
+                  textShadow: "0 2px 4px rgba(0, 0, 0, 0.8)"
+                })
               }}
             >
               {player.displayName}
             </h3>
-            <p 
-              className="text-sm text-gray-300"
-              style={{ fontFamily: 'Montserrat' }}
-            >
-              {player.totalGames} game{player.totalGames !== 1 ? 's' : ''} played
-            </p>
+            
+            {/* Wins and Win Rate below name */}
+            <div className="flex items-center gap-3 mt-1">
+              <div className="flex items-center gap-1">
+                <p 
+                  className="text-sm font-bold text-green-400"
+                  style={{ 
+                    fontFamily: 'Audiowide',
+                    textShadow: "0 0 4px rgba(74, 222, 128, 0.5)"
+                  }}
+                >
+                  {player.matchWins}W
+                </p>
+                <p 
+                  className="text-xs text-gray-400"
+                  style={{ fontFamily: 'Montserrat' }}
+                >
+                  - {player.matchLosses}L
+                </p>
+              </div>
+              <div className="w-px h-4 bg-gray-600"></div>
+              <p 
+                className="text-sm font-bold text-blue-400"
+                style={{ 
+                  fontFamily: 'Audiowide',
+                  textShadow: "0 0 4px rgba(96, 165, 250, 0.5)"
+                }}
+              >
+                {player.winPercentage.toFixed(0)}% WR
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Stats - more compact on mobile */}
-        <div className="flex flex-col sm:flex-row items-end sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-          <div className="text-right">
-            <p 
-              className="text-2xl font-bold text-green-400"
-              style={{ 
-                fontFamily: 'Audiowide',
-                textShadow: "0 0 8px rgba(74, 222, 128, 0.5)"
-              }}
-            >
-              {player.matchWins}W
-            </p>
-            <p 
-              className="text-xs text-gray-400"
-              style={{ fontFamily: 'Montserrat' }}
-            >
-              {player.matchLosses}L
-            </p>
-          </div>
-          <div className="text-right">
-            <p 
-              className="text-2xl font-bold text-blue-400"
-              style={{ 
-                fontFamily: 'Audiowide',
-                textShadow: "0 0 8px rgba(96, 165, 250, 0.5)"
-              }}
-            >
-              {player.winPercentage.toFixed(0)}%
-            </p>
-            <p 
-              className="text-xs text-gray-400"
-              style={{ fontFamily: 'Montserrat' }}
-            >
-              Win Rate
-            </p>
-          </div>
+        {/* Rating on the right */}
+        <div className="text-right">
+          <p 
+            className="text-3xl font-bold text-yellow-400"
+            style={{ 
+              fontFamily: 'Audiowide',
+              textShadow: "0 0 8px rgba(251, 191, 36, 0.5)"
+            }}
+          >
+            {player.rating}
+          </p>
+          <p 
+            className="text-xs text-gray-400"
+            style={{ fontFamily: 'Montserrat' }}
+          >
+            Rating
+          </p>
         </div>
       </div>
     </motion.div>

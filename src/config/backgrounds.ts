@@ -127,23 +127,39 @@ export const toUserBackground = (background: Background) => ({
  * Returns paths to FULL, MOBILE, and PREVIEW versions
  */
 export const getBackgroundVariants = (background: Background): BackgroundVariants => {
-  const ext = background.type === 'video' ? '.mp4' : background.filename.split('.').pop();
   const baseName = background.filename.replace(/\.(jpg|png|mp4)$/i, '');
+  
+  // Map to actual file naming conventions in folders
+  const mobileVideoMap: Record<string, string> = {
+    'New Day': 'New Day - Mobile.webm',
+    'On A Mission': 'On A Mission - Mobile.webm',
+    'Underwater': 'Underwater - Mobile.webm',
+    'As they fall': 'As they fall - Mobile.webm',
+    'End of the Dragon': 'End of the Dragon Mobile.webm'
+  };
+  
+  const previewVideoMap: Record<string, string> = {
+    'New Day': 'New-Day - Preview.webm',
+    'On A Mission': 'On-A-Mission-Preview.webm',
+    'Underwater': 'Underwater-Preview.webm',
+    'As they fall': 'As-they-fall - Preview.webm',
+    'End of the Dragon': 'End-of-the-Dragon - Preview.webm'
+  };
   
   // For videos: desktop and mobile use same video, images use different sizes
   if (background.type === 'video') {
     return {
-      full: `/backgrounds/MOBILE/${background.filename}`,      // Videos in MOBILE folder (same for desktop)
-      mobile: `/backgrounds/MOBILE/${background.filename}`,    // Same video for mobile
-      preview: `/backgrounds/PREVIEW/${baseName}.png`,         // Preview is always PNG thumbnail
+      full: `/backgrounds/Mobile/${mobileVideoMap[baseName] || background.filename}`,      // Videos in Mobile folder (same for desktop)
+      mobile: `/backgrounds/Mobile/${mobileVideoMap[baseName] || background.filename}`,    // Same video for mobile
+      preview: `/backgrounds/Preview/${previewVideoMap[baseName] || baseName + ' - Preview.webm'}`,  // Preview is always webm for videos
     };
   }
   
-  // For images: use different sizes
+  // For images: use different sizes (Full, Mobile, Preview folders)
   return {
-    full: `/backgrounds/FULL/${background.filename}`,          // Full-size for desktop
-    mobile: `/backgrounds/MOBILE/${background.filename}`,      // Optimized for mobile
-    preview: `/backgrounds/PREVIEW/${background.filename}`,    // Small preview
+    full: `/backgrounds/Full/${baseName} - Full.webp`,          // Full-size for desktop
+    mobile: `/backgrounds/Mobile/${baseName} - Mobile.webp`,      // Optimized for mobile
+    preview: `/backgrounds/Preview/${baseName} - Preview.webp`,    // Small preview
   };
 };
 

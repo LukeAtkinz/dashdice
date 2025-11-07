@@ -139,29 +139,24 @@ export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-[9999] pointer-events-none"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="fixed pointer-events-none"
         style={{
-          width: '100vw',
-          height: '100vh',
+          left: `${multiplierPosition.x}px`,
+          top: `${multiplierPosition.y}px`,
+          transform: 'translate(-50%, -50%)',
+          zIndex: 9999,
+          width: '400px',
+          height: '400px',
         }}
       >
         <video
           ref={videoRef}
           src={activeVideo}
-          className="absolute"
-          style={{
-            width: '100vw',
-            height: 'auto',
-            maxHeight: '100vh',
-            objectFit: 'contain',
-            left: '50%',
-            top: `${multiplierPosition.y}px`,
-            transform: 'translate(-50%, -50%)',
-          }}
+          className="w-full h-full object-contain"
           playsInline
           muted
           preload="auto"

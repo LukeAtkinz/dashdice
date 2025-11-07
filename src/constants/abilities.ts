@@ -35,7 +35,7 @@ function createBaseAbility(
     auraCost,
     starCost,
     cooldown: 0,
-    iconUrl: `/abilities/${category}/${id}.webp`,
+    iconUrl: `/Abilities/${category}/${id}.webp`,
     targeting: {
       type: 'opponent',
       allowSelfTarget: false,

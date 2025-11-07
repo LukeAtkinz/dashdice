@@ -129,14 +129,18 @@ export const InventorySection: React.FC = () => {
   };
 
   const handleEquipDisplay = (item: any) => {
+    console.log('🎯 Equipping Display Background:', item);
     if (selectedCategory === 'backgrounds' && item.background) {
       setDisplayBackgroundEquip(item.background);
+      console.log('✅ Display Background Equipped:', item.background);
     }
   };
 
   const handleEquipMatch = (item: any) => {
+    console.log('🎯 Equipping Match Background:', item);
     if (selectedCategory === 'backgrounds' && item.background) {
       setMatchBackgroundEquip(item.background);
+      console.log('✅ Match Background Equipped:', item.background);
     }
   };
 
@@ -451,7 +455,7 @@ export const InventorySection: React.FC = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  {isEquippedDisplay(item) ? 'Vibin' : 'Vibin'}
+                  {isEquippedDisplay(item) ? '✓ Vibin' : 'Vibin'}
                 </motion.button>
                 <motion.button
                   onClick={() => handleEquipMatch(item)}
@@ -460,7 +464,7 @@ export const InventorySection: React.FC = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  {isEquippedMatch(item) ? 'Flexin' : 'Flexin'}
+                  {isEquippedMatch(item) ? '✓ Flexin' : 'Flexin'}
                 </motion.button>
                 <motion.button
                   onClick={() => setPreviewBackground(previewBackground?.id === item.id ? null : item)}

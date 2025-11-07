@@ -119,7 +119,7 @@ export interface DashDiceAbility {
   description: string;           // Short description (1-2 sentences)
   longDescription: string;       // Detailed explanation with examples
   flavorText?: string;          // Lore/story text
-  iconUrl: string;              // Icon path (e.g., '/abilities/attack/siphon.webp')
+  iconUrl: string;              // Icon path (e.g., '/Abilities/attack/siphon.webp')
   animationUrl?: string;        // Animation asset path
   sounds?: {
     activation: string;          // Sound when activated

@@ -140,6 +140,25 @@ export class UserService {
         const botData = botSnap.data();
         console.log('✅ UserService: Found bot profile:', botData);
         
+        // Helper function to get random background
+        const getRandomBackground = () => {
+          const backgrounds = [
+            { name: 'All For Glory', file: '/backgrounds/All For Glory.jpg', type: 'image' },
+            { name: 'Long Road Ahead', file: '/backgrounds/Long Road Ahead.jpg', type: 'image' },
+            { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+            { name: 'New Day', file: '/backgrounds/New Day.mp4', type: 'video' },
+            { name: 'On A Mission', file: '/backgrounds/On A Mission.mp4', type: 'video' },
+            { name: 'Underwater', file: '/backgrounds/Underwater.mp4', type: 'video' },
+            { name: 'As They Fall', file: '/backgrounds/As they fall.mp4', type: 'video' },
+            { name: 'End Of The Dragon', file: '/backgrounds/End of the Dragon.mp4', type: 'video' }
+          ];
+          return backgrounds[Math.floor(Math.random() * backgrounds.length)];
+        };
+        
+        // Assign random backgrounds if bot doesn't have any
+        const displayBg = botData.inventory?.displayBackgroundEquipped || getRandomBackground();
+        const matchBg = botData.inventory?.matchBackgroundEquipped || getRandomBackground();
+        
         // Convert bot profile to user profile format
         const profile: UserProfile = {
           uid,
@@ -151,9 +170,9 @@ export class UserService {
           userTag: botData.displayName || 'Bot',
           rankedStatus: 'Ranked - Active',
           inventory: {
-            displayBackgroundEquipped: botData.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
-            matchBackgroundEquipped: botData.inventory?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
-            ownedBackgrounds: botData.inventory?.ownedBackgrounds || ['Relax']
+            displayBackgroundEquipped: displayBg,
+            matchBackgroundEquipped: matchBg,
+            ownedBackgrounds: botData.inventory?.ownedBackgrounds || ['Relax', 'All For Glory', 'Long Road Ahead']
           },
           stats: {
             bestStreak: botData.stats?.bestStreak || 0,
