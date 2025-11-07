@@ -72,19 +72,16 @@ export default function PowerTab({
   
   const { user } = useAuth();
   
-  // State to track if abilities were just unlocked
-  const [justUnlocked, setJustUnlocked] = useState(false);
-  
   // Debug logging for abilities
   console.log('🔍 PowerTab Debug - allAbilities:', allAbilities.length, allAbilities);
   console.log('🔍 PowerTab Debug - playerAbilities:', playerAbilities);
   console.log('🔍 PowerTab Debug - playerAbilities.unlocked:', playerAbilities.unlocked);
   console.log('🔍 PowerTab Debug - loading:', loading);
   
-  // Auto-unlock all starter abilities if user is missing any
+  // Auto-unlock all starter abilities if user is missing any - NO RELOAD
   useEffect(() => {
     const autoUnlockStarterAbilities = async () => {
-      if (!user?.uid || loading || justUnlocked) return;
+      if (!user?.uid || loading) return;
       
       const starterAbilityIds = ['luck_turner', 'pan_slap', 'score_saw', 'siphon', 'hard_hat'];
       const missingAbilities = starterAbilityIds.filter(id => !playerAbilities.unlocked.includes(id));
@@ -101,16 +98,12 @@ export default function PowerTab({
           }
         }
         
-        setJustUnlocked(true);
-        console.log('✅ Starter abilities unlocked - reloading in 1 second...');
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        console.log('✅ Starter abilities unlocked - please refresh page to see them');
       }
     };
     
     autoUnlockStarterAbilities();
-  }, [user?.uid, loading, playerAbilities.unlocked, justUnlocked]);
+  }, [user?.uid]);
   
   // Make reset function available globally
   useEffect(() => {

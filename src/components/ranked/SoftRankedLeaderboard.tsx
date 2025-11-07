@@ -38,13 +38,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
     null;
   const { backgroundPath, isVideo } = usePlayerCardBackground(playerBackground);
 
-  console.log(`🎨 Player ${player.displayName} background:`, {
-    equippedBackground: player.equippedBackground,
-    playerBackground,
-    backgroundPath,
-    isVideo
-  });
-
   return (
     <motion.div
       key={player.uid}

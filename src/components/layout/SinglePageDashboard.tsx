@@ -31,6 +31,7 @@ import { useFriends } from '@/context/FriendsContext';
 import { useBrowserRefresh } from '@/hooks/useBrowserRefresh';
 import { useBackgroundPositioning } from '@/hooks/useBackgroundPositioning';
 import { useOnlinePlayerCount } from '@/hooks/useOnlinePlayerCount';
+import { useDashboardBackground } from '@/hooks/useOptimizedBackground';
 import NotificationBadge from '@/components/ui/NotificationBadge';
 import { MobileBackgroundControl } from '@/components/ui/MobileBackgroundControl';
 import { createTestMatch } from '@/utils/testMatchData';
@@ -42,6 +43,7 @@ const DashboardContent: React.FC = () => {
   
   console.log('🎯 DASHBOARD CONTENT: currentSection is:', currentSection);
   const { DisplayBackgroundEquip } = useBackground();
+  const { backgroundPath, isVideo } = useDashboardBackground(DisplayBackgroundEquip);
   const { getOnlineFriendsCount } = useFriends();
   const { getBackgroundPosition } = useBackgroundPositioning();
   const onlinePlayerCount = useOnlinePlayerCount();
@@ -156,15 +158,15 @@ const DashboardContent: React.FC = () => {
 
   // Render background based on equipped display background
   const renderBackground = () => {
-    if (DisplayBackgroundEquip) {
+    if (DisplayBackgroundEquip && backgroundPath) {
       const positioning = getBackgroundPosition(DisplayBackgroundEquip.name);
       
-      if (DisplayBackgroundEquip.type === 'video') {
+      if (isVideo) {
         const isMobile = typeof window !== 'undefined' && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
         return (
           <video
-            key={DisplayBackgroundEquip.file} // Force re-render when video changes
+            key={backgroundPath} // Force re-render when video changes
             autoPlay
             loop
             muted
@@ -192,7 +194,7 @@ const DashboardContent: React.FC = () => {
               objectPosition: positioning.objectPosition
             }}
           >
-            <source src={DisplayBackgroundEquip.file} type="video/mp4" />
+            <source src={backgroundPath} type="video/mp4" />
           </video>
         );
       } else {
@@ -200,7 +202,7 @@ const DashboardContent: React.FC = () => {
         
         return (
           <img
-            src={DisplayBackgroundEquip.file}
+            src={backgroundPath}
             alt={DisplayBackgroundEquip.name}
             loading="lazy" // Always lazy load for performance
             className={`absolute inset-0 w-full h-full object-cover z-0 ${positioning.className}`}
