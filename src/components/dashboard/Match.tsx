@@ -401,7 +401,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           [`gameData.activeEffects.${user.uid}`]: arrayUnion(newEffect)
         }).then(() => {
           console.log('✅ Luck Turner added to activeEffects in Firestore');
-          showToast('🍀 Luck Turner activated! Watch the dice glow!', 'success', 5000);
+          // Notification removed - visual effect on dice is enough
         }).catch((err) => {
           console.error('❌ Failed to add Luck Turner to activeEffects:', err);
         });

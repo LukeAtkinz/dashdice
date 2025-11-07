@@ -72,22 +72,30 @@ export default function PowerTab({
   
   const { user } = useAuth();
   
+  // State to prevent infinite unlock loops
+  const [hasAutoUnlocked, setHasAutoUnlocked] = useState(false);
+  
   // Debug logging for abilities
   console.log('🔍 PowerTab Debug - allAbilities:', allAbilities.length, allAbilities);
   console.log('🔍 PowerTab Debug - playerAbilities:', playerAbilities);
   console.log('🔍 PowerTab Debug - playerAbilities.unlocked:', playerAbilities.unlocked);
   console.log('🔍 PowerTab Debug - loading:', loading);
+  console.log('🔍 PowerTab Debug - hasAutoUnlocked:', hasAutoUnlocked);
   
-  // Auto-unlock all starter abilities if user is missing any - NO RELOAD
+  // Auto-unlock all starter abilities if user is missing any - WITH RELOAD
   useEffect(() => {
     const autoUnlockStarterAbilities = async () => {
-      if (!user?.uid || loading) return;
+      // Skip if already auto-unlocked in this session
+      if (!user?.uid || loading || hasAutoUnlocked) return;
       
       const starterAbilityIds = ['luck_turner', 'pan_slap', 'score_saw', 'siphon', 'hard_hat'];
       const missingAbilities = starterAbilityIds.filter(id => !playerAbilities.unlocked.includes(id));
       
       if (missingAbilities.length > 0) {
         console.log('🔓 AUTO-UNLOCKING missing starter abilities:', missingAbilities);
+        
+        // Mark that we've attempted auto-unlock
+        setHasAutoUnlocked(true);
         
         for (const abilityId of missingAbilities) {
           try {
@@ -98,12 +106,16 @@ export default function PowerTab({
           }
         }
         
-        console.log('✅ Starter abilities unlocked - please refresh page to see them');
+        console.log('✅ Starter abilities unlocked - reloading page...');
+        // Reload page after a short delay
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
       }
     };
     
     autoUnlockStarterAbilities();
-  }, [user?.uid]);
+  }, [user?.uid, playerAbilities.unlocked, loading, hasAutoUnlocked]);
   
   // Make reset function available globally
   useEffect(() => {
@@ -827,17 +839,17 @@ export default function PowerTab({
   }
 
   return (
-    <div className="w-full space-y-1 md:space-y-8 -mt-16 md:mt-0 h-screen md:h-auto flex flex-col md:block">
+    <div className="w-full space-y-1 md:space-y-8 mt-0 md:mt-0 h-screen md:h-auto flex flex-col md:block">
       {/* Unified Game Mode and Abilities Card - Mobile & Desktop */}
       <motion.div 
         className="rounded-2xl p-0 md:p-8 overflow-hidden md:overflow-visible relative flex-1 md:flex-none flex flex-col md:block"
         layout
       >
         <div className="relative z-10">
-          {/* Game Mode Header and Loadout - Sticky on mobile */}
-          <div className="md:static sticky top-0 z-30 backdrop-blur-md rounded-xl p-1 md:p-0 bg-black/60 md:bg-transparent border-b border-white/20 md:border-none pb-2 md:pb-0">
+          {/* Game Mode Header and Loadout - Fixed on mobile */}
+          <div className="md:static fixed top-0 left-0 right-0 z-30 backdrop-blur-md rounded-b-xl p-4 md:p-0 bg-black/80 md:bg-transparent border-b border-white/20 md:border-none shadow-lg md:shadow-none">
             {/* Navigation */}
-            <div className="relative flex items-center justify-center mb-1 md:mb-6">
+            <div className="relative flex items-center justify-center mb-3 md:mb-6">
             {/* Left Arrow */}
             <motion.button
               onClick={prevGameMode}
@@ -1067,11 +1079,11 @@ export default function PowerTab({
           )}
           </div>
 
-          {/* Spacer to push abilities below sticky loadout on mobile - Increased spacing */}
-          <div className="block md:hidden h-12"></div>
+          {/* Spacer to push abilities below fixed loadout on mobile - Significantly increased */}
+          <div className="block md:hidden h-[200px]"></div>
 
           {/* Available Abilities by Category - Scrollable flex container */}
-          <div className="flex-1 md:flex-none overflow-y-auto md:overflow-visible space-y-6 pt-8 md:pt-0" style={{WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+          <div className="flex-1 md:flex-none overflow-y-auto md:overflow-visible space-y-6 pt-2 md:pt-0" style={{WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
             <style jsx>{`
               .flex-1::-webkit-scrollbar {
                 display: none;
