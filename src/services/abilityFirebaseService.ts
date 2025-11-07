@@ -536,7 +536,15 @@ async function applyAbilityEffects(
       }
       
       const matchData = matchDoc.data();
-      const targetPlayerId = targetPlayerIds[0]; // Score Saw targets one opponent
+      
+      // Auto-determine target if not provided (for opponent-targeting abilities)
+      let targetPlayerId = targetPlayerIds[0];
+      if (!targetPlayerId && ability.targeting?.type === 'opponent') {
+        // Find the opponent in the match
+        const playerIds = matchData.players || [];
+        targetPlayerId = playerIds.find((id: string) => id !== playerId);
+        console.log(`🎯 Score Saw: Auto-targeting opponent ${targetPlayerId}`);
+      }
       
       if (!targetPlayerId) {
         throw new Error('Score Saw requires a target player');

@@ -139,9 +139,9 @@ export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
+        initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.8 }}
+        exit={{ opacity: 0, scale: 0.5 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
         className="fixed pointer-events-none"
         style={{
@@ -149,8 +149,8 @@ export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
           top: `${multiplierPosition.y}px`,
           transform: 'translate(-50%, -50%)',
           zIndex: 9999,
-          width: '400px',
-          height: '400px',
+          width: '600px',
+          height: '600px',
         }}
       >
         <video

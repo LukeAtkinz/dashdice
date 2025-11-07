@@ -203,7 +203,7 @@ export function MatchContent() {
     // More dramatic deceleration for dice 2
     const isSecondDice = diceNumber === 2;
     let currentSpeed = 60; // Start fast
-    let intervalId: NodeJS.Timeout;
+    let intervalId: ReturnType<typeof setTimeout>;
     let elapsedTime = 0;
     let reelAnimationSpeed = 0.1; // Background reel speed
 

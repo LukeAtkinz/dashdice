@@ -390,6 +390,21 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 const dice2 = matchData.gameData.diceTwo;
                 const isRolling = matchData.gameData.isRolling;
                 
+                // Track if animation should play (after 2 seconds)
+                const [showAnimatedState, setShowAnimatedState] = React.useState(false);
+                
+                React.useEffect(() => {
+                  // Reset animation when turn score changes
+                  setShowAnimatedState(false);
+                  
+                  // Start animation after 2 seconds
+                  const timer = setTimeout(() => {
+                    setShowAnimatedState(true);
+                  }, 2000);
+                  
+                  return () => clearTimeout(timer);
+                }, [turnScore]);
+                
                 // Check if dice are doubles (removed gold flash effect)
                 const areDoublesGold = false; // Disabled gold glow effect
                 
@@ -429,7 +444,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 
                 return (
                   <motion.div 
-                    className="inline-block px-4 md:px-8 py-3 md:py-4 border-2 border-gray-500 rounded-2xl backdrop-blur-sm shadow-xl"
+                    className="inline-block px-4 md:px-8 py-3 md:py-4 border-2 border-gray-500 rounded-2xl backdrop-blur-sm shadow-xl overflow-hidden"
                     style={{
                       background: hasMultiplier && bgColor.startsWith('linear') ? bgColor : undefined,
                       backgroundColor: !hasMultiplier || !bgColor.startsWith('linear') ? bgColor : undefined
@@ -447,27 +462,51 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       repeatType: "reverse"
                     } : {}}
                   >
-                    <p 
+                    {/* Label - Animates up and fades out */}
+                    <motion.p 
                       className={`text-sm md:text-lg ${textColor} mb-1 md:mb-1 opacity-90`}
                       style={{ fontFamily: "Audiowide" }}
+                      animate={showAnimatedState ? {
+                        y: -30,
+                        opacity: 0
+                      } : {
+                        y: 0,
+                        opacity: 0.9
+                      }}
+                      transition={{ duration: 0.5, ease: "easeOut" }}
                     >
                       Turn Score
-                    </p>
+                    </motion.p>
+                    
+                    {/* Number - Moves to center and grows */}
                     <motion.p 
                       className={`text-2xl md:text-4xl font-bold ${textColor}`}
                       style={{ fontFamily: "Audiowide" }}
-                      animate={areDoublesGold ? {
-                        textShadow: [
+                      animate={showAnimatedState ? {
+                        fontSize: ['2.25rem', '3rem'],
+                        y: -15,
+                        textShadow: areDoublesGold ? [
                           '0 0 10px rgba(255, 215, 0, 0.8)',
                           '0 0 20px rgba(255, 215, 0, 1.0)',
                           '0 0 10px rgba(255, 215, 0, 0.8)'
-                        ]
-                      } : {}}
+                        ] : undefined
+                      } : {
+                        fontSize: '2.25rem',
+                        y: 0,
+                        textShadow: areDoublesGold ? [
+                          '0 0 10px rgba(255, 215, 0, 0.8)',
+                          '0 0 20px rgba(255, 215, 0, 1.0)',
+                          '0 0 10px rgba(255, 215, 0, 0.8)'
+                        ] : undefined
+                      }}
                       transition={areDoublesGold ? {
                         duration: 0.6,
                         repeat: Infinity,
                         repeatType: "reverse"
-                      } : {}}
+                      } : {
+                        duration: 0.5,
+                        ease: "easeOut"
+                      }}
                     >
                       {matchData.gameData.turnScore}
                     </motion.p>
@@ -487,6 +526,21 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   
                 const isThreeDigits = Math.abs(totalScore) >= 100; // Use absolute value for digit count
                 const isLastLine = matchData.gameMode === 'last-line';
+                
+                // Track if animation should play (after 2 seconds)
+                const [showAnimatedState, setShowAnimatedState] = React.useState(false);
+                
+                React.useEffect(() => {
+                  // Reset animation when total score changes
+                  setShowAnimatedState(false);
+                  
+                  // Start animation after 2 seconds
+                  const timer = setTimeout(() => {
+                    setShowAnimatedState(true);
+                  }, 2000);
+                  
+                  return () => clearTimeout(timer);
+                }, [totalScore]);
                 
                 // Determine color based on total score - Same multiplier logic as turn score
                 let totalTextColor = 'text-white'; // Default white text
@@ -537,7 +591,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       ease: isScoreShooting ? "easeInOut" : "backOut",
                       x: isScoreShooting ? { duration: 0.6, ease: "easeInOut" } : undefined
                     }}
-                    className="absolute left-[-85px] md:left-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-gray-500 rounded-xl backdrop-blur-sm shadow-xl"
+                    className="absolute left-[-85px] md:left-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-gray-500 rounded-xl backdrop-blur-sm shadow-xl overflow-hidden"
                     style={{
                       background: totalBgColor.startsWith('linear') ? totalBgColor : undefined,
                       backgroundColor: !totalBgColor.startsWith('linear') ? totalBgColor : undefined,
@@ -551,19 +605,41 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       alignItems: 'center'
                     }}
                   >
-                    <p 
+                    {/* Label - Animates up and fades out */}
+                    <motion.p 
                       className={`text-xs md:text-sm ${totalTextColor} mb-1 opacity-90`}
                       style={{ fontFamily: "Audiowide" }}
+                      animate={showAnimatedState ? {
+                        y: -30,
+                        opacity: 0
+                      } : {
+                        y: 0,
+                        opacity: 0.9
+                      }}
+                      transition={{ duration: 0.5, ease: "easeOut" }}
                     >
                       Total
-                    </p>
+                    </motion.p>
+                    
+                    {/* Number - Moves to center and grows */}
                     <motion.p 
                       key={`total-value-${totalScore}`}
-                      initial={{ scale: 1.3 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
                       className={`text-lg md:text-xl font-bold ${totalTextColor}`}
                       style={{ fontFamily: "Audiowide" }}
+                      animate={showAnimatedState ? {
+                        fontSize: ['1.125rem', '1.5rem'],
+                        y: -10,
+                        scale: 1
+                      } : {
+                        fontSize: '1.125rem',
+                        y: 0,
+                        scale: 1.3
+                      }}
+                      transition={{ 
+                        duration: 0.5, 
+                        ease: "easeOut",
+                        scale: { duration: 0.3 }
+                      }}
                     >
                       {totalScore}
                     </motion.p>

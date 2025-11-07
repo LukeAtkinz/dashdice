@@ -386,6 +386,7 @@ export default function PowerTab({
   });
   const [isLoadingLoadouts, setIsLoadingLoadouts] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [slotIconErrors, setSlotIconErrors] = useState<Record<string, boolean>>({});
 
   // Load loadouts from Firebase when user is available
   useEffect(() => {
@@ -925,11 +926,12 @@ export default function PowerTab({
                 const assignedAbilityId = currentLoadout[categorySlot.key];
                 const assignedAbility = assignedAbilityId ? allAbilities.find(a => a.id === assignedAbilityId) : null;
                 const isAssigned = !!assignedAbility;
-                const [iconError, setIconError] = React.useState(false);
+                const slotKey = `${currentGameMode.id}-${categorySlot.key}`;
+                const iconError = slotIconErrors[slotKey] || false;
 
                 return (
                   <motion.div
-                    key={`${currentGameMode.id}-slot-${categorySlot.key}`}
+                    key={slotKey}
                     className="relative group"
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -938,7 +940,11 @@ export default function PowerTab({
                       // Allow removal on mobile by tapping the equipped ability
                       if (isAssigned) {
                         removeAbilityFromCategory(categorySlot.key);
-                        setIconError(false); // Reset error state when removing
+                        // Reset error state when removing
+                        setSlotIconErrors(prev => ({
+                          ...prev,
+                          [slotKey]: false
+                        }));
                       }
                     }}
                   >
@@ -964,7 +970,10 @@ export default function PowerTab({
                                 }}
                                 onError={() => {
                                   console.log(`Failed to load ability icon: ${assignedAbility.iconUrl}`);
-                                  setIconError(true);
+                                  setSlotIconErrors(prev => ({
+                                    ...prev,
+                                    [slotKey]: true
+                                  }));
                                 }}
                               />
                             ) : (
@@ -997,7 +1006,10 @@ export default function PowerTab({
                                 }}
                                 onError={() => {
                                   console.log(`Failed to load category icon: ${categorySlot.icon}`);
-                                  setIconError(true);
+                                  setSlotIconErrors(prev => ({
+                                    ...prev,
+                                    [slotKey]: true
+                                  }));
                                 }}
                               />
                             ) : (

@@ -5,28 +5,16 @@ import { MatchData } from '@/types/match';
 // Simple Pulse Dice Component
 const PulseDice: React.FC<{ finalNumber: number | null; onComplete?: () => void }> = ({ finalNumber, onComplete }) => {
   const [currentNumber, setCurrentNumber] = useState<number | null>(null);
-  const [animationPhase, setAnimationPhase] = useState<'pulse1' | 'pulse2' | 'final' | 'complete'>('pulse1');
+  const [animationPhase, setAnimationPhase] = useState<'final' | 'complete'>('final');
 
   useEffect(() => {
     if (finalNumber !== null) {
       const sequence = async () => {
-        // First pulse - random number
-        setCurrentNumber(Math.floor(Math.random() * 6) + 1);
-        setAnimationPhase('pulse1');
-        
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
-        // Second pulse - random number
-        setCurrentNumber(Math.floor(Math.random() * 6) + 1);
-        setAnimationPhase('pulse2');
-        
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
-        // Final number - the actual result
+        // Show final number immediately - no random pulses
         setCurrentNumber(finalNumber);
         setAnimationPhase('final');
         
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 800));
         
         setAnimationPhase('complete');
         onComplete?.();
@@ -43,11 +31,11 @@ const PulseDice: React.FC<{ finalNumber: number | null; onComplete?: () => void 
       className="text-6xl md:text-7xl font-bold"
       style={{ fontFamily: 'Audiowide' }}
       animate={{
-        scale: animationPhase === 'final' ? [1, 1.2, 1] : [1, 1.1, 1],
+        scale: animationPhase === 'final' ? [1, 1.2, 1] : 1,
         color: animationPhase === 'final' ? '#FFD700' : '#FFFFFF',
         textShadow: animationPhase === 'final' 
           ? ['0 0 20px rgba(255, 215, 0, 0.8)', '0 0 40px rgba(255, 215, 0, 1)', '0 0 20px rgba(255, 215, 0, 0.8)']
-          : ['0 0 10px rgba(255,255,255,0.5)', '0 0 15px rgba(255,255,255,0.7)', '0 0 10px rgba(255,255,255,0.5)']
+          : '0 0 10px rgba(255,255,255,0.5)'
       }}
       transition={{
         duration: animationPhase === 'final' ? 0.6 : 0.2,
@@ -174,16 +162,16 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
       setTransitionPhase('result-display');
       setShowDiceNumber(true);
       
-      // Step 2: After showing dice number, show winner announcement
+      // Step 2: After showing dice number, show winner announcement (faster)
       const winnerTimer = setTimeout(() => {
         setTransitionPhase('winner-announcement');
         setShowResult(true);
-      }, 3000); // Reduced back to 3 seconds for better pacing
+      }, 1500); // Reduced from 3 seconds to 1.5 seconds
       
-      // Step 3: After winner announcement, transition to match
+      // Step 3: After winner announcement, transition to match (faster)
       const matchTimer = setTimeout(() => {
         setTransitionPhase('transitioning-to-match');
-      }, 6000); // Reduced back to 6 seconds total
+      }, 3000); // Reduced from 6 seconds to 3 seconds total
       
       return () => {
         clearTimeout(winnerTimer);

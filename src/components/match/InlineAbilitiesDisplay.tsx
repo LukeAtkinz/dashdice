@@ -464,20 +464,20 @@ export default function InlineAbilitiesDisplay({
                   : `0 2px 10px ${categoryColors.primary}40`
                 : 'none'
             }}
-            initial={{ opacity: 0, scale: 0.8, y: 20, rotateY: -15 }}
+            initial={{ opacity: 0, scale: 0.8 }}
             animate={{ 
-              opacity: 1, 
-              scale: pulsingAbility === ability.id ? [1, 0.9, 1] : 1, // Pulse down when used
-              y: pulsingAbility === ability.id ? [0, 8, 0] : // Pulse down past original position when used
+              opacity: pulsingAbility === ability.id ? [1, 0.5, 1] : 1, // Pulse opacity when used
+              scale: pulsingAbility === ability.id ? [1, 0.9, 1] : 
+                     activatingAbility === ability.id ? 1.05 : 1, // Pulse scale when used, slight scale up when activated
+              y: pulsingAbility === ability.id ? [0, 8, 0] : // Pulse down when used
                   activatingAbility === ability.id ? -5 : // Slight raise when activated
-                  siphonIsActive ? -8 : 0, // Move up when siphon is active
-              rotateY: 0 
+                  siphonIsActive ? -8 : 0 // Move up when siphon is active
             }}
             transition={{ 
               duration: pulsingAbility === ability.id ? 0.6 : // Pulse duration for used effect
                        activatingAbility === ability.id ? 0.3 : 0.3, // Quicker animation for activation
               ease: pulsingAbility === ability.id ? [0.2, 0, 0.2, 1] : [0.4, 0, 0.2, 1], // Different easing for pulse
-              delay: activatingAbility === ability.id || pulsingAbility === ability.id ? 0 : index * 0.1
+              delay: activatingAbility === ability.id || pulsingAbility === ability.id ? 0 : index * 0.1 // Stacking animation delay
             }}
             whileHover={!shouldDisable ? { 
               y: siphonIsActive ? -10 : -2, // Higher when siphon is active
@@ -495,7 +495,7 @@ export default function InlineAbilitiesDisplay({
             {/* Ability Icon */}
             <div className="absolute inset-0 flex items-center justify-center">
               <img
-                src={ability.iconUrl || categoryInfo.icon}
+                src={ability.iconUrl || '/Abilities/placeholder.webp'}
                 alt={ability.name}
                 className="w-14 h-14 md:w-16 md:h-16 object-contain"
                 style={{
@@ -503,17 +503,18 @@ export default function InlineAbilitiesDisplay({
                 }}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  // If primary icon fails and we haven't tried category icon yet
-                  if (target.src !== categoryInfo.icon) {
-                    console.log(`⚠️ Failed to load ability icon: ${target.src}, falling back to category icon: ${categoryInfo.icon}`);
-                    target.src = categoryInfo.icon;
-                  } else {
-                    // If category icon also fails, show emoji
-                    target.style.display = 'none';
-                    const parent = target.parentElement;
-                    if (parent) {
-                      parent.innerHTML = `<div class="text-2xl md:text-3xl">❓</div>`;
-                    }
+                  console.log(`⚠️ Failed to load ability icon: ${ability.iconUrl}, showing category emoji`);
+                  // Show category emoji instead of category icon
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent && !parent.querySelector('.emoji-fallback')) {
+                    const emojiDiv = document.createElement('div');
+                    emojiDiv.className = 'emoji-fallback text-3xl md:text-4xl';
+                    emojiDiv.textContent = ability.category === 'tactical' ? '🎯' : 
+                                          ability.category === 'attack' ? '⚔️' : 
+                                          ability.category === 'defense' ? '🛡️' : 
+                                          ability.category === 'utility' ? '🔧' : '💫';
+                    parent.appendChild(emojiDiv);
                   }
                 }}
               />
