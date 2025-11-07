@@ -89,22 +89,29 @@ export default function PowerTab({
       if (missingAbilities.length > 0) {
         console.log('🔓 AUTO-UNLOCKING missing starter abilities:', missingAbilities);
         
+        let unlocked = false;
         for (const abilityId of missingAbilities) {
           try {
             await AbilitiesService.unlockAbility(user.uid, abilityId);
             console.log(`✅ Auto-unlocked: ${abilityId}`);
+            unlocked = true;
           } catch (err) {
             console.error(`❌ Failed to auto-unlock ${abilityId}:`, err);
           }
         }
         
-        // Force re-fetch abilities without page reload
-        console.log('✅ Starter abilities unlocked - abilities will refresh automatically');
+        if (unlocked) {
+          // Wait a moment for Firebase to update, then reload
+          console.log('✅ Starter abilities unlocked - reloading in 2 seconds...');
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        }
       }
     };
     
     autoUnlockStarterAbilities();
-  }, [user?.uid, loading, playerAbilities.unlocked]);
+  }, [user?.uid, loading]);
   
   // Make reset function available globally
   useEffect(() => {
