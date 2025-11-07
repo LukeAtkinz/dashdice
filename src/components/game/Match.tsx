@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useBackground } from '@/context/BackgroundContext';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/services/firebase';
 import { GameService } from '@/services/gameService';
+import { useMatchBackground } from '@/hooks/useOptimizedBackground';
 
 interface MatchProps {
   matchId: string;
@@ -65,7 +65,6 @@ interface MatchData {
 
 export const Match: React.FC<MatchProps> = React.memo(({ matchId, onBack }) => {
   const { user } = useAuth();
-  const { MatchBackgroundEquip } = useBackground();
   const [matchData, setMatchData] = useState<MatchData | null>(null);
   const [isHost, setIsHost] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -82,6 +81,42 @@ export const Match: React.FC<MatchProps> = React.memo(({ matchId, onBack }) => {
     };
     return modeNames[gameType.toLowerCase()] || gameType.charAt(0).toUpperCase() + gameType.slice(1);
   }, []);
+
+  // Get valid background object from match data
+  const getValidBackgroundObject = useCallback((background: any) => {
+    if (!background) {
+      return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+    }
+    
+    // Check if background is already a valid object
+    if (typeof background === 'object' && background.name && background.file && background.type) {
+      return background;
+    }
+    
+    // If background is a string (background ID from old system)
+    if (typeof background === 'string') {
+      return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+    }
+    
+    return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+  }, []);
+
+  // Get current player's background from match data
+  const currentPlayerBackground = useMemo(() => {
+    if (!matchData || !user) return null;
+    const playerData = isHost ? matchData.hostData : matchData.opponentData;
+    return getValidBackgroundObject(playerData.matchBackgroundEquipped);
+  }, [matchData, user, isHost, getValidBackgroundObject]);
+
+  // Get opponent's background from match data
+  const opponentBackground = useMemo(() => {
+    if (!matchData || !user) return null;
+    const opponent = isHost ? matchData.opponentData : matchData.hostData;
+    return getValidBackgroundObject(opponent.matchBackgroundEquipped);
+  }, [matchData, user, isHost, getValidBackgroundObject]);
+
+  // Get optimized backgrounds for current player (uses mobile/preview variants)
+  const { backgroundPath, isVideo } = useMatchBackground(currentPlayerBackground as any);
 
   // Remove excessive console logs - only keep critical ones for debugging if needed
   // console.log('🎮 Match: Component rendered with props:', { matchId, user: user?.uid });
@@ -137,11 +172,8 @@ export const Match: React.FC<MatchProps> = React.memo(({ matchId, onBack }) => {
   }, [user?.uid, matchData, loading, matchId]);
 
   const renderBackground = useMemo(() => {
-    // Remove performance-impacting logs
-    // console.log('🎨 Match backgrounds:', { MatchBackgroundEquip });
-    
-    if (MatchBackgroundEquip) {
-      if (MatchBackgroundEquip.type === 'video') {
+    if (backgroundPath) {
+      if (isVideo) {
         return (
           <video
             autoPlay
@@ -161,14 +193,14 @@ export const Match: React.FC<MatchProps> = React.memo(({ matchId, onBack }) => {
               outline: 'none'
             }}
           >
-            <source src={MatchBackgroundEquip.file} type="video/mp4" />
+            <source src={backgroundPath} type="video/mp4" />
           </video>
         );
       } else {
         return (
           <img
-            src={MatchBackgroundEquip.file}
-            alt={MatchBackgroundEquip.name}
+            src={backgroundPath}
+            alt="Match Background"
             className="absolute inset-0 w-full h-full object-cover z-0"
           />
         );
@@ -183,7 +215,7 @@ export const Match: React.FC<MatchProps> = React.memo(({ matchId, onBack }) => {
         }}
       />
     );
-  }, [MatchBackgroundEquip]);
+  }, [backgroundPath, isVideo]);
 
   if (!matchData) {
     return (

@@ -98,9 +98,8 @@ export default function PowerTab({
           }
         }
         
-        // Reload the page to refresh the abilities list
-        console.log('🔄 Reloading page to show newly unlocked abilities...');
-        setTimeout(() => window.location.reload(), 1000);
+        // Force re-fetch abilities without page reload
+        console.log('✅ Starter abilities unlocked - abilities will refresh automatically');
       }
     };
     

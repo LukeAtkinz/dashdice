@@ -155,11 +155,11 @@ export const getBackgroundVariants = (background: Background): BackgroundVariant
     };
   }
   
-  // For images: use different sizes (Full, Mobile, Preview folders)
+  // For images: use webp format with proper naming convention
   return {
-    full: `/backgrounds/Full/${baseName} - Full.webp`,          // Full-size for desktop
-    mobile: `/backgrounds/Mobile/${baseName} - Mobile.webp`,      // Optimized for mobile
-    preview: `/backgrounds/Preview/${baseName} - Preview.webp`,    // Small preview
+    full: `/backgrounds/Full/${baseName} - Full.webp`,          // Full-size webp for desktop
+    mobile: `/backgrounds/Mobile/${baseName} - Mobile.webp`,    // Optimized webp for mobile
+    preview: `/backgrounds/Preview/${baseName} - Preview.webp`, // Small preview webp
   };
 };
 
