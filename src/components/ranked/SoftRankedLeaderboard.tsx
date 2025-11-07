@@ -38,6 +38,13 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
     null;
   const { backgroundPath, isVideo } = usePlayerCardBackground(playerBackground);
 
+  console.log(`🎨 Player ${player.displayName} background:`, {
+    equippedBackground: player.equippedBackground,
+    playerBackground,
+    backgroundPath,
+    isVideo
+  });
+
   return (
     <motion.div
       key={player.uid}
@@ -144,41 +151,32 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
             </h3>
             
             {/* Wins and Win Rate below name */}
-            <div className="flex items-center gap-2 mt-2">
-              <div 
-                className="flex items-center gap-2 px-3 py-1 rounded-full"
-                style={{
-                  background: 'rgba(0, 0, 0, 0.7)',
-                  border: '1px solid rgba(74, 222, 128, 0.3)'
+            <div 
+              className="flex items-center gap-2 mt-2 px-3 py-1.5 rounded-xl"
+              style={{
+                background: 'rgba(0, 0, 0, 0.8)',
+                border: '1px solid rgba(255, 255, 255, 0.1)'
+              }}
+            >
+              <p 
+                className="text-sm font-bold text-green-400"
+                style={{ 
+                  fontFamily: 'Audiowide',
+                  textShadow: "0 0 4px rgba(74, 222, 128, 0.5)"
                 }}
               >
-                <p 
-                  className="text-sm font-bold text-green-400"
-                  style={{ 
-                    fontFamily: 'Audiowide',
-                    textShadow: "0 0 4px rgba(74, 222, 128, 0.5)"
-                  }}
-                >
-                  {player.matchWins}W
-                </p>
-              </div>
-              <div 
-                className="flex items-center gap-2 px-3 py-1 rounded-full"
-                style={{
-                  background: 'rgba(0, 0, 0, 0.7)',
-                  border: '1px solid rgba(96, 165, 250, 0.3)'
+                {player.matchWins}W
+              </p>
+              <div className="w-px h-4 bg-gray-600"></div>
+              <p 
+                className="text-sm font-bold text-blue-400"
+                style={{ 
+                  fontFamily: 'Audiowide',
+                  textShadow: "0 0 4px rgba(96, 165, 250, 0.5)"
                 }}
               >
-                <p 
-                  className="text-sm font-bold text-blue-400"
-                  style={{ 
-                    fontFamily: 'Audiowide',
-                    textShadow: "0 0 4px rgba(96, 165, 250, 0.5)"
-                  }}
-                >
-                  {player.winPercentage.toFixed(0)}% WR
-                </p>
-              </div>
+                {player.winPercentage.toFixed(0)}% WR
+              </p>
             </div>
           </div>
         </div>
