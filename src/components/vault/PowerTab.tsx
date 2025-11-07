@@ -1077,9 +1077,18 @@ export default function PowerTab({
           <div className="block md:hidden h-[200px]"></div>
 
           {/* Available Abilities by Category - Scrollable flex container */}
-          <div className="flex-1 md:flex-none overflow-y-auto md:overflow-visible space-y-6 pt-2 md:pt-0" style={{WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+          <div 
+            className="flex-1 md:flex-none overflow-y-auto md:overflow-visible space-y-6 pt-2 md:pt-0 pb-20 md:pb-0" 
+            style={{
+              WebkitOverflowScrolling: 'touch', 
+              scrollbarWidth: 'none', 
+              msOverflowStyle: 'none',
+              maxHeight: 'calc(100vh - 280px)', // Ensure scrolling works on mobile
+              overflowY: 'scroll' // Force scroll
+            }}
+          >
             <style jsx>{`
-              .flex-1::-webkit-scrollbar {
+              div::-webkit-scrollbar {
                 display: none;
               }
             `}</style>
