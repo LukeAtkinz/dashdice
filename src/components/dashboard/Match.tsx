@@ -462,8 +462,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       muted
       playsInline
       controls={false}
-      webkit-playsinline="true"
-      x5-playsinline="true"
       preload="metadata"
       disablePictureInPicture
       controlsList="nodownload noplaybackrate nofullscreen"
@@ -1415,8 +1413,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       muted
                       playsInline
                       controls={false}
-                      webkit-playsinline="true"
-                      x5-playsinline="true"
                       preload="metadata"
                       disablePictureInPicture
                       controlsList="nodownload noplaybackrate"
@@ -1582,8 +1578,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         muted
                         playsInline
                         controls={false}
-                        webkit-playsinline="true"
-                        x5-playsinline="true"
                         preload="metadata"
                         disablePictureInPicture
                         controlsList="nodownload noplaybackrate"
@@ -1691,8 +1685,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         muted
                         playsInline
                         controls={false}
-                        webkit-playsinline="true"
-                        x5-playsinline="true"
                         preload="metadata"
                         disablePictureInPicture
                         controlsList="nodownload noplaybackrate"

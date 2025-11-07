@@ -31,16 +31,12 @@ const PulseDice: React.FC<{ finalNumber: number | null; onComplete?: () => void 
       className="text-6xl md:text-7xl font-bold"
       style={{ fontFamily: 'Audiowide' }}
       animate={{
-        scale: animationPhase === 'final' ? [1, 1.2, 1] : 1,
-        color: animationPhase === 'final' ? '#FFD700' : '#FFFFFF',
-        textShadow: animationPhase === 'final' 
-          ? ['0 0 20px rgba(255, 215, 0, 0.8)', '0 0 40px rgba(255, 215, 0, 1)', '0 0 20px rgba(255, 215, 0, 0.8)']
-          : '0 0 10px rgba(255,255,255,0.5)'
+        scale: 1,
+        color: '#FFD700',
+        textShadow: '0 0 40px rgba(255, 215, 0, 1), 0 0 80px rgba(255, 215, 0, 0.8)'
       }}
       transition={{
-        duration: animationPhase === 'final' ? 0.6 : 0.2,
-        repeat: animationPhase === 'final' ? 3 : 0,
-        repeatType: "reverse"
+        duration: 0.3
       }}
     >
       {currentNumber}
@@ -639,17 +635,11 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                     textShadow: '0 0 40px rgba(255,255,255,0.9), 0 0 80px rgba(255,255,255,0.6), 0 0 120px rgba(255,255,255,0.3)',
                     WebkitFontSmoothing: 'antialiased'
                   }}
-                  animate={{
-                    textShadow: [
-                      '0 0 40px rgba(255,255,255,0.9), 0 0 80px rgba(255,255,255,0.6), 0 0 120px rgba(255,255,255,0.3)',
-                      '0 0 50px rgba(255,255,255,1.0), 0 0 100px rgba(255,255,255,0.8), 0 0 150px rgba(255,255,255,0.5)',
-                      '0 0 40px rgba(255,255,255,0.9), 0 0 80px rgba(255,255,255,0.6), 0 0 120px rgba(255,255,255,0.3)'
-                    ]
-                  }}
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
                   transition={{
-                    duration: 1.2,
-                    repeat: Infinity,
-                    repeatType: "reverse"
+                    duration: 0.3,
+                    ease: "easeOut"
                   }}
                 >
                   {matchData.gameData.turnDeciderDice}
