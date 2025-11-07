@@ -925,6 +925,7 @@ export default function PowerTab({
                 const assignedAbilityId = currentLoadout[categorySlot.key];
                 const assignedAbility = assignedAbilityId ? allAbilities.find(a => a.id === assignedAbilityId) : null;
                 const isAssigned = !!assignedAbility;
+                const [iconError, setIconError] = React.useState(false);
 
                 return (
                   <motion.div
@@ -937,6 +938,7 @@ export default function PowerTab({
                       // Allow removal on mobile by tapping the equipped ability
                       if (isAssigned) {
                         removeAbilityFromCategory(categorySlot.key);
+                        setIconError(false); // Reset error state when removing
                       }
                     }}
                   >
@@ -951,23 +953,28 @@ export default function PowerTab({
                       {isAssigned && assignedAbility ? (
                         <div className="w-full h-full flex flex-col items-center justify-center text-center">
                           <div className="w-12 h-12 md:w-16 md:h-16 relative">
-                            <img
-                              key={assignedAbility.iconUrl}
-                              src={assignedAbility.iconUrl || '/Abilities/placeholder.webp'}
-                              alt={assignedAbility.name}
-                              className="w-full h-full object-contain opacity-100"
-                              style={{
-                                filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5))'
-                              }}
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                                const parent = target.parentElement;
-                                if (parent) {
-                                  parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-lg">${assignedAbility.category === 'tactical' ? '🎯' : assignedAbility.category === 'attack' ? '⚔️' : assignedAbility.category === 'defense' ? '🛡️' : assignedAbility.category === 'utility' ? '🔧' : '💫'}</div>`;
-                                }
-                              }}
-                            />
+                            {!iconError ? (
+                              <img
+                                key={assignedAbility.iconUrl}
+                                src={assignedAbility.iconUrl || '/Abilities/placeholder.webp'}
+                                alt={assignedAbility.name}
+                                className="w-full h-full object-contain opacity-100"
+                                style={{
+                                  filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5))'
+                                }}
+                                onError={() => {
+                                  console.log(`Failed to load ability icon: ${assignedAbility.iconUrl}`);
+                                  setIconError(true);
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-lg">
+                                {assignedAbility.category === 'tactical' ? '🎯' : 
+                                 assignedAbility.category === 'attack' ? '⚔️' : 
+                                 assignedAbility.category === 'defense' ? '🛡️' : 
+                                 assignedAbility.category === 'utility' ? '🔧' : '💫'}
+                              </div>
+                            )}
                           </div>
                           {/* Remove indicator on hover/touch */}
                           <div className="absolute inset-0 bg-red-500/20 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-lg">
@@ -979,25 +986,28 @@ export default function PowerTab({
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center text-center">
                           <div className="w-12 h-12 md:w-16 md:h-16 mb-1 md:mb-2 relative">
-                            <img
-                              key={categorySlot.icon}
-                              src={categorySlot.icon}
-                              alt={categorySlot.name}
-                              className="w-full h-full object-contain opacity-100"
-                              style={{
-                                filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) brightness(1.2)'
-                              }}
-                              onError={(e) => {
-                                console.log(`Failed to load category icon: ${categorySlot.icon}`);
-                                // Fallback to emoji
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                                const parent = target.parentElement;
-                                if (parent) {
-                                  parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-2xl md:text-6xl">${categorySlot.key === 'tactical' ? '🎯' : categorySlot.key === 'attack' ? '⚔️' : categorySlot.key === 'defense' ? '🛡️' : categorySlot.key === 'utility' ? '🔧' : '💫'}</div>`;
-                                }
-                              }}
-                            />
+                            {!iconError ? (
+                              <img
+                                key={categorySlot.icon}
+                                src={categorySlot.icon}
+                                alt={categorySlot.name}
+                                className="w-full h-full object-contain opacity-100"
+                                style={{
+                                  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) brightness(1.2)'
+                                }}
+                                onError={() => {
+                                  console.log(`Failed to load category icon: ${categorySlot.icon}`);
+                                  setIconError(true);
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-2xl md:text-6xl">
+                                {categorySlot.key === 'tactical' ? '🎯' : 
+                                 categorySlot.key === 'attack' ? '⚔️' : 
+                                 categorySlot.key === 'defense' ? '🛡️' : 
+                                 categorySlot.key === 'utility' ? '🔧' : '💫'}
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}
