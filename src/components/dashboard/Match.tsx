@@ -1,5 +1,6 @@
 'use client';
 
+// Force bundle refresh - v1.0.1
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
