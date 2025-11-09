@@ -1029,10 +1029,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     };
   }, [matchData?.hostData, matchData?.opponentData, opponentLastSeen, abandonmentTimer, showAbandonmentNotification, user]);
 
-  // Remove loading state entirely - don't show any loading animations
-  // User requested no loading animations between scenes and screens
-  
-  // Show error UI if needed - BEFORE computing player data
+  // CRITICAL: Early return AFTER all hooks to prevent React hooks rule violations (#310)
+  // All hooks must be called in the same order every render, so they come first
   if (error || !matchData) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">
@@ -1052,7 +1050,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       </div>
     );
   }
-
+  
   // Now we know matchData exists, compute player data
   const isHost = matchData.hostData.playerId === user?.uid;
   const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;

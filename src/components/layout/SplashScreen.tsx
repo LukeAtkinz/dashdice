@@ -94,59 +94,36 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
     }
   }, [isVideoEnded, appLoaded, onComplete]);
 
-  // Force video playback for mobile/PWA with enhanced retry logic
+  // Aggressive video autoplay - force play on ALL events
   const forceVideoPlay = useCallback(async (video: HTMLVideoElement) => {
-    if (videoInitialized || isRetrying) {
-      console.log('⏭️ Video already initialized or retry in progress, skipping...');
-      return;
-    }
-    
-    setIsRetrying(true);
+    if (!video || videoInitialized) return;
     
     try {
-      // Ensure video is muted for autoplay (critical for mobile)
+      // Critical settings for autoplay across all browsers
       video.muted = true;
       video.volume = 0;
       video.defaultMuted = true;
-      
-      // Set comprehensive mobile-friendly properties
+      video.setAttribute('muted', 'true');
       video.setAttribute('playsinline', 'true');
       video.setAttribute('webkit-playsinline', 'true');
-      video.setAttribute('x5-video-player-type', 'h5-page');
-      video.setAttribute('x5-video-player-fullscreen', 'false');
-      video.setAttribute('x5-video-orientation', 'portrait');
-      video.setAttribute('preload', 'auto');
       video.setAttribute('autoplay', 'true');
       
-      // Force load the video
-      video.load();
-      
-      // Wait for metadata and then play
+      // Attempt immediate play
       const playPromise = video.play();
+      
       if (playPromise !== undefined) {
-        await playPromise;
-        console.log('✅ Splash video autoplay successful');
-        setVideoInitialized(true);
+        playPromise.then(() => {
+          console.log('✅ Splash video playing');
+          setVideoInitialized(true);
+        }).catch((err) => {
+          console.warn('⚠️ Autoplay blocked, will retry:', err);
+          // Keep trying on various events
+        });
       }
     } catch (error) {
-      console.warn('📱 Video autoplay failed, attempting limited retry:', error);
-      
-      // Single retry strategy to prevent loops
-      try {
-        video.load();
-        video.muted = true;
-        await new Promise(resolve => setTimeout(resolve, 300)); // Single delay
-        await video.play();
-        console.log('✅ Splash video retry successful');
-        setVideoInitialized(true);
-      } catch (retryError) {
-        console.warn('❌ Splash video retry failed, skipping splash screen:', retryError);
-        handleVideoEnd();
-      }
-    } finally {
-      setIsRetrying(false);
+      console.warn('⚠️ Play attempt failed:', error);
     }
-  }, [handleVideoEnd, videoInitialized, isRetrying]);
+  }, [videoInitialized]);
 
   // Handle video error - simplified fallback
   const handleVideoError = useCallback(() => {
@@ -156,48 +133,44 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
     handleVideoEnd();
   }, [handleVideoEnd]);
 
-  // Single video initialization attempt
+  // Aggressive initialization - try on mount and every possible event
   useEffect(() => {
-    if (videoInitialized || isRetrying) return; // Skip if already initialized or retrying
+    const mainVideo = document.getElementById('main-splash-video') as HTMLVideoElement;
+    if (!mainVideo) return;
 
-    const initVideoPlayback = async () => {
-      const mainVideo = document.getElementById('main-splash-video') as HTMLVideoElement;
-      if (mainVideo) {
-        console.log('🎬 Initializing splash video playback...');
-        await forceVideoPlay(mainVideo);
-      }
-    };
+    // Immediate play attempt
+    forceVideoPlay(mainVideo);
 
-    // Single initialization attempt with a reasonable delay
-    const timer = setTimeout(initVideoPlayback, 100);
+    // Try again after short delays (browsers can be finicky)
+    const timers = [
+      setTimeout(() => forceVideoPlay(mainVideo), 100),
+      setTimeout(() => forceVideoPlay(mainVideo), 300),
+      setTimeout(() => forceVideoPlay(mainVideo), 500)
+    ];
 
-    return () => clearTimeout(timer);
-  }, [forceVideoPlay, videoInitialized, isRetrying]);
+    return () => timers.forEach(timer => clearTimeout(timer));
+  }, [forceVideoPlay]);
 
-  // Handle user interaction to start video (PWA/mobile fallback)
+  // User interaction fallback - play on ANY touch/click
   useEffect(() => {
     const handleUserInteraction = () => {
-      if (videoInitialized || isRetrying) return; // Skip if already initialized or retrying
-      
       const mainVideo = document.getElementById('main-splash-video') as HTMLVideoElement;
-      if (mainVideo && !mainVideo.played.length) {
+      if (mainVideo) {
         forceVideoPlay(mainVideo);
       }
-      
-      // Remove event listeners after first interaction
-      document.removeEventListener('touchstart', handleUserInteraction);
-      document.removeEventListener('click', handleUserInteraction);
     };
 
-    // Add interaction listeners for mobile devices
-    document.addEventListener('touchstart', handleUserInteraction, { passive: true });
-    document.addEventListener('click', handleUserInteraction, { passive: true });
+    // Listen for ANY user interaction
+    document.addEventListener('touchstart', handleUserInteraction, { once: true, passive: true });
+    document.addEventListener('click', handleUserInteraction, { once: true, passive: true });
+    document.addEventListener('touchend', handleUserInteraction, { once: true, passive: true });
 
     return () => {
       document.removeEventListener('touchstart', handleUserInteraction);
       document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('touchend', handleUserInteraction);
     };
-  }, [forceVideoPlay, videoInitialized, isRetrying]);
+  }, [forceVideoPlay]);
 
   // Skip splash screen after maximum time (safety fallback)
   useEffect(() => {
@@ -246,10 +219,27 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             loop={false}
             onEnded={handleVideoEnd}
             onError={handleVideoError}
-            onCanPlay={() => setVideoError(false)}
+            onCanPlay={(e) => {
+              setVideoError(false);
+              const video = e.target as HTMLVideoElement;
+              forceVideoPlay(video);
+            }}
+            onCanPlayThrough={(e) => {
+              const video = e.target as HTMLVideoElement;
+              forceVideoPlay(video);
+            }}
+            onLoadedMetadata={(e) => {
+              const video = e.target as HTMLVideoElement;
+              forceVideoPlay(video);
+            }}
             onLoadedData={(e) => {
-              if (!videoInitialized && !isRetrying) {
-                const video = e.target as HTMLVideoElement;
+              const video = e.target as HTMLVideoElement;
+              forceVideoPlay(video);
+            }}
+            onSuspend={(e) => {
+              // Try to resume if suspended
+              const video = e.target as HTMLVideoElement;
+              if (video.paused) {
                 forceVideoPlay(video);
               }
             }}
