@@ -62,18 +62,21 @@ const nextConfig: NextConfig = {
     webpack: (config, { dev, isServer }) => {
       // Optimize bundle size for production
       if (!dev && !isServer) {
+        // FORCE NEW VENDOR HASH: Add timestamp to chunk naming to force CDN invalidation
+        config.output.chunkFilename = config.output.chunkFilename || '[name]-[chunkhash].js';
+        
         config.optimization.splitChunks = {
           ...config.optimization.splitChunks,
           cacheGroups: {
             ...config.optimization.splitChunks.cacheGroups,
             firebase: {
-              name: 'firebase',
+              name: `firebase-${Date.now()}`,
               test: /[\\/]node_modules[\\/](firebase|@firebase)[\\/]/,
               chunks: 'all',
               priority: 20,
             },
             vendor: {
-              name: 'vendor',
+              name: `vendor-${Date.now()}`,
               test: /[\\/]node_modules[\\/]/,
               chunks: 'all',
               priority: 10,
