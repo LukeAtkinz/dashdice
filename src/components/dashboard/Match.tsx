@@ -1058,7 +1058,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const opponent = isHost ? matchData.opponentData : matchData.hostData;
 
   return (
-    <>
+    <div suppressHydrationWarning>
       {/* Match Abandonment Notification */}
       {showAbandonmentNotification && (
         <MatchAbandonmentNotification
@@ -1846,7 +1846,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           </div>
         </div>
       </motion.div>
-    </>
+    </div>
   );
 };
 
