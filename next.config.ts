@@ -1,10 +1,14 @@
 import type { NextConfig } from "next";
 
+// BUILD_ID to force cache invalidation - v2.0.0
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
 
 const nextConfig: NextConfig = {
+  generateBuildId: async () => {
+    return `build-${Date.now()}`;
+  },
   eslint: {
     // Warning: This allows production builds to successfully complete even if
     // your project has ESLint errors.
