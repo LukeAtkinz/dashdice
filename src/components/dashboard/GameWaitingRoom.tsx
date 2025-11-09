@@ -2471,11 +2471,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           muted
           playsInline
           controls={false}
-          webkit-playsinline="true"
-          x5-playsinline="true"
           preload="metadata"
-          disablePictureInPicture
-          controlsList="nodownload noplaybackrate nofullscreen"
           onLoadStart={() => console.log('Video: Load started')}
           onCanPlay={() => console.log('Video: Can play')}
           onError={(e) => console.error('Video: Error loading', e)}
@@ -2489,7 +2485,6 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             objectFit: 'cover',
             zIndex: 0,
             pointerEvents: 'none',
-            WebkitAppearance: 'none',
             outline: 'none'
           }}
         >
@@ -3449,11 +3444,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     muted
                     playsInline
                     controls={false}
-                    webkit-playsinline="true"
-                    x5-playsinline="true"
                     preload="metadata"
-                    disablePictureInPicture
-                    controlsList="nodownload noplaybackrate nofullscreen"
                     style={{
                       position: 'absolute',
                       top: 0,
@@ -3463,7 +3454,6 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       objectFit: 'cover',
                       zIndex: 0,
                       pointerEvents: 'none',
-                      WebkitAppearance: 'none',
                       outline: 'none'
                     }}
                   >

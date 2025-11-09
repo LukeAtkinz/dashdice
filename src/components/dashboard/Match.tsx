@@ -463,12 +463,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       playsInline
       controls={false}
       preload="metadata"
-      disablePictureInPicture
-      controlsList="nodownload noplaybackrate nofullscreen"
       className={className}
       style={{ 
         pointerEvents: 'none',
-        WebkitAppearance: 'none',
         outline: 'none'
       }}
     >
@@ -1414,8 +1411,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       playsInline
                       controls={false}
                       preload="metadata"
-                      disablePictureInPicture
-                      controlsList="nodownload noplaybackrate"
                       className="absolute inset-0 w-full h-full object-cover"
                       style={{ 
                         pointerEvents: 'none'
@@ -1579,8 +1574,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         playsInline
                         controls={false}
                         preload="metadata"
-                        disablePictureInPicture
-                        controlsList="nodownload noplaybackrate"
                         className="absolute inset-0 w-full h-full object-cover"
                         style={{ 
                           pointerEvents: 'none',
@@ -1686,8 +1679,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         playsInline
                         controls={false}
                         preload="metadata"
-                        disablePictureInPicture
-                        controlsList="nodownload noplaybackrate"
                         className="absolute inset-0 w-full h-full object-cover"
                         style={{ 
                           pointerEvents: 'none',
