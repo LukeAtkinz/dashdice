@@ -492,7 +492,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       matchBackgroundEquipped: currentPlayer.matchBackgroundEquipped
     });
     return getValidBackgroundObject(currentPlayer.matchBackgroundEquipped);
-  }, [matchData, user, getValidBackgroundObject]);
+  }, [matchData, user]);
   
   const opponentBackground = useMemo(() => {
     if (!matchData || !user) return null;
@@ -504,7 +504,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       matchBackgroundEquipped: opponent.matchBackgroundEquipped
     });
     return getValidBackgroundObject(opponent.matchBackgroundEquipped);
-  }, [matchData, user, getValidBackgroundObject]);
+  }, [matchData, user]);
 
   // Get optimized backgrounds for both players
   const { backgroundPath: currentPlayerBgPath, isVideo: currentPlayerBgIsVideo } = useMatchBackground(currentPlayerBackground as any);
