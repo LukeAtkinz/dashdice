@@ -1,6 +1,6 @@
 'use client';
 
-// Force bundle refresh - v1.0.1
+// CACHE BUST: v2.0.0 - React Error #310 FIX DEPLOYED
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
