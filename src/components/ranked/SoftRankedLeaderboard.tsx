@@ -200,11 +200,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
               {/* Wins */}
               <div 
                 className="flex-1 text-center px-3 py-2 rounded-lg"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(34, 197, 94, 0.1))',
-                  border: '2px solid rgba(74, 222, 128, 0.4)',
-                  boxShadow: '0 4px 12px rgba(74, 222, 128, 0.2)'
-                }}
               >
                 <p 
                   className="text-xl font-bold text-green-400 mb-1"
@@ -251,11 +246,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
               {/* Win Rate */}
               <div 
                 className="flex-1 text-center px-3 py-2 rounded-lg"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(59, 130, 246, 0.1))',
-                  border: '2px solid rgba(96, 165, 250, 0.4)',
-                  boxShadow: '0 4px 12px rgba(96, 165, 250, 0.2)'
-                }}
               >
                 <p 
                   className="text-xl font-bold text-blue-400 mb-1"
