@@ -78,14 +78,6 @@ export default function PowerCard({
       style={{
         height: '200px', // Fixed height for consistent card layout
         borderRadius: '20px',
-        border: showDetails
-          ? '2px solid #FF0080'
-          : isEquipped 
-            ? '2px solid #FFD700' 
-            : isUnlocked 
-              ? '2px solid rgba(255, 255, 255, 0.3)' 
-              : '1px solid rgba(255, 255, 255, 0.1)',
-        background: `linear-gradient(135deg, ${rarityColors?.primary || '#6B7280'}40 0%, rgba(0, 0, 0, 0.3) 100%)`,
         marginBottom: '10px',
         overflow: 'hidden'
       }}

@@ -201,14 +201,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
               {/* Wins */}
               <div 
                 className="flex-1 text-center px-3 py-2 rounded-lg"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(34, 197, 94, 0.1))',
-                  border: '2px solid rgba(74, 222, 128, 0.4)',
-                  boxShadow: '0 4px 12px rgba(74, 222, 128, 0.2)'
-                }}
               >
                 <p 
-                  className="text-3xl font-bold text-green-400 mb-1"
+                  className="text-xl font-bold text-green-400 mb-1"
                   style={{ 
                     fontFamily: 'Audiowide',
                     textShadow: "0 0 12px rgba(74, 222, 128, 0.8)"
@@ -235,17 +230,13 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
                 }}
                 className="flex-1 px-6 py-3 rounded-lg font-bold text-sm"
                 style={{
-                  background: 'linear-gradient(135deg, #192E39, #667eea)',
-                  border: '2px solid rgba(102, 126, 234, 0.5)',
                   color: '#FFF',
                   fontFamily: 'Audiowide',
                   textTransform: 'uppercase',
-                  boxShadow: '0 4px 15px rgba(25, 46, 57, 0.4)',
                   letterSpacing: '0.05em'
                 }}
                 whileHover={{ 
-                  scale: 1.05,
-                  boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)'
+                  scale: 1.05
                 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -255,14 +246,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
               {/* Win Rate */}
               <div 
                 className="flex-1 text-center px-3 py-2 rounded-lg"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(59, 130, 246, 0.1))',
-                  border: '2px solid rgba(96, 165, 250, 0.4)',
-                  boxShadow: '0 4px 12px rgba(96, 165, 250, 0.2)'
-                }}
               >
                 <p 
-                  className="text-3xl font-bold text-blue-400 mb-1"
+                  className="text-xl font-bold text-blue-400 mb-1"
                   style={{ 
                     fontFamily: 'Audiowide',
                     textShadow: "0 0 12px rgba(96, 165, 250, 0.8)"
