@@ -82,8 +82,7 @@ const nextConfig = {
     scrollRestoration: true,
   },
   
-  // Enable swc minification (moved out of experimental)
-  swcMinify: true,
+  // swcMinify is now default in Next.js 15 and the option has been removed
   // Compress responses
   compress: true,
   // Enable static optimization

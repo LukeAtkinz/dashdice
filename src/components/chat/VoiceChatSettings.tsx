@@ -366,6 +366,11 @@ export const VoiceChatSettingsComponent: React.FC<VoiceChatSettingsProps> = ({
 
 // Utility functions for settings management
 export const loadVoiceChatSettings = (): VoiceChatSettings => {
+  // Check if we're in the browser (not SSR)
+  if (typeof window === 'undefined') {
+    return DEFAULT_SETTINGS;
+  }
+  
   try {
     const stored = localStorage.getItem(SETTINGS_KEY);
     if (stored) {
@@ -379,6 +384,11 @@ export const loadVoiceChatSettings = (): VoiceChatSettings => {
 };
 
 export const saveVoiceChatSettings = (settings: VoiceChatSettings): void => {
+  // Check if we're in the browser (not SSR)
+  if (typeof window === 'undefined') {
+    return;
+  }
+  
   try {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
   } catch (error) {
