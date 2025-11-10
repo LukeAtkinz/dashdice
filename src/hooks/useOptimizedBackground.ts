@@ -27,10 +27,15 @@ export const useOptimizedBackground = (
   background: Background | { name: string; file: string; type: 'image' | 'video' } | null | undefined,
   baseContext: 'dashboard' | 'match' | 'waiting-room' | 'preview'
 ) => {
+  // Always call useMemo hooks regardless of input to maintain hook order
   const isMobile = useMemo(() => isMobileDevice(), []);
   
+  // Stable default for when background is null/undefined
   const backgroundPath = useMemo(() => {
-    if (!background) return null;
+    if (!background) {
+      // Return default path instead of null to prevent downstream issues
+      return '/backgrounds/Preview/Relax - Preview.webp';
+    }
     
     return getSmartBackgroundPath(background, baseContext);
   }, [background, baseContext]);

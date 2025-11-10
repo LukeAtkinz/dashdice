@@ -487,8 +487,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   ), []);
 
   // Memoized background objects - computed before early returns to comply with hooks rules
+  // Always return a stable default to prevent hook order issues
+  const defaultBackground = { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' as const };
+  
   const currentPlayerBackground = useMemo(() => {
-    if (!matchData || !user) return null;
+    if (!matchData || !user) return defaultBackground;
     const isHost = matchData.hostData.playerId === user.uid;
     const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
     console.log('🎮 Current Player Background Data:', {
@@ -500,7 +503,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   }, [matchData, user, getValidBackgroundObject]);
   
   const opponentBackground = useMemo(() => {
-    if (!matchData || !user) return null;
+    if (!matchData || !user) return defaultBackground;
     const isHost = matchData.hostData.playerId === user.uid;
     const opponent = isHost ? matchData.opponentData : matchData.hostData;
     console.log('🎮 Opponent Background Data:', {
@@ -511,9 +514,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     return getValidBackgroundObject(opponent.matchBackgroundEquipped);
   }, [matchData, user, getValidBackgroundObject]);
 
-  // Get optimized backgrounds for both players
-  const { backgroundPath: currentPlayerBgPath, isVideo: currentPlayerBgIsVideo } = useMatchBackground(currentPlayerBackground as any);
-  const { backgroundPath: opponentBgPath, isVideo: opponentBgIsVideo } = useMatchBackground(opponentBackground as any);
+  // Get optimized backgrounds for both players - now always receives valid objects
+  const { backgroundPath: currentPlayerBgPath, isVideo: currentPlayerBgIsVideo } = useMatchBackground(currentPlayerBackground);
+  const { backgroundPath: opponentBgPath, isVideo: opponentBgIsVideo } = useMatchBackground(opponentBackground);
 
   // Subscribe to match updates
   useEffect(() => {

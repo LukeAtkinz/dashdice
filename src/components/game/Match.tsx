@@ -101,22 +101,25 @@ export const Match: React.FC<MatchProps> = React.memo(({ matchId, onBack }) => {
     return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
   }, []);
 
+  // Stable default to prevent hook order issues
+  const defaultBackground = { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' as const };
+  
   // Get current player's background from match data
   const currentPlayerBackground = useMemo(() => {
-    if (!matchData || !user) return null;
+    if (!matchData || !user) return defaultBackground;
     const playerData = isHost ? matchData.hostData : matchData.opponentData;
     return getValidBackgroundObject(playerData.matchBackgroundEquipped);
   }, [matchData, user, isHost, getValidBackgroundObject]);
 
   // Get opponent's background from match data
   const opponentBackground = useMemo(() => {
-    if (!matchData || !user) return null;
+    if (!matchData || !user) return defaultBackground;
     const opponent = isHost ? matchData.opponentData : matchData.hostData;
     return getValidBackgroundObject(opponent.matchBackgroundEquipped);
   }, [matchData, user, isHost, getValidBackgroundObject]);
 
   // Get optimized backgrounds for current player (uses mobile/preview variants)
-  const { backgroundPath, isVideo } = useMatchBackground(currentPlayerBackground as any);
+  const { backgroundPath, isVideo } = useMatchBackground(currentPlayerBackground);
 
   // Remove excessive console logs - only keep critical ones for debugging if needed
   // console.log('🎮 Match: Component rendered with props:', { matchId, user: user?.uid });
