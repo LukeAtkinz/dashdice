@@ -23,12 +23,17 @@ import {
  * const { backgroundPath } = useOptimizedBackground(background, 'preview');
  * ```
  */
+// Cache mobile detection result globally to avoid recalculation and hook inconsistencies
+let globalIsMobile: boolean | null = null;
+
 export const useOptimizedBackground = (
   background: Background | { name: string; file: string; type: 'image' | 'video' } | null | undefined,
   baseContext: 'dashboard' | 'match' | 'waiting-room' | 'preview'
 ) => {
-  // Always call useMemo hooks regardless of input to maintain hook order
-  const isMobile = useMemo(() => isMobileDevice(), []);
+  // Initialize global mobile detection once
+  if (globalIsMobile === null) {
+    globalIsMobile = isMobileDevice();
+  }
   
   // Stable default for when background is null/undefined
   const backgroundPath = useMemo(() => {
@@ -43,14 +48,14 @@ export const useOptimizedBackground = (
   const context: BackgroundContext = useMemo(() => {
     if (baseContext === 'preview') return 'preview';
     
-    return isMobile 
+    return globalIsMobile 
       ? `${baseContext}-mobile` as BackgroundContext
       : `${baseContext}-desktop` as BackgroundContext;
-  }, [baseContext, isMobile]);
+  }, [baseContext]);
   
   return {
     backgroundPath,
-    isMobile,
+    isMobile: globalIsMobile,
     context,
     isVideo: background?.type === 'video',
     isImage: background?.type === 'image'
