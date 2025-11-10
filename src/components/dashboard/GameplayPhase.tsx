@@ -41,8 +41,13 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   onBankScore,
   onAbilityUsed
 }) => {
-  const { DisplayBackgroundEquip } = useBackground();
-  const { user } = useAuth();
+  // IMPORTANT: Always call hooks in the same order, even if context might be null
+  const backgroundContext = useBackground();
+  const authContext = useAuth();
+  
+  // Safely extract values with fallbacks
+  const DisplayBackgroundEquip = backgroundContext?.DisplayBackgroundEquip;
+  const { user } = authContext || { user: null };
   const isMyTurn = currentPlayer.turnActive;
   const canRoll = isMyTurn && !matchData.gameData.isRolling;
   const canBank = isMyTurn && !matchData.gameData.isRolling && matchData.gameData.turnScore > 0;
