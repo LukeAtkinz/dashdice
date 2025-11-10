@@ -28,6 +28,7 @@ import { RematchProvider } from '@/context/RematchContext';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { useFriends } from '@/context/FriendsContext';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useBrowserRefresh } from '@/hooks/useBrowserRefresh';
 import { useBackgroundPositioning } from '@/hooks/useBackgroundPositioning';
 import { useOnlinePlayerCount } from '@/hooks/useOnlinePlayerCount';
@@ -627,11 +628,13 @@ const DashboardContent: React.FC = () => {
                 className="w-full h-full flex items-center justify-center"
               >
                 {currentSection === 'match' && (
-                  <Match 
-                    key={`match-${sectionParams.matchId || "dev-room-123"}`}
-                    gameMode={sectionParams.gameMode}
-                    roomId={sectionParams.matchId || "dev-room-123"}
-                  />
+                  <ErrorBoundary>
+                    <Match 
+                      key={`match-${sectionParams.matchId || "dev-room-123"}`}
+                      gameMode={sectionParams.gameMode}
+                      roomId={sectionParams.matchId || "dev-room-123"}
+                    />
+                  </ErrorBoundary>
                 )}
                 {currentSection === 'waiting-room' && (
                   <GameWaitingRoom 
