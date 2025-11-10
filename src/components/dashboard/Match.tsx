@@ -1040,6 +1040,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   // Remove loading state entirely - don't show any loading animations
   // User requested no loading animations between scenes and screens
   
+  // Show error screen if needed - but don't use early return
   if (error || !matchData) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">
@@ -1060,7 +1061,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     );
   }
 
-  // Now we know matchData exists, compute player data  
+  // At this point matchData definitely exists
   const isHost = matchData.hostData.playerId === user?.uid;
   const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
   const opponent = isHost ? matchData.opponentData : matchData.hostData;
