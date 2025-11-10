@@ -124,8 +124,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
                   player.rank === 1 
                     ? "/Leaderboards/CrownLogo.webp" 
                     : player.rank === 2 
-                      ? "/Leaderboards/Second.png" 
-                      : "/Leaderboards/Third.png"
+                      ? "/Leaderboards/Second.webp" 
+                      : "/Leaderboards/Third.webp"
                 } 
                 alt={`Rank ${player.rank}`} 
                 className="w-full h-full object-contain"
@@ -172,12 +172,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
           >
             {player.rating}
           </p>
-          <p 
-            className="text-xs text-gray-400"
-            style={{ fontFamily: 'Montserrat' }}
-          >
-            Rating
-          </p>
         </div>
       </div>
 
@@ -192,15 +186,13 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
             className="relative z-10 overflow-hidden"
           >
             <div 
-              className="flex items-center justify-between gap-3 mt-4 pt-4 border-t"
+              className="flex items-center justify-between gap-6 mt-4 pt-4 border-t"
               style={{
                 borderColor: 'rgba(255, 255, 255, 0.1)'
               }}
             >
               {/* Wins */}
-              <div 
-                className="flex-1 text-center px-3 py-2 rounded-lg"
-              >
+              <div className="flex-1 text-center">
                 <p 
                   className="text-xl font-bold text-green-400 mb-1"
                   style={{ 
@@ -244,9 +236,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
               </motion.div>
 
               {/* Win Rate */}
-              <div 
-                className="flex-1 text-center px-3 py-2 rounded-lg"
-              >
+              <div className="flex-1 text-center">
                 <p 
                   className="text-xl font-bold text-blue-400 mb-1"
                   style={{ 
@@ -443,7 +433,7 @@ export function SoftRankedLeaderboard() {
       );
       case 2: return (
         <img 
-          src="/Leaderboards/Second.png" 
+          src="/Leaderboards/Second.webp" 
           alt="2nd Place" 
           className="w-8 h-8 object-contain"
           style={{
@@ -461,7 +451,7 @@ export function SoftRankedLeaderboard() {
       );
       case 3: return (
         <img 
-          src="/Leaderboards/Third.png" 
+          src="/Leaderboards/Third.webp" 
           alt="3rd Place" 
           className="w-8 h-8 object-contain"
           style={{

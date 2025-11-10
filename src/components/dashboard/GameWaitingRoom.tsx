@@ -2910,17 +2910,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               {/* Match Wins */}
               <div style={{ 
                 display: 'flex', 
-                padding: window.innerWidth < 768 ? '2px 10px' : '4px 20px', 
                 justifyContent: 'center', 
                 alignItems: 'center', 
-                gap: '10px', 
                 flex: '1 0 0', 
                 alignSelf: 'stretch', 
                 gridRow: '1 / span 1', 
-                gridColumn: '1 / span 1', 
-                borderRadius: '18px', 
-                background: 'rgba(87, 78, 120, 0.3)', 
-                backdropFilter: 'blur(20px)' 
+                gridColumn: '1 / span 1'
               }}>
                 <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: window.innerWidth < 768 ? '4px' : '8px' }}>
                   <div style={{ 
@@ -2954,17 +2949,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               {/* Games Played */}
               <div style={{ 
                 display: 'flex', 
-                padding: window.innerWidth < 768 ? '2px 10px' : '4px 20px', 
                 justifyContent: 'center', 
                 alignItems: 'center', 
-                gap: '10px', 
                 flex: '1 0 0', 
                 alignSelf: 'stretch', 
                 gridRow: '1 / span 1', 
-                gridColumn: '2 / span 1', 
-                borderRadius: '18px', 
-                background: 'rgba(100, 151, 200, 0.3)', 
-                backdropFilter: 'blur(20px)' 
+                gridColumn: '2 / span 1'
               }}>
                 <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: window.innerWidth < 768 ? '4px' : '8px' }}>
                   <div style={{ 
@@ -2998,17 +2988,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               {/* Best Streak */}
               <div style={{ 
                 display: 'flex', 
-                padding: window.innerWidth < 768 ? '2px 10px' : '4px 20px', 
                 justifyContent: 'center', 
                 alignItems: 'center', 
-                gap: '10px', 
                 flex: '1 0 0', 
                 alignSelf: 'stretch', 
                 gridRow: '2 / span 1', 
-                gridColumn: '1 / span 1', 
-                borderRadius: '18px', 
-                background: 'rgba(58, 87, 165, 0.3)', 
-                backdropFilter: 'blur(20px)' 
+                gridColumn: '1 / span 1'
               }}>
                 <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: window.innerWidth < 768 ? '4px' : '8px' }}>
                   <div style={{ 
@@ -3042,17 +3027,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               {/* Current Streak */}
               <div style={{ 
                 display: 'flex', 
-                padding: window.innerWidth < 768 ? '2px 10px' : '4px 20px', 
                 justifyContent: 'center', 
                 alignItems: 'center', 
-                gap: '10px', 
                 flex: '1 0 0', 
                 alignSelf: 'stretch', 
                 gridRow: '2 / span 1', 
-                gridColumn: '2 / span 1', 
-                borderRadius: '18px', 
-                background: 'rgba(171, 112, 118, 0.3)', 
-                backdropFilter: 'blur(20px)' 
+                gridColumn: '2 / span 1'
               }}>
                 <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: window.innerWidth < 768 ? '4px' : '8px' }}>
                   <div style={{ 
@@ -3202,17 +3182,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 {/* Match Wins */}
                 <div style={{ 
                   display: 'flex', 
-                  padding: window.innerWidth < 768 ? '2px 10px' : '4px 20px', 
                   justifyContent: 'center', 
                   alignItems: 'center', 
-                  gap: '10px', 
                   flex: '1 0 0', 
                   alignSelf: 'stretch', 
                   gridRow: '1 / span 1', 
-                  gridColumn: '1 / span 1', 
-                  borderRadius: '18px', 
-                  background: 'rgba(87, 78, 120, 0.3)', 
-                  backdropFilter: 'blur(20px)' 
+                  gridColumn: '1 / span 1'
                 }}>
                   <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: window.innerWidth < 768 ? '4px' : '8px' }}>
                     <div style={{ 
@@ -3246,17 +3221,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 {/* Games Played */}
                 <div style={{ 
                   display: 'flex', 
-                  padding: window.innerWidth < 768 ? '2px 10px' : '4px 20px', 
                   justifyContent: 'center', 
                   alignItems: 'center', 
-                  gap: '10px', 
                   flex: '1 0 0', 
                   alignSelf: 'stretch', 
                   gridRow: '1 / span 1', 
-                  gridColumn: '2 / span 1', 
-                  borderRadius: '18px', 
-                  background: 'rgba(100, 151, 200, 0.3)', 
-                  backdropFilter: 'blur(20px)' 
+                  gridColumn: '2 / span 1'
                 }}>
                   <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: window.innerWidth < 768 ? '4px' : '8px' }}>
                     <div style={{ 
@@ -3290,17 +3260,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 {/* Best Streak */}
                 <div style={{ 
                   display: 'flex', 
-                  padding: window.innerWidth < 768 ? '2px 10px' : '4px 20px', 
                   justifyContent: 'center', 
                   alignItems: 'center', 
-                  gap: '10px', 
                   flex: '1 0 0', 
                   alignSelf: 'stretch', 
                   gridRow: '2 / span 1', 
-                  gridColumn: '1 / span 1', 
-                  borderRadius: '18px', 
-                  background: 'rgba(58, 87, 165, 0.3)', 
-                  backdropFilter: 'blur(20px)' 
+                  gridColumn: '1 / span 1'
                 }}>
                   <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: window.innerWidth < 768 ? '4px' : '8px' }}>
                     <div style={{ 
@@ -3334,17 +3299,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 {/* Current Streak */}
                 <div style={{ 
                   display: 'flex', 
-                  padding: window.innerWidth < 768 ? '2px 10px' : '4px 20px', 
                   justifyContent: 'center', 
                   alignItems: 'center', 
-                  gap: '10px', 
                   flex: '1 0 0', 
                   alignSelf: 'stretch', 
                   gridRow: '2 / span 1', 
-                  gridColumn: '2 / span 1', 
-                  borderRadius: '18px', 
-                  background: 'rgba(171, 112, 118, 0.3)', 
-                  backdropFilter: 'blur(20px)' 
+                  gridColumn: '2 / span 1'
                 }}>
                   <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: window.innerWidth < 768 ? '4px' : '8px' }}>
                     <div style={{ 

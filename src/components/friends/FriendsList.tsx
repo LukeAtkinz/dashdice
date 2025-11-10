@@ -133,7 +133,7 @@ export default function FriendsList({
         {showAddButton && (
           <button
             onClick={() => setShowAddFriend(true)}
-            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md transition-colors flex items-center gap-1"
+            className="text-white text-sm transition-colors hover:text-blue-400 flex items-center gap-1 font-audiowide uppercase cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -151,9 +151,7 @@ export default function FriendsList({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as 'all' | 'online' | 'offline')}
-              className="px-4 py-2 border-2 rounded-2xl font-audiowide text-sm transition-all
-                       bg-gradient-to-r from-purple-600 to-blue-600 text-white border-purple-400
-                       hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="px-4 py-2 font-audiowide text-sm transition-all text-white hover:text-purple-400 focus:outline-none cursor-pointer bg-transparent border-none"
             >
               <option value="all" style={{ background: '#1a1a1a', color: '#fff' }}>All Friends</option>
               <option value="online" style={{ background: '#1a1a1a', color: '#fff' }}>Online</option>
@@ -163,9 +161,7 @@ export default function FriendsList({
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'name' | 'status' | 'recent')}
-              className="px-4 py-2 border-2 rounded-2xl font-audiowide text-sm transition-all
-                       bg-gradient-to-r from-green-600 to-teal-600 text-white border-green-400
-                       hover:from-green-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="px-4 py-2 font-audiowide text-sm transition-all text-white hover:text-green-400 focus:outline-none cursor-pointer bg-transparent border-none"
             >
               <option value="status" style={{ background: '#1a1a1a', color: '#fff' }}>Sort by Status</option>
               <option value="name" style={{ background: '#1a1a1a', color: '#fff' }}>Sort by Name</option>

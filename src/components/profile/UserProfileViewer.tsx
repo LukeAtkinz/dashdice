@@ -325,17 +325,12 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
         <div className="flex items-center gap-4">
           <button
             onClick={onClose}
-            className="flex items-center gap-2 transition-all duration-300 hover:scale-105"
+            className="flex items-center gap-2 transition-all duration-300 hover:text-blue-400"
             style={{ 
               display: 'flex', 
-              width: 'fit-content', 
-              height: '40px', 
-              padding: '4px 20px', 
-              justifyContent: 'center', 
               alignItems: 'center', 
               gap: '10px', 
-              borderRadius: '18px', 
-              background: '#FF0080', 
+              background: 'transparent', 
               border: 'none', 
               cursor: 'pointer',
               fontFamily: 'Audiowide',
@@ -357,24 +352,20 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
               <button
                 onClick={handleSendFriendRequest}
                 disabled={sendingRequest}
-                className="transition-all duration-300 hover:scale-105"
+                className="transition-all duration-300 hover:text-green-400"
                 style={{ 
                   display: 'flex', 
-                  width: 'fit-content', 
-                  height: '40px', 
-                  padding: '4px 24px', 
-                  justifyContent: 'center', 
                   alignItems: 'center', 
                   gap: '10px', 
-                  borderRadius: '18px', 
-                  background: sendingRequest ? 'rgba(255, 0, 128, 0.5)' : '#FF0080', 
+                  background: 'transparent', 
                   border: 'none', 
                   cursor: sendingRequest ? 'not-allowed' : 'pointer',
                   fontFamily: 'Audiowide',
                   color: '#FFF',
                   fontSize: '12px',
                   fontWeight: 400,
-                  textTransform: 'uppercase'
+                  textTransform: 'uppercase',
+                  opacity: sendingRequest ? 0.5 : 1
                 }}
               >
                 {sendingRequest ? 'Sending...' : 'Add Friend'}
@@ -386,21 +377,17 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                 disabled
                 style={{ 
                   display: 'flex', 
-                  width: 'fit-content', 
-                  height: '40px', 
-                  padding: '4px 24px', 
-                  justifyContent: 'center', 
                   alignItems: 'center', 
                   gap: '10px', 
-                  borderRadius: '18px', 
-                  background: '#FF8000', 
+                  background: 'transparent', 
                   border: 'none', 
                   cursor: 'not-allowed',
                   fontFamily: 'Audiowide',
-                  color: '#FFF',
+                  color: '#FF8000',
                   fontSize: '12px',
                   fontWeight: 400,
-                  textTransform: 'uppercase'
+                  textTransform: 'uppercase',
+                  opacity: 0.7
                 }}
               >
                 Invite Sent
@@ -411,24 +398,20 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
               <button
                 onClick={handleRemoveFriend}
                 disabled={removing}
-                className="transition-all duration-300 hover:scale-105"
+                className="transition-all duration-300 hover:text-red-400"
                 style={{ 
                   display: 'flex', 
-                  width: 'fit-content', 
-                  height: '40px', 
-                  padding: '4px 24px', 
-                  justifyContent: 'center', 
                   alignItems: 'center', 
                   gap: '10px', 
-                  borderRadius: '18px', 
-                  background: removing ? 'rgba(255, 0, 128, 0.5)' : '#FF0080', 
+                  background: 'transparent', 
                   border: 'none', 
                   cursor: removing ? 'not-allowed' : 'pointer',
                   fontFamily: 'Audiowide',
                   color: '#FFF',
                   fontSize: '12px',
                   fontWeight: 400,
-                  textTransform: 'uppercase'
+                  textTransform: 'uppercase',
+                  opacity: removing ? 0.5 : 1
                 }}
               >
                 {removing ? 'Removing...' : 'Remove Friend'}
@@ -538,7 +521,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                   <motion.div
                     key="games-played-stat"
-                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                    className="text-center"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.1 }}
@@ -554,7 +537,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
 
                   <motion.div
                     key="games-won-stat"
-                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                    className="text-center"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.2 }}
@@ -570,7 +553,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
 
                   <motion.div
                     key="items-collected-stat"
-                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                    className="text-center"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.3 }}
@@ -592,7 +575,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
 
                   <motion.div
                     key="current-streak-stat"
-                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                    className="text-center"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.4 }}
@@ -608,7 +591,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
 
                   <motion.div
                     key="best-streak-stat"
-                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                    className="text-center"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.5 }}
@@ -624,7 +607,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
 
                   <motion.div
                     key="win-rate-stat"
-                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
+                    className="text-center"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.6 }}
