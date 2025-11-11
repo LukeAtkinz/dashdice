@@ -113,41 +113,50 @@ export default function FriendsList({
   }
 
   return (
-    <div className="space-y-4 mt-[7vh] md:mt-0">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white font-audiowide">
-            Friends
-          </h2>
-          <div className="flex items-center gap-1 text-sm text-gray-300 dark:text-gray-300 font-montserrat">
-            {onlineFriendsCount > 0 && (
-              <span className="flex items-center gap-1 text-green-400 font-medium">
-                <div className="w-3 h-3 bg-green-500 rounded-full shadow-sm"></div>
-                <span className="text-green-300">{onlineFriendsCount} online</span>
-              </span>
-            )}
+    <div 
+      className="mt-[7vh] md:mt-0 h-full flex flex-col"
+      style={{
+        height: '100%',
+        maxHeight: '100%',
+        overflow: 'hidden',
+        touchAction: 'none',
+        overscrollBehavior: 'none'
+      }}
+    >
+      {/* Header & Filters - Sticky at top (flex-shrink-0) */}
+      <div className="flex-shrink-0 space-y-1 pb-3 bg-black/80 backdrop-blur-md border-b border-white/20">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white font-audiowide">
+              Friends
+            </h2>
+            <div className="flex items-center gap-1 text-sm text-gray-300 dark:text-gray-300 font-montserrat">
+              {onlineFriendsCount > 0 && (
+                <span className="flex items-center gap-1 text-green-400 font-medium">
+                  <div className="w-3 h-3 bg-green-500 rounded-full shadow-sm"></div>
+                  <span className="text-green-300">{onlineFriendsCount} online</span>
+                </span>
+              )}
+            </div>
           </div>
+          
+          {showAddButton && (
+            <button
+              onClick={() => setShowAddFriend(true)}
+              className="text-white text-sm transition-colors hover:text-blue-400 flex items-center gap-1 font-audiowide uppercase cursor-pointer"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Add Friend
+            </button>
+          )}
         </div>
-        
-        {showAddButton && (
-          <button
-            onClick={() => setShowAddFriend(true)}
-            className="text-white text-sm transition-colors hover:text-blue-400 flex items-center gap-1 font-audiowide uppercase cursor-pointer"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Add Friend
-          </button>
-        )}
-      </div>
 
-      {/* Filters (not shown in compact mode) - Removed search bar */}
-      {!compact && friends.length > 0 && (
-        <div className="space-y-3">
-          {/* Filters */}
-          <div className="flex gap-3">
+        {/* Filters (not shown in compact mode) - Removed search bar */}
+        {!compact && friends.length > 0 && (
+          <div className="flex gap-3 pt-0">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as 'all' | 'online' | 'offline')}
@@ -168,8 +177,20 @@ export default function FriendsList({
               <option value="recent" style={{ background: '#1a1a1a', color: '#fff' }}>Sort by Recent</option>
             </select>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
+      {/* Friends List - Scrollable with overflow hidden cutoff */}
+      <div 
+        className="flex-1 overflow-y-auto pb-6"
+        style={{
+          maxHeight: 'calc(100vh - 200px)',
+          touchAction: 'pan-y',
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
+          scrollBehavior: 'smooth'
+        }}
+      >
 
       {/* Friends List */}
       {filteredAndSortedFriends.length === 0 ? (
@@ -241,6 +262,7 @@ export default function FriendsList({
           )}
         </div>
       )}
+      </div>
 
       {/* Add Friend Modal */}
       {showAddFriend && (

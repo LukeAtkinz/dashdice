@@ -485,15 +485,6 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                 })()
               }}
             ></div>
-            {/* Dark overlay gradient for text readability */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background: 'linear-gradient(to right, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%)',
-                borderRadius: '20px',
-                zIndex: 1
-              }}
-            ></div>
 
             <div className="relative z-10 p-6">
               {/* Profile Header */}

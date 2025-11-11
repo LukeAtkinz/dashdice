@@ -151,7 +151,11 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
-          className="relative overflow-hidden rounded-lg border border-gray-600 cursor-pointer hover:border-gray-500 transition-colors"
+          className={`relative overflow-hidden rounded-lg border border-gray-600 cursor-pointer hover:border-gray-500 transition-colors ${
+            match.result === 'won' 
+              ? 'bg-gradient-to-r from-green-600/20 via-green-600/10 to-transparent' 
+              : 'bg-gradient-to-r from-red-600/20 via-red-600/10 to-transparent'
+          }`}
           onClick={() => toggleExpanded(match.id)}
         >
           {/* Video Background Support */}
@@ -198,16 +202,6 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
               backgroundRepeat: 'no-repeat'
             }}
           />
-
-          {/* Win/Loss Gradient Overlay */}
-          <div 
-            className={`absolute inset-0 pointer-events-none ${
-              match.result === 'won' 
-                ? 'bg-gradient-to-r from-green-600/20 via-green-600/10 to-transparent' 
-                : 'bg-gradient-to-r from-red-600/20 via-red-600/10 to-transparent'
-            }`}
-            style={{ zIndex: 1 }}
-          ></div>
           
           <div className="relative p-4" style={{ zIndex: 2 }}>
             <div className="flex items-center justify-between">
@@ -241,23 +235,17 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
                         e.stopPropagation();
                         handleViewProfile(match.opponentUserId, match.opponentDisplayName);
                       }}
-                      className="hidden md:flex ml-2 md:ml-3 transition-all duration-300 hover:scale-105"
+                      className="hidden md:flex ml-2 md:ml-3 transition-all duration-300 hover:text-blue-400"
                       style={{ 
-                        width: 'fit-content', 
-                        height: '32px', 
-                        padding: '4px 16px', 
-                        justifyContent: 'center', 
-                        alignItems: 'center', 
-                        gap: '10px', 
-                        borderRadius: '18px', 
-                        background: '#FF0080', 
+                        background: 'none',
                         border: 'none', 
                         cursor: 'pointer',
                         fontFamily: 'Audiowide',
                         color: '#FFF',
                         fontSize: '10px',
                         fontWeight: 400,
-                        textTransform: 'uppercase'
+                        textTransform: 'uppercase',
+                        padding: 0
                       }}
                     >
                       <span className="relative z-10 text-xs md:text-sm">
@@ -364,24 +352,17 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
                           e.stopPropagation();
                           handleViewProfile(match.opponentUserId, match.opponentDisplayName);
                         }}
-                        className="transition-all duration-300 hover:scale-105"
+                        className="transition-all duration-300 hover:text-blue-400"
                         style={{ 
-                          display: 'flex', 
-                          width: 'fit-content', 
-                          height: '48px', 
-                          padding: '4px 30px', 
-                          justifyContent: 'center', 
-                          alignItems: 'center', 
-                          gap: '10px', 
-                          borderRadius: '18px', 
-                          background: '#FF0080', 
+                          background: 'none',
                           border: 'none', 
                           cursor: 'pointer',
                           fontFamily: 'Audiowide',
                           color: '#FFF',
                           fontSize: '14px',
                           fontWeight: 400,
-                          textTransform: 'uppercase'
+                          textTransform: 'uppercase',
+                          padding: 0
                         }}
                       >
                         <span className="relative z-10">VIEW PROFILE</span>

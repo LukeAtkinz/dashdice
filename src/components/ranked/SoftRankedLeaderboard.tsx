@@ -142,12 +142,12 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
                   // Fallback to text
                   const parent = e.currentTarget.parentElement;
                   if (parent) {
-                    parent.innerHTML = `<span class="text-2xl font-bold">#${player.rank}</span>`;
+                    parent.innerHTML = `<span class="text-2xl font-bold">${player.rank}</span>`;
                   }
                 }}
               />
             ) : (
-              `#${player.rank}`
+              `${player.rank}`
             )}
           </div>
 
@@ -631,7 +631,7 @@ export function SoftRankedLeaderboard() {
                     textShadow: "0 0 15px rgba(255, 215, 0, 0.8)"
                   }}
                 >
-                  #{userRank}
+                  {userRank}
                 </span>
                 <div className="w-px h-8 bg-yellow-400/50"></div>
                 <span 

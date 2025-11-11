@@ -491,7 +491,7 @@ const ProfileSection: React.FC = () => {
 
                   {/* Statistics Grid - Friends Card Style */}
                   <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 -mx-4 md:-mx-4">
-                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Player Statistics</h3>
+                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase text-center md:text-left">Player Statistics</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                       <motion.div 
@@ -609,7 +609,7 @@ const ProfileSection: React.FC = () => {
                   
                   {/* Ranked Statistics Section */}
                   <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
-                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Ranked</h3>
+                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase text-center md:text-left">Ranked</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <motion.div 
@@ -673,7 +673,7 @@ const ProfileSection: React.FC = () => {
                   
                   {/* Tournament Statistics Section */}
                   <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
-                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Tournament</h3>
+                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase text-center md:text-left">Tournament</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <motion.div 
@@ -740,7 +740,7 @@ const ProfileSection: React.FC = () => {
                   
                   {/* Cosmetic Statistics Section */}
                   <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
-                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Cosmetic</h3>
+                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase text-center md:text-left">Cosmetic</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <motion.div 
@@ -838,7 +838,7 @@ const ProfileSection: React.FC = () => {
                   
                   {/* Friends Statistics Section */}
                   <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
-                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Friends</h3>
+                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase text-center md:text-left">Friends</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <motion.div 
@@ -896,7 +896,7 @@ const ProfileSection: React.FC = () => {
               >
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-white text-xl font-audiowide uppercase flex items-center gap-3 md:flex-1 text-center md:text-left">
+                    <h3 className="text-white text-xl font-audiowide uppercase flex items-center gap-3 md:flex-1 text-center w-full md:text-left">
                       Recent Matches
                     </h3>
                     <span className="hidden md:inline-block text-sm text-gray-400 font-montserrat bg-black/80 px-3 py-1 rounded-lg border border-gray-600/50">
