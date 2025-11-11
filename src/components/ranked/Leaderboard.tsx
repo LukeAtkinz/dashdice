@@ -365,7 +365,7 @@ export function Leaderboard({
                 />
                 <div className="relative z-10 p-3 text-center">
                   <p className="text-blue-300 text-sm font-montserrat">
-                    Your Rank: <span className="font-bold text-blue-400">#{userRank}</span>
+                    Your Rank: <span className="font-bold text-blue-400">{userRank}</span>
                   </p>
                 </div>
               </motion.div>
@@ -439,7 +439,7 @@ export function Leaderboard({
         {showUserRank && userRank && (
           <div className="mt-4 p-3 bg-blue-900/30 border border-blue-500/30 rounded-lg">
             <p className="text-sm text-blue-300">
-              Your Rank: <span className="font-bold text-blue-400">#{userRank}</span>
+              Your Rank: <span className="font-bold text-blue-400">{userRank}</span>
             </p>
           </div>
         )}

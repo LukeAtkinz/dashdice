@@ -77,7 +77,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [showDiceNumber, setShowDiceNumber] = useState(false);
   const [showResult, setShowResult] = useState(false);
-  const [transitionPhase, setTransitionPhase] = useState<'choosing' | 'transitioning' | 'rolling' | 'result-display' | 'winner-announcement' | 'transitioning-to-match'>('choosing');
+  const [transitionPhase, setTransitionPhase] = useState<'choosing' | 'choice-returning' | 'transitioning' | 'rolling' | 'result-display' | 'winner-announcement' | 'transitioning-to-match'>('choosing');
 
   // Helper function to determine who goes first based on the turn decider result
   const getWinnerInfo = () => {
@@ -202,8 +202,13 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
 
     setIsProcessing(true);
     
-    // Start the stunning transition sequence
-    setTransitionPhase('transitioning');
+    // Start the stunning transition sequence - animate choice back to center
+    setTransitionPhase('choice-returning');
+    
+    // After icon returns to center, shrink it out and proceed with dice
+    setTimeout(() => {
+      setTransitionPhase('transitioning');
+    }, 800); // Let the return animation complete
     
     try {
       await onChoiceSelect(choice);
@@ -238,11 +243,14 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               scale: 0.3
             }}
             animate={{ 
-              opacity: transitionPhase === 'choosing' ? 1 : 0,
+              opacity: transitionPhase === 'choosing' ? 1 : 
+                       transitionPhase === 'choice-returning' && matchData.gameData.turnDeciderChoice === 'odd' ? 1 : 0,
               y: transitionPhase === 'choosing' ? 0 : 
+                 transitionPhase === 'choice-returning' && matchData.gameData.turnDeciderChoice === 'odd' ? '0vh' : // Return to center
                  transitionPhase === 'result-display' || transitionPhase === 'winner-announcement' || transitionPhase === 'transitioning-to-match' ? -300 :
                  (transitionPhase === 'transitioning' && matchData.gameData.turnDeciderChoice !== 'odd') ? -200 : '50vh',
-              scale: transitionPhase === 'choosing' ? 1 : 0.3
+              scale: transitionPhase === 'choosing' ? 1 : 
+                     transitionPhase === 'choice-returning' && matchData.gameData.turnDeciderChoice === 'odd' ? 1.1 : 0.3
             }}
             transition={{ 
               delay: transitionPhase === 'choosing' ? 1.0 : 
@@ -316,7 +324,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                   finalNumber={matchData.gameData.turnDeciderDice || null} 
                 />
               </div>
-            ) : transitionPhase === 'choosing' ? (
+            ) : transitionPhase === 'choosing' || transitionPhase === 'choice-returning' ? (
               // Show VS with morphing capability - starts as GO! from waiting room
               <motion.span 
                 layoutId="vs-morph-text" // Same layoutId for morphing from GameWaitingRoom
@@ -328,38 +336,49 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 }}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{
-                  // Scale animation sequence: grow from center dramatically
-                  scale: [0, 1.3, 1], // Start from 0, grow big, then settle
-                  opacity: 1,
-                  textShadow: [
-                    '0 0 30px rgba(255,255,255,0.9), 0 0 60px rgba(255,255,255,0.6), 0 0 100px rgba(255,255,255,0.3)',
-                    '0 0 40px rgba(255,255,255,1.0), 0 0 80px rgba(255,255,255,0.8), 0 0 120px rgba(255,255,255,0.5)',
-                    '0 0 30px rgba(255,255,255,0.9), 0 0 60px rgba(255,255,255,0.6), 0 0 100px rgba(255,255,255,0.3)'
-                  ]
+                  // Scale animation sequence: grow from center dramatically, then shrink when choice returns
+                  scale: transitionPhase === 'choice-returning' ? 0 : [0, 1.3, 1], // Shrink to nothing during choice-returning
+                  opacity: transitionPhase === 'choice-returning' ? 0 : 1,
+                  textShadow: transitionPhase === 'choice-returning' ? 
+                    '0 0 0px rgba(255,255,255,0), 0 0 0px rgba(255,255,255,0), 0 0 0px rgba(255,255,255,0)' : 
+                    [
+                      '0 0 30px rgba(255,255,255,0.9), 0 0 60px rgba(255,255,255,0.6), 0 0 100px rgba(255,255,255,0.3)',
+                      '0 0 40px rgba(255,255,255,1.0), 0 0 80px rgba(255,255,255,0.8), 0 0 120px rgba(255,255,255,0.5)',
+                      '0 0 30px rgba(255,255,255,0.9), 0 0 60px rgba(255,255,255,0.6), 0 0 100px rgba(255,255,255,0.3)'
+                    ]
                 }}
-                transition={{
-                  scale: {
-                    delay: 0.5, // Wait for initial morph to complete
-                    duration: 1.0, // Slightly longer for more impact
-                    times: [0, 0.6, 1],
-                    type: "spring",
-                    stiffness: 120,
-                    damping: 18
-                  },
-                  opacity: {
-                    delay: 0.5,
-                    duration: 0.3
-                  },
-                  textShadow: {
-                    delay: 0.5,
-                    duration: 1.0,
-                    times: [0, 0.5, 1]
-                  },
-                  // Default transition for morph - smoother transition
-                  type: "tween",
-                  ease: "easeInOut",
-                  duration: 0.5
-                }}
+                transition={
+                  transitionPhase === 'choice-returning' ? 
+                  // Fast shrink animation
+                  {
+                    scale: { duration: 0.6, ease: "easeIn" },
+                    opacity: { duration: 0.4, ease: "easeIn" },
+                    textShadow: { duration: 0.4 }
+                  } :
+                  // Original grow animation
+                  {
+                    scale: {
+                      delay: 0.5,
+                      duration: 1.0,
+                      times: [0, 0.6, 1],
+                      type: "spring",
+                      stiffness: 120,
+                      damping: 18
+                    },
+                    opacity: {
+                      delay: 0.5,
+                      duration: 0.3
+                    },
+                    textShadow: {
+                      delay: 0.5,
+                      duration: 1.0,
+                      times: [0, 0.5, 1]
+                    },
+                    type: "tween",
+                    ease: "easeInOut",
+                    duration: 0.5
+                  }
+                }
               >
                 VS
               </motion.span>
@@ -376,10 +395,13 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               scale: 0.3
             }}
             animate={{ 
-              opacity: transitionPhase === 'choosing' ? 1 : 0,
+              opacity: transitionPhase === 'choosing' ? 1 : 
+                       transitionPhase === 'choice-returning' && matchData.gameData.turnDeciderChoice === 'even' ? 1 : 0,
               y: transitionPhase === 'choosing' ? 0 : 
+                 transitionPhase === 'choice-returning' && matchData.gameData.turnDeciderChoice === 'even' ? '0vh' : // Return to center
                  transitionPhase === 'result-display' || transitionPhase === 'winner-announcement' || transitionPhase === 'transitioning-to-match' ? 300 : '-50vh',
-              scale: transitionPhase === 'choosing' ? 1 : 0.3
+              scale: transitionPhase === 'choosing' ? 1 : 
+                     transitionPhase === 'choice-returning' && matchData.gameData.turnDeciderChoice === 'even' ? 1.1 : 0.3
             }}
             transition={{ 
               delay: transitionPhase === 'choosing' ? 1.0 : 
@@ -416,11 +438,11 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             </motion.div>
 
             {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 translate-y-16">
+            <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 -translate-y-16">
               <motion.img 
                 src="/Design Elements/Match/Turn Decider/Even.webp" 
                 alt="Even" 
-                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain mt-8"
+                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain mb-8"
                 style={{
                   imageRendering: 'auto',
                   WebkitFontSmoothing: 'antialiased'
@@ -591,33 +613,25 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             </div>
           </motion.div>
 
-          {/* Dice Animation - Centered (appears during rolling phase) */}
-          {(hasDice && diceAnimation.isSpinning) && (
-            <motion.div 
-              className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.6, type: "spring", stiffness: 100, damping: 15 }}
-            >
-              <PulseDice 
-                finalNumber={matchData.gameData.turnDeciderDice || null} 
-              />
-            </motion.div>
-          )}
-
           {/* Dice Result Display - Shows the number prominently ONCE */}
           {(transitionPhase === 'result-display' && hasDice) && (
             <motion.div 
               className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
-              initial={{ scale: 0, opacity: 0, rotateY: 180 }}
-              animate={{ scale: 1, opacity: 1, rotateY: 0 }}
+              initial={{ scale: 0, opacity: 0, rotateY: 180, y: 50 }}
+              animate={{ 
+                scale: [0, 1.2, 1], // Bounce in effect
+                opacity: 1, 
+                rotateY: 0,
+                y: 0
+              }}
               exit={{ scale: 0, opacity: 0 }}
               transition={{ 
-                delay: 0.3, 
-                duration: 0.8, 
+                delay: 0.2, // Slightly faster entrance
+                duration: 0.9, 
                 type: "spring", 
-                stiffness: 100,
-                damping: 20
+                stiffness: 120,
+                damping: 18,
+                times: [0, 0.6, 1]
               }}
             >
               <div className="flex flex-col items-center justify-center">
@@ -625,13 +639,20 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                   className="text-[20vw] md:text-[15rem] font-bold text-white"
                   style={{ 
                     fontFamily: 'Audiowide',
+                    textShadow: '0 0 40px rgba(255,255,255,0.9), 0 0 80px rgba(255,255,255,0.6), 0 0 120px rgba(255,255,255,0.3)',
                     WebkitFontSmoothing: 'antialiased'
                   }}
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
+                  animate={{
+                    textShadow: [
+                      '0 0 40px rgba(255,255,255,0.9), 0 0 80px rgba(255,255,255,0.6), 0 0 120px rgba(255,255,255,0.3)',
+                      '0 0 50px rgba(255,255,255,1.0), 0 0 100px rgba(255,255,255,0.8), 0 0 150px rgba(255,255,255,0.5)',
+                      '0 0 40px rgba(255,255,255,0.9), 0 0 80px rgba(255,255,255,0.6), 0 0 120px rgba(255,255,255,0.3)'
+                    ]
+                  }}
                   transition={{
-                    duration: 0.3,
-                    ease: "easeOut"
+                    duration: 1.5,
+                    repeat: Infinity,
+                    repeatType: "reverse"
                   }}
                 >
                   {matchData.gameData.turnDeciderDice}
