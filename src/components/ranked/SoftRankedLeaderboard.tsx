@@ -122,10 +122,10 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
               <img 
                 src={
                   player.rank === 1 
-                    ? "/Leaderboards/CrownLogo.webp" 
+                    ? "/Leaderboards/CrownLogo.webp?v=2" 
                     : player.rank === 2 
-                      ? "/Leaderboards/Second.webp" 
-                      : "/Leaderboards/Third.webp"
+                      ? "/Leaderboards/Second.webp?v=2" 
+                      : "/Leaderboards/Third.webp?v=2"
                 } 
                 alt={`Rank ${player.rank}`} 
                 className="w-full h-full object-contain"
@@ -419,7 +419,7 @@ export function SoftRankedLeaderboard() {
     switch (rank) {
       case 1: return (
         <img 
-          src="/Leaderboards/CrownLogo.webp" 
+          src="/Leaderboards/CrownLogo.webp?v=2" 
           alt="1st Place" 
           className="w-8 h-8 object-contain"
           style={{
@@ -433,7 +433,7 @@ export function SoftRankedLeaderboard() {
       );
       case 2: return (
         <img 
-          src="/Leaderboards/Second.webp" 
+          src="/Leaderboards/Second.webp?v=2" 
           alt="2nd Place" 
           className="w-8 h-8 object-contain"
           style={{
@@ -451,7 +451,7 @@ export function SoftRankedLeaderboard() {
       );
       case 3: return (
         <img 
-          src="/Leaderboards/Third.webp" 
+          src="/Leaderboards/Third.webp?v=2" 
           alt="3rd Place" 
           className="w-8 h-8 object-contain"
           style={{

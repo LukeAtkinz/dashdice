@@ -1032,14 +1032,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
   // CRITICAL: Early return AFTER all hooks to prevent React hooks rule violations (#310)
   // All hooks must be called in the same order every render, so they come first
-  if (error || !matchData) {
+  if (error || !matchData || !user) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: "Audiowide" }}>
             Match Error
           </h2>
-          <p className="text-red-300 mb-6">{error || 'Match not found'}</p>
+          <p className="text-red-300 mb-6">{error || !matchData ? (error || 'Match not found') : 'Please sign in'}</p>
           <button
             onClick={() => setCurrentSection('dashboard')}
             className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
@@ -1052,8 +1052,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     );
   }
   
-  // Now we know matchData exists, compute player data
-  const isHost = matchData.hostData.playerId === user?.uid;
+  // Now we know matchData and user exist, compute player data safely
+  const isHost = matchData.hostData.playerId === user.uid;
   const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
   const opponent = isHost ? matchData.opponentData : matchData.hostData;
 
