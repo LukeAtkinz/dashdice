@@ -281,13 +281,12 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             </motion.div>
 
             {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 -translate-y-8">
+            <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 -translate-y-16">
               <motion.img 
                 src="/Design Elements/Match/Turn Decider/Odd.webp" 
                 alt="Odd" 
-                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain"
+                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain mb-8"
                 style={{
-                  filter: 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.5))',
                   imageRendering: 'auto',
                   WebkitFontSmoothing: 'antialiased'
                 }}
@@ -417,13 +416,12 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             </motion.div>
 
             {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 -translate-y-8">
+            <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 translate-y-16">
               <motion.img 
                 src="/Design Elements/Match/Turn Decider/Even.webp" 
                 alt="Even" 
-                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain"
+                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain mt-8"
                 style={{
-                  filter: 'drop-shadow(0 0 10px rgba(147, 51, 234, 0.5))',
                   imageRendering: 'auto',
                   WebkitFontSmoothing: 'antialiased'
                 }}
@@ -482,19 +480,17 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             }}
             className="relative flex-1 w-full flex flex-col items-center justify-center bg-transparent"
           >
-            {/* Background Text Shadow - Stunning golden glow */}
+            {/* Background Text Shadow - No glow during rolling */}
             <motion.div
               className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 translate-y-8"
               initial={{ opacity: 0 }}
-              animate={{ opacity: transitionPhase === 'rolling' ? 1 : 0 }}
+              animate={{ opacity: transitionPhase === 'rolling' ? 0.15 : 0 }}
               transition={{ delay: transitionPhase === 'rolling' ? 0.5 : 0, duration: 0.5 }}
             >
               <span 
                 className="text-[25vw] md:text-[20rem] text-white font-bold tracking-wider leading-none select-none"
                 style={{ 
                   fontFamily: 'Audiowide',
-                  textShadow: '0 0 40px rgba(255, 215, 0, 1), 0 0 80px rgba(255, 215, 0, 0.8), 0 0 120px rgba(255, 215, 0, 0.6)',
-                  color: '#FFD700',
                   WebkitFontSmoothing: 'antialiased'
                 }}
               >
@@ -523,9 +519,6 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 alt={matchData.gameData.turnDeciderChoice === 'odd' ? 'Odd' : 'Even'}
                 className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain"
                 style={{
-                  filter: matchData.gameData.turnDeciderChoice === 'odd' 
-                    ? 'drop-shadow(0 0 20px rgba(59, 130, 246, 0.8))'
-                    : 'drop-shadow(0 0 20px rgba(147, 51, 234, 0.8))',
                   imageRendering: 'auto',
                   WebkitFontSmoothing: 'antialiased'
                 }}
@@ -612,7 +605,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             </motion.div>
           )}
 
-          {/* Dice Result Display - Shows the number prominently */}
+          {/* Dice Result Display - Shows the number prominently ONCE */}
           {(transitionPhase === 'result-display' && hasDice) && (
             <motion.div 
               className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
@@ -632,7 +625,6 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                   className="text-[20vw] md:text-[15rem] font-bold text-white"
                   style={{ 
                     fontFamily: 'Audiowide',
-                    textShadow: '0 0 40px rgba(255,255,255,0.9), 0 0 80px rgba(255,255,255,0.6), 0 0 120px rgba(255,255,255,0.3)',
                     WebkitFontSmoothing: 'antialiased'
                   }}
                   initial={{ scale: 0.8, opacity: 0 }}
@@ -644,15 +636,6 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 >
                   {matchData.gameData.turnDeciderDice}
                 </motion.div>
-                <motion.p
-                  className="text-3xl md:text-5xl text-gray-300 mt-6"
-                  style={{ fontFamily: 'Audiowide' }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5, duration: 0.5 }}
-                >
-                  {(matchData.gameData.turnDeciderDice || 0) % 2 === 1 ? 'ODD' : 'EVEN'}
-                </motion.p>
               </div>
             </motion.div>
           )}
