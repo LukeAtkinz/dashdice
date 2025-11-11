@@ -59,6 +59,20 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   // State for score shooting animation
   const [isScoreShooting, setIsScoreShooting] = React.useState(false);
 
+  // Track if animation should play (after 2 seconds)
+  const [showAnimatedState, setShowAnimatedState] = React.useState(false);
+
+  // Reset animation when turn score changes
+  React.useEffect(() => {
+    setShowAnimatedState(false);
+    
+    const timer = setTimeout(() => {
+      setShowAnimatedState(true);
+    }, 2000);
+    
+    return () => clearTimeout(timer);
+  }, [matchData.gameData.turnScore]);
+
   // Handle bank/save with animation
   const handleBankScore = () => {
     if (!canBank) return;
@@ -389,21 +403,6 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 const dice1 = matchData.gameData.diceOne;
                 const dice2 = matchData.gameData.diceTwo;
                 const isRolling = matchData.gameData.isRolling;
-                
-                // Track if animation should play (after 2 seconds)
-                const [showAnimatedState, setShowAnimatedState] = React.useState(false);
-                
-                React.useEffect(() => {
-                  // Reset animation when turn score changes
-                  setShowAnimatedState(false);
-                  
-                  // Start animation after 2 seconds
-                  const timer = setTimeout(() => {
-                    setShowAnimatedState(true);
-                  }, 2000);
-                  
-                  return () => clearTimeout(timer);
-                }, [turnScore]);
                 
                 // Check if dice are doubles (removed gold flash effect)
                 const areDoublesGold = false; // Disabled gold glow effect
