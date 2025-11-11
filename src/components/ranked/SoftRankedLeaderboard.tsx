@@ -76,9 +76,17 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
               loop
               muted
               playsInline
+              webkit-playsinline="true"
+              x5-playsinline="true"
+              controls={false}
+              preload="metadata"
+              disablePictureInPicture
+              disableRemotePlayback
               className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-100"
+              style={{ pointerEvents: 'none' }}
             >
               <source src={backgroundPath} type="video/mp4" />
+              Your browser does not support the video tag.
             </video>
           ) : (
             <div 

@@ -401,9 +401,12 @@ export const InventorySection: React.FC = () => {
                     x5-video-player-type="h5"
                     x5-video-player-fullscreen="false"
                     preload="metadata"
+                    disablePictureInPicture
+                    disableRemotePlayback
                     style={{
                       /* Ensure no scrollbars appear on background videos */
-                      overflow: 'hidden'
+                      overflow: 'hidden',
+                      pointerEvents: 'none'
                     }}
                     onLoadStart={(e) => {
                       // Force autoplay on mobile

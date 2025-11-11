@@ -444,10 +444,17 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     muted
                     loop
                     playsInline
+                    webkit-playsinline="true"
+                    x5-playsinline="true"
+                    controls={false}
+                    preload="metadata"
+                    disablePictureInPicture
+                    disableRemotePlayback
                     className="absolute inset-0 w-full h-full object-cover"
-                    style={{ zIndex: 0 }}
+                    style={{ zIndex: 0, pointerEvents: 'none' }}
                   >
                     <source src={profileBgPath ?? undefined} type="video/mp4" />
+                    Your browser does not support the video tag.
                   </video>
                 );
               }

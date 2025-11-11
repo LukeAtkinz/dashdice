@@ -1,11 +1,33 @@
-# Firebase Configuration
-# Get these values from your Firebase Console > Project Settings > Web App
-NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key_here
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=dashdice-d1b86.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=dashdice-d1b86
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=dashdice-d1b86.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id_here
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id_here
+# Local Development Environment Configuration
+# Copy this file to .env.local and fill in the actual values
+# .env.local is gitignored for security
 
-# Note: Replace the placeholder values with your actual Firebase config values
-# You can find these in Firebase Console > Project Settings > General > Your apps
+NEXT_PUBLIC_ENV=development
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+NEXT_PUBLIC_DEBUG=true
+
+# Firebase Configuration (Client-side - Public)
+# Get these values from Firebase Console > Project Settings > Web App
+NEXT_PUBLIC_FIREBASE_API_KEY="your_api_key_here"
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="dashdice-d1b86.firebaseapp.com"
+NEXT_PUBLIC_FIREBASE_PROJECT_ID="dashdice-d1b86"
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="dashdice-d1b86.firebasestorage.app"
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="your_sender_id_here"
+NEXT_PUBLIC_FIREBASE_APP_ID="your_app_id_here"
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="your_measurement_id_here"
+
+# Firebase Admin (Server-side - KEEP SECRET)
+# Get these from Firebase Console > Project Settings > Service Accounts > Generate Private Key
+FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxxxx@dashdice-d1b86.iam.gserviceaccount.com"
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY_HERE\n-----END PRIVATE KEY-----"
+FIREBASE_PROJECT_ID="dashdice-d1b86"
+
+# Backend URL
+GO_BACKEND_URL="https://go-backend-production-448a.up.railway.app"
+
+# IMPORTANT SETUP INSTRUCTIONS:
+# 1. Copy this file: cp env-local-template.txt .env.local
+# 2. Fill in all "your_*_here" placeholders with actual values from Firebase Console
+# 3. Never commit .env.local to git (it's in .gitignore)
+# 4. For production values, check .env.production file

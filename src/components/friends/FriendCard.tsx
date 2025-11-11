@@ -377,10 +377,13 @@ export default function FriendCard({ friend, compact = false, showActions = true
             webkit-playsinline="true"
             x5-playsinline="true"
             preload="metadata"
+            disablePictureInPicture
+            disableRemotePlayback
             className="absolute inset-0 w-full h-full object-cover z-0"
-            style={{ borderRadius: '20px' }}
+            style={{ borderRadius: '20px', pointerEvents: 'none' }}
           >
             <source src={backgroundPath} type="video/mp4" />
+            Your browser does not support the video tag.
           </video>
         )}
         
@@ -454,10 +457,13 @@ export default function FriendCard({ friend, compact = false, showActions = true
           webkit-playsinline="true"
           x5-playsinline="true"
           preload="metadata"
+          disablePictureInPicture
+          disableRemotePlayback
           className="absolute inset-0 w-full h-full object-cover z-0"
-          style={{ borderRadius: '20px' }}
+          style={{ borderRadius: '20px', pointerEvents: 'none' }}
         >
           <source src={backgroundPath} type="video/mp4" />
+          Your browser does not support the video tag.
         </video>
       )}
       

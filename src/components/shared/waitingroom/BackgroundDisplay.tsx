@@ -46,6 +46,7 @@ const BackgroundDisplay: React.FC<BackgroundDisplayProps> = ({
           x5-playsinline="true"
           preload="metadata"
           disablePictureInPicture
+          disableRemotePlayback
           controlsList="nodownload noplaybackrate nofullscreen"
           style={{
             position: 'absolute',

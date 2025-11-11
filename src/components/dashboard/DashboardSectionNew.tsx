@@ -29,7 +29,7 @@ const gameConfig = {
   quickfire: { 
     name: 'QUICK\nFIRE', 
     icon: '/Design Elements/Shield.webp', 
-    description: 'more speed,\nmore skill',
+    description: 'more speed\nmore skill',
     rotation: '6deg',
     mobileRotation: '6deg',
     position: { top: '0rem', left: '-4rem' },
@@ -73,7 +73,7 @@ const gameConfig = {
   'true-grit': { 
     name: 'TRUE\nGRIT', 
     icon: '/Design Elements/Castle.webp', 
-    description: 'no banking,\nno mercy',
+    description: 'no banking\nno mercy',
     rotation: '0deg',
     mobileRotation: '0deg',
     position: { top: '-1rem', left: '-4.5rem' },

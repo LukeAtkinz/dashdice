@@ -64,9 +64,12 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
     }
   }, []);
 
-  // Get splash video source - CHANGED TO WEBM
-  const getVideoSource = useCallback(() => {
-    return '/splash-screen.webm';
+  // Get splash video sources - multiple formats for compatibility
+  const getVideoSources = useCallback(() => {
+    return {
+      mp4: '/splash.mp4',
+      webm: '/Splash Screens/Splash-Screen.webm'
+    };
   }, []);
 
   // Handle video end - CHANGED: Freeze on last frame until app loads
@@ -208,14 +211,15 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             autoPlay
             muted
             playsInline
-            preload="metadata"
-            controls={false}
-            disablePictureInPicture
-            disableRemotePlayback
             webkit-playsinline="true"
+            x5-playsinline="true"
             x5-video-player-type="h5-page"
             x5-video-player-fullscreen="false"
             x5-video-orientation="portrait"
+            preload="auto"
+            controls={false}
+            disablePictureInPicture
+            disableRemotePlayback
             loop={false}
             onEnded={handleVideoEnd}
             onError={handleVideoError}
@@ -248,7 +252,8 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
               pointerEvents: 'none' // Prevent any clicks that might show controls
             }}
           >
-            <source src={getVideoSource()} type="video/webm" />
+            <source src={getVideoSources().mp4} type="video/mp4" />
+            <source src={getVideoSources().webm} type="video/webm" />
             Your browser does not support the video tag.
           </video>
 

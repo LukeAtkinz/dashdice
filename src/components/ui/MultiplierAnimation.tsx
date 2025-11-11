@@ -158,9 +158,15 @@ export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
           src={activeVideo}
           className="w-full h-full object-contain"
           playsInline
+          webkit-playsinline="true"
+          x5-playsinline="true"
           muted
           preload="auto"
           autoPlay
+          controls={false}
+          disablePictureInPicture
+          disableRemotePlayback
+          style={{ pointerEvents: 'none' }}
         />
       </motion.div>
     </AnimatePresence>

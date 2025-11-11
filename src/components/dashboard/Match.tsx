@@ -462,8 +462,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       loop
       muted
       playsInline
+      webkit-playsinline="true"
+      x5-playsinline="true"
       controls={false}
       preload="metadata"
+      disablePictureInPicture
+      disableRemotePlayback
       className={className}
       style={{ 
         pointerEvents: 'none',
@@ -471,6 +475,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       }}
     >
       <source src={src} type="video/mp4" />
+      Your browser does not support the video tag.
     </video>
   ), []);
 
@@ -1409,14 +1414,19 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       loop
                       muted
                       playsInline
+                      webkit-playsinline="true"
+                      x5-playsinline="true"
                       controls={false}
                       preload="metadata"
+                      disablePictureInPicture
+                      disableRemotePlayback
                       className="absolute inset-0 w-full h-full object-cover"
                       style={{ 
                         pointerEvents: 'none'
                       }}
                     >
                       <source src={opponentBgPath} type="video/mp4" />
+                      Your browser does not support the video tag.
                     </video>
                   ) : (
                     <img
@@ -1572,8 +1582,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         loop
                         muted
                         playsInline
+                        webkit-playsinline="true"
+                        x5-playsinline="true"
                         controls={false}
                         preload="metadata"
+                        disablePictureInPicture
+                        disableRemotePlayback
                         className="absolute inset-0 w-full h-full object-cover"
                         style={{ 
                           pointerEvents: 'none',
@@ -1581,6 +1595,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         }}
                       >
                         <source src={currentPlayerBgPath} type="video/mp4" />
+                        Your browser does not support the video tag.
                       </video>
                     ) : (
                       <img
@@ -1677,8 +1692,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         loop
                         muted
                         playsInline
+                        webkit-playsinline="true"
+                        x5-playsinline="true"
                         controls={false}
                         preload="metadata"
+                        disablePictureInPicture
+                        disableRemotePlayback
                         className="absolute inset-0 w-full h-full object-cover"
                         style={{ 
                           pointerEvents: 'none',
@@ -1686,6 +1705,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         }}
                       >
                         <source src={opponentBgPath} type="video/mp4" />
+                        Your browser does not support the video tag.
                       </video>
                     ) : (
                       <img

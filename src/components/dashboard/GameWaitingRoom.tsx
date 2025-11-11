@@ -2470,8 +2470,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           loop
           muted
           playsInline
+          webkit-playsinline="true"
+          x5-playsinline="true"
           controls={false}
           preload="metadata"
+          disablePictureInPicture
+          disableRemotePlayback
           onLoadStart={() => console.log('Video: Load started')}
           onCanPlay={() => console.log('Video: Can play')}
           onError={(e) => console.error('Video: Error loading', e)}
@@ -2941,7 +2945,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     textTransform: 'uppercase',
                     opacity: 0.8
                   }}>
-                    Match Wins
+                    Match<br />Wins
                   </div>
                 </div>
               </div>
@@ -2980,7 +2984,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     textTransform: 'uppercase',
                     opacity: 0.8
                   }}>
-                    Games Played
+                    Games<br />Played
                   </div>
                 </div>
               </div>
@@ -3019,7 +3023,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     textTransform: 'uppercase',
                     opacity: 0.8
                   }}>
-                    Best Streak
+                    Best<br />Streak
                   </div>
                 </div>
               </div>
@@ -3058,7 +3062,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     textTransform: 'uppercase',
                     opacity: 0.8
                   }}>
-                    Current Streak
+                    Current<br />Streak
                   </div>
                 </div>
               </div>
@@ -3213,7 +3217,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       textTransform: 'uppercase',
                       opacity: 0.8
                     }}>
-                      Match Wins
+                      Match<br />Wins
                     </div>
                   </div>
                 </div>
@@ -3252,7 +3256,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       textTransform: 'uppercase',
                       opacity: 0.8
                     }}>
-                      Games Played
+                      Games<br />Played
                     </div>
                   </div>
                 </div>
@@ -3291,7 +3295,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       textTransform: 'uppercase',
                       opacity: 0.8
                     }}>
-                      Best Streak
+                      Best<br />Streak
                     </div>
                   </div>
                 </div>
@@ -3330,7 +3334,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       textTransform: 'uppercase',
                       opacity: 0.8
                     }}>
-                      Current Streak
+                      Current<br />Streak
                     </div>
                   </div>
                 </div>
@@ -3403,8 +3407,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     loop
                     muted
                     playsInline
+                    webkit-playsinline="true"
+                    x5-playsinline="true"
                     controls={false}
                     preload="metadata"
+                    disablePictureInPicture
+                    disableRemotePlayback
                     style={{
                       position: 'absolute',
                       top: 0,
