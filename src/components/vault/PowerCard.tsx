@@ -6,6 +6,7 @@ import { Ability, UserAbility, UserLoadout, ABILITY_CATEGORIES } from '@/types/a
 import { CATEGORY_COLORS, RARITY_COLORS } from '@/data/predefinedAbilities';
 import { CATEGORY_ICONS, RARITY_BACKGROUNDS } from '@/data/categoryIcons';
 import { useAbilities } from '@/context/AbilitiesContext';
+import { AbilityDetailsModal } from './AbilityDetailsModal';
 
 interface PowerCardProps {
   ability: Ability;
@@ -21,6 +22,8 @@ export default function PowerCard({
   activeLoadout
 }: PowerCardProps) {
   const [showDetails, setShowDetails] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   const { validateLoadout, setActiveLoadout } = useAbilities();
   const [isEquipping, setIsEquipping] = useState(false);
 
@@ -65,37 +68,57 @@ export default function PowerCard({
     }
   };
 
+  const handleMouseDown = () => {
+    const timer = setTimeout(() => {
+      setShowDetailsModal(true);
+    }, 500); // 500ms for long press
+    setLongPressTimer(timer);
+  };
+
+  const handleMouseUp = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+  };
+
+  const handleClick = () => {
+    if (!showDetailsModal) {
+      setShowDetails(!showDetails);
+    }
+  };
+
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      onClick={() => setShowDetails(!showDetails)}
-      className={`relative cursor-pointer transition-all duration-300 w-full ${
-        !isUnlocked ? 'opacity-60' : 'hover:scale-[1.02] hover:shadow-xl'
-      }`}
-      style={{
-        height: '200px', // Fixed height for consistent card layout
-        borderRadius: '20px',
-        border: showDetails
-          ? '2px solid #FF0080'
-          : isEquipped 
-            ? '2px solid #FFD700' 
-            : isUnlocked 
-              ? '2px solid rgba(255, 255, 255, 0.3)' 
-              : '1px solid rgba(255, 255, 255, 0.1)',
-        background: `linear-gradient(135deg, ${rarityColors?.primary || '#6B7280'}40 0%, rgba(0, 0, 0, 0.3) 100%)`,
-        marginBottom: '10px',
-        overflow: 'hidden'
-      }}
-    >
-      {/* Background Gradient Overlay */}
+    <>
+      <motion.div
+        layout
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        onClick={handleClick}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onTouchStart={handleMouseDown}
+        onTouchEnd={handleMouseUp}
+        className={`relative cursor-pointer transition-all duration-300 w-full ${
+          !isUnlocked ? 'opacity-60' : 'hover:scale-[1.02] hover:shadow-xl'
+        }`}
+        style={{
+          height: '220px', // Increased height for better text fit
+          borderRadius: '20px',
+          border: 'none', // Removed border
+          background: 'transparent', // Removed background
+          marginBottom: '10px',
+          overflow: 'hidden'
+        }}
+      >
+        {/* Background Gradient Overlay */}
       <div 
         className="absolute inset-0 z-5" 
         style={{ 
           borderRadius: '20px', 
-          background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)' 
+          background: 'transparent' // Removed gradient overlay
         }}
       />
 
@@ -321,5 +344,13 @@ export default function PowerCard({
         )}
       </AnimatePresence>
     </motion.div>
+
+    {/* Ability Details Modal */}
+    <AbilityDetailsModal
+      ability={ability}
+      isOpen={showDetailsModal}
+      onClose={() => setShowDetailsModal(false)}
+    />
+  </>
   );
 }

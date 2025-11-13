@@ -50,7 +50,10 @@ export const InventorySection: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('backgrounds');
   const [previewBackground, setPreviewBackground] = useState<any>(null);
   const [previewDisplayBackground, setPreviewDisplayBackground] = useState<any>(null);
-  const { setCurrentSection } = useNavigation();
+  const { setCurrentSection, sectionParams } = useNavigation();
+  const [vaultTab, setVaultTab] = useState<'power' | 'vibin' | 'flexin'>(
+    sectionParams.vaultTab || 'power'
+  );
   const { 
     availableBackgrounds, 
     DisplayBackgroundEquip, 
@@ -58,6 +61,17 @@ export const InventorySection: React.FC = () => {
     setDisplayBackgroundEquip,
     setMatchBackgroundEquip
   } = useBackground();
+
+  // Sync vault tab with navigation params
+  React.useEffect(() => {
+    if (sectionParams.vaultTab) {
+      setVaultTab(sectionParams.vaultTab);
+      // If navigating to power category with a specific tab, switch to power category
+      if (selectedCategory !== 'power') {
+        setSelectedCategory('power');
+      }
+    }
+  }, [sectionParams.vaultTab]);
 
   // Get background-specific styling for navigation buttons
   const getNavButtonStyle = (category: any, isSelected: boolean) => {
@@ -356,7 +370,10 @@ export const InventorySection: React.FC = () => {
 
       {/* Power Tab - Show when power category is selected */}
       {selectedCategory === 'power' && (
-        <PowerTab />
+        <PowerTab 
+          activeTab={vaultTab}
+          onTabChange={(tab) => setVaultTab(tab as 'power' | 'vibin' | 'flexin')}
+        />
       )}
 
       {/* Items Grid - Show for other categories */}

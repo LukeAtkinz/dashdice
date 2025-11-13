@@ -853,7 +853,7 @@ export default function PowerTab({
       >
         <div className="relative z-10 h-full flex flex-col md:block">
           {/* Game Mode Header and Loadout - Sticky at top (flex-shrink-0) */}
-          <div className="md:static flex-shrink-0 z-30 backdrop-blur-md rounded-b-xl p-4 md:p-0 bg-black/80 md:bg-transparent border-b border-white/20 md:border-none shadow-lg md:shadow-none">
+          <div className="md:static flex-shrink-0 z-30 backdrop-blur-md rounded-b-xl p-4 md:p-0 bg-transparent border-b border-white/20 md:border-none shadow-lg md:shadow-none">
             {/* Navigation */}
             <div className="relative flex items-center justify-center mb-3 md:mb-6">
             {/* Left Arrow */}
@@ -1122,7 +1122,7 @@ export default function PowerTab({
 
           {/* Available Abilities by Category - Scrollable with overflow hidden cutoff */}
           <div 
-            className="flex-1 md:flex-none overflow-y-auto md:overflow-visible space-y-6 pt-6 md:pt-0 pb-6 md:pb-0 px-6 md:px-0" 
+            className="flex-1 md:flex-none overflow-y-auto md:overflow-visible space-y-6 pt-6 md:pt-0 pb-6 md:pb-0 px-4 md:px-0" 
             style={{
               maxHeight: 'calc(100vh - 320px)',
               touchAction: 'pan-y',

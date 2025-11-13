@@ -218,6 +218,24 @@ export default function InlineAbilitiesDisplay({
       .filter(([_, abilityId]) => abilityId)
       .map(([category, abilityId]) => {
         const ability = allAbilities.find(a => a.id === abilityId);
+        
+        if (ability) {
+          // 🔍 DEBUG: Log the ability and its iconUrl
+          console.log(`🎯 Match ability loaded: ${ability.id}`, {
+            name: ability.name,
+            iconUrl: ability.iconUrl,
+            category: ability.category
+          });
+          
+          // Ensure iconUrl is set - fallback to category-based path if missing
+          if (!ability.iconUrl || ability.iconUrl.includes('%20')) {
+            const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
+            const abilityName = ability.name;
+            ability.iconUrl = `/Abilities/Catagories/${categoryName}/${abilityName}.webp`;
+            console.log(`🔧 Fixed iconUrl for ${ability.id}: ${ability.iconUrl}`);
+          }
+        }
+        
         return ability ? { category: category as keyof typeof ABILITY_CATEGORIES, ability } : null;
       })
       .filter(Boolean) as Array<{ category: keyof typeof ABILITY_CATEGORIES; ability: Ability }>;

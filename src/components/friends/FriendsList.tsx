@@ -124,24 +124,10 @@ export default function FriendsList({
       }}
     >
       {/* Header & Filters - Sticky at top (flex-shrink-0) */}
-      <div className="flex-shrink-0 space-y-1 pb-3 bg-black/80 backdrop-blur-md border-b border-white/20">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white font-audiowide">
-              Friends
-            </h2>
-            <div className="flex items-center gap-1 text-sm text-gray-300 dark:text-gray-300 font-montserrat">
-              {onlineFriendsCount > 0 && (
-                <span className="flex items-center gap-1 text-green-400 font-medium">
-                  <div className="w-3 h-3 bg-green-500 rounded-full shadow-sm"></div>
-                  <span className="text-green-300">{onlineFriendsCount} online</span>
-                </span>
-              )}
-            </div>
-          </div>
-          
-          {showAddButton && (
+      <div className="flex-shrink-0 space-y-1 pb-3 border-b border-white/20">
+        {/* Add Friend Button - Right aligned */}
+        {showAddButton && (
+          <div className="flex justify-end">
             <button
               onClick={() => setShowAddFriend(true)}
               className="text-white text-sm transition-colors hover:text-blue-400 flex items-center gap-1 font-audiowide uppercase cursor-pointer"
@@ -151,8 +137,8 @@ export default function FriendsList({
               </svg>
               Add Friend
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Filters (not shown in compact mode) - Removed search bar */}
         {!compact && friends.length > 0 && (
