@@ -537,16 +537,18 @@ async function applyAbilityEffects(
       
       const matchData = matchDoc.data();
       
-      // Auto-determine target if not provided (for opponent-targeting abilities)
+      // Auto-determine target (Score Saw always targets opponent)
       let targetPlayerId = targetPlayerIds[0];
-      if (!targetPlayerId && ability.targeting?.type === 'opponent') {
-        // Find the opponent in the match
-        const playerIds = matchData.players || [];
+      if (!targetPlayerId) {
+        // Find the opponent in the match - check both players array and match structure
+        const playerIds = matchData.players || 
+                         [matchData.hostData?.playerId, matchData.opponentData?.playerId].filter(Boolean);
         targetPlayerId = playerIds.find((id: string) => id !== playerId);
         console.log(`🎯 Score Saw: Auto-targeting opponent ${targetPlayerId}`);
       }
       
       if (!targetPlayerId) {
+        console.error('❌ Score Saw: No target found', { matchData, playerId });
         throw new Error('Score Saw requires a target player');
       }
       
@@ -651,6 +653,58 @@ async function applyAbilityEffects(
           appliedAt: Timestamp.now()
         });
       }
+      
+    } else if (ability.id === 'pan_slap') {
+      // Pan Slap: Force opponent to roll snake eyes (double 1's) and auto-bank
+      const matchDoc = await getDoc(doc(db, 'matches', matchId));
+      if (!matchDoc.exists()) {
+        throw new Error(`Match ${matchId} not found for Pan Slap execution`);
+      }
+      
+      const matchData = matchDoc.data();
+      
+      // Auto-determine target (opponent)
+      let targetPlayerId = targetPlayerIds[0];
+      if (!targetPlayerId) {
+        const playerIds = matchData.players || 
+                         [matchData.hostData?.playerId, matchData.opponentData?.playerId].filter(Boolean);
+        targetPlayerId = playerIds.find((id: string) => id !== playerId);
+        console.log(`🍳 Pan Slap: Auto-targeting opponent ${targetPlayerId}`);
+      }
+      
+      if (!targetPlayerId) {
+        console.error('❌ Pan Slap: No target found', { matchData, playerId });
+        throw new Error('Pan Slap requires a target player');
+      }
+      
+      // Get opponent's current turn score
+      const currentTurnScore = matchData.gameData?.currentTurnScore?.[targetPlayerId] || 0;
+      const currentBankedScore = matchData.gameData?.bankedScore?.[targetPlayerId] || 0;
+      
+      // Set dice to snake eyes (both 1's) and mark as busted
+      await updateDoc(doc(db, 'matches', matchId), {
+        'gameData.diceOne': 1,
+        'gameData.diceTwo': 1,
+        'gameData.lastRollBusted': true,
+        'gameData.bustedDice': [1, 1],
+        // Auto-bank opponent's current turn score
+        [`gameData.bankedScore.${targetPlayerId}`]: currentBankedScore + currentTurnScore,
+        [`gameData.currentTurnScore.${targetPlayerId}`]: 0,
+        // Switch turn to the ability user
+        'gameData.currentPlayer': playerId,
+        'gameData.turnPhase': 'rolling'
+      });
+      
+      console.log(`🍳 Pan Slap executed! Forced snake eyes, banked ${currentTurnScore} points, switched turn to ${playerId}`);
+      
+      effectsApplied.push({
+        effectId: 'pan_slap',
+        effectType: 'snake_eyes',
+        appliedTo: targetPlayerId,
+        magnitude: currentTurnScore, // Amount that was banked
+        dice: [1, 1],
+        appliedAt: Timestamp.now()
+      });
       
     } else {
       // Default effect for other abilities

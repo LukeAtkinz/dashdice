@@ -563,7 +563,7 @@ export default function InlineAbilitiesDisplay({
               </div>
             )}
 
-            {/* AURA Cost Display */}
+            {/* AURA Cost Display - Red when unavailable, Blue when available */}
             <div className={`absolute top-0 left-0 text-xs font-bold px-1 py-0.5 rounded-br ${
               // Show red if not affordable, blue if affordable
               currentPlayerAura < (ability.id === 'luck-turner' ? 3 : ability.auraCost)
@@ -572,18 +572,6 @@ export default function InlineAbilitiesDisplay({
             }`}>
               {ability.id === 'luck-turner' ? '3-6' : ability.auraCost}
             </div>
-
-            {/* AURA Insufficient Overlay */}
-            {status.disabled && status.reason?.includes('AURA') && (
-              <div className="absolute inset-0 bg-red-900/70 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-red-300 text-xs font-bold">NEED</div>
-                  <div className="text-red-100 text-sm font-bold">
-                    {ability.id === 'luck-turner' ? '3' : ability.auraCost} ⚡
-                  </div>
-                </div>
-              </div>
-            )}
           </motion.button>
         );
       })}
