@@ -13,7 +13,8 @@ import {
   startAfter,
   QueryDocumentSnapshot,
   Timestamp,
-  runTransaction
+  runTransaction,
+  arrayUnion
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { 
@@ -552,33 +553,32 @@ async function applyAbilityEffects(
         throw new Error('Score Saw requires a target player');
       }
       
-      // Get current scores
-      const bankedScore = matchData.gameData?.bankedScore?.[targetPlayerId] || 0;
-      const playerBankedScore = matchData.gameData?.bankedScore?.[playerId] || 0;
+      // Score Saw: Create an active effect that triggers when opponent banks
+      // Effect: 25% of banked amount will be cut, and player steals 50% of that (12.5% total transfer)
+      const scoreSawEffect = {
+        abilityId: 'score_saw',
+        type: 'on_bank_cut',
+        cutPercentage: 0.25,
+        stealPercentage: 0.50,
+        casterPlayerId: playerId,
+        targetPlayerId: targetPlayerId,
+        appliedAt: Timestamp.now(),
+        remainingTurns: 1  // Only lasts for opponent's next bank
+      };
       
-      // Score Saw: Cut opponent's banked score and steal a portion
-      // Base: 25% cut, player steals 50% of what was cut
-      const cutPercentage = 0.25;
-      const stealPercentage = 0.50;
-      
-      const scoreDamage = Math.floor(bankedScore * cutPercentage);
-      const stolenAmount = Math.floor(scoreDamage * stealPercentage);
-      const effectType = 'bank_cut';
-      
-      // Update both players' banked scores
+      // Add the effect to the target player's active effects
       await updateDoc(doc(db, 'matches', matchId), {
-        [`gameData.bankedScore.${targetPlayerId}`]: bankedScore - scoreDamage,
-        [`gameData.bankedScore.${playerId}`]: playerBankedScore + stolenAmount
+        [`gameData.activeEffects.${targetPlayerId}`]: arrayUnion(scoreSawEffect)
       });
       
-      console.log(`🪚 Score Saw: Cut ${scoreDamage} from ${targetPlayerId}'s banked score (${bankedScore} → ${bankedScore - scoreDamage}), ${playerId} stole ${stolenAmount} (${playerBankedScore} → ${playerBankedScore + stolenAmount})`);
+      console.log(`🪚 Score Saw: Active effect applied to ${targetPlayerId}. Will trigger on next bank (25% cut, player steals 12.5%)`);
       
       effectsApplied.push({
-        effectId: `score_saw_${effectType}`,
+        effectId: `score_saw_active`,
         appliedTo: targetPlayerId,
-        magnitude: scoreDamage,
-        stolenAmount,
-        effectType,
+        effectType: 'on_bank_cut',
+        cutPercentage: 0.25,
+        stealPercentage: 0.50,
         auraCost: ability.auraCost,
         appliedAt: Timestamp.now()
       });
@@ -606,26 +606,30 @@ async function applyAbilityEffects(
         throw new Error('Pan Slap requires a target player');
       }
       
-      // Get opponent's current turn score
+      // Get opponent's current turn score (this will be LOST, not banked)
       const currentTurnScore = matchData.gameData?.currentTurnScore?.[targetPlayerId] || 0;
-      const currentBankedScore = matchData.gameData?.bankedScore?.[targetPlayerId] || 0;
       
-      // Set dice to snake eyes (both 1's) and mark as busted
-      // Keep the opponent on their turn so they see the bust, then turn switches naturally
+      // Pan Slap: Force opponent's turn to end immediately with a bust
+      // Their turn score is LOST (not banked), and turn switches to caster
+      const isTargetHost = matchData.hostData?.playerId === targetPlayerId;
+      
       await updateDoc(doc(db, 'matches', matchId), {
+        // Set dice to [1, 1] as visual feedback
         'gameData.diceOne': 1,
         'gameData.diceTwo': 1,
         'gameData.lastRollBusted': true,
         'gameData.bustedDice': [1, 1],
-        // Auto-bank opponent's current turn score
-        [`gameData.bankedScore.${targetPlayerId}`]: currentBankedScore + currentTurnScore,
+        // Clear opponent's turn score (LOST, not banked)
         [`gameData.currentTurnScore.${targetPlayerId}`]: 0,
-        // DO NOT switch turn - let the opponent see the bust first
-        // The turn will switch naturally after the bust animation
-        'gameData.turnPhase': 'busted'
+        // Immediately switch turn to caster
+        'gameData.currentPlayer': playerId,
+        'gameData.turnPhase': 'rolling',
+        // Update turn active flags
+        'hostData.turnActive': !isTargetHost,
+        'opponentData.turnActive': isTargetHost
       });
       
-      console.log(`🍳 Pan Slap executed! Forced snake eyes on ${targetPlayerId}, banked ${currentTurnScore} points`);
+      console.log(`🍳 Pan Slap executed! ${targetPlayerId} loses ${currentTurnScore} points and turn switches to ${playerId}`);
       
       effectsApplied.push({
         effectId: 'pan_slap',

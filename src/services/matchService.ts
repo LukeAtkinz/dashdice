@@ -1298,6 +1298,35 @@ export class MatchService {
         // Calculate effective turn score after siphon
         const effectiveTurnScore = matchData.gameData.turnScore - siphonStolenPoints;
         
+        // 🪚 CHECK FOR SCORE SAW ACTIVE EFFECTS
+        let scoreSawCut = 0;
+        let scoreSawStolen = 0;
+        let scoreSawCasterId: string | null = null;
+        const playerActiveEffects = matchData.gameData.activeEffects?.[playerId] || [];
+        const scoreSawEffect: any = playerActiveEffects.find((effect: any) => 
+          effect.abilityId === 'score_saw' && effect.type === 'on_bank_cut'
+        );
+        
+        if (scoreSawEffect) {
+          // Calculate the amount to cut from the turn score being banked
+          const cutPercentage = scoreSawEffect.cutPercentage || 0.25;
+          const stealPercentage = scoreSawEffect.stealPercentage || 0.50;
+          scoreSawCut = Math.floor(effectiveTurnScore * cutPercentage);
+          scoreSawStolen = Math.floor(scoreSawCut * stealPercentage);
+          scoreSawCasterId = scoreSawEffect.casterPlayerId;
+          
+          console.log(`🪚 Score Saw triggered! Banking ${effectiveTurnScore}, cutting ${scoreSawCut} (${cutPercentage * 100}%), caster steals ${scoreSawStolen} (${stealPercentage * 100}% of cut)`);
+          
+          // Reduce the newPlayerScore by the cut amount
+          newPlayerScore = newPlayerScore - scoreSawCut;
+          
+          // Remove the Score Saw effect (one-time use)
+          const remainingEffects = playerActiveEffects.filter((effect: any) => 
+            !(effect.abilityId === 'score_saw' && effect.type === 'on_bank_cut')
+          );
+          updates[`gameData.activeEffects.${playerId}`] = remainingEffects;
+        }
+        
         if (isHost) {
           updates['hostData.playerScore'] = newPlayerScore;
         } else {
@@ -1316,6 +1345,21 @@ export class MatchService {
           }
           
           console.log(`⚔️ Siphon activated: Added ${siphonPlayerGain} stolen points to siphon user. New score: ${opponentNewScore}`);
+        }
+        
+        // If Score Saw was active, transfer the stolen amount to the caster
+        if (scoreSawStolen > 0 && scoreSawCasterId) {
+          const isCasterHost = matchData.hostData.playerId === scoreSawCasterId;
+          const casterCurrentScore = isCasterHost ? matchData.hostData.playerScore : matchData.opponentData.playerScore;
+          const casterNewScore = (casterCurrentScore || 0) + scoreSawStolen;
+          
+          if (isCasterHost) {
+            updates['hostData.playerScore'] = casterNewScore;
+          } else {
+            updates['opponentData.playerScore'] = casterNewScore;
+          }
+          
+          console.log(`🪚 Score Saw: Caster ${scoreSawCasterId} steals ${scoreSawStolen} points. New score: ${casterNewScore}`);
         }
       }
       
