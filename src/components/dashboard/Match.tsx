@@ -462,8 +462,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       loop
       muted
       playsInline
-      webkit-playsinline="true"
-      x5-playsinline="true"
       controls={false}
       preload="metadata"
       disablePictureInPicture
@@ -472,6 +470,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       style={{ 
         pointerEvents: 'none',
         outline: 'none'
+      }}
+      onError={(e) => {
+        console.error('❌ Background video failed to load:', src, e);
       }}
     >
       <source src={src} type="video/mp4" />
@@ -1414,8 +1415,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       loop
                       muted
                       playsInline
-                      webkit-playsinline="true"
-                      x5-playsinline="true"
                       controls={false}
                       preload="metadata"
                       disablePictureInPicture
@@ -1423,6 +1422,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       className="absolute inset-0 w-full h-full object-cover"
                       style={{ 
                         pointerEvents: 'none'
+                      }}
+                      onError={(e) => {
+                        console.error('❌ Opponent background video failed to load:', opponentBgPath, e);
                       }}
                     >
                       <source src={opponentBgPath} type="video/mp4" />

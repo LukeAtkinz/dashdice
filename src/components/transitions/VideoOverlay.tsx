@@ -186,8 +186,6 @@ export const VideoOverlay: React.FC<VideoOverlayProps> = ({
                 preload="auto"
                 controls={false}
                 autoPlay
-                webkit-playsinline="true"
-                x5-playsinline="true"
                 disablePictureInPicture
                 controlsList="nodownload noplaybackrate nofullscreen noremoteplayback"
                 onLoadedData={() => {

@@ -34,24 +34,28 @@ export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
   useEffect(() => {
     const prev = prevMultipliersRef.current;
     
+    // Detect Safari/iOS
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const videoFormat = isSafari ? 'mp4' : 'webm';
+    
     // Detect x4 activation (highest priority)
     if (hasQuadMultiplier && !prev.quad) {
       console.log('🎬 x4 Multiplier activated - playing animation');
-      setActiveVideo('/Animations/x4multi.webm');
+      setActiveVideo(`/Animations/x4multi.${videoFormat}`);
       setIsPlaying(true);
       onAnimationStart?.();
     }
     // Detect x3 activation
     else if (hasTripleMultiplier && !prev.triple) {
       console.log('🎬 x3 Multiplier activated - playing animation');
-      setActiveVideo('/Animations/x3multi.webm');
+      setActiveVideo(`/Animations/x3multi.${videoFormat}`);
       setIsPlaying(true);
       onAnimationStart?.();
     }
     // Detect x2 activation
     else if (hasDoubleMultiplier && !prev.double) {
       console.log('🎬 x2 Multiplier activated - playing animation');
-      setActiveVideo('/Animations/x2multi.webm');
+      setActiveVideo(`/Animations/x2multi.${videoFormat}`);
       setIsPlaying(true);
       onAnimationStart?.();
     }
@@ -108,11 +112,13 @@ export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
           })
           .catch(err => {
             console.error('❌ Error playing multiplier animation:', err);
-            // If autoplay fails, try again with muted
-            video.muted = true;
-            video.play().catch(e => {
-              console.error('❌ Failed to play even when muted:', e);
-            });
+            // If autoplay fails, complete animation after short delay
+            setTimeout(() => {
+              setIsPlaying(false);
+              setActiveVideo(null);
+              setMultiplierPosition(null);
+              onAnimationEnd?.();
+            }, 1500); // Show for 1.5 seconds even if video fails
           });
       }
       
@@ -125,10 +131,24 @@ export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
         onAnimationEnd?.();
       };
       
+      // Handle video error
+      const handleVideoError = () => {
+        console.error('❌ Multiplier video failed to load');
+        // Complete animation after short delay
+        setTimeout(() => {
+          setIsPlaying(false);
+          setActiveVideo(null);
+          setMultiplierPosition(null);
+          onAnimationEnd?.();
+        }, 1500);
+      };
+      
       video.addEventListener('ended', handleVideoEnd);
+      video.addEventListener('error', handleVideoError);
       
       return () => {
         video.removeEventListener('ended', handleVideoEnd);
+        video.removeEventListener('error', handleVideoError);
       };
     }
   }, [activeVideo, isPlaying, onAnimationEnd]);
@@ -156,11 +176,8 @@ export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
       >
         <video
           ref={videoRef}
-          src={activeVideo}
           className="w-full h-full object-contain"
           playsInline
-          webkit-playsinline="true"
-          x5-playsinline="true"
           muted
           preload="auto"
           autoPlay
@@ -168,7 +185,23 @@ export const MultiplierAnimation: React.FC<MultiplierAnimationProps> = ({
           disablePictureInPicture
           disableRemotePlayback
           style={{ pointerEvents: 'none' }}
-        />
+          onError={(e) => {
+            console.error('❌ Multiplier video failed to load:', activeVideo, e);
+            // Complete animation immediately on error
+            setTimeout(() => {
+              setIsPlaying(false);
+              setActiveVideo(null);
+              setMultiplierPosition(null);
+              onAnimationEnd?.();
+            }, 1500);
+          }}
+          onLoadedData={() => {
+            console.log('✅ Multiplier video loaded successfully');
+          }}
+        >
+          <source src={activeVideo} type={activeVideo.endsWith('.mp4') ? 'video/mp4' : 'video/webm'} />
+          Your browser does not support the video tag.
+        </video>
       </motion.div>
     </AnimatePresence>
   );
