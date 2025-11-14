@@ -553,106 +553,35 @@ async function applyAbilityEffects(
       }
       
       // Get current scores
-      const currentTurnScore = matchData.gameData?.currentTurnScore?.[targetPlayerId] || 0;
       const bankedScore = matchData.gameData?.bankedScore?.[targetPlayerId] || 0;
+      const playerBankedScore = matchData.gameData?.bankedScore?.[playerId] || 0;
       
-      // Determine effect based on AURA cost (passed via ability execution)
-      const auraCost = matchData.gameData?.playerAura?.[playerId] ? 
-        matchData.gameData.playerAura[playerId] + ability.auraCost : ability.auraCost;
+      // Score Saw: Cut opponent's banked score and steal a portion
+      // Base: 25% cut, player steals 50% of what was cut
+      const cutPercentage = 0.25;
+      const stealPercentage = 0.50;
       
-      let scoreDamage = 0;
-      let effectType = '';
+      const scoreDamage = Math.floor(bankedScore * cutPercentage);
+      const stolenAmount = Math.floor(scoreDamage * stealPercentage);
+      const effectType = 'bank_cut';
       
-      if (auraCost >= 10) {
-        // Bank Devastation (10 AURA) - Remove 50% of banked score
-        scoreDamage = Math.floor(bankedScore * 0.5);
-        effectType = 'bank_devastation';
-        
-        await updateDoc(doc(db, 'matches', matchId), {
-          [`gameData.bankedScore.${targetPlayerId}`]: bankedScore - scoreDamage
-        });
-        
-        console.log(`🪚 Score Saw - Bank Devastation: Removed ${scoreDamage} from ${targetPlayerId}'s banked score`);
-        
-      } else if (auraCost >= 6) {
-        // Reset Cut (6 AURA) - Reset current turn score to 0
-        scoreDamage = currentTurnScore;
-        effectType = 'reset_cut';
-        
-        await updateDoc(doc(db, 'matches', matchId), {
-          [`gameData.currentTurnScore.${targetPlayerId}`]: 0
-        });
-        
-        console.log(`🪚 Score Saw - Reset Cut: Reset ${targetPlayerId}'s turn score (was ${currentTurnScore})`);
-        
-      } else if (auraCost >= 4) {
-        // Deep Cut (4 AURA) - Reduce current turn score by 50%
-        scoreDamage = Math.floor(currentTurnScore * 0.5);
-        effectType = 'deep_cut';
-        
-        await updateDoc(doc(db, 'matches', matchId), {
-          [`gameData.currentTurnScore.${targetPlayerId}`]: currentTurnScore - scoreDamage
-        });
-        
-        console.log(`🪚 Score Saw - Deep Cut: Reduced ${targetPlayerId}'s turn score by ${scoreDamage}`);
-        
-      } else {
-        // Light Cut (2 AURA) - Reduce current turn score by 25%
-        scoreDamage = Math.floor(currentTurnScore * 0.25);
-        effectType = 'light_cut';
-        
-        await updateDoc(doc(db, 'matches', matchId), {
-          [`gameData.currentTurnScore.${targetPlayerId}`]: currentTurnScore - scoreDamage
-        });
-        
-        console.log(`🪚 Score Saw - Light Cut: Reduced ${targetPlayerId}'s turn score by ${scoreDamage}`);
-      }
+      // Update both players' banked scores
+      await updateDoc(doc(db, 'matches', matchId), {
+        [`gameData.bankedScore.${targetPlayerId}`]: bankedScore - scoreDamage,
+        [`gameData.bankedScore.${playerId}`]: playerBankedScore + stolenAmount
+      });
+      
+      console.log(`🪚 Score Saw: Cut ${scoreDamage} from ${targetPlayerId}'s banked score (${bankedScore} → ${bankedScore - scoreDamage}), ${playerId} stole ${stolenAmount} (${playerBankedScore} → ${playerBankedScore + stolenAmount})`);
       
       effectsApplied.push({
         effectId: `score_saw_${effectType}`,
         appliedTo: targetPlayerId,
         magnitude: scoreDamage,
+        stolenAmount,
         effectType,
-        auraCost,
+        auraCost: ability.auraCost,
         appliedAt: Timestamp.now()
       });
-      
-      // Check for backfire (simplified for now - would need dice roll logic)
-      const backfireChance = 0.15; // 15% base chance
-      const backfireRoll = Math.random();
-      
-      if (backfireRoll < backfireChance) {
-        console.log(`💥 Score Saw backfire! Opponent recovers half damage, player loses 10% turn score`);
-        
-        // Opponent recovers half the damage
-        const recovery = Math.floor(scoreDamage * 0.5);
-        if (effectType === 'bank_devastation') {
-          await updateDoc(doc(db, 'matches', matchId), {
-            [`gameData.bankedScore.${targetPlayerId}`]: bankedScore - scoreDamage + recovery
-          });
-        } else {
-          await updateDoc(doc(db, 'matches', matchId), {
-            [`gameData.currentTurnScore.${targetPlayerId}`]: 
-              Math.max(0, (currentTurnScore - scoreDamage) + recovery)
-          });
-        }
-        
-        // Player loses 10% of their current turn score
-        const playerTurnScore = matchData.gameData?.currentTurnScore?.[playerId] || 0;
-        const playerLoss = Math.floor(playerTurnScore * 0.1);
-        await updateDoc(doc(db, 'matches', matchId), {
-          [`gameData.currentTurnScore.${playerId}`]: Math.max(0, playerTurnScore - playerLoss)
-        });
-        
-        effectsApplied.push({
-          effectId: 'score_saw_backfire',
-          appliedTo: playerId,
-          magnitude: playerLoss,
-          effectType: 'backfire',
-          recoveryAmount: recovery,
-          appliedAt: Timestamp.now()
-        });
-      }
       
     } else if (ability.id === 'pan_slap') {
       // Pan Slap: Force opponent to roll snake eyes (double 1's) and auto-bank
