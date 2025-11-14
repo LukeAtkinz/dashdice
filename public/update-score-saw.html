@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Update Score Saw AURA Cost</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <h1>Update Score Saw AURA Cost to 4</h1>
+    <button onclick="updateScoreSaw()">Update Score Saw</button>
+    <pre id="output"></pre>
+
+    <script>
+        // Initialize Firebase (use your config)
+        const firebaseConfig = {
+            // Add your Firebase config here
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        async function updateScoreSaw() {
+            const output = document.getElementById('output');
+            output.textContent = '🔍 Looking for Score Saw ability...\n';
+
+            try {
+                const snapshot = await db.collection('abilities')
+                    .where('id', '==', 'score_saw')
+                    .get();
+
+                if (snapshot.empty) {
+                    output.textContent += '❌ Score Saw not found in Firestore\n';
+                    output.textContent += '📝 Creating new Score Saw with auraCost: 4\n';
+                    
+                    await db.collection('abilities').add({
+                        id: 'score_saw',
+                        name: 'Score Saw',
+                        description: 'Score Sabotage: Slice your opponent\'s turn score in half when they bank - you steal 50%, they keep 50%.',
+                        category: 'attack',
+                        rarity: 'epic',
+                        starCost: 4,
+                        auraCost: 4,
+                        cooldown: 0,
+                        timing: 'opponent_turn',
+                        iconUrl: '/Abilities/Catagories/Attack/Score Saw.webp',
+                        hidden: false,
+                        unlockLevel: 1,
+                        maxUses: -1,
+                        isActive: true
+                    });
+                    
+                    output.textContent += '✅ Score Saw created with auraCost: 4\n';
+                } else {
+                    output.textContent += `✅ Found ${snapshot.size} Score Saw document(s)\n`;
+                    
+                    for (const doc of snapshot.docs) {
+                        const data = doc.data();
+                        output.textContent += `📊 Current auraCost: ${data.auraCost}\n`;
+                        
+                        if (data.auraCost !== 4) {
+                            await doc.ref.update({ auraCost: 4 });
+                            output.textContent += `✅ Updated auraCost from ${data.auraCost} to 4\n`;
+                        } else {
+                            output.textContent += `✅ Already correct (auraCost: 4)\n`;
+                        }
+                    }
+                }
+                
+                output.textContent += '\n✅ Update complete! Refresh your app to see changes.';
+            } catch (error) {
+                output.textContent += `\n❌ Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
