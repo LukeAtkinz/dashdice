@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { Ability, UserAbility, UserLoadout, ABILITY_CATEGORIES } from '@/types/abilities';
 import { CATEGORY_COLORS, RARITY_COLORS } from '@/data/predefinedAbilities';
 import { CATEGORY_ICONS, RARITY_BACKGROUNDS } from '@/data/categoryIcons';

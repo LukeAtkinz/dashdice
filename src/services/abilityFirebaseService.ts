@@ -682,6 +682,7 @@ async function applyAbilityEffects(
       const currentBankedScore = matchData.gameData?.bankedScore?.[targetPlayerId] || 0;
       
       // Set dice to snake eyes (both 1's) and mark as busted
+      // Keep the opponent on their turn so they see the bust, then turn switches naturally
       await updateDoc(doc(db, 'matches', matchId), {
         'gameData.diceOne': 1,
         'gameData.diceTwo': 1,
@@ -690,12 +691,12 @@ async function applyAbilityEffects(
         // Auto-bank opponent's current turn score
         [`gameData.bankedScore.${targetPlayerId}`]: currentBankedScore + currentTurnScore,
         [`gameData.currentTurnScore.${targetPlayerId}`]: 0,
-        // Switch turn to the ability user
-        'gameData.currentPlayer': playerId,
-        'gameData.turnPhase': 'rolling'
+        // DO NOT switch turn - let the opponent see the bust first
+        // The turn will switch naturally after the bust animation
+        'gameData.turnPhase': 'busted'
       });
       
-      console.log(`🍳 Pan Slap executed! Forced snake eyes, banked ${currentTurnScore} points, switched turn to ${playerId}`);
+      console.log(`🍳 Pan Slap executed! Forced snake eyes on ${targetPlayerId}, banked ${currentTurnScore} points`);
       
       effectsApplied.push({
         effectId: 'pan_slap',
