@@ -607,6 +607,26 @@ async function applyAbilityEffects(
         throw new Error('Pan Slap requires a target player');
       }
       
+      // 🍳 STEP 1: Add Pan Slap to activeEffects FIRST so video and red dice trigger
+      const panSlapEffect = {
+        abilityId: 'pan_slap',
+        effectId: `pan_slap_${Date.now()}`,
+        effectType: 'instant_animation',
+        appliedBy: playerId,
+        appliedTo: targetPlayerId,
+        appliedAt: Timestamp.now(),
+        duration: 2000 // Will be visible for 2 seconds (video duration)
+      };
+      
+      await updateDoc(doc(db, 'matches', matchId), {
+        [`gameData.activeEffects.${playerId}`]: arrayUnion(panSlapEffect)
+      });
+      
+      console.log('🍳 Pan Slap effect added to activeEffects - video and red dice should now trigger');
+      
+      // 🍳 STEP 2: Wait a moment for the animation to start, then execute game logic
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // Get opponent's current turn score (this will be AUTO-BANKED)
       const currentTurnScore = matchData.gameData?.turnScore || 0;
       
@@ -646,6 +666,25 @@ async function applyAbilityEffects(
       await updateDoc(doc(db, 'matches', matchId), updates);
       
       console.log(`🍳 Pan Slap executed! ${targetPlayerId} auto-banks ${currentTurnScore} points (new total: ${newBankedScore}), turn ends, switches to ${playerId}`);
+      
+      // 🍳 STEP 3: Remove Pan Slap effect after animation completes (2 seconds)
+      setTimeout(async () => {
+        try {
+          const currentMatchDoc = await getDoc(doc(db, 'matches', matchId));
+          if (currentMatchDoc.exists()) {
+            const currentData = currentMatchDoc.data();
+            const currentEffects = currentData.gameData?.activeEffects?.[playerId] || [];
+            const updatedEffects = currentEffects.filter((e: any) => e.effectId !== panSlapEffect.effectId);
+            
+            await updateDoc(doc(db, 'matches', matchId), {
+              [`gameData.activeEffects.${playerId}`]: updatedEffects
+            });
+            console.log('🍳 Pan Slap effect removed from activeEffects after animation');
+          }
+        } catch (error) {
+          console.error('Error removing Pan Slap effect:', error);
+        }
+      }, 2000);
       
       effectsApplied.push({
         effectId: 'pan_slap',
