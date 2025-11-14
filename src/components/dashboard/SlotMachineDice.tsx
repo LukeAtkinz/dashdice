@@ -605,7 +605,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
           transition={{ duration: 0.3 }}
         >
           <video
-            src="/Abilities/Animations/Pan Slap Animation.webm"
+            src="/Abilities/Animations/Pan Slap.webm"
             autoPlay
             loop={false}
             muted
@@ -625,6 +625,9 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             }}
             onEnded={() => {
               console.log('🍳 Pan Slap video finished playing');
+            }}
+            onError={(e) => {
+              console.error('🍳 Pan Slap video failed to load:', e);
             }}
           />
         </motion.div>
