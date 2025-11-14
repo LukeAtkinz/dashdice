@@ -14,7 +14,8 @@ import {
   QueryDocumentSnapshot,
   Timestamp,
   runTransaction,
-  arrayUnion
+  arrayUnion,
+  deleteField
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { 
@@ -554,12 +555,12 @@ async function applyAbilityEffects(
       }
       
       // Score Saw: Create an active effect that triggers when opponent banks
-      // Effect: 25% of banked amount will be cut, and player steals 50% of that (12.5% total transfer)
+      // Effect: 50% of turn score will be cut, and caster steals 100% of that cut (50% total transfer)
       const scoreSawEffect = {
         abilityId: 'score_saw',
         type: 'on_bank_cut',
-        cutPercentage: 0.25,
-        stealPercentage: 0.50,
+        cutPercentage: 0.50,
+        stealPercentage: 1.00,
         casterPlayerId: playerId,
         targetPlayerId: targetPlayerId,
         appliedAt: Timestamp.now(),
@@ -571,20 +572,20 @@ async function applyAbilityEffects(
         [`gameData.activeEffects.${targetPlayerId}`]: arrayUnion(scoreSawEffect)
       });
       
-      console.log(`🪚 Score Saw: Active effect applied to ${targetPlayerId}. Will trigger on next bank (25% cut, player steals 12.5%)`);
+      console.log(`🪚 Score Saw: Active effect applied to ${targetPlayerId}. Will trigger on next bank (50% cut, caster steals all of it)`);
       
       effectsApplied.push({
         effectId: `score_saw_active`,
         appliedTo: targetPlayerId,
         effectType: 'on_bank_cut',
-        cutPercentage: 0.25,
-        stealPercentage: 0.50,
+        cutPercentage: 0.50,
+        stealPercentage: 1.00,
         auraCost: ability.auraCost,
         appliedAt: Timestamp.now()
       });
       
     } else if (ability.id === 'pan_slap') {
-      // Pan Slap: Force opponent to roll snake eyes (double 1's) and auto-bank
+      // Pan Slap: Immediately stop opponent's turn, show RED 1's, auto-bank their turn score
       const matchDoc = await getDoc(doc(db, 'matches', matchId));
       if (!matchDoc.exists()) {
         throw new Error(`Match ${matchId} not found for Pan Slap execution`);
@@ -606,36 +607,51 @@ async function applyAbilityEffects(
         throw new Error('Pan Slap requires a target player');
       }
       
-      // Get opponent's current turn score (this will be LOST, not banked)
-      const currentTurnScore = matchData.gameData?.currentTurnScore?.[targetPlayerId] || 0;
+      // Get opponent's current turn score (this will be AUTO-BANKED)
+      const currentTurnScore = matchData.gameData?.turnScore || 0;
       
-      // Pan Slap: Force opponent's turn to end immediately with a bust
-      // Their turn score is LOST (not banked), and turn switches to caster
+      // Get opponent's current banked score and add turn score to it
       const isTargetHost = matchData.hostData?.playerId === targetPlayerId;
+      const currentBankedScore = isTargetHost 
+        ? (matchData.hostData?.playerScore || 0)
+        : (matchData.opponentData?.playerScore || 0);
+      const newBankedScore = currentBankedScore + currentTurnScore;
       
-      await updateDoc(doc(db, 'matches', matchId), {
-        // Set dice to [1, 1] as visual feedback
+      // Pan Slap: Instantly show RED 1's, auto-bank turn score, end turn, switch to caster
+      const updates: any = {
+        // INSTANTLY set both dice to 1 (stops any rolling animation)
         'gameData.diceOne': 1,
         'gameData.diceTwo': 1,
-        'gameData.lastRollBusted': true,
+        'gameData.isRolling': false, // Stop any dice rolling animation
+        'gameData.rollPhase': deleteField(), // Clear roll phase
+        'gameData.lastRollBusted': true, // Mark as busted for visual feedback
         'gameData.bustedDice': [1, 1],
-        // Clear opponent's turn score (LOST, not banked)
-        [`gameData.currentTurnScore.${targetPlayerId}`]: 0,
+        // Auto-bank the turn score to opponent's banked score
+        'gameData.turnScore': 0, // Clear turn score (it's been banked)
         // Immediately switch turn to caster
         'gameData.currentPlayer': playerId,
         'gameData.turnPhase': 'rolling',
         // Update turn active flags
         'hostData.turnActive': !isTargetHost,
         'opponentData.turnActive': isTargetHost
-      });
+      };
       
-      console.log(`🍳 Pan Slap executed! ${targetPlayerId} loses ${currentTurnScore} points and turn switches to ${playerId}`);
+      // Add the banked turn score to opponent's total
+      if (isTargetHost) {
+        updates['hostData.playerScore'] = newBankedScore;
+      } else {
+        updates['opponentData.playerScore'] = newBankedScore;
+      }
+      
+      await updateDoc(doc(db, 'matches', matchId), updates);
+      
+      console.log(`🍳 Pan Slap executed! ${targetPlayerId} auto-banks ${currentTurnScore} points (new total: ${newBankedScore}), turn ends, switches to ${playerId}`);
       
       effectsApplied.push({
         effectId: 'pan_slap',
-        effectType: 'snake_eyes',
+        effectType: 'auto_bank_turn_end',
         appliedTo: targetPlayerId,
-        magnitude: currentTurnScore, // Amount that was banked
+        magnitude: currentTurnScore, // Amount that was auto-banked
         dice: [1, 1],
         appliedAt: Timestamp.now()
       });

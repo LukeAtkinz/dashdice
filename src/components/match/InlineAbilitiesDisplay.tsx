@@ -356,8 +356,7 @@ export default function InlineAbilitiesDisplay({
     // Check AURA affordability
     const canAfford = canUseAbilityInMatch(ability.id, currentPlayerAura);
     if (!canAfford.canUse && canAfford.reason?.includes('AURA')) {
-      // For variable cost abilities like Luck Turner, show minimum cost
-      const auraCost = ability.id === 'luck-turner' ? 3 : ability.auraCost;
+      const auraCost = ability.auraCost;
       return { disabled: true, reason: `${auraCost} AURA` };
     }
     
@@ -566,11 +565,11 @@ export default function InlineAbilitiesDisplay({
             {/* AURA Cost Display - Red when unavailable, Blue when available */}
             <div className={`absolute top-0 left-0 text-xs font-bold px-1 py-0.5 rounded-br ${
               // Show red if not affordable, blue if affordable
-              currentPlayerAura < (ability.id === 'luck-turner' ? 3 : ability.auraCost)
+              currentPlayerAura < ability.auraCost
                 ? 'bg-red-600/90 text-white'
                 : 'bg-blue-600/90 text-white'
             }`}>
-              {ability.id === 'luck-turner' ? '3-6' : ability.auraCost}
+              {ability.auraCost}
             </div>
           </motion.button>
         );

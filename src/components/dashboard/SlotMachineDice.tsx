@@ -121,9 +121,50 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
         }
       }
     }
-    console.log('❌ Luck Turner NOT active');
+    
     return false;
-  }, [matchData]);
+  }, [matchData?.gameData?.activeEffects]);
+
+  // 🍳 Check if Pan Slap ability is active for any player
+  const [isPanSlapActive, setIsPanSlapActive] = React.useState(false);
+  const [showRedDice, setShowRedDice] = React.useState(false);
+  
+  React.useEffect(() => {
+    if (!matchData?.gameData?.activeEffects) {
+      return;
+    }
+    
+    // Check all players' active effects for pan_slap
+    let panSlapFound = false;
+    for (const playerId in matchData.gameData.activeEffects) {
+      const effects = matchData.gameData.activeEffects[playerId];
+      if (effects && Array.isArray(effects)) {
+        const hasPanSlap = effects.some(effect => 
+          effect.abilityId === 'pan_slap' || effect.effectId?.includes('pan_slap')
+        );
+        if (hasPanSlap) {
+          panSlapFound = true;
+          console.log('🍳 PAN SLAP IS ACTIVE! Starting video and red dice sequence');
+          break;
+        }
+      }
+    }
+    
+    if (panSlapFound && !isPanSlapActive) {
+      // Pan Slap just activated
+      setIsPanSlapActive(true);
+      
+      // Start red dice after 0.2s (200ms)
+      setTimeout(() => {
+        console.log('🍳 Showing RED dice numbers');
+        setShowRedDice(true);
+      }, 200);
+    } else if (!panSlapFound && isPanSlapActive) {
+      // Pan Slap deactivated - reset states
+      setIsPanSlapActive(false);
+      setShowRedDice(false);
+    }
+  }, [matchData?.gameData?.activeEffects, isPanSlapActive]);
 
   // Determine if this dice number should glow and what color
   const getDiceNumberGlow = () => {
@@ -266,6 +307,8 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   
   // Determine dice number color based on multiplier (white for x2/x3, black for x4)
   const getDiceNumberColor = () => {
+    // 🍳 Pan Slap turns dice RED
+    if (showRedDice) return '#FF0000'; // Bright red for Pan Slap
     if (hasQuadMultiplier) return '#000000'; // Black for x4
     if (hasTripleMultiplier || hasDoubleMultiplier) return '#FFFFFF'; // White for x2 and x3
     return isTurnDecider ? '#FFD700' : '#000000'; // Default colors
@@ -547,6 +590,41 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             onLoadedData={(e) => {
               const video = e.target as HTMLVideoElement;
               video.playbackRate = 1.5;
+            }}
+          />
+        </motion.div>
+      )}
+      
+      {/* 🍳 PAN SLAP ABILITY ANIMATION 🍳 */}
+      {isPanSlapActive && (
+        <motion.div
+          className="absolute inset-0 pointer-events-none z-30"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <video
+            src="/Abilities/Animations/Pan Slap Animation.webm"
+            autoPlay
+            loop={false}
+            muted
+            playsInline
+            preload="auto"
+            className="w-full h-full"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              borderRadius: '30px',
+              overflow: 'hidden',
+              // Hardware acceleration for better performance
+              willChange: 'transform',
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden'
+            }}
+            onEnded={() => {
+              console.log('🍳 Pan Slap video finished playing');
             }}
           />
         </motion.div>

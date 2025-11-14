@@ -90,7 +90,7 @@ export const LUCK_TURNER: DashDiceAbility = {
   flavorText: '"A twist here, a tweak there — sometimes fortune just needs a little guidance."',
   iconUrl: '/Abilities/Catagories/Tactical/Luck Turner.webp',
   cooldown: 2, // 2 turns cooldown
-  auraCost: 3, // Base cost, can spend 6 for enhanced effect
+  auraCost: 3, // Fixed cost
   starCost: 4, // Power Rating: 4
   
   targeting: {
@@ -106,41 +106,19 @@ export const LUCK_TURNER: DashDiceAbility = {
   effects: [
     {
       id: 'luck_turner_basic',
-      name: 'Basic Luck Manipulation (3 Aura)',
-      description: '50% less chance to roll a 1 - Reduces the likelihood of a bust on risky turns',
+      name: 'Luck Manipulation',
+      description: '50% less chance to roll a 1 for this single roll - Reduces the likelihood of a bust on risky turns',
       type: EffectType.MODIFY_DICE_PROBABILITY,
       magnitude: 'reduce_bust_50', 
       target: {
         type: 'self',
         property: 'bustProbability'
       },
-      duration: 1 // Lasts for one turn
-    },
-    {
-      id: 'luck_turner_advanced',
-      name: 'Advanced Luck Manipulation (6 Aura)',
-      description: '50% less chance to roll a 1 AND 50% increased chance of rolling a double - Higher risk, higher reward',
-      type: EffectType.MODIFY_DICE_PROBABILITY,
-      magnitude: 'luck_advanced_combo',
-      target: {
-        type: 'self',
-        property: 'diceRollProbability'
-      },
-      duration: 1 // Lasts for one turn
+      duration: 1 // Lasts for one roll
     }
   ],
   
-  conditions: [
-    {
-      type: 'variable_aura_cost',
-      description: 'Costs 3 AURA for basic effect, 6 AURA for advanced effect',
-      checkFunction: 'checkVariableAuraCost',
-      parameters: {
-        basicCost: 3,
-        advancedCost: 6
-      }
-    }
-  ],
+  conditions: [],
   
   unlockRequirements: {
     level: 1
@@ -173,14 +151,14 @@ export const PAN_SLAP: DashDiceAbility = {
   name: 'Pan Slap',
   version: 1,
   category: AbilityCategory.DEFENSE,
-  type: AbilityType.ACTIVE, // Changed from INSTANT to ACTIVE
+  type: AbilityType.ACTIVE,
   rarity: AbilityRarity.EPIC,
-  description: 'Turn Control / Instant Stop: Deliver a swift and decisive intervention — instantly ending your opponent\'s turn.',
-  longDescription: 'Pan Slap delivers a swift and decisive intervention — instantly ending your opponent\'s turn and auto-banking their current turn score. With the iconic frying pan in hand, the player asserts control over the flow of the match, stopping momentum, thwarting combos, and creating space to strike back. It\'s high-impact, high-risk, and high-fun: timing is everything, and a misplay could mean spending 6 aura for minimal disruption if the opponent\'s turn was already weak.',
-  flavorText: '"One swing to stop them in their tracks. The pan is heavy, the timing heavier, but victory waits for the bold."',
+  description: 'Instant Stop: Slam the pan! Both dice instantly show RED 1\'s, opponent\'s turn ends immediately, and their turn score auto-banks.',
+  longDescription: 'Pan Slap delivers an instant intervention that stops your opponent cold. The moment you activate it, both dice instantly show RED 1\'s (stopping any rolling animations), your opponent\'s turn ends immediately, and their current turn score is auto-banked to their total. Perfect for defensive timing — stop their momentum while they still keep what they earned this turn.',
+  flavorText: '"One swing to stop them in their tracks. The pan speaks, the dice obey, and the turn is over."',
   iconUrl: '/Abilities/Catagories/Defense/Pan Slap.webp',
-  cooldown: 2, // 2 turns before it can be used again
-  auraCost: 6, // High cost reflects its powerful turn-ending capability
+  cooldown: 0, // No cooldown - limited by once per match
+  auraCost: 5, // Moderate cost for instant turn control
   starCost: 5, // Power Rating: 5
   
   targeting: {
@@ -272,12 +250,12 @@ export const SCORE_SAW: DashDiceAbility = {
   category: AbilityCategory.ATTACK,
   type: AbilityType.ACTIVE,
   rarity: AbilityRarity.EPIC,
-  description: 'Risk–Reward Score Sabotage: Channel AURA into devastating strikes against opponent scores. The more you invest, the deeper you cut.',
-  longDescription: 'Score Saw channels a player\'s aura into a sharp, decisive strike against an opponent\'s current turn score — and with higher investment, their banked points. The more aura spent, the more destructive the strike: from minor disruption to a devastating reset. Timing and strategy are critical: use it too early, and your opponent may recover; spend too much aura, and your own resources are at risk.',
-  flavorText: '"A well-timed strike can undo an empire built in a single turn. Precision is everything — slice carefully, or bleed yourself dry."',
+  description: 'Score Sabotage: Slice your opponent\'s turn score in half when they bank - you steal 50%, they keep 50%.',
+  longDescription: 'Score Saw places a curse on your opponent. When they try to bank their turn score, the curse triggers: their score is split in half. They keep 50%, and you steal the other 50% for yourself. Perfect timing can swing the game in your favor.',
+  flavorText: '"A well-timed strike can undo an empire built in a single turn. Your gain is their loss."',
   iconUrl: '/Abilities/Catagories/Attack/Score Saw.webp',
   cooldown: 0, // No cooldown, limited by AURA cost
-  auraCost: 2, // Minimum cost, scales up to 10
+  auraCost: 4, // Fixed 4 AURA cost
   starCost: 4, // Power Rating: 4
   
   targeting: {
@@ -292,67 +270,20 @@ export const SCORE_SAW: DashDiceAbility = {
   
   effects: [
     {
-      id: 'score_saw_light_cut',
-      name: 'Light Cut (2 Aura)',
-      description: 'Reduce opponent\'s current turn score by 25% - Low risk disruption',
+      id: 'score_saw_split',
+      name: 'Score Split',
+      description: 'When opponent banks, split their turn score 50/50 - they keep 50%, you steal 50%',
       type: EffectType.MODIFY_SCORE,
-      magnitude: 'reduce_turn_score_25',
+      magnitude: 'split_turn_score_50_50',
       target: {
         type: 'opponent',
         property: 'currentTurnScore'
       },
-      duration: 0 // Instant effect
-    },
-    {
-      id: 'score_saw_deep_cut',
-      name: 'Deep Cut (4 Aura)',
-      description: 'Reduce opponent\'s current turn score by 50% - Moderate risk disruption',
-      type: EffectType.MODIFY_SCORE,
-      magnitude: 'reduce_turn_score_50',
-      target: {
-        type: 'opponent',
-        property: 'currentTurnScore'
-      },
-      duration: 0 // Instant effect
-    },
-    {
-      id: 'score_saw_reset_cut',
-      name: 'Reset Cut (6 Aura)',
-      description: 'Reset opponent\'s current turn score to 0 - High risk turn destruction',
-      type: EffectType.MODIFY_SCORE,
-      magnitude: 'reset_turn_score',
-      target: {
-        type: 'opponent',
-        property: 'currentTurnScore'
-      },
-      duration: 0 // Instant effect
-    },
-    {
-      id: 'score_saw_bank_devastation',
-      name: 'Bank Devastation (10 Aura)',
-      description: 'Remove 50% of opponent\'s banked score - Very high risk game changer',
-      type: EffectType.MODIFY_SCORE,
-      magnitude: 'reduce_banked_score_50',
-      target: {
-        type: 'opponent',
-        property: 'bankedScore'
-      },
-      duration: 0 // Instant effect
+      duration: 0 // Triggers on next bank
     }
   ],
   
   conditions: [
-    {
-      type: 'variable_aura_cost',
-      description: 'Costs 2/4/6/10 AURA for different effect levels',
-      checkFunction: 'checkScoreSawAuraCost',
-      parameters: {
-        lightCut: 2,
-        deepCut: 4,
-        resetCut: 6,
-        bankDevastiation: 10
-      }
-    },
     {
       type: 'opponent_turn_only',
       description: 'Can only be used during opponent\'s turn',

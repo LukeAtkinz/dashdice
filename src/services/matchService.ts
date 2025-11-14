@@ -486,6 +486,30 @@ export class MatchService {
         dice2 = doubleValue;
       }
       
+      // 🍀 LUCK TURNER EFFECT: Check for active luck_turner effect and apply 50% less chance to roll 1
+      const playerActiveEffects = matchData.gameData.activeEffects?.[playerId] || [];
+      const hasLuckTurner = playerActiveEffects.some((effect: any) => 
+        effect.abilityId === 'luck_turner' || effect.effectId?.includes('luck_turner')
+      );
+      
+      if (hasLuckTurner) {
+        console.log('🍀 Luck Turner active! Applying 50% reroll chance for 1s');
+        
+        // If dice1 is a 1, give it a 50% chance to reroll
+        if (dice1 === 1 && Math.random() < 0.5) {
+          const reroll = Math.floor(Math.random() * 6) + 1;
+          console.log(`🍀 Dice 1 was 1, rerolled to ${reroll}`);
+          dice1 = reroll;
+        }
+        
+        // If dice2 is a 1, give it a 50% chance to reroll (independent of dice1)
+        if (dice2 === 1 && Math.random() < 0.5) {
+          const reroll = Math.floor(Math.random() * 6) + 1;
+          console.log(`🍀 Dice 2 was 1, rerolled to ${reroll}`);
+          dice2 = reroll;
+        }
+      }
+      
       // 🏆 TRACK DICE ROLL ACHIEVEMENTS: Update total dice rolled count (2 dice per roll)
       try {
         // PERFORMANCE: Achievement tracking moved to match end to prevent lag
