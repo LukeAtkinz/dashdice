@@ -8,8 +8,9 @@ import { useAuth } from '@/context/AuthContext';
 import { UserService, PowerLoadout } from '@/services/userService';
 import { AbilitiesService } from '@/services/abilitiesService';
 import PowerCard from './PowerCard';
-import { ABILITY_CATEGORIES } from '../../types/abilities';
+import { ABILITY_CATEGORIES, Ability } from '../../types/abilities';
 import { resetAbilitiesCollection } from '@/utils/resetAbilities';
+import { AbilityDetailsModal } from './AbilityDetailsModal';
 
 // Game modes configuration
 const GAME_MODES = [
@@ -72,6 +73,10 @@ export default function PowerTab({
   } = useAbilities();
   
   const { user } = useAuth();
+  
+  // State for ability details modal
+  const [selectedAbility, setSelectedAbility] = useState<Ability | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Debug logging for abilities
   console.log('🔍 PowerTab Debug - allAbilities:', allAbilities.length, allAbilities);
@@ -803,7 +808,7 @@ export default function PowerTab({
                           </div>
                         </div>
                       ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center text-center">
+                        <div className="w-full h-full flex flex-col items-center justify-center text-center gap-1">
                           <div className="w-12 h-12 relative">
                             <img
                               key={categorySlot.icon}
@@ -823,6 +828,9 @@ export default function PowerTab({
                               }}
                             />
                           </div>
+                          {categorySlot.key === 'gamechanger' && (
+                            <span className="text-xs text-yellow-400 font-medium">Coming Soon!</span>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1172,21 +1180,9 @@ export default function PowerTab({
                         return (
                           <motion.div
                             key={ability.id}
-                            className="relative group cursor-pointer"
+                            className="relative group"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            onClick={() => {
-                              if (!isInCurrentLoadout) {
-                                // Equip the ability to its category (replace any existing ability in that slot)
-                                assignAbilityToCategory(ability.id, ability.category);
-                              } else {
-                                // Find and remove the ability from its current category
-                                const currentCategory = Object.keys(currentLoadout).find(cat => currentLoadout[cat] === ability.id);
-                                if (currentCategory) {
-                                  removeAbilityFromCategory(currentCategory);
-                                }
-                              }
-                            }}
                           >
                             <div
                               className="p-3 transition-all duration-300 overflow-visible"
@@ -1195,7 +1191,22 @@ export default function PowerTab({
                               }}
                             >
                               <div className="w-full flex flex-col items-center justify-start text-center gap-3">
-                                <div className="w-24 h-24 md:w-28 md:h-28 relative flex-shrink-0">
+                                <div 
+                                  className="w-24 h-24 md:w-28 md:h-28 relative flex-shrink-0 cursor-pointer"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (!isInCurrentLoadout) {
+                                      // Equip the ability to its category (replace any existing ability in that slot)
+                                      assignAbilityToCategory(ability.id, ability.category);
+                                    } else {
+                                      // Find and remove the ability from its current category
+                                      const currentCategory = Object.keys(currentLoadout).find(cat => currentLoadout[cat] === ability.id);
+                                      if (currentCategory) {
+                                        removeAbilityFromCategory(currentCategory);
+                                      }
+                                    }
+                                  }}
+                                >
                                   <img
                                     src={ability.iconUrl || '/Abilities/placeholder.webp'}
                                     alt={ability.name}
@@ -1215,7 +1226,15 @@ export default function PowerTab({
                                     }}
                                   />
                                 </div>
-                                <h5 className="text-white text-sm font-medium w-full" style={{ fontFamily: 'Audiowide', lineHeight: '1.2' }}>
+                                <h5 
+                                  className="text-white text-sm font-medium w-full cursor-pointer hover:text-yellow-400 transition-colors" 
+                                  style={{ fontFamily: 'Audiowide', lineHeight: '1.2' }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedAbility(ability);
+                                    setIsModalOpen(true);
+                                  }}
+                                >
                                   {ability.name}
                                 </h5>
                               </div>
@@ -1439,6 +1458,18 @@ export default function PowerTab({
           })}
         </div>
       </div>
+      
+      {/* Ability Details Modal */}
+      {selectedAbility && (
+        <AbilityDetailsModal
+          ability={selectedAbility}
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedAbility(null);
+          }}
+        />
+      )}
     </div>
   );
 }
