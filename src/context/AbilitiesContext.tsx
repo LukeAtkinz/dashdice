@@ -534,7 +534,7 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
     }
     
     // Temporarily bypass loadout check for testing functionality - all starter abilities
-    if (abilityId === 'siphon' || abilityId === 'luck_turner' || abilityId === 'pan_slap' || abilityId === 'score_saw' || abilityId === 'hard_hat') {
+    if (abilityId === 'siphon' || abilityId === 'luck_turner' || abilityId === 'pan_slap' || abilityId === 'score_saw' || abilityId === 'hard_hat' || abilityId === 'vital_rush' || abilityId === 'aura_axe' || abilityId === 'power_pull' || abilityId === 'aura_forge') {
       // Still check AURA for these abilities
       if (auraAvailable !== undefined) {
         // For variable cost abilities like Luck Turner, use minimum cost for UI checking

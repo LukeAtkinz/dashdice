@@ -1189,16 +1189,12 @@ export default function PowerTab({
                             }}
                           >
                             <div
-                              className="aspect-square rounded-lg p-3 border transition-all duration-300 backdrop-blur-sm overflow-hidden"
+                              className="aspect-square p-3 transition-all duration-300 overflow-hidden"
                               style={{
-                                background: isInCurrentLoadout 
-                                  ? `linear-gradient(135deg, ${currentGameMode.color}40 0%, transparent 100%)`
-                                  : 'linear-gradient(135deg, #4B5563 0%, transparent 100%)',
-                                borderColor: isInCurrentLoadout ? currentGameMode.color : 'rgba(255, 255, 255, 0.2)',
                                 opacity: isInCurrentLoadout ? 0.5 : 1
                               }}
                             >
-                              <div className="w-full h-full flex flex-col items-center justify-center text-center">
+                              <div className="w-full h-full flex flex-col items-center justify-center text-center gap-3">
                                 <div className="w-24 h-24 md:w-28 md:h-28 relative">
                                   <img
                                     src={ability.iconUrl || '/Abilities/placeholder.webp'}
@@ -1219,7 +1215,7 @@ export default function PowerTab({
                                     }}
                                   />
                                 </div>
-                                <h5 className="text-white text-xs font-medium truncate" style={{ fontFamily: 'Audiowide' }}>
+                                <h5 className="text-white text-sm font-medium truncate w-full" style={{ fontFamily: 'Audiowide' }}>
                                   {ability.name}
                                 </h5>
                               </div>
