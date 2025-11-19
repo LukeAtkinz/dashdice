@@ -22,65 +22,36 @@ export default function UnlockAbilitiesPage() {
 
   const unlockAllAbilitiesForAllPlayers = async () => {
     setStatus('processing');
-    setMessage('Fetching abilities and users...');
+    setMessage('Calling server API to unlock abilities...');
     
     try {
-      // Get all abilities
-      const abilitiesSnapshot = await getDocs(collection(db, 'abilities'));
-      const allAbilityIds = abilitiesSnapshot.docs.map(doc => doc.id);
-      setMessage(`Found ${allAbilityIds.length} abilities. Fetching users...`);
+      // Call the server-side API route that uses Firebase Admin
+      const response = await fetch('/api/admin/unlock-all-abilities', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          secret: 'dashdice-admin-2025' // Simple auth token
+        })
+      });
       
-      // Get all users
-      const usersSnapshot = await getDocs(collection(db, 'users'));
-      const allUserIds = usersSnapshot.docs.map(doc => doc.id);
-      setMessage(`Found ${allUserIds.length} users. Unlocking abilities...`);
+      const result = await response.json();
       
-      let successCount = 0;
-      let errorCount = 0;
-      
-      // Unlock all abilities for each user
-      for (let i = 0; i < allUserIds.length; i++) {
-        const userId = allUserIds[i];
-        setMessage(`Processing user ${i + 1}/${allUserIds.length}: ${userId}`);
-        
-        try {
-          const playerAbilitiesRef = doc(db, 'playerAbilities', userId);
-          const playerAbilitiesDoc = await getDoc(playerAbilitiesRef);
-          
-          if (playerAbilitiesDoc.exists()) {
-            // Update existing document
-            await updateDoc(playerAbilitiesRef, {
-              unlockedAbilities: allAbilityIds,
-              updatedAt: Timestamp.now()
-            });
-          } else {
-            // Create new document
-            await setDoc(playerAbilitiesRef, {
-              playerId: userId,
-              unlockedAbilities: allAbilityIds,
-              equippedAbilities: {},
-              favoriteAbilities: [],
-              createdAt: Timestamp.now(),
-              updatedAt: Timestamp.now()
-            });
-          }
-          successCount++;
-        } catch (error) {
-          console.error(`Error unlocking abilities for user ${userId}:`, error);
-          errorCount++;
-        }
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'API request failed');
       }
       
       setDetails({
-        totalUsers: allUserIds.length,
-        totalAbilities: allAbilityIds.length,
-        successCount,
-        errorCount,
-        abilities: allAbilityIds
+        totalUsers: result.data.totalUsers,
+        totalAbilities: result.data.totalAbilities,
+        successCount: result.data.successCount,
+        errorCount: result.data.errorCount,
+        abilities: result.data.abilities
       });
       
       setStatus('success');
-      setMessage('✅ All abilities unlocked for all players!');
+      setMessage(result.message || '✅ All abilities unlocked for all players!');
       
     } catch (error) {
       setStatus('error');
