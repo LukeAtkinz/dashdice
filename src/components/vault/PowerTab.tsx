@@ -1189,13 +1189,13 @@ export default function PowerTab({
                             }}
                           >
                             <div
-                              className="aspect-square p-3 transition-all duration-300 overflow-hidden"
+                              className="p-3 transition-all duration-300 overflow-visible"
                               style={{
                                 opacity: isInCurrentLoadout ? 0.5 : 1
                               }}
                             >
-                              <div className="w-full h-full flex flex-col items-center justify-center text-center gap-3">
-                                <div className="w-24 h-24 md:w-28 md:h-28 relative">
+                              <div className="w-full flex flex-col items-center justify-start text-center gap-3">
+                                <div className="w-24 h-24 md:w-28 md:h-28 relative flex-shrink-0">
                                   <img
                                     src={ability.iconUrl || '/Abilities/placeholder.webp'}
                                     alt={ability.name}
@@ -1215,7 +1215,7 @@ export default function PowerTab({
                                     }}
                                   />
                                 </div>
-                                <h5 className="text-white text-sm font-medium truncate w-full" style={{ fontFamily: 'Audiowide' }}>
+                                <h5 className="text-white text-sm font-medium w-full" style={{ fontFamily: 'Audiowide', lineHeight: '1.2' }}>
                                   {ability.name}
                                 </h5>
                               </div>
