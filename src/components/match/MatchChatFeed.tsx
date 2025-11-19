@@ -80,62 +80,51 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-black/40 backdrop-blur-sm rounded-lg border border-white/10 p-3"
+          onClick={() => setOverlayOpen(true)}
+          className="bg-black/40 backdrop-blur-sm rounded-lg border border-white/10 p-3 cursor-pointer hover:bg-black/50 hover:border-white/20 transition-all"
         >
-          {/* Header */}
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-              </svg>
-              <span className="text-xs text-white/70 font-medium">Match Chat</span>
-            </div>
-            <button
-              onClick={() => setOverlayOpen(true)}
-              className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
-            >
-              Expand
-            </button>
-          </div>
-
-          {/* Messages Preview */}
+          {/* Messages Preview - No header, just messages */}
           <div className="space-y-1 min-h-[60px] max-h-[80px] overflow-hidden">
-            <AnimatePresence mode="popLayout">
-              {recentMessages.map((message) => {
-                const isCurrentUser = message.fromUserId === user.uid;
-                return (
-                  <motion.div
-                    key={message.id}
-                    initial={{ opacity: 0, x: isCurrentUser ? 20 : -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`
-                      max-w-[80%] px-2 py-1 rounded-lg text-xs
-                      ${isCurrentUser 
-                        ? 'bg-purple-500/30 text-white' 
-                        : 'bg-white/10 text-white/90'
-                      }
-                    `}>
-                      <div className="flex items-center gap-1 mb-0.5">
-                        <span className="font-semibold text-[10px] opacity-70">
-                          {message.fromDisplayName}
-                        </span>
-                        {message.isVoice && (
-                          <svg className="w-3 h-3 opacity-50" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-                          </svg>
-                        )}
+            {recentMessages.length === 0 ? (
+              <div className="flex items-center justify-center h-[60px] text-white/30 text-xs">
+                Tap to open chat
+              </div>
+            ) : (
+              <AnimatePresence mode="popLayout">
+                {recentMessages.map((message) => {
+                  const isCurrentUser = message.fromUserId === user.uid;
+                  return (
+                    <motion.div
+                      key={message.id}
+                      initial={{ opacity: 0, x: isCurrentUser ? 20 : -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className={`
+                        max-w-[80%] px-2 py-1 rounded-lg text-xs
+                        ${isCurrentUser 
+                          ? 'bg-purple-500/30 text-white' 
+                          : 'bg-white/10 text-white/90'
+                        }
+                      `}>
+                        {/* No player name, just message with voice indicator */}
+                        <div className="flex items-center gap-1">
+                          {message.isVoice && (
+                            <svg className="w-3 h-3 opacity-50" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                            </svg>
+                          )}
+                          <p className="break-words leading-tight">
+                            {message.translatedText || message.originalText}
+                          </p>
+                        </div>
                       </div>
-                      <p className="break-words leading-tight">
-                        {message.translatedText || message.originalText}
-                      </p>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            )}
             <div ref={messagesEndRef} />
           </div>
         </motion.div>
@@ -148,7 +137,8 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            style={{ zIndex: 9999 }}
             onClick={() => setOverlayOpen(false)}
           >
             <motion.div

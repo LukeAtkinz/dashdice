@@ -19,6 +19,7 @@ import MatchAbandonmentNotification from '@/components/notifications/MatchAbando
 import { useToast } from '@/context/ToastContext';
 import { useMatchBackground } from '@/hooks/useOptimizedBackground';
 import { MatchChatFeed } from '@/components/match/MatchChatFeed';
+import { MatchVoiceButton } from '@/components/match/MatchVoiceButton';
 import { useMatchChat } from '@/context/MatchChatContext';
 
 interface MatchProps {
@@ -39,7 +40,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const { user } = useAuth();
   const { setCurrentSection, isGameOver, setIsGameOver } = useNavigation();
   const { showToast } = useToast();
-  const { initializeChat, endChat, clearChat } = useMatchChat();
+  const { initializeChat, endChat, clearChat, sendMessage, muteState, session } = useMatchChat();
   // Legacy achievement system - temporarily disabled to prevent concurrent updates
   // const { recordGameCompletion } = useGameAchievements();
   
@@ -1798,17 +1799,38 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8, duration: 0.5 }}
-                className="w-full px-4 mt-4 mb-2"
-                style={{ 
-                  position: 'fixed',
-                  top: 'calc(20vh + 80px)',
-                  left: 0,
-                  right: 0,
-                  zIndex: 15,
-                  pointerEvents: 'auto'
-                }}
+                className="w-full px-4 mb-4"
               >
                 <MatchChatFeed matchId={matchData.id} />
+              </motion.div>
+            )}
+
+            {/* Voice Button - Positioned above 5th ability slot on mobile - Only show for non-bot matches */}
+            {matchData.gameData.gamePhase === 'gameplay' && matchData.id && user && session && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1, duration: 0.4 }}
+                className="md:hidden fixed"
+                style={{
+                  bottom: 'calc(80px + 20px + 70px)',
+                  right: '16px',
+                  zIndex: 20
+                }}
+              >
+                <MatchVoiceButton
+                  matchId={matchData.id}
+                  playerId={user.uid}
+                  language={session.player1Id === user.uid ? session.player1Language : session.player2Language}
+                  onTranscription={async (text: string, duration: number) => {
+                    try {
+                      await sendMessage(text, true, duration);
+                    } catch (error) {
+                      console.error('Failed to send voice message:', error);
+                    }
+                  }}
+                  isMuted={muteState.micMuted}
+                />
               </motion.div>
             )}
 
