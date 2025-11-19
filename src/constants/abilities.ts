@@ -144,6 +144,166 @@ export const LUCK_TURNER: DashDiceAbility = {
   createdBy: 'system'
 };
 
+// ==================== VITAL RUSH ====================
+
+export const VITAL_RUSH: DashDiceAbility = {
+  id: 'vital_rush',
+  name: 'Vital Rush',
+  version: 1,
+  category: AbilityCategory.TACTICAL,
+  type: AbilityType.ACTIVE,
+  rarity: AbilityRarity.EPIC,
+  description: 'Risk–Reward Aura Surge: Channel your life force for a ×3 multiplier, but doubles will flatline your turn.',
+  longDescription: 'Vital Rush channels accumulated aura energy into an electrifying surge that amplifies your next dice roll by ×3. The player risks everything for one heightened moment — higher power yields greater danger. If you roll any double during this turn, you suffer a "flatline" — losing all current turn score. It\'s the ultimate "push-your-luck" maneuver that can turn a match completely around… or end it in disaster.',
+  flavorText: '"When the heart races, time slows. Every beat becomes a chance — every roll, a heartbeat closer to glory… or silence."',
+  iconUrl: '/Abilities/Catagories/Tactical/Vital Rush.webp',
+  cooldown: 0, // No cooldown, limited by once per match
+  auraCost: 4, // 4 AURA cost
+  starCost: 4, // Power Rating: 4
+  
+  targeting: {
+    type: 'self',
+    allowSelfTarget: true,
+    maxTargets: 1
+  },
+  
+  timing: {
+    usableWhen: [TimingConstraint.MY_TURN_START, TimingConstraint.BEFORE_ROLL]
+  },
+  
+  effects: [
+    {
+      id: 'vital_rush_multiplier',
+      name: 'Vital Surge',
+      description: '×3 multiplier on all scoring rolls this turn',
+      type: EffectType.MODIFY_SCORE,
+      magnitude: 'triple_turn_score',
+      target: {
+        type: 'self',
+        property: 'turnScore'
+      },
+      duration: 1 // Lasts for entire turn
+    },
+    {
+      id: 'vital_rush_flatline',
+      name: 'Flatline Risk',
+      description: '50% increased chance of rolling doubles. If any double is rolled, lose all turn score.',
+      type: EffectType.MODIFY_DICE_PROBABILITY,
+      magnitude: 'increase_doubles_50',
+      target: {
+        type: 'self',
+        property: 'doublesProbability'
+      },
+      duration: 1 // Lasts for entire turn
+    }
+  ],
+  
+  conditions: [
+    {
+      type: 'turn_active',
+      description: 'Can only be used on your turn',
+      checkFunction: 'checkTurnActive'
+    }
+  ],
+  
+  unlockRequirements: {
+    level: 1
+  },
+  
+  // Required balancing data
+  balancing: {
+    powerLevel: 85, // Very high power level with high risk
+    winRateImpact: 0.18, // 18% estimated win rate improvement when used correctly
+    usageFrequency: 'medium', // Expected medium usage due to risk
+    lastBalanceUpdate: new Date() as any
+  },
+  
+  // Metadata
+  isActive: true,
+  isHidden: false,
+  isDevelopment: false,
+  tags: ['risk-reward', 'tactical', 'multiplier', 'aura-surge', 'high-stakes'],
+  
+  // Timestamps
+  createdAt: new Date() as any,
+  updatedAt: new Date() as any,
+  createdBy: 'system'
+};
+
+// ==================== AURA AXE ====================
+
+export const AURA_AXE: DashDiceAbility = {
+  id: 'aura_axe',
+  name: 'Aura Axe',
+  version: 1,
+  category: AbilityCategory.ATTACK,
+  type: AbilityType.ACTIVE,
+  rarity: AbilityRarity.EPIC,
+  description: 'Risk–Reward Aura Surge: Drain 50% of opponent\'s aura and steal it for yourself.',
+  longDescription: 'Aura Axe channels a player\'s aura into a devastating strike aimed at the opponent\'s life force. The player commits accumulated energy to weaken their foe, draining half of their opponent\'s aura and transferring it directly to themselves. It\'s a precision–risk maneuver: powerful enough to shift momentum, but dangerous if poorly timed. Best used when opponent has high aura or is likely to commit to an attack.',
+  flavorText: '"A strike fueled by intent, sharpened by aura — one swing can cleave opportunity from your foe, or leave you open to their retaliation."',
+  iconUrl: '/Abilities/Catagories/Attack/Aura Axe.webp',
+  cooldown: 0, // No cooldown, limited by once per match
+  auraCost: 4, // 4 AURA cost
+  starCost: 4, // Power Rating: 4
+  
+  targeting: {
+    type: 'opponent',
+    allowSelfTarget: false,
+    maxTargets: 1
+  },
+  
+  timing: {
+    usableWhen: [TimingConstraint.MY_TURN_START, TimingConstraint.MY_TURN_END]
+  },
+  
+  effects: [
+    {
+      id: 'aura_axe_drain',
+      name: 'Aura Drain',
+      description: 'Drain 50% of opponent\'s aura and steal it for yourself',
+      type: EffectType.STEAL_AURA,
+      magnitude: 'steal_50_percent',
+      target: {
+        type: 'opponent',
+        property: 'aura'
+      },
+      duration: 0 // Instant effect
+    }
+  ],
+  
+  conditions: [
+    {
+      type: 'turn_active',
+      description: 'Can only be used on your turn',
+      checkFunction: 'checkTurnActive'
+    }
+  ],
+  
+  unlockRequirements: {
+    level: 1
+  },
+  
+  // Required balancing data
+  balancing: {
+    powerLevel: 75, // High power level for aura control
+    winRateImpact: 0.12, // 12% estimated win rate improvement
+    usageFrequency: 'medium', // Expected medium usage
+    lastBalanceUpdate: new Date() as any
+  },
+  
+  // Metadata
+  isActive: true,
+  isHidden: false,
+  isDevelopment: false,
+  tags: ['risk-reward', 'attack', 'aura-drain', 'aura-surge', 'tactical-strike'],
+  
+  // Timestamps
+  createdAt: new Date() as any,
+  updatedAt: new Date() as any,
+  createdBy: 'system'
+};
+
 // ==================== PAN SLAP ====================
 
 export const PAN_SLAP: DashDiceAbility = {
@@ -624,26 +784,185 @@ export const HARD_HAT: DashDiceAbility = {
   createdBy: 'system'
 };
 
+// ==================== UTILITY ABILITIES ====================
+
+export const POWER_PULL: DashDiceAbility = {
+  id: 'power_pull',
+  name: 'Power Pull',
+  version: 1,
+  category: AbilityCategory.UTILITY,
+  type: AbilityType.ACTIVE,
+  rarity: AbilityRarity.RARE,
+  description: 'Continuous Aura Conversion: Convert turn score into aura over time for strategic advantage.',
+  longDescription: 'Power Pull allows players to convert their turn score into aura when banking, creating a steady, strategic boost to their energy reserves. For every 10 points from your turn score, gain 1 aura when you bank. This ability functions as a long-term investment: the conversion persists for the entire turn, rewarding careful planning, patience, and risk management. The aura gain is applied only when you successfully bank your score — if you bust, the potential aura is lost.',
+  flavorText: '"Every point forged becomes energy; every spark pulled into the core fuels the next strike. Build your power slowly, but strike with unstoppable force."',
+  iconUrl: '/Abilities/Catagories/Utility/Power Pull.webp',
+  cooldown: 0, // No cooldown, limited by once per match
+  auraCost: 2, // Low cost for utility
+  starCost: 3, // Power Rating: 3
+  
+  targeting: {
+    type: 'self',
+    allowSelfTarget: true,
+    maxTargets: 1
+  },
+  
+  timing: {
+    usableWhen: [TimingConstraint.MY_TURN_START, TimingConstraint.BEFORE_ROLL]
+  },
+  
+  effects: [
+    {
+      id: 'power_pull_conversion',
+      name: 'Score to Aura Conversion',
+      description: 'Convert turn score to aura when banking: +1 aura per 10 points',
+      type: EffectType.GAIN_AURA,
+      magnitude: 'convert_score_10_to_1',
+      target: {
+        type: 'self',
+        property: 'aura'
+      },
+      duration: 1 // Lasts for the current turn
+    }
+  ],
+  
+  conditions: [
+    {
+      type: 'turn_active',
+      description: 'Can only be used on your turn',
+      checkFunction: 'checkTurnActive'
+    },
+    {
+      type: 'banking_required',
+      description: 'Aura is only gained when successfully banking',
+      checkFunction: 'checkBankingRequired'
+    }
+  ],
+  
+  unlockRequirements: {
+    level: 1
+  },
+  
+  // Required balancing data
+  balancing: {
+    powerLevel: 60, // Medium power level for utility
+    winRateImpact: 0.08, // 8% estimated win rate improvement
+    usageFrequency: 'high', // Expected high usage for strategic players
+    lastBalanceUpdate: new Date() as any
+  },
+  
+  // Metadata
+  isActive: true,
+  isHidden: false,
+  isDevelopment: false,
+  tags: ['utility', 'aura-conversion', 'long-term', 'strategic', 'investment'],
+  
+  // Timestamps
+  createdAt: new Date() as any,
+  updatedAt: new Date() as any,
+  createdBy: 'system'
+};
+
+export const AURA_FORGE: DashDiceAbility = {
+  id: 'aura_forge',
+  name: 'Aura Forge',
+  version: 1,
+  category: AbilityCategory.UTILITY,
+  type: AbilityType.ACTIVE,
+  rarity: AbilityRarity.RARE,
+  description: 'Resource Conversion: Transform turn score into pure aura energy (5 points = 1 aura).',
+  longDescription: 'Aura Forge transforms a player\'s turn score into pure aura energy, letting them sacrifice immediate gain for future strength. It\'s a high-control, zero-cost utility move — ideal for players who plan ahead or want to fund their next big ability play. Every hit of the hammer breaks points into raw power, turning momentum into energy reserves. Choose how much to convert: 1-4 aura (costing 5-20 points).',
+  flavorText: '"Each strike reforges the will of the player — break fleeting points into something eternal. Some chase victory. Others forge it."',
+  iconUrl: '/Abilities/Catagories/Utility/Aura Forge.webp',
+  cooldown: 0, // Can use once per turn
+  auraCost: 0, // No aura cost - uses turn score instead
+  starCost: 3, // Power Rating: 3
+  
+  targeting: {
+    type: 'self',
+    allowSelfTarget: true,
+    maxTargets: 1
+  },
+  
+  timing: {
+    usableWhen: [TimingConstraint.MY_TURN_START, TimingConstraint.MY_TURN_END, TimingConstraint.BEFORE_ROLL]
+  },
+  
+  effects: [
+    {
+      id: 'aura_forge_conversion',
+      name: 'Score to Aura Forge',
+      description: 'Convert 5-20 turn points into 1-4 aura (player chooses amount)',
+      type: EffectType.GAIN_AURA,
+      magnitude: 'convert_5_to_1_choice',
+      target: {
+        type: 'self',
+        property: 'aura'
+      },
+      duration: 0 // Instant effect
+    }
+  ],
+  
+  conditions: [
+    {
+      type: 'turn_active',
+      description: 'Can only be used on your turn',
+      checkFunction: 'checkTurnActive'
+    },
+    {
+      type: 'has_turn_score',
+      description: 'Requires at least 5 turn score to convert',
+      checkFunction: 'checkHasTurnScore',
+      parameters: {
+        minimumScore: 5
+      }
+    }
+  ],
+  
+  unlockRequirements: {
+    level: 1
+  },
+  
+  // Required balancing data
+  balancing: {
+    powerLevel: 65, // Medium-high power for resource conversion
+    winRateImpact: 0.10, // 10% estimated win rate improvement
+    usageFrequency: 'medium', // Expected medium usage
+    lastBalanceUpdate: new Date() as any
+  },
+  
+  // Metadata
+  isActive: true,
+  isHidden: false,
+  isDevelopment: false,
+  tags: ['utility', 'resource-conversion', 'aura-generation', 'strategic', 'flexible'],
+  
+  // Timestamps
+  createdAt: new Date() as any,
+  updatedAt: new Date() as any,
+  createdBy: 'system'
+};
+
 // Add to collections
 // addAbilityToCollections(LUCK_TURNER); // Will be called after collections are defined
 
 // ==================== ABILITY COLLECTIONS ====================
 
 // Populated with implemented abilities
-export const ALL_ABILITIES: DashDiceAbility[] = [LUCK_TURNER, PAN_SLAP, SCORE_SAW, SCORE_SIPHON, HARD_HAT];
+export const ALL_ABILITIES: DashDiceAbility[] = [LUCK_TURNER, VITAL_RUSH, AURA_AXE, PAN_SLAP, SCORE_SAW, SCORE_SIPHON, HARD_HAT, POWER_PULL, AURA_FORGE];
 
 export const ABILITIES_BY_CATEGORY: { [key in AbilityCategory]: DashDiceAbility[] } = {
-  [AbilityCategory.TACTICAL]: [LUCK_TURNER],
-  [AbilityCategory.ATTACK]: [SCORE_SAW, SCORE_SIPHON],
+  [AbilityCategory.TACTICAL]: [LUCK_TURNER, VITAL_RUSH],
+  [AbilityCategory.ATTACK]: [AURA_AXE, SCORE_SAW, SCORE_SIPHON],
   [AbilityCategory.DEFENSE]: [PAN_SLAP, HARD_HAT],
-  [AbilityCategory.UTILITY]: [],
+  [AbilityCategory.UTILITY]: [POWER_PULL, AURA_FORGE],
   [AbilityCategory.GAMECHANGER]: []
 };
 
 export const ABILITIES_BY_RARITY: { [key in AbilityRarity]: DashDiceAbility[] } = {
   [AbilityRarity.COMMON]: [],
-  [AbilityRarity.RARE]: [],
-  [AbilityRarity.EPIC]: [LUCK_TURNER, PAN_SLAP, SCORE_SAW, SCORE_SIPHON, HARD_HAT],
+  [AbilityRarity.RARE]: [POWER_PULL, AURA_FORGE],
+  [AbilityRarity.EPIC]: [LUCK_TURNER, VITAL_RUSH, AURA_AXE, PAN_SLAP, SCORE_SAW, SCORE_SIPHON, HARD_HAT],
   [AbilityRarity.LEGENDARY]: [],
   [AbilityRarity.MYTHIC]: []
 };

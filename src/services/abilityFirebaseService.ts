@@ -584,6 +584,151 @@ async function applyAbilityEffects(
         appliedAt: Timestamp.now()
       });
       
+    } else if (ability.id === 'vital_rush') {
+      // Vital Rush: ×3 multiplier with 50% increased double chance and flatline risk
+      const vitalRushEffect = {
+        abilityId: 'vital_rush',
+        type: 'score_multiplier',
+        multiplier: 3,
+        flatlineOnDoubles: true, // Lose all turn score if any double is rolled
+        increaseDoublesChance: 0.50, // 50% increased chance of rolling doubles
+        appliedAt: Timestamp.now(),
+        remainingTurns: 1 // Only lasts for this turn
+      };
+      
+      // Add the effect to the player's active effects
+      await updateDoc(doc(db, 'matches', matchId), {
+        [`gameData.activeEffects.${playerId}`]: arrayUnion(vitalRushEffect),
+        // Also set a multiplier flag for easy checking
+        [`gameData.hasTripleMultiplier`]: true
+      });
+      
+      console.log(`💓 Vital Rush: ×3 multiplier activated for ${playerId}. High risk, high reward!`);
+      
+      effectsApplied.push({
+        effectId: `vital_rush_active`,
+        appliedTo: playerId,
+        effectType: 'score_multiplier',
+        multiplier: 3,
+        risk: 'flatline_on_doubles'
+      });
+      
+    } else if (ability.id === 'aura_axe') {
+      // Aura Axe: Drain 50% of opponent's aura and steal it for yourself
+      const matchDoc = await getDoc(doc(db, 'matches', matchId));
+      if (!matchDoc.exists()) {
+        throw new Error(`Match ${matchId} not found for Aura Axe execution`);
+      }
+      
+      const matchData = matchDoc.data();
+      
+      // Auto-determine target (opponent)
+      let targetPlayerId = targetPlayerIds[0];
+      if (!targetPlayerId) {
+        const playerIds = matchData.players || 
+                         [matchData.hostData?.playerId, matchData.opponentData?.playerId].filter(Boolean);
+        targetPlayerId = playerIds.find((id: string) => id !== playerId);
+        console.log(`🪓 Aura Axe: Auto-targeting opponent ${targetPlayerId}`);
+      }
+      
+      if (!targetPlayerId) {
+        console.error('❌ Aura Axe: No target found', { matchData, playerId });
+        throw new Error('Aura Axe requires a target player');
+      }
+      
+      // Get current aura values
+      const playerAura = matchData.gameData?.playerAura?.[playerId] || 0;
+      const opponentAura = matchData.gameData?.playerAura?.[targetPlayerId] || 0;
+      
+      // Calculate 50% drain
+      const auraDrained = Math.floor(opponentAura * 0.5);
+      
+      // Update both players' aura
+      const newPlayerAura = playerAura + auraDrained;
+      const newOpponentAura = opponentAura - auraDrained;
+      
+      await updateDoc(doc(db, 'matches', matchId), {
+        [`gameData.playerAura.${playerId}`]: newPlayerAura,
+        [`gameData.playerAura.${targetPlayerId}`]: Math.max(0, newOpponentAura) // Can't go negative
+      });
+      
+      console.log(`🪓 Aura Axe: Drained ${auraDrained} aura from ${targetPlayerId}. Caster now has ${newPlayerAura}, opponent has ${newOpponentAura}`);
+      
+      effectsApplied.push({
+        effectId: `aura_axe_drain`,
+        appliedTo: targetPlayerId,
+        effectType: 'aura_drain',
+        auraDrained: auraDrained,
+        fromPlayer: targetPlayerId,
+        toPlayer: playerId
+      });
+      
+    } else if (ability.id === 'power_pull') {
+      // Power Pull: Convert turn score to aura when banking (1 aura per 10 points)
+      const powerPullEffect = {
+        abilityId: 'power_pull',
+        type: 'score_to_aura_conversion',
+        conversionRate: 10, // 10 points = 1 aura
+        appliedAt: Timestamp.now(),
+        remainingTurns: 1 // Only lasts for this turn
+      };
+      
+      // Add the effect to the player's active effects
+      await updateDoc(doc(db, 'matches', matchId), {
+        [`gameData.activeEffects.${playerId}`]: arrayUnion(powerPullEffect)
+      });
+      
+      console.log(`⚡ Power Pull: Score-to-aura conversion activated for ${playerId}. +1 aura per 10 points when banking.`);
+      
+      effectsApplied.push({
+        effectId: `power_pull_active`,
+        appliedTo: playerId,
+        effectType: 'score_to_aura_conversion',
+        conversionRate: 10
+      });
+      
+    } else if (ability.id === 'aura_forge') {
+      // Aura Forge: Convert turn score to aura instantly (5 points = 1 aura)
+      // The amount to convert is passed in targetPlayerIds as a number (1-4)
+      const auraAmount = targetPlayerIds[0] ? parseInt(targetPlayerIds[0] as any) : 1;
+      const pointsCost = auraAmount * 5; // 5 points per aura
+      
+      // Get current match data to check turn score
+      const matchDoc = await getDoc(doc(db, 'matches', matchId));
+      if (!matchDoc.exists()) {
+        throw new Error(`Match ${matchId} not found for Aura Forge execution`);
+      }
+      
+      const matchData = matchDoc.data();
+      const currentTurnScore = matchData.gameData?.turnScore || 0;
+      
+      // Verify player has enough turn score
+      if (currentTurnScore < pointsCost) {
+        throw new Error(`Not enough turn score. Need ${pointsCost} points for ${auraAmount} aura, but only have ${currentTurnScore}.`);
+      }
+      
+      // Get current aura
+      const currentPlayerAura = matchData.gameData?.playerAura?.[playerId] || 0;
+      
+      // Update: subtract turn score, add aura
+      const newTurnScore = currentTurnScore - pointsCost;
+      const newPlayerAura = currentPlayerAura + auraAmount;
+      
+      await updateDoc(doc(db, 'matches', matchId), {
+        'gameData.turnScore': newTurnScore,
+        [`gameData.playerAura.${playerId}`]: newPlayerAura
+      });
+      
+      console.log(`🔨 Aura Forge: Converted ${pointsCost} points to ${auraAmount} aura. Turn score: ${currentTurnScore} → ${newTurnScore}, Aura: ${currentPlayerAura} → ${newPlayerAura}`);
+      
+      effectsApplied.push({
+        effectId: `aura_forge_conversion`,
+        appliedTo: playerId,
+        effectType: 'instant_conversion',
+        pointsConverted: pointsCost,
+        auraGained: auraAmount
+      });
+      
     } else if (ability.id === 'pan_slap') {
       // Pan Slap: Immediately stop opponent's turn, show RED 1's, auto-bank their turn score
       const matchDoc = await getDoc(doc(db, 'matches', matchId));

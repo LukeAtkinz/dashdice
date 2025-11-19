@@ -288,6 +288,51 @@ export default function InlineAbilitiesDisplay({
 
     setIsUsing(ability.id);
     
+    // Special handling for Aura Forge - trigger selection UI instead of immediate execution
+    if (ability.id === 'aura_forge') {
+      console.log('🔨 Aura Forge: Triggering selection UI');
+      
+      // Call onAbilityUsed with special effect to trigger selection mode
+      onAbilityUsed({
+        type: 'aura_forge_pending',
+        abilityId: 'aura_forge',
+        callback: async (amount: number) => {
+          // This callback will be called when player selects an amount
+          console.log(`🔨 Aura Forge: Player selected ${amount} aura`);
+          
+          try {
+            const result = await useAbility(ability.id, matchData.id || 'unknown', {
+              round: 1,
+              userScore: getCurrentPlayer()?.playerScore || 0,
+              opponentScore: getOpponent()?.playerScore || 0,
+              diceValues: [matchData.gameData.diceOne, matchData.gameData.diceTwo],
+              playerAura: currentPlayerAura,
+              targetPlayers: [amount.toString()] // Pass selected amount as target
+            });
+            
+            if (result.success) {
+              console.log('🔨 Aura Forge successful:', result);
+              // Trigger pulse animation
+              setPulsingAbility(ability.id);
+              setTimeout(() => setPulsingAbility(null), 600);
+              
+              // Set cooldown
+              setCooldowns(prev => ({
+                ...prev,
+                [ability.id]: ability.cooldown
+              }));
+            }
+          } catch (error) {
+            console.error('🔨 Aura Forge error:', error);
+          } finally {
+            setIsUsing(null);
+          }
+        }
+      });
+      
+      return; // Don't continue with normal ability execution
+    }
+    
     try {
       console.log('🎯 Calling useAbility for:', ability.id, `| Current AURA: ${currentPlayerAura}`);
       const result = await useAbility(ability.id, matchData.id || 'unknown', {

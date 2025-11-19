@@ -510,6 +510,27 @@ export class MatchService {
         }
       }
       
+      // 💓 VITAL RUSH EFFECT: Check for vital_rush and apply 50% increased double chance
+      const hasVitalRush = playerActiveEffects.some((effect: any) => 
+        effect.abilityId === 'vital_rush'
+      );
+      
+      if (hasVitalRush) {
+        console.log('💓 Vital Rush active! 50% increased chance of doubles');
+        
+        // 50% chance to force doubles (if not already doubles)
+        if (dice1 !== dice2 && Math.random() < 0.5) {
+          // Randomly pick which die to change to match the other
+          if (Math.random() < 0.5) {
+            console.log(`💓 Vital Rush: Changed dice1 from ${dice1} to ${dice2} (forcing double)`);
+            dice1 = dice2;
+          } else {
+            console.log(`💓 Vital Rush: Changed dice2 from ${dice2} to ${dice1} (forcing double)`);
+            dice2 = dice1;
+          }
+        }
+      }
+      
       // 🏆 TRACK DICE ROLL ACHIEVEMENTS: Update total dice rolled count (2 dice per roll)
       try {
         // PERFORMANCE: Achievement tracking moved to match end to prevent lag
@@ -588,6 +609,13 @@ export class MatchService {
       const isDoubleOne = dice1 === 1 && dice2 === 1;
       const isDoubleSix = dice1 === 6 && dice2 === 6;
       
+      // Check for Vital Rush active effect (×3 multiplier, flatline on doubles)
+      const currentPlayerId = currentPlayer.playerId;
+      const playerActiveEffects = matchData.gameData.activeEffects?.[currentPlayerId] || [];
+      const hasVitalRush = playerActiveEffects.some((effect: any) => 
+        effect.abilityId === 'vital_rush'
+      );
+      
       // Prepare updates object early so it can be used in game mode logic
       const updates: any = {
         'gameData.isRolling': false,
@@ -618,7 +646,9 @@ export class MatchService {
             // Snake Eyes: +20 to turn score and opponent, activate/increase multiplier
             const newDoublesCount = doublesThisTurn + 1;
             const newMultiplier = 2 + (newDoublesCount - 1); // 2x + additional doubles
-            newTurnScore = currentTurnScore + 20;
+            let scoreToAdd = 20;
+            if (hasVitalRush) scoreToAdd = scoreToAdd * 3;
+            newTurnScore = currentTurnScore + scoreToAdd;
             
             // Update multiplier tracking
             updates['gameData.doublesThisTurn'] = newDoublesCount;
@@ -643,7 +673,9 @@ export class MatchService {
             const newMultiplier = 2 + (newDoublesCount - 1); // 2x + additional doubles
             
             // Add dice sum to turn score (not doubled yet)
-            newTurnScore = currentTurnScore + diceSum;
+            let scoreToAdd = diceSum;
+            if (hasVitalRush) scoreToAdd = scoreToAdd * 3;
+            newTurnScore = currentTurnScore + scoreToAdd;
             
             // Update multiplier tracking
             updates['gameData.doublesThisTurn'] = newDoublesCount;
@@ -664,7 +696,8 @@ export class MatchService {
           }
           else {
             // Normal roll: add to turn score (apply current multiplier if active)
-            const scoreToAdd = hasMultiplier ? diceSum * currentMultiplier : diceSum;
+            let scoreToAdd = hasMultiplier ? diceSum * currentMultiplier : diceSum;
+            if (hasVitalRush) scoreToAdd = scoreToAdd * 3;
             newTurnScore = currentTurnScore + scoreToAdd;
             turnOver = false;
           }
@@ -698,7 +731,9 @@ export class MatchService {
           // Double 1 = add 20 to turn score and set active x2 multiplier
           
           // Add 20 to turn score
-          newTurnScore = currentTurnScore + 20;
+          let scoreToAdd = 20;
+          if (hasVitalRush) scoreToAdd = scoreToAdd * 3;
+          newTurnScore = currentTurnScore + scoreToAdd;
           
           // Set x2 multiplier for future rolls (don't stack, just set to 2)
           updates['gameData.trueGritMultiplier'] = 2;
@@ -709,7 +744,9 @@ export class MatchService {
           // Other doubles: add dice total to turn score and set x2 multiplier
           
           // Add dice total to turn score
-          newTurnScore = currentTurnScore + diceSum;
+          let scoreToAdd = diceSum;
+          if (hasVitalRush) scoreToAdd = scoreToAdd * 3;
+          newTurnScore = currentTurnScore + scoreToAdd;
           
           // Set x2 multiplier for future rolls (don't stack, just set to 2)
           updates['gameData.trueGritMultiplier'] = 2;
@@ -718,7 +755,8 @@ export class MatchService {
         }
         else {
           // Normal roll: add dice sum multiplied by current multiplier
-          const scoreToAdd = diceSum * currentMultiplier;
+          let scoreToAdd = diceSum * currentMultiplier;
+          if (hasVitalRush) scoreToAdd = scoreToAdd * 3;
           newTurnScore = currentTurnScore + scoreToAdd;
           turnOver = false;
         }
@@ -732,13 +770,16 @@ export class MatchService {
         }
         else if (isDoubleOne) {
           // Double 1: special rule - add 20 to turn score
-          newTurnScore = currentTurnScore + 20;
+          let scoreToAdd = 20;
+          if (hasVitalRush) scoreToAdd = scoreToAdd * 3;
+          newTurnScore = currentTurnScore + scoreToAdd;
           turnOver = false; // Continue turn after double 1
         }
         else if (isDouble) {
           // Any other double: apply 2x multiplier to the dice sum AND activate multiplier for future rolls
           const multiplier = 2; // Fixed 2x multiplier for all doubles
-          const effectiveRoll = diceSum * multiplier;
+          let effectiveRoll = diceSum * multiplier;
+          if (hasVitalRush) effectiveRoll = effectiveRoll * 3;
           
           newTurnScore = currentTurnScore + effectiveRoll;
           
@@ -750,7 +791,8 @@ export class MatchService {
         else {
           // Normal roll: add dice sum to turn score (with multiplier if active)
           const hasMultiplier = matchData.gameData.hasDoubleMultiplier || false;
-          const scoreToAdd = hasMultiplier ? diceSum * 2 : diceSum;
+          let scoreToAdd = hasMultiplier ? diceSum * 2 : diceSum;
+          if (hasVitalRush) scoreToAdd = scoreToAdd * 3;
           
           newTurnScore = currentTurnScore + scoreToAdd;
           turnOver = false; // Continue turn
@@ -804,23 +846,45 @@ export class MatchService {
       else if (isDouble) {
         if (dice1 === 1) {
           // Double 1 (Snake Eyes) - +20 to turn score and activate x2 multiplier
-          newTurnScore = currentTurnScore + 20;
+          let scoreToAdd = 20;
+          if (hasVitalRush) scoreToAdd = scoreToAdd * 3;
+          newTurnScore = currentTurnScore + scoreToAdd;
         } else {
           // All other doubles (2-6) - add dice sum and activate x2 multiplier
-          newTurnScore = currentTurnScore + diceSum;
+          let scoreToAdd = diceSum;
+          if (hasVitalRush) scoreToAdd = scoreToAdd * 3;
+          newTurnScore = currentTurnScore + scoreToAdd;
         }
         turnOver = false; // Continue turn
       }
       // Normal scoring
       else {
         const currentMultiplier = matchData.gameData.hasDoubleMultiplier || false;
-        const scoreToAdd = currentMultiplier ? diceSum * 2 : diceSum;
+        let scoreToAdd = currentMultiplier ? diceSum * 2 : diceSum;
+        if (hasVitalRush) scoreToAdd = scoreToAdd * 3;
         newTurnScore = currentTurnScore + scoreToAdd;
         turnOver = false;
       }
       
       // Update turn score in the updates object
       updates['gameData.turnScore'] = newTurnScore;
+      
+      // 💓 VITAL RUSH FLATLINE CHECK: If doubles rolled with Vital Rush active, lose all turn score
+      if (isDouble && hasVitalRush) {
+        console.log('💓💀 FLATLINE! Vital Rush double rolled - losing all turn score');
+        newTurnScore = 0;
+        turnOver = true;
+        updates['gameData.turnScore'] = 0;
+        
+        // Remove Vital Rush effect from activeEffects
+        const remainingEffects = playerActiveEffects.filter((effect: any) => 
+          effect.abilityId !== 'vital_rush'
+        );
+        updates[`gameData.activeEffects.${currentPlayerId}`] = remainingEffects;
+        
+        // Remove the triple multiplier flag
+        updates['gameData.hasTripleMultiplier'] = false;
+      }
       
       // Activate 2x multiplier for ALL doubles (including double 1s)
       if (isDouble) {
@@ -1347,6 +1411,44 @@ export class MatchService {
           // Remove the Score Saw effect (one-time use)
           const remainingEffects = playerActiveEffects.filter((effect: any) => 
             !(effect.abilityId === 'score_saw' && effect.type === 'on_bank_cut')
+          );
+          updates[`gameData.activeEffects.${playerId}`] = remainingEffects;
+        }
+        
+        // 💓 VITAL RUSH: Remove effect when banking (one-time use per turn)
+        const vitalRushEffect = playerActiveEffects.find((effect: any) => 
+          effect.abilityId === 'vital_rush'
+        );
+        
+        if (vitalRushEffect) {
+          console.log('💓 Vital Rush effect removed after banking');
+          const remainingEffects = playerActiveEffects.filter((effect: any) => 
+            effect.abilityId !== 'vital_rush'
+          );
+          updates[`gameData.activeEffects.${playerId}`] = remainingEffects;
+          updates['gameData.hasTripleMultiplier'] = false;
+        }
+        
+        // ⚡ POWER PULL: Convert turn score to aura when banking (1 aura per 10 points)
+        const powerPullEffect = playerActiveEffects.find((effect: any) => 
+          effect.abilityId === 'power_pull' && effect.type === 'score_to_aura_conversion'
+        );
+        
+        if (powerPullEffect) {
+          const conversionRate = (powerPullEffect as any).conversionRate || 10;
+          const auraGained = Math.floor(effectiveTurnScore / conversionRate);
+          
+          if (auraGained > 0) {
+            const currentPlayerAura = matchData.gameData?.playerAura?.[playerId] || 0;
+            const newPlayerAura = currentPlayerAura + auraGained;
+            updates[`gameData.playerAura.${playerId}`] = newPlayerAura;
+            
+            console.log(`⚡ Power Pull: Converted ${effectiveTurnScore} points to ${auraGained} aura. New aura: ${newPlayerAura}`);
+          }
+          
+          // Remove the Power Pull effect (one-time use per turn)
+          const remainingEffects = playerActiveEffects.filter((effect: any) => 
+            !(effect.abilityId === 'power_pull' && effect.type === 'score_to_aura_conversion')
           );
           updates[`gameData.activeEffects.${playerId}`] = remainingEffects;
         }

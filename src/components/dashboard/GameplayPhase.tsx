@@ -58,6 +58,38 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   
   // State for score shooting animation
   const [isScoreShooting, setIsScoreShooting] = React.useState(false);
+  
+  // State for Aura Forge selection mode
+  const [isAuraForgeActive, setIsAuraForgeActive] = React.useState(false);
+  const [auraForgeCallback, setAuraForgeCallback] = React.useState<((amount: number) => void) | null>(null);
+  
+  // Wrapped ability handler to detect Aura Forge activation
+  const handleAbilityUsed = React.useCallback((effect: any) => {
+    // Check if this is Aura Forge activation
+    if (effect?.abilityId === 'aura_forge' || effect?.type === 'aura_forge_pending') {
+      // Activate selection mode
+      setIsAuraForgeActive(true);
+      // Store the callback for when user selects an amount
+      if (effect.callback) {
+        setAuraForgeCallback(() => effect.callback);
+      }
+    } else {
+      // Pass through to parent handler
+      if (onAbilityUsed) {
+        onAbilityUsed(effect);
+      }
+    }
+  }, [onAbilityUsed]);
+  
+  // Handle Aura Forge amount selection
+  const handleAuraForgeSelect = React.useCallback(async (amount: number) => {
+    if (auraForgeCallback) {
+      await auraForgeCallback(amount);
+    }
+    // Reset state
+    setIsAuraForgeActive(false);
+    setAuraForgeCallback(null);
+  }, [auraForgeCallback]);
 
   // Handle bank/save with animation
   const handleBankScore = () => {
@@ -771,7 +803,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             >
               <InlineAbilitiesDisplay
                 matchData={matchData}
-                onAbilityUsed={onAbilityUsed}
+                onAbilityUsed={handleAbilityUsed}
                 isPlayerTurn={isMyTurn}
                 playerId={user.uid}
                 className="justify-between"
@@ -913,7 +945,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             >
               <InlineAbilitiesDisplay
                 matchData={matchData}
-                onAbilityUsed={onAbilityUsed}
+                onAbilityUsed={handleAbilityUsed}
                 isPlayerTurn={isMyTurn}
                 playerId={user.uid}
                 className="justify-between w-full"
@@ -972,6 +1004,58 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   />
                 </motion.div>
 
+                {/* AURA FORGE: Show 1,2,3,4 selection buttons when active */}
+                {isAuraForgeActive ? (
+                  <>
+                    {[1, 2, 3, 4].map((amount) => {
+                      const pointsCost = amount * 5;
+                      const canAfford = matchData.gameData.turnScore >= pointsCost;
+                      
+                      return (
+                        <motion.button
+                          key={amount}
+                          onClick={() => canAfford && handleAuraForgeSelect(amount)}
+                          disabled={!canAfford}
+                          className={`text-2xl font-bold transition-all ${
+                            canAfford
+                              ? 'text-white active:scale-95'
+                              : 'cursor-not-allowed opacity-40'
+                          }`}
+                          style={{ 
+                            width: '18%',
+                            height: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            fontFamily: "Audiowide",
+                            border: 'none',
+                            borderRadius: '0',
+                            background: 'transparent',
+                            backdropFilter: 'none',
+                          }}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ 
+                            opacity: canAfford ? 1 : 0.4,
+                            scale: 1
+                          }}
+                          whileTap={canAfford ? { 
+                            scale: 0.92,
+                            boxShadow: "0 4px 15px rgba(139, 92, 246, 0.5)"
+                          } : {}}
+                          transition={{ 
+                            duration: 0.3,
+                            delay: amount * 0.05
+                          }}
+                        >
+                          <span className="text-3xl">{amount}</span>
+                          <span className="text-xs text-gray-400 mt-1">-{pointsCost}pts</span>
+                        </motion.button>
+                      );
+                    })}
+                  </>
+                ) : (
+                  <>
                 {/* SAVE button for modes other than True Grit - MIDDLE */}
                 {matchData.gameMode !== 'true-grit' && (
                   <motion.button
@@ -1056,6 +1140,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 >
                   <span>PLAY</span>
                 </motion.button>
+                  </>
+                )}
               </>
             ) : (
               <>
