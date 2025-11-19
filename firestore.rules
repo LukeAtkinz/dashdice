@@ -646,5 +646,32 @@ service cloud.firestore {
       allow read, write: if request.auth != null;
       allow create: if request.auth != null;
     }
+    
+    // Match Chat Sessions - players in the match can read/write
+    match /matchChatSessions/{sessionId} {
+      allow read: if request.auth != null && 
+        (resource.data.player1Id == request.auth.uid || resource.data.player2Id == request.auth.uid);
+      allow create: if request.auth != null && 
+        (request.resource.data.player1Id == request.auth.uid || request.resource.data.player2Id == request.auth.uid);
+      allow update: if request.auth != null && 
+        (resource.data.player1Id == request.auth.uid || resource.data.player2Id == request.auth.uid);
+    }
+    
+    // Match Chat Messages - players in the match can read/write their messages
+    match /matchChatMessages/{messageId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && 
+        request.resource.data.fromUserId == request.auth.uid;
+      allow update, delete: if request.auth != null && 
+        resource.data.fromUserId == request.auth.uid;
+    }
+    
+    // Match Chat Exports - only readable by match participants
+    match /matchChatExports/{exportId} {
+      allow read: if request.auth != null && 
+        (resource.data.player1.id == request.auth.uid || resource.data.player2.id == request.auth.uid);
+      allow create, update: if request.auth != null;
+      allow delete: if false; // Exports auto-delete after 30 days
+    }
   }
 }

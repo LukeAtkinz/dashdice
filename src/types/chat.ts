@@ -217,3 +217,73 @@ export interface UnifiedChatContextType {
     gameId?: string;
   }>;
 }
+
+// ============================================
+// Match-Specific Voice Chat Types
+// ============================================
+
+export interface MatchChatMessage extends Omit<ChatMessage, 'roomId' | 'messageType'> {
+  matchId: string;
+  from: 'player1' | 'player2';
+  fromUserId: string;
+  fromDisplayName: string;
+  originalText: string;
+  translatedText?: string; // Only present if translation occurred
+  language: string; // Language of originalText
+  isVoice: boolean; // true if transcribed from audio, false if typed
+  audioTranscriptionDuration?: number; // Duration in seconds if voice message
+}
+
+export interface MatchChatSession {
+  id: string; // Same as matchId
+  matchId: string;
+  player1Id: string;
+  player2Id: string;
+  player1Language: string;
+  player2Language: string;
+  player1DisplayName: string;
+  player2DisplayName: string;
+  startedAt: number;
+  endedAt?: number;
+  messageCount: number;
+  isActive: boolean;
+}
+
+export interface MatchChatMuteState {
+  chatMuted: boolean; // Mute display of incoming messages
+  micMuted: boolean; // Mute microphone
+}
+
+export interface VoiceTranscriptionRequest {
+  audioBlob: Blob;
+  language?: string; // Optional language hint for better accuracy
+  matchId: string;
+  playerId: string;
+}
+
+export interface VoiceTranscriptionResponse {
+  text: string;
+  detectedLanguage?: string;
+  duration: number; // Audio duration in seconds
+  error?: string;
+}
+
+export interface MatchChatExportData {
+  matchId: string;
+  player1: {
+    id: string;
+    displayName: string;
+    language: string;
+  };
+  player2: {
+    id: string;
+    displayName: string;
+    language: string;
+  };
+  startTime: number;
+  endTime: number;
+  messages: MatchChatMessage[];
+  exportedAt: number;
+  totalVoiceMessages: number;
+  totalTextMessages: number;
+}

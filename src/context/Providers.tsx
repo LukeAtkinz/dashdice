@@ -11,6 +11,7 @@ import { GameModeProvider } from './GameModeContext';
 import { ChatProvider } from './ChatContext';
 import { ToastProvider } from './ToastContext';
 import { AbilitiesProvider } from './AbilitiesContext';
+import { MatchChatProvider } from './MatchChatContext';
 import { CleanupService } from '@/services/cleanupService';
 import { MatchLifecycleService } from '@/services/matchLifecycleService';
 import { GameInvitationService } from '@/services/gameInvitationService';
@@ -61,11 +62,13 @@ export const Providers: React.FC<ProvidersProps> = ({ children }) => {
               <AbilitiesProvider>
                 <FriendsProvider>
                   <ChatProvider>
-                    <GameModeProvider>
-                      <GameProvider>
-                        {children}
-                      </GameProvider>
-                    </GameModeProvider>
+                    <MatchChatProvider>
+                      <GameModeProvider>
+                        <GameProvider>
+                          {children}
+                        </GameProvider>
+                      </GameModeProvider>
+                    </MatchChatProvider>
                   </ChatProvider>
                 </FriendsProvider>
               </AbilitiesProvider>

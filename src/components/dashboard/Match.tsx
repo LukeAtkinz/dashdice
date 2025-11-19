@@ -18,6 +18,8 @@ import { doc, updateDoc, Timestamp, arrayUnion } from 'firebase/firestore';
 import MatchAbandonmentNotification from '@/components/notifications/MatchAbandonmentNotification';
 import { useToast } from '@/context/ToastContext';
 import { useMatchBackground } from '@/hooks/useOptimizedBackground';
+import { MatchChatFeed } from '@/components/match/MatchChatFeed';
+import { useMatchChat } from '@/context/MatchChatContext';
 
 interface MatchProps {
   gameMode?: string;
@@ -37,6 +39,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const { user } = useAuth();
   const { setCurrentSection, isGameOver, setIsGameOver } = useNavigation();
   const { showToast } = useToast();
+  const { initializeChat, endChat, clearChat } = useMatchChat();
   // Legacy achievement system - temporarily disabled to prevent concurrent updates
   // const { recordGameCompletion } = useGameAchievements();
   
@@ -73,6 +76,39 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       console.log('⏱️ Match start time initialized:', new Date(matchStartTime.current));
     }
   }, [matchData]);
+  
+  // Initialize match chat when match data is available
+  useEffect(() => {
+    if (matchData && matchData.id && user) {
+      const isBot = matchData.hostData.playerId.includes('bot_') || matchData.opponentData?.playerId?.includes('bot_');
+      
+      // Only initialize chat for non-bot matches
+      if (!isBot) {
+        initializeChat(
+          matchData.id,
+          matchData.hostData.playerId,
+          matchData.opponentData?.playerId || 'unknown',
+          matchData.hostData.playerDisplayName || 'Player 1',
+          matchData.opponentData?.playerDisplayName || 'Player 2',
+          'en', // Default to English for both players
+          'en'
+        ).catch((error) => {
+          console.error('❌ Failed to initialize match chat:', error);
+        });
+      }
+    }
+    
+    // Cleanup chat on unmount or when match ends
+    return () => {
+      if (matchData?.gameData?.gamePhase === 'gameOver') {
+        endChat().catch((error) => {
+          console.error('❌ Failed to end match chat:', error);
+        });
+      } else {
+        clearChat();
+      }
+    };
+  }, [matchData?.id, user?.uid]);
   
   // Abandonment notification states
   const [showAbandonmentNotification, setShowAbandonmentNotification] = useState(false);
@@ -1862,6 +1898,18 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       onBankScore={handleBankScore}
                       onAbilityUsed={handleAbilityUsed}
                     />
+                    
+                    {/* Match Chat Feed - Only show for non-bot matches */}
+                    {matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6, duration: 0.5 }}
+                        className="mt-4 px-4"
+                      >
+                        <MatchChatFeed matchId={matchData.id} />
+                      </motion.div>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
