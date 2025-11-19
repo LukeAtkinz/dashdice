@@ -1544,7 +1544,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   className="fixed top-0 left-0 right-0 flex justify-between z-20" 
                   style={{ 
                     gap: '0px', 
-                    paddingTop: 'max(env(safe-area-inset-top, 0px), 80px)',
+                    paddingTop: 'max(env(safe-area-inset-top, 0px), 60px)',
                     paddingLeft: '16px',
                     paddingRight: '16px'
                   }}
@@ -1799,7 +1799,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8, duration: 0.5 }}
-                className="w-full px-4 mb-4"
+                className="w-full px-4"
+                style={{ 
+                  marginTop: 'calc(20vh - 10px)',
+                  marginBottom: '8px'
+                }}
               >
                 <MatchChatFeed matchId={matchData.id} />
               </motion.div>
@@ -1835,7 +1839,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             )}
 
             {/* Center Dice Area - Middle */}
-            <div className="w-full flex flex-col items-center justify-center" style={{ paddingTop: 'calc(20vh + 60px)', paddingBottom: '20px', minHeight: '40vh', maxWidth: '100%', overflow: 'visible' }}>
+            <div className="w-full flex flex-col items-center justify-center" style={{ paddingTop: 'calc(20vh + 20px)', paddingBottom: '20px', minHeight: '40vh', maxWidth: '100%', overflow: 'visible' }}>
               {/* Phase-specific content with professional transitions */}
               <AnimatePresence mode="wait">
                 {matchData.gameData.gamePhase === 'turnDecider' && (

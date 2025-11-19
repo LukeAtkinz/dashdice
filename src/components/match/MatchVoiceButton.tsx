@@ -144,9 +144,9 @@ export const MatchVoiceButton: React.FC<MatchVoiceButtonProps> = ({
     }
   };
 
-  const handleMouseDown = () => {
+  const handleMouseDown = async () => {
     if (!isRecording && !isProcessing) {
-      startRecording();
+      await startRecording();
     }
   };
 
@@ -156,15 +156,13 @@ export const MatchVoiceButton: React.FC<MatchVoiceButtonProps> = ({
     }
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    e.preventDefault();
+  const handleTouchStart = async (e: React.TouchEvent) => {
     if (!isRecording && !isProcessing) {
-      startRecording();
+      await startRecording();
     }
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    e.preventDefault();
     if (isRecording) {
       stopRecording();
     }
@@ -186,7 +184,6 @@ export const MatchVoiceButton: React.FC<MatchVoiceButtonProps> = ({
         background: isRecording ? 'rgba(239, 68, 68, 0.3)' : 'transparent',
         cursor: disabled || isMuted ? 'not-allowed' : 'pointer',
         opacity: disabled || isMuted ? 0.3 : 1,
-        touchAction: 'none',
         userSelect: 'none',
         WebkitUserSelect: 'none',
         WebkitTouchCallout: 'none'
