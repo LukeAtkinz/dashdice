@@ -146,32 +146,41 @@ export function AbilitiesProvider({ children }: { children: ReactNode }) {
         console.log(`✅ Using ${abilities.length} abilities from Firebase`);
       }
       
-      // Ensure siphon is always available to every user
+      // AUTO-UNLOCK ALL ABILITIES FOR ALL USERS
       let finalUserAbilities = userAbils;
       
-      // Check if user already has siphon unlocked
-      const hasSiphon = userAbils.some(ua => ua.abilityId === 'siphon');
-      if (!hasSiphon) {
-        // Add siphon as an unlocked ability
-        const siphonAbility: UserAbility = {
-          id: `siphon_${user.uid}`,
+      // Get all ability IDs from loaded abilities
+      const allAbilityIds = abilities.map(a => a.id);
+      const unlockedAbilityIds = userAbils.map(ua => ua.abilityId);
+      const missingAbilityIds = allAbilityIds.filter(id => !unlockedAbilityIds.includes(id));
+      
+      if (missingAbilityIds.length > 0) {
+        console.log(`🔓 Auto-unlocking ${missingAbilityIds.length} missing abilities for user:`, missingAbilityIds);
+        
+        // Create UserAbility objects for missing abilities
+        const newUserAbilities: UserAbility[] = missingAbilityIds.map(abilityId => ({
+          id: `${abilityId}_${user.uid}`,
           userId: user.uid,
-          abilityId: 'siphon',
+          abilityId,
           unlockedAt: new Date() as any,
           timesUsed: 0,
           successRate: 0,
-          isEquipped: true,
-          equippedSlot: 'attack'
-        };
-        finalUserAbilities = [...userAbils, siphonAbility];
+          isEquipped: false
+        }));
         
-        // Also unlock it in the database
-        try {
-          await AbilitiesService.unlockAbility(user.uid, 'siphon');
-          console.log('🔮 Siphon automatically unlocked for user:', user.uid);
-        } catch (error) {
-          console.error('❌ Failed to unlock siphon in database:', error);
-        }
+        finalUserAbilities = [...userAbils, ...newUserAbilities];
+        
+        // Unlock in database (fire and forget - don't wait)
+        Promise.all(
+          missingAbilityIds.map(abilityId => 
+            AbilitiesService.unlockAbility(user.uid, abilityId)
+              .catch(err => console.warn(`Failed to unlock ${abilityId}:`, err))
+          )
+        ).then(() => {
+          console.log(`✅ Auto-unlocked all ${missingAbilityIds.length} abilities in database`);
+        });
+      } else {
+        console.log(`✅ User already has all ${allAbilityIds.length} abilities unlocked`);
       }
       
       // If no user abilities, create some mock ones for development
