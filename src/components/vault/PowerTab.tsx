@@ -1231,7 +1231,7 @@ export default function PowerTab({
                                   style={{ fontFamily: 'Audiowide', lineHeight: '1.2' }}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setSelectedAbility(ability);
+                                    setSelectedAbility(ability as any);
                                     setIsModalOpen(true);
                                   }}
                                 >

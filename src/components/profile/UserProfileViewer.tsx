@@ -559,7 +559,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     <div className="text-2xl font-bold text-purple-400 font-audiowide">
                       {(() => {
                         // Calculate items collected from inventory - handle both old and new formats
-                        const inventory = userProfile.inventory || {};
+                        const inventory = userProfile.inventory as any || {};
                         const ownedBackgrounds = inventory.ownedBackgrounds || (userProfile as any).ownedBackgrounds || [];
                         const inventoryItems = (userProfile as any).inventoryItems || [];
                         return ownedBackgrounds.length + inventoryItems.length;

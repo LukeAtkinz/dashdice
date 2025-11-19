@@ -125,8 +125,8 @@ export default function FriendsList({
     >
       {/* Header & Filters - Sticky at top (flex-shrink-0) */}
       <div className="flex-shrink-0 space-y-1">
-        {/* Add Friend Button - Right aligned */
-        {showAddButton && (
+        {/* Add Friend Button - Right aligned */}
+        {(showAddButton === true) && (
           <div className="flex justify-end">
             <button
               onClick={() => setShowAddFriend(true)}
@@ -140,9 +140,9 @@ export default function FriendsList({
           </div>
         )}
 
-        {/* Filters (not shown in compact mode) - Removed search bar */}
-        {!compact && friends.length > 0 && (
-          <div className="flex gap-3 pt-0" style={{ display: 'none' }}>
+        {/* Filters (not shown in compact mode) - Hidden */}
+        {false && !compact && friends.length > 0 && (
+          <div className="flex gap-3 pt-0">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as 'all' | 'online' | 'offline')}
