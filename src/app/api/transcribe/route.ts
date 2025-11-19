@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
-
 export async function POST(request: NextRequest) {
+  // Initialize OpenAI client with API key (only when route is called)
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY || ''
+  });
   try {
     // Get audio file from form data
     const formData = await request.formData();
