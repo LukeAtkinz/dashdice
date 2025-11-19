@@ -2,6 +2,7 @@ import {
   collection, 
   doc, 
   addDoc, 
+  setDoc, 
   updateDoc, 
   onSnapshot, 
   query, 
@@ -49,13 +50,10 @@ export async function startMatchChatSession(
 
     // Use matchId as document ID for easy lookup
     const sessionRef = doc(db, CHAT_SESSIONS_COLLECTION, matchId);
-    await updateDoc(sessionRef, sessionData as any).catch(async () => {
-      // If document doesn't exist, create it
-      await addDoc(collection(db, CHAT_SESSIONS_COLLECTION), {
-        id: matchId,
-        ...sessionData
-      });
-    });
+    await setDoc(sessionRef, {
+      id: matchId,
+      ...sessionData
+    }, { merge: true });
 
     console.log('✅ Match chat session started:', matchId);
     return { id: matchId, ...sessionData };

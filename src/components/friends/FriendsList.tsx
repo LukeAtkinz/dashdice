@@ -124,8 +124,8 @@ export default function FriendsList({
       }}
     >
       {/* Header & Filters - Sticky at top (flex-shrink-0) */}
-      <div className="flex-shrink-0 space-y-1 pb-3 border-b border-white/20">
-        {/* Add Friend Button - Right aligned */}
+      <div className="flex-shrink-0 space-y-1">
+        {/* Add Friend Button - Right aligned */
         {showAddButton && (
           <div className="flex justify-end">
             <button
@@ -142,7 +142,7 @@ export default function FriendsList({
 
         {/* Filters (not shown in compact mode) - Removed search bar */}
         {!compact && friends.length > 0 && (
-          <div className="flex gap-3 pt-0">
+          <div className="flex gap-3 pt-0" style={{ display: 'none' }}>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as 'all' | 'online' | 'offline')}
@@ -168,13 +168,14 @@ export default function FriendsList({
 
       {/* Friends List - Scrollable with overflow hidden cutoff */}
       <div 
-        className="flex-1 overflow-y-auto pb-6"
+        className="flex-1 overflow-y-auto"
         style={{
           maxHeight: 'calc(100vh - 200px)',
           touchAction: 'pan-y',
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'contain',
-          scrollBehavior: 'smooth'
+          scrollBehavior: 'smooth',
+          paddingTop: 0
         }}
       >
 

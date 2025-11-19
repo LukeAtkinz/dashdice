@@ -136,8 +136,9 @@ export const AbilityDetailsModal: React.FC<AbilityDetailsModalProps> = ({
                     <div className="text-xs text-gray-400 uppercase mb-1" style={{ fontFamily: 'Montserrat' }}>
                       Aura Cost
                     </div>
-                    <div className="text-purple-400 font-bold" style={{ fontFamily: 'Audiowide' }}>
-                      {ability.auraCost} ✨
+                    <div className="text-purple-400 font-bold flex items-center gap-2" style={{ fontFamily: 'Audiowide' }}>
+                      <img src="/aura.webp" alt="Aura" className="w-5 h-5" />
+                      {ability.auraCost}
                     </div>
                   </div>
 

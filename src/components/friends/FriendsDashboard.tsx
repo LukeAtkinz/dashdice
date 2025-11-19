@@ -209,7 +209,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       </div>
 
       {/* Navigation Tabs - Using Inventory Template */}
-      <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-8 flex-shrink-0">
+      <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-2 flex-shrink-0">
         {tabs.map((tab) => (
           <button
             key={tab.id}
