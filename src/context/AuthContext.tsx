@@ -85,6 +85,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           equippedBackground: newDayBackground.id, // Set "New Day" as default display background
           ...additionalData,
         });
+
+        // AUTO-UNLOCK ALL ABILITIES FOR NEW USER
+        // Import abilities dynamically to avoid circular dependencies
+        const { ALL_ABILITIES } = await import('../constants/abilities');
+        const { AbilitiesService } = await import('../services/abilitiesService');
+        
+        console.log(`🔓 Auto-unlocking all ${ALL_ABILITIES.length} abilities for new user: ${firebaseUser.uid}`);
+        
+        // Unlock all abilities in parallel (fire and forget)
+        Promise.all(
+          ALL_ABILITIES.map(ability => 
+            AbilitiesService.unlockAbility(firebaseUser.uid, ability.id)
+              .catch(err => console.warn(`Failed to unlock ${ability.id}:`, err))
+          )
+        ).then(() => {
+          console.log(`✅ Successfully unlocked all ${ALL_ABILITIES.length} abilities for new user`);
+        }).catch(err => {
+          console.error('❌ Error unlocking abilities for new user:', err);
+        });
+        
       } catch (error) {
         console.error('Error creating user document:', error);
       }
