@@ -1792,6 +1792,26 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               )}
             </AnimatePresence>
 
+            {/* Match Chat Feed - Between player cards and dice - Only show for non-bot matches */}
+            {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.5 }}
+                className="w-full px-4 mt-4 mb-2"
+                style={{ 
+                  position: 'fixed',
+                  top: 'calc(20vh + 80px)',
+                  left: 0,
+                  right: 0,
+                  zIndex: 15,
+                  pointerEvents: 'auto'
+                }}
+              >
+                <MatchChatFeed matchId={matchData.id} />
+              </motion.div>
+            )}
+
             {/* Center Dice Area - Middle */}
             <div className="w-full flex flex-col items-center justify-center" style={{ paddingTop: 'calc(20vh + 60px)', paddingBottom: '20px', minHeight: '40vh', maxWidth: '100%', overflow: 'visible' }}>
               {/* Phase-specific content with professional transitions */}
@@ -1898,18 +1918,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       onBankScore={handleBankScore}
                       onAbilityUsed={handleAbilityUsed}
                     />
-                    
-                    {/* Match Chat Feed - Only show for non-bot matches */}
-                    {matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6, duration: 0.5 }}
-                        className="mt-4 px-4"
-                      >
-                        <MatchChatFeed matchId={matchData.id} />
-                      </motion.div>
-                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
