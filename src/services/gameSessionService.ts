@@ -332,18 +332,19 @@ export class GameSessionService {
         // Validate join conditions
         this.validateSessionJoin(session, playerData.playerId);
         
-        // 🔄 Validate state transition: waiting → matched
+        // 🔄 Validate state transition: waiting → (friend: waiting, other: matched)
+        const targetStatus = session.sessionType === 'friend' ? 'waiting' : 'matched';
         const stateValidation = SessionStateValidator.validateStateChange(
           sessionId,
           session.status,
-          'matched',
+          targetStatus,
           {
             sessionId,
             playerId: playerData.playerId,
             participantCount: session.participants.length + 1,
             sessionType: session.sessionType,
             gameMode: session.gameMode,
-            reason: 'player_joined'
+            reason: session.sessionType === 'friend' ? 'friend_player_joined' : 'player_joined'
           }
         );
         
@@ -369,21 +370,25 @@ export class GameSessionService {
         const currentVersion = session.version;
         const newVersion = currentVersion + 1;
         
+        // For friend sessions, keep status as 'waiting' until both players ready up
+        // For other sessions, auto-match when second player joins
+        const newStatus = session.sessionType === 'friend' ? 'waiting' : 'matched';
+        
         const updatedSession: Partial<GameSession> = {
-          status: 'matched',
+          status: newStatus,
           opponentData: {
             ...playerData,
             joinedAt: new Date()
           },
           participants: updatedParticipants,
-          matchedAt: new Date(),
+          matchedAt: newStatus === 'matched' ? new Date() : undefined,
           updatedAt: new Date(),
           version: newVersion // Increment version to prevent conflicts
         };
         
         transaction.update(sessionRef, {
           ...updatedSession,
-          matchedAt: serverTimestamp(),
+          matchedAt: newStatus === 'matched' ? serverTimestamp() : null,
           updatedAt: serverTimestamp(),
           lastActivityAt: serverTimestamp(), // 🕐 Track activity for timeout extension
           version: newVersion

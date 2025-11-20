@@ -251,30 +251,10 @@ export class EnhancedFriendInviteService {
         ]);
 
         console.log('✅ Invitation accepted, session created:', sessionResult.sessionId);
+        console.log('🎯 Sending both players to waiting room for ready-up...');
         
-        // Since we're navigating directly to match, we need to get the match ID
-        // The sessionResult contains the sessionId, but we need the match document ID
-        // Wait a brief moment for match document creation to complete
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
-        // Query for the match document that was created from this session
-        const { collection, query, where, getDocs } = await import('firebase/firestore');
-        
-        const matchQuery = query(
-          collection(db, 'matches'),
-          where('sessionId', '==', sessionResult.sessionId)
-        );
-        const matchSnapshot = await getDocs(matchQuery);
-        
-        let matchId = sessionResult.sessionId; // Fallback to session ID
-        if (!matchSnapshot.empty) {
-          matchId = matchSnapshot.docs[0].id;
-          console.log('✅ Found match document:', matchId, 'for session:', sessionResult.sessionId);
-        } else {
-          console.warn('⚠️ No match document found for session, using session ID as fallback');
-        }
-
-        // Send notifications to both users with the correct match ID
+        // Send notifications to both users to join the waiting room
+        // They will navigate to the waiting room, not directly to match
         await Promise.all([
           this.sendNotification(invite.fromUserId, {
             type: 'invite_accepted',
@@ -284,7 +264,7 @@ export class EnhancedFriendInviteService {
               id: invite.toUserId,
               displayName: invite.toDisplayName
             },
-            sessionId: matchId, // Use the actual match document ID
+            sessionId: sessionResult.sessionId, // Send to waiting room
             inviteId,
             createdAt: serverTimestamp() as Timestamp,
             read: false
@@ -292,12 +272,12 @@ export class EnhancedFriendInviteService {
           this.sendNotification(invite.toUserId, {
             type: 'session_ready',
             title: 'Game Session Ready!',
-            message: `Your match with ${invite.fromDisplayName} is starting`,
+            message: `Your match with ${invite.fromDisplayName} is starting - get ready!`,
             fromUser: {
               id: invite.fromUserId,
               displayName: invite.fromDisplayName
             },
-            sessionId: matchId, // Use the actual match document ID
+            sessionId: sessionResult.sessionId, // Send to waiting room
             inviteId,
             createdAt: serverTimestamp() as Timestamp,
             read: false
@@ -306,7 +286,7 @@ export class EnhancedFriendInviteService {
         
         return { 
           success: true, 
-          sessionId: matchId // Return the actual match ID for navigation
+          sessionId: sessionResult.sessionId // Return waiting room ID for navigation
         };
       });
 
