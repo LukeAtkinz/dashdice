@@ -92,6 +92,7 @@ import { VideoPlayer } from '@/components/shared/VideoPlayer';
 // AFTER:
 <VideoPlayer
   src="/Abilities/Animations/Luck Turner Animation"
+  transparent={true}  // CRITICAL: Ability animations have transparency!
   autoPlay
   loop
   muted
@@ -119,6 +120,7 @@ import { VideoPlayer } from '@/components/shared/VideoPlayer';
 // AFTER:
 <VideoPlayer
   src="/Abilities/Animations/Pan Slap"
+  transparent={true}  // CRITICAL: Ability animations have transparency!
   autoPlay
   loop={false}
   muted

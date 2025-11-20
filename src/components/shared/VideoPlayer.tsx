@@ -12,6 +12,7 @@ interface VideoPlayerProps {
   style?: React.CSSProperties;
   playbackRate?: number;
   poster?: string; // Optional custom poster
+  transparent?: boolean; // If true, uses WebM (alpha) + MOV (alpha) instead of MP4
 }
 
 /**
@@ -59,7 +60,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onError,
   style,
   playbackRate = 1,
-  poster
+  poster,
+  transparent = false
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState(false);
@@ -177,27 +179,65 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         transform: 'translateZ(0)', // Force GPU rendering
       }}
     >
-      {/* 
-        MP4 FIRST for maximum compatibility
-        - Safari/iOS requires H.264
-        - Android WebView prefers MP4
-        - Universal fallback
-      */}
-      <source 
-        src={`${baseSrc}.mp4`} 
-        type="video/mp4; codecs=avc1.42E01E,mp4a.40.2" 
-      />
-      
-      {/* 
-        WebM SECOND for better compression on supporting browsers
-        - Chrome/Firefox prefer WebM
-        - Better quality at smaller file sizes
-        - VP8 codec for wider support than VP9
-      */}
-      <source 
-        src={`${baseSrc}.webm`} 
-        type="video/webm; codecs=vp8,vorbis" 
-      />
+      {transparent ? (
+        <>
+          {/* 
+            TRANSPARENT VIDEOS (Ability animations, overlays, etc.)
+            MP4 does NOT support alpha channel (transparency)
+          */}
+          
+          {/* 
+            WebM with VP8/VP9 + alpha channel FIRST
+            - Best support: Chrome, Firefox, Edge, Android
+            - Smaller file size than MOV
+            - Good compression with transparency
+          */}
+          <source 
+            src={`${baseSrc}.webm`} 
+            type="video/webm; codecs=vp8,vorbis" 
+          />
+          
+          {/* 
+            HEVC with alpha (MOV) SECOND for Safari/iOS
+            - Safari/iOS require HEVC (H.265) with alpha
+            - Larger file size but necessary for Apple devices
+            - Falls back from WebM if browser doesn't support it
+          */}
+          <source 
+            src={`${baseSrc}.mov`} 
+            type="video/quicktime" 
+          />
+        </>
+      ) : (
+        <>
+          {/* 
+            OPAQUE VIDEOS (Backgrounds, non-transparent content)
+            MP4 H.264 for universal compatibility
+          */}
+          
+          {/* 
+            MP4 FIRST for maximum compatibility
+            - Safari/iOS requires H.264
+            - Android WebView prefers MP4
+            - Universal fallback
+          */}
+          <source 
+            src={`${baseSrc}.mp4`} 
+            type="video/mp4; codecs=avc1.42E01E,mp4a.40.2" 
+          />
+          
+          {/* 
+            WebM SECOND for better compression on supporting browsers
+            - Chrome/Firefox prefer WebM
+            - Better quality at smaller file sizes
+            - VP8 codec for wider support than VP9
+          */}
+          <source 
+            src={`${baseSrc}.webm`} 
+            type="video/webm; codecs=vp8,vorbis" 
+          />
+        </>
+      )}
       
       {/* Fallback message for ancient browsers */}
       <div className="text-white/70 text-sm p-4 text-center">
