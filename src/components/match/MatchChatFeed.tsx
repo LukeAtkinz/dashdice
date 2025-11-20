@@ -76,7 +76,7 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
   return (
     <>
       {/* Compact Chat Feed - Single line display */}
-      <div className={`relative ${className}`}>
+      <div className={`relative ${className}`} style={{ zIndex: 20 }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -92,7 +92,7 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
           <div className="min-h-[32px] max-h-[52px] overflow-hidden">
             {recentMessages.length === 0 ? (
               <div className="flex items-center justify-center h-[32px] bg-black rounded-lg px-3">
-                <span className="text-white/40 text-xs">Tap to open chat</span>
+                <span className="text-white/40 text-xs"></span>
               </div>
             ) : (
               <AnimatePresence mode="wait">
@@ -154,7 +154,8 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-white/20 w-full max-w-2xl h-[600px] flex flex-col shadow-2xl"
+              className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-white/20 w-full max-w-2xl flex flex-col shadow-2xl"
+              style={{ maxHeight: 'min(600px, 90vh)' }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
