@@ -84,9 +84,9 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
           className="bg-black/40 backdrop-blur-sm rounded-lg border border-white/10 p-3 cursor-pointer hover:bg-black/50 hover:border-white/20 transition-all"
         >
           {/* Messages Preview - No header, just messages */}
-          <div className="space-y-1 min-h-[60px] max-h-[80px] overflow-hidden">
+          <div className="space-y-1 min-h-[50px] max-h-[60px] overflow-hidden">
             {recentMessages.length === 0 ? (
-              <div className="flex items-center justify-center h-[60px] text-white/30 text-xs">
+              <div className="flex items-center justify-center h-[50px] text-white/30 text-xs">
                 Tap to open chat
               </div>
             ) : (

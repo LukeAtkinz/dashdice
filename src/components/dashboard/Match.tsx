@@ -1537,17 +1537,19 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           {/* Mobile Layout - Stacked */}
           <div className="md:hidden flex flex-col items-center w-full" style={{ maxWidth: '100vw', margin: '0 auto' }}>
             
-            {/* User Profiles Section - Top Corners of Viewport - Equal spacing */}
-            <AnimatePresence>
-              {(matchData.gameData.gamePhase as string) !== 'turnDecider' && !showTurnAnnouncement && (
-                <motion.div 
-                  className="fixed top-0 left-0 right-0 flex justify-between z-20" 
-                  style={{ 
-                    gap: '0px', 
-                    paddingTop: 'max(env(safe-area-inset-top, 0px), 60px)',
-                    paddingLeft: '16px',
-                    paddingRight: '16px'
-                  }}
+            {/* TOP SECTION: Player Profiles + Chat */}
+            <div className="w-full" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 60px)' }}>
+              {/* User Profiles Section */}
+              <AnimatePresence>
+                {(matchData.gameData.gamePhase as string) !== 'turnDecider' && !showTurnAnnouncement && (
+                  <motion.div 
+                    className="flex justify-between" 
+                    style={{ 
+                      gap: '0px',
+                      paddingLeft: '16px',
+                      paddingRight: '16px',
+                      paddingBottom: '12px'
+                    }}
                   initial={{ opacity: 0, y: -60, scale: 0.8 }}
                   animate={{ 
                     opacity: 1, 
@@ -1793,7 +1795,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               )}
             </AnimatePresence>
 
-            {/* Match Chat Feed - Between player cards and dice - Only show for non-bot matches */}
+            {/* Match Chat Feed - Below player cards in document flow */}
             {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -1801,13 +1803,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 transition={{ delay: 0.8, duration: 0.5 }}
                 className="w-full px-4"
                 style={{ 
-                  marginTop: 'calc(20vh - 10px)',
-                  marginBottom: '8px'
+                  paddingTop: '8px',
+                  paddingBottom: '12px'
                 }}
               >
                 <MatchChatFeed matchId={matchData.id} />
               </motion.div>
             )}
+          </div>
 
             {/* Voice Button - Positioned above 5th ability slot on mobile - Only show for non-bot matches */}
             {matchData.gameData.gamePhase === 'gameplay' && matchData.id && user && session && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
@@ -1838,8 +1841,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               </motion.div>
             )}
 
-            {/* Center Dice Area - Middle */}
-            <div className="w-full flex flex-col items-center justify-center" style={{ paddingTop: 'calc(20vh + 20px)', paddingBottom: '20px', minHeight: '40vh', maxWidth: '100%', overflow: 'visible' }}>
+            {/* MIDDLE SECTION: Dice Area */}
+            <div className="w-full flex flex-col items-center justify-center" style={{ paddingTop: '0', paddingBottom: '20px', minHeight: '40vh', maxWidth: '100%', overflow: 'visible' }}>
               {/* Phase-specific content with professional transitions */}
               <AnimatePresence mode="wait">
                 {matchData.gameData.gamePhase === 'turnDecider' && (
