@@ -77,14 +77,16 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
     <>
       {/* Compact Chat Feed - Single line display */}
       <div className={`relative ${className}`}>
-        <div
-          onClick={() => setOverlayOpen(true)}
-          className="cursor-pointer"
-          style={{ touchAction: 'manipulation' }}
-        >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          onClick={() => setOverlayOpen(true)}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            setOverlayOpen(true);
+          }}
+          className="cursor-pointer select-none active:scale-95 transition-transform"
+          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
         >
           {/* Messages Preview - Single line with animation */}
           <div className="h-[32px] overflow-hidden">
@@ -130,7 +132,6 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
             <div ref={messagesEndRef} />
           </div>
         </motion.div>
-        </div>
       </div>
 
       {/* Overlay Chat Window */}
@@ -152,9 +153,23 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-end p-4 border-b border-white/10">
+              <div className="flex items-center justify-between p-4 border-b border-white/10">
+                {/* Username vs Username */}
+                <div className="flex-1 min-w-0 mr-4">
+                  <div className="flex items-center justify-center gap-2 overflow-hidden">
+                    <span className="text-white font-bold truncate" style={{ fontSize: 'clamp(12px, 3vw, 16px)' }}>
+                      {session.player1DisplayName}
+                    </span>
+                    <span className="text-yellow-500 font-bold flex-shrink-0" style={{ fontSize: 'clamp(12px, 3vw, 16px)', fontFamily: 'Audiowide' }}>
+                      VS
+                    </span>
+                    <span className="text-white font-bold truncate" style={{ fontSize: 'clamp(12px, 3vw, 16px)' }}>
+                      {session.player2DisplayName}
+                    </span>
+                  </div>
+                </div>
                 {/* Controls */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   {/* Mute Chat Button */}
                   <button
                     onClick={toggleChatMute}
