@@ -1795,7 +1795,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               )}
             </AnimatePresence>
 
-            {/* Match Chat Feed - Below player cards in document flow */}
+              {/* Match Chat Feed - Below player cards in document flow */}
             {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -1803,16 +1803,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 transition={{ delay: 0.8, duration: 0.5 }}
                 className="w-full px-4"
                 style={{ 
-                  paddingTop: '8px',
-                  paddingBottom: '12px'
+                  paddingTop: '6px',
+                  paddingBottom: '6px'
                 }}
               >
                 <MatchChatFeed matchId={matchData.id} />
               </motion.div>
             )}
-          </div>
-
-            {/* Voice Button - Positioned above 5th ability slot on mobile - Only show for non-bot matches */}
+          </div>            {/* Voice Button - Positioned above 5th ability slot on mobile - Only show for non-bot matches */}
             {matchData.gameData.gamePhase === 'gameplay' && matchData.id && user && session && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}

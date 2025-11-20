@@ -38,8 +38,7 @@ export const MatchVoiceButton: React.FC<MatchVoiceButtonProps> = ({
   }, []);
 
   const startRecording = async () => {
-    if (disabled || isMuted) {
-      onError?.('Microphone is muted');
+    if (disabled || isMuted || isRecording || isProcessing) {
       return;
     }
 
@@ -73,6 +72,11 @@ export const MatchVoiceButton: React.FC<MatchVoiceButtonProps> = ({
       };
 
       mediaRecorder.onstop = async () => {
+        // Clean up stream immediately
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
         await processRecording();
       };
 
@@ -87,17 +91,24 @@ export const MatchVoiceButton: React.FC<MatchVoiceButtonProps> = ({
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
+    if (!isRecording) return;
+    
+    setIsRecording(false);
+    
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
-      }
-
-      console.log('⏹️ Recording stopped');
     }
+    
+    // Immediately stop all tracks
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => {
+        track.stop();
+        track.enabled = false;
+      });
+      streamRef.current = null;
+    }
+
+    console.log('⏹️ Recording stopped');
   };
 
   const processRecording = async () => {

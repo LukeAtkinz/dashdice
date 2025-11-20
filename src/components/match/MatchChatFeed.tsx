@@ -75,54 +75,53 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
 
   return (
     <>
-      {/* Compact Chat Feed - Shows last 3 messages */}
+      {/* Compact Chat Feed - Single line display */}
       <div className={`relative ${className}`}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           onClick={() => setOverlayOpen(true)}
-          className="bg-black/40 backdrop-blur-sm rounded-lg border border-white/10 p-3 cursor-pointer hover:bg-black/50 hover:border-white/20 transition-all"
+          className="cursor-pointer"
         >
-          {/* Messages Preview - No header, just messages */}
-          <div className="space-y-1 min-h-[50px] max-h-[60px] overflow-hidden">
+          {/* Messages Preview - Single line with animation */}
+          <div className="h-[32px] overflow-hidden">
             {recentMessages.length === 0 ? (
-              <div className="flex items-center justify-center h-[50px] text-white/30 text-xs">
-                Tap to open chat
+              <div className="flex items-center justify-center h-[32px] bg-black rounded-lg px-3">
+                <span className="text-white/40 text-xs">Tap to open chat</span>
               </div>
             ) : (
-              <AnimatePresence mode="popLayout">
-                {recentMessages.map((message) => {
-                  const isCurrentUser = message.fromUserId === user.uid;
+              <AnimatePresence mode="wait">
+                {(() => {
+                  // Get the last message and split into lines if needed
+                  const lastMessage = recentMessages[recentMessages.length - 1];
+                  const isCurrentUser = lastMessage.fromUserId === user.uid;
+                  const messageText = lastMessage.translatedText || lastMessage.originalText;
+                  
+                  // Simple line break - show first line only in compact view
+                  const firstLine = messageText.split('\n')[0];
+                  
                   return (
                     <motion.div
-                      key={message.id}
-                      initial={{ opacity: 0, x: isCurrentUser ? 20 : -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+                      key={lastMessage.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
+                      className="flex items-center h-[32px]"
                     >
-                      <div className={`
-                        max-w-[80%] px-2 py-1 rounded-lg text-xs
-                        ${isCurrentUser 
-                          ? 'bg-purple-500/30 text-white' 
-                          : 'bg-white/10 text-white/90'
-                        }
-                      `}>
-                        {/* No player name, just message with voice indicator */}
-                        <div className="flex items-center gap-1">
-                          {message.isVoice && (
-                            <svg className="w-3 h-3 opacity-50" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-                            </svg>
-                          )}
-                          <p className="break-words leading-tight">
-                            {message.translatedText || message.originalText}
-                          </p>
-                        </div>
+                      <div className="bg-black rounded-lg px-3 py-1.5 flex items-center gap-1.5 max-w-full">
+                        {lastMessage.isVoice && (
+                          <svg className="w-3 h-3 text-white/60 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                          </svg>
+                        )}
+                        <p className="text-white text-xs truncate leading-none">
+                          {firstLine}
+                        </p>
                       </div>
                     </motion.div>
                   );
-                })}
+                })()}
               </AnimatePresence>
             )}
             <div ref={messagesEndRef} />
