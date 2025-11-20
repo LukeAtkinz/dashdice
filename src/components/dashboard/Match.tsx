@@ -21,6 +21,7 @@ import { useMatchBackground } from '@/hooks/useOptimizedBackground';
 import { MatchChatFeed } from '@/components/match/MatchChatFeed';
 import { MatchVoiceButton } from '@/components/match/MatchVoiceButton';
 import { useMatchChat } from '@/context/MatchChatContext';
+import { VideoPlayer } from '@/components/shared/VideoPlayer';
 
 interface MatchProps {
   gameMode?: string;
@@ -495,29 +496,29 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
   }, []);
 
-  const VideoBackground = useCallback(({ src, className }: { src: string; className: string }) => (
-    <video
-      autoPlay
-      loop
-      muted
-      playsInline
-      controls={false}
-      preload="metadata"
-      disablePictureInPicture
-      disableRemotePlayback
-      className={className}
-      style={{ 
-        pointerEvents: 'none',
-        outline: 'none'
-      }}
-      onError={(e) => {
-        console.error('❌ Background video failed to load:', src, e);
-      }}
-    >
-      <source src={src} type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
-  ), []);
+  // VideoBackground replaced with VideoPlayer component for better mobile compatibility
+  const VideoBackground = useCallback(({ src, className }: { src: string; className: string }) => {
+    // Remove file extension for VideoPlayer (it handles MP4 + WebM fallback)
+    const baseSrc = src.replace(/\.(mp4|webm)$/i, '');
+    return (
+      <VideoPlayer
+        src={baseSrc}
+        transparent={false}  // Background videos are opaque (not transparent)
+        autoPlay
+        loop
+        muted
+        playsInline
+        className={className}
+        style={{
+          pointerEvents: 'none',
+          outline: 'none'
+        }}
+        onError={(error) => {
+          console.error('❌ Background video failed to load:', baseSrc, error);
+        }}
+      />
+    );
+  }, []);
 
   const ImageBackground = useCallback(({ src, alt, className }: { src: string; alt: string; className: string }) => (
     <img
