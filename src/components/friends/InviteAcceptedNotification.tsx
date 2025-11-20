@@ -25,13 +25,14 @@ export const InviteAcceptedNotification: React.FC = () => {
         );
 
         if (acceptedNotification) {
-          console.log('🎉 Friend accepted your invitation! Navigating to waiting room:', acceptedNotification.sessionId);
+          console.log('🎉 Friend accepted your invitation! Navigating to match:', acceptedNotification.sessionId);
           
           // Mark notification as read
           EnhancedFriendInviteService.markNotificationAsRead(acceptedNotification.id);
           
-          // Navigate to the waiting room, not directly to match
-          setCurrentSection('waiting-room', {
+          // Navigate to the match
+          setCurrentSection('match', {
+            matchId: acceptedNotification.sessionId,
             roomId: acceptedNotification.sessionId,
             gameMode: acceptedNotification.gameMode || 'classic'
           });

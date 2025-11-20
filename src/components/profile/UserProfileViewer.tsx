@@ -12,7 +12,6 @@ import { useBackground } from '@/context/BackgroundContext';
 import { MatchHistory } from '@/components/profile/MatchHistory';
 import { ProfilePicture } from '@/components/ui/ProfilePicture';
 import { usePlayerCardBackground } from '@/hooks/useOptimizedBackground';
-import { VideoPlayer } from '@/components/shared/VideoPlayer';
 
 interface UserProfileViewerProps {
   userId: string;
@@ -436,14 +435,32 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
             transition={{ duration: 0.5 }}
           >
             {/* Video Background for current user or other users */}
-            {profileBgIsVideo && profileBgPath && (
-              <VideoPlayer
-                src={profileBgPath.replace(/\.(mp4|webm)$/i, '')}
-                transparent={false}
-                className="absolute inset-0 w-full h-full object-cover"
-                style={{ zIndex: 0, pointerEvents: 'none' }}
-              />
-            )}
+            {(() => {
+              // Use optimized background path from hook
+              if (profileBgIsVideo) {
+                return (
+                  <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    webkit-playsinline="true"
+                    x5-playsinline="true"
+                    controls={false}
+                    preload="metadata"
+                    disablePictureInPicture
+                    disableRemotePlayback
+                    className="absolute inset-0 w-full h-full object-cover"
+                    style={{ zIndex: 0, pointerEvents: 'none' }}
+                  >
+                    <source src={profileBgPath ?? undefined} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                );
+              }
+              
+              return null;
+            })()}
 
             {/* Background Image or Gradient Fallback */}
             <div

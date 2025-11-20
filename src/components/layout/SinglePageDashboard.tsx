@@ -36,7 +36,6 @@ import NotificationBadge from '@/components/ui/NotificationBadge';
 import { MobileBackgroundControl } from '@/components/ui/MobileBackgroundControl';
 import { createTestMatch } from '@/utils/testMatchData';
 import { NavigationWithInvitations } from '@/components/navigation/NavigationWithInvitations';
-import { VideoPlayer } from '@/components/shared/VideoPlayer';
 
 const DashboardContent: React.FC = () => {
   const { currentSection, sectionParams, setCurrentSection, previousSection, isGameOver } = useNavigation();
@@ -163,26 +162,40 @@ const DashboardContent: React.FC = () => {
       const positioning = getBackgroundPosition(DisplayBackgroundEquip.name);
       
       if (isVideo) {
-        // Remove file extension for VideoPlayer (handles MP4 + WebM fallback)
-        const baseSrc = backgroundPath.replace(/\.(mp4|webm)$/i, '');
+        const isMobile = typeof window !== 'undefined' && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
         return (
-          <VideoPlayer
-            key={baseSrc} // Force re-render when video changes
-            src={baseSrc}
-            transparent={false}  // Dashboard backgrounds are opaque
+          <video
+            key={backgroundPath} // Force re-render when video changes
             autoPlay
             loop
             muted
             playsInline
+            controls={false}
+            webkit-playsinline="true"
+            x5-playsinline="true"
+            preload="none" // Lazy load to improve performance
+            poster={isMobile ? undefined : "/backgrounds/placeholder.jpg"} // Remove poster on mobile for faster loading
+            onLoadStart={(e) => handleVideoLoadStart(e.currentTarget)}
+            onCanPlay={(e) => {
+              // Additional attempt when video can play
+              if (isMobile) {
+                e.currentTarget.play().catch(err => console.log('CanPlay autoplay failed:', err));
+              }
+            }}
+            onLoadedData={(e) => {
+              // Ensure video starts immediately when data is loaded on mobile
+              if (isMobile && e.currentTarget.paused) {
+                e.currentTarget.play().catch(err => console.log('LoadedData autoplay failed:', err));
+              }
+            }}
             className={`absolute inset-0 w-full h-full object-cover z-0 scrollbar-hide ${positioning.className}`}
             style={{
               objectPosition: positioning.objectPosition
             }}
-            onError={(error) => {
-              console.error('❌ Dashboard video failed to load:', baseSrc, error);
-            }}
-          />
+          >
+            <source src={backgroundPath} type="video/mp4" />
+          </video>
         );
       } else {
         const isMobile = typeof window !== 'undefined' && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);

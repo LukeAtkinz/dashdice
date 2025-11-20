@@ -1,4 +1,4 @@
-# 🎭 Transparent Video Encoding Guide
+ok# 🎭 Transparent Video Encoding Guide
 
 ## Critical: Transparency Requires Specific Formats
 

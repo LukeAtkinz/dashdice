@@ -332,19 +332,18 @@ export class GameSessionService {
         // Validate join conditions
         this.validateSessionJoin(session, playerData.playerId);
         
-        // 🔄 Validate state transition: waiting → (friend: waiting, other: matched)
-        const targetStatus = session.sessionType === 'friend' ? 'waiting' : 'matched';
+        // 🔄 Validate state transition: waiting → matched
         const stateValidation = SessionStateValidator.validateStateChange(
           sessionId,
           session.status,
-          targetStatus,
+          'matched',
           {
             sessionId,
             playerId: playerData.playerId,
             participantCount: session.participants.length + 1,
             sessionType: session.sessionType,
             gameMode: session.gameMode,
-            reason: session.sessionType === 'friend' ? 'friend_player_joined' : 'player_joined'
+            reason: 'player_joined'
           }
         );
         
@@ -370,25 +369,21 @@ export class GameSessionService {
         const currentVersion = session.version;
         const newVersion = currentVersion + 1;
         
-        // For friend sessions, keep status as 'waiting' until both players ready up
-        // For other sessions, auto-match when second player joins
-        const newStatus = session.sessionType === 'friend' ? 'waiting' : 'matched';
-        
         const updatedSession: Partial<GameSession> = {
-          status: newStatus,
+          status: 'matched',
           opponentData: {
             ...playerData,
             joinedAt: new Date()
           },
           participants: updatedParticipants,
-          matchedAt: newStatus === 'matched' ? new Date() : undefined,
+          matchedAt: new Date(),
           updatedAt: new Date(),
           version: newVersion // Increment version to prevent conflicts
         };
         
         transaction.update(sessionRef, {
           ...updatedSession,
-          matchedAt: newStatus === 'matched' ? serverTimestamp() : null,
+          matchedAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
           lastActivityAt: serverTimestamp(), // 🕐 Track activity for timeout extension
           version: newVersion
@@ -957,40 +952,10 @@ export class GameSessionService {
         return null;
       }
 
-      // Load game mode configuration from Firestore
-      const { GameModeService } = await import('./gameModeService');
-      const gameModeConfig = await GameModeService.getGameMode(session.gameMode);
-      
-      if (!gameModeConfig) {
-        console.error(`❌ Game mode ${session.gameMode} not found`);
-        return null;
-      }
-
-      console.log(`✅ Loaded game mode config for ${session.gameMode}:`, {
-        startingScore: gameModeConfig.rules.startingScore,
-        targetScore: gameModeConfig.rules.targetScore,
-        scoreDirection: gameModeConfig.rules.scoreDirection
-      });
-
-      // Load player abilities from their power loadouts
-      const [hostProfile, opponentProfile] = await Promise.all([
-        UserService.getUserProfile(session.hostData.playerId),
-        UserService.getUserProfile(session.opponentData.playerId)
-      ]);
-
-      // Get the appropriate loadout for this game mode
-      const hostLoadout = hostProfile?.powerLoadouts?.[session.gameMode] || hostProfile?.powerLoadouts?.defaultLoadout || {};
-      const opponentLoadout = opponentProfile?.powerLoadouts?.[session.gameMode] || opponentProfile?.powerLoadouts?.defaultLoadout || {};
-
-      const hostAbilities = hostLoadout?.abilities || {};
-      const opponentAbilities = opponentLoadout?.abilities || {};
-
-      console.log(`✅ Loaded abilities for game mode ${session.gameMode} - Host: ${Object.keys(hostAbilities).length}, Opponent: ${Object.keys(opponentAbilities).length}`);
-
       // Create match document in matches collection for compatibility
       const matchData = {
         gameMode: session.gameMode,
-        gameType: session.sessionType === 'ranked' ? 'Ranked' : session.sessionType === 'friend' ? 'Friend Match' : 'Open Server',
+        gameType: session.sessionType === 'ranked' ? 'Ranked' : 'Open Server',
         rankedGame: session.sessionType === 'ranked',
         sessionId: sessionId, // Reference back to the session
         originalRoomId: sessionId, // For compatibility with waiting room searches
@@ -999,14 +964,13 @@ export class GameSessionService {
         // Add required gameData field
         gameData: {
           type: session.gameMode,
-          settings: gameModeConfig.settings || {},
-          turnDecider: Math.floor(Math.random() * 2) + 1, // Random 1 or 2
-          chooserPlayerIndex: Math.floor(Math.random() * 2) + 1, // For turn decider phase
+          settings: {},
+          turnDecider: 1, // 1 = host starts
           turnScore: 0,
           diceOne: 0,
           diceTwo: 0,
-          roundObjective: gameModeConfig.rules.targetScore || 100,
-          startingScore: gameModeConfig.rules.startingScore || 0,
+          roundObjective: 10000, // Default objective
+          startingScore: 0,
           status: 'active',
           startedAt: serverTimestamp(),
           
@@ -1014,7 +978,7 @@ export class GameSessionService {
           isPregame: false,
           
           // Enhanced game state
-          gamePhase: 'turnDecider', // Will transition to gameplay after turn decider
+          gamePhase: 'turnDecider',
           isRolling: false,
           hasDoubleMultiplier: false,
           trueGritMultiplier: 1
@@ -1028,7 +992,7 @@ export class GameSessionService {
           playerStats: session.hostData.playerStats,
           // Game-specific fields with defaults
           turnActive: true, // Host starts first
-          playerScore: gameModeConfig.rules.startingScore || 0,
+          playerScore: 0,
           roundScore: 0,
           isConnected: true,
           matchStats: {
@@ -1036,9 +1000,7 @@ export class GameSessionService {
             doubles: 0,
             biggestTurnScore: 0,
             lastDiceSum: 0
-          },
-          // Include equipped abilities
-          equippedAbilities: hostAbilities
+          }
         },
         opponentData: {
           ...session.opponentData,
@@ -1049,7 +1011,7 @@ export class GameSessionService {
           playerStats: session.opponentData.playerStats,
           // Game-specific fields with defaults
           turnActive: false, // Opponent waits for host
-          playerScore: gameModeConfig.rules.startingScore || 0,
+          playerScore: 0,
           roundScore: 0,
           isConnected: true,
           matchStats: {
@@ -1057,9 +1019,7 @@ export class GameSessionService {
             doubles: 0,
             biggestTurnScore: 0,
             lastDiceSum: 0
-          },
-          // Include equipped abilities
-          equippedAbilities: opponentAbilities
+          }
         },
         createdAt: serverTimestamp(),
         lastMoveAt: serverTimestamp(),

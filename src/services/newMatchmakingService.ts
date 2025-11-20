@@ -790,7 +790,7 @@ export class NewMatchmakingService {
           file: '/backgrounds/Relax.png',
           type: 'image'
         },
-        ready: false, // Players must ready up in waiting room
+        ready: true,
         joinedAt: new Date()
       };
 
@@ -834,7 +834,7 @@ export class NewMatchmakingService {
           file: '/backgrounds/Relax.png',
           type: 'image'
         },
-        ready: false, // Players must ready up in waiting room
+        ready: true,
         joinedAt: new Date()
       };
 
@@ -870,10 +870,10 @@ export class NewMatchmakingService {
         const waitingRoomData = {
           gameMode,
           gameType: 'Friend Match',
-          playersRequired: 2, // Both players must ready up
+          playersRequired: 0, // Both players already confirmed
           createdAt: serverTimestamp(),
           friendInvitation: true, // Mark as friend invitation room
-          readyPlayers: [], // Players must ready up manually
+          readyPlayers: [hostUserId, guestUserId], // Both players are ready by default
           sessionProxy: sessionId, // Reference to the actual game session
           hostData: {
             playerDisplayName: hostData.playerDisplayName,

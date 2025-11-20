@@ -216,60 +216,65 @@ export class EnhancedFriendInviteService {
           };
         }
 
-        // 🎯 SIMPLIFIED APPROACH: Create waiting room like clicking "Casual"
-        // This is the EXACT same flow as clicking a game mode
-        console.log('🎮 Creating friend waiting room (same as Casual button)...');
-        
-        // Get both user profiles
-        const [hostProfile, guestProfile] = await Promise.all([
-          UserService.getUserProfile(invite.fromUserId),
-          UserService.getUserProfile(invite.toUserId)
+        // Clear any existing sessions for both players before creating new session
+        console.log('🧹 Clearing existing sessions for both players...');
+        await Promise.all([
+          this.clearUserCurrentSession(invite.fromUserId),
+          this.clearUserCurrentSession(invite.toUserId)
         ]);
 
-        if (!hostProfile || !guestProfile) {
-          throw new Error('User profiles not found');
+        // Create the game session using our unified matchmaking service
+        const sessionResult = await NewMatchmakingService.createFriendMatch(
+          invite.fromUserId,
+          invite.toUserId,
+          invite.gameMode,
+          invite.gameType
+        );
+
+        if (!sessionResult.success || !sessionResult.sessionId) {
+          throw new Error(sessionResult.error || 'Failed to create game session');
         }
-
-        // Create a waiting room document (just like Casual does)
-        const { addDoc, collection } = await import('firebase/firestore');
-        const waitingRoomData = {
-          gameMode: invite.gameMode,
-          gameType: invite.gameType === 'ranked' ? 'Ranked' : 'Friend Match',
-          playersRequired: 2,
-          createdAt: serverTimestamp(),
-          friendInvitation: true, // Mark as friend match
-          allowedPlayerIds: [invite.fromUserId, invite.toUserId], // Only these 2 can join
-          hostData: {
-            playerDisplayName: hostProfile.displayName || 'Unknown',
-            playerId: invite.fromUserId,
-            displayBackgroundEquipped: hostProfile.inventory.displayBackgroundEquipped,
-            matchBackgroundEquipped: hostProfile.inventory.matchBackgroundEquipped,
-            playerStats: hostProfile.stats
-          },
-          opponentData: {
-            playerDisplayName: guestProfile.displayName || 'Unknown',
-            playerId: invite.toUserId,
-            displayBackgroundEquipped: guestProfile.inventory.displayBackgroundEquipped,
-            matchBackgroundEquipped: guestProfile.inventory.matchBackgroundEquipped,
-            playerStats: guestProfile.stats
-          }
-        };
-
-        const waitingRoomRef = await addDoc(collection(db, 'waitingroom'), waitingRoomData);
-        const roomId = waitingRoomRef.id;
-
-        console.log('✅ Created friend waiting room:', roomId);
 
         // Update invitation status
         transaction.update(inviteRef, {
           status: 'accepted',
           acceptedAt: serverTimestamp(),
-          sessionId: roomId
+          sessionId: sessionResult.sessionId
         });
+
+        // Start heartbeats for both players and update their currentGame status
+        await Promise.all([
+          PlayerHeartbeatService.startHeartbeat(invite.fromUserId, sessionResult.sessionId, sessionResult.sessionId),
+          PlayerHeartbeatService.startHeartbeat(invite.toUserId, sessionResult.sessionId, sessionResult.sessionId),
+          PlayerHeartbeatService.updateCurrentGame(invite.fromUserId, sessionResult.sessionId),
+          PlayerHeartbeatService.updateCurrentGame(invite.toUserId, sessionResult.sessionId)
+        ]);
+
+        console.log('✅ Invitation accepted, session created:', sessionResult.sessionId);
         
-        console.log('🎯 Sending both players to waiting room...');
+        // Since we're navigating directly to match, we need to get the match ID
+        // The sessionResult contains the sessionId, but we need the match document ID
+        // Wait a brief moment for match document creation to complete
+        await new Promise(resolve => setTimeout(resolve, 200));
         
-        // Send notifications to both users to join the waiting room
+        // Query for the match document that was created from this session
+        const { collection, query, where, getDocs } = await import('firebase/firestore');
+        
+        const matchQuery = query(
+          collection(db, 'matches'),
+          where('sessionId', '==', sessionResult.sessionId)
+        );
+        const matchSnapshot = await getDocs(matchQuery);
+        
+        let matchId = sessionResult.sessionId; // Fallback to session ID
+        if (!matchSnapshot.empty) {
+          matchId = matchSnapshot.docs[0].id;
+          console.log('✅ Found match document:', matchId, 'for session:', sessionResult.sessionId);
+        } else {
+          console.warn('⚠️ No match document found for session, using session ID as fallback');
+        }
+
+        // Send notifications to both users with the correct match ID
         await Promise.all([
           this.sendNotification(invite.fromUserId, {
             type: 'invite_accepted',
@@ -279,7 +284,7 @@ export class EnhancedFriendInviteService {
               id: invite.toUserId,
               displayName: invite.toDisplayName
             },
-            sessionId: roomId,
+            sessionId: matchId, // Use the actual match document ID
             inviteId,
             createdAt: serverTimestamp() as Timestamp,
             read: false
@@ -287,12 +292,12 @@ export class EnhancedFriendInviteService {
           this.sendNotification(invite.toUserId, {
             type: 'session_ready',
             title: 'Game Session Ready!',
-            message: `Your match with ${invite.fromDisplayName} is starting - get ready!`,
+            message: `Your match with ${invite.fromDisplayName} is starting`,
             fromUser: {
               id: invite.fromUserId,
               displayName: invite.fromDisplayName
             },
-            sessionId: roomId,
+            sessionId: matchId, // Use the actual match document ID
             inviteId,
             createdAt: serverTimestamp() as Timestamp,
             read: false
@@ -301,7 +306,7 @@ export class EnhancedFriendInviteService {
         
         return { 
           success: true, 
-          sessionId: roomId // Return waiting room ID for navigation
+          sessionId: matchId // Return the actual match ID for navigation
         };
       });
 

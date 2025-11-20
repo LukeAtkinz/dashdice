@@ -29,7 +29,7 @@ export class SessionStateValidator {
    */
   private static readonly STATE_TRANSITIONS: Record<SessionStatus, SessionStatus[]> = {
     // From 'waiting' state
-    waiting: ['waiting', 'matched', 'cancelled', 'expired'], // waiting → waiting allowed for friend sessions when guest joins
+    waiting: ['matched', 'cancelled', 'expired'],
     
     // From 'matched' state  
     matched: ['active', 'waiting', 'cancelled', 'abandoned'],

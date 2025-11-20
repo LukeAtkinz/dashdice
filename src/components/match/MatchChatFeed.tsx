@@ -75,63 +75,54 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
 
   return (
     <>
-      {/* Compact Chat Feed - Single line display */}
-      <div className={`relative ${className}`} style={{ zIndex: 20 }}>
+      {/* Compact Chat Feed - Shows last 3 messages */}
+      <div className={`relative ${className}`}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           onClick={() => setOverlayOpen(true)}
-          onTouchEnd={(e) => {
-            e.preventDefault();
-            setOverlayOpen(true);
-          }}
-          className="cursor-pointer select-none active:scale-95 transition-transform"
-          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+          className="bg-black/40 backdrop-blur-sm rounded-lg border border-white/10 p-3 cursor-pointer hover:bg-black/50 hover:border-white/20 transition-all"
         >
-          {/* Messages Preview - Up to 2 lines with animation */}
-          <div className="min-h-[32px] max-h-[52px] overflow-hidden">
+          {/* Messages Preview - No header, just messages */}
+          <div className="space-y-1 min-h-[60px] max-h-[80px] overflow-hidden">
             {recentMessages.length === 0 ? (
-              <div className="flex items-center justify-center h-[32px] bg-black rounded-lg px-3">
-                <span className="text-white/40 text-xs"></span>
+              <div className="flex items-center justify-center h-[60px] text-white/30 text-xs">
+                Tap to open chat
               </div>
             ) : (
-              <AnimatePresence mode="wait">
-                {(() => {
-                  // Get the last message and split into lines if needed
-                  const lastMessage = recentMessages[recentMessages.length - 1];
-                  const messageText = lastMessage.translatedText || lastMessage.originalText;
-                  
-                  // Split by newlines and show up to 2 lines
-                  const lines = messageText.split('\n');
-                  const displayLines = lines.slice(0, 2);
-                  const isTwoLines = displayLines.length === 2;
-                  
+              <AnimatePresence mode="popLayout">
+                {recentMessages.map((message) => {
+                  const isCurrentUser = message.fromUserId === user.uid;
                   return (
                     <motion.div
-                      key={lastMessage.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.3 }}
-                      className={`flex items-center ${isTwoLines ? 'h-auto py-1' : 'h-[32px]'}`}
+                      key={message.id}
+                      initial={{ opacity: 0, x: isCurrentUser ? 20 : -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div className="bg-black rounded-lg px-3 py-1.5 flex items-start gap-1.5 max-w-full">
-                        {lastMessage.isVoice && (
-                          <svg className="w-3 h-3 text-white/60 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-                          </svg>
-                        )}
-                        <div className="text-white text-xs leading-tight">
-                          {displayLines.map((line, i) => (
-                            <div key={i} className="truncate">
-                              {line}
-                            </div>
-                          ))}
+                      <div className={`
+                        max-w-[80%] px-2 py-1 rounded-lg text-xs
+                        ${isCurrentUser 
+                          ? 'bg-purple-500/30 text-white' 
+                          : 'bg-white/10 text-white/90'
+                        }
+                      `}>
+                        {/* No player name, just message with voice indicator */}
+                        <div className="flex items-center gap-1">
+                          {message.isVoice && (
+                            <svg className="w-3 h-3 opacity-50" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                            </svg>
+                          )}
+                          <p className="break-words leading-tight">
+                            {message.translatedText || message.originalText}
+                          </p>
                         </div>
                       </div>
                     </motion.div>
                   );
-                })()}
+                })}
               </AnimatePresence>
             )}
             <div ref={messagesEndRef} />
@@ -154,28 +145,27 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-white/20 w-full max-w-2xl flex flex-col shadow-2xl"
-              style={{ maxHeight: 'min(600px, 90vh)' }}
+              className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-white/20 w-full max-w-2xl h-[600px] flex flex-col shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-white/10">
-                {/* Username vs Username */}
-                <div className="flex-1 min-w-0 mr-4">
-                  <div className="flex items-center justify-center gap-2 overflow-hidden">
-                    <span className="text-white font-bold truncate" style={{ fontSize: 'clamp(14px, 4vw, 20px)' }}>
-                      {session.player1DisplayName}
-                    </span>
-                    <span className="text-yellow-500 font-bold flex-shrink-0" style={{ fontSize: 'clamp(14px, 4vw, 20px)', fontFamily: 'Audiowide' }}>
-                      VS
-                    </span>
-                    <span className="text-white font-bold truncate" style={{ fontSize: 'clamp(14px, 4vw, 20px)' }}>
-                      {session.player2DisplayName}
-                    </span>
+                <div className="flex items-center gap-3">
+                  <svg className="w-6 h-6 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                  </svg>
+                  <div>
+                    <h3 className="text-white font-bold" style={{ fontFamily: 'Audiowide' }}>
+                      Match Chat
+                    </h3>
+                    <p className="text-xs text-white/50">
+                      {session.player1DisplayName} vs {session.player2DisplayName}
+                    </p>
                   </div>
                 </div>
+
                 {/* Controls */}
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-2">
                   {/* Mute Chat Button */}
                   <button
                     onClick={toggleChatMute}
@@ -288,25 +278,8 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
 
               {/* Input Area */}
               <div className="p-4 border-t border-white/10">
-                <div className="flex items-end gap-2">
-                  {/* Text Input */}
-                  <input
-                    type="text"
-                    value={textInput}
-                    onChange={(e) => setTextInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendText();
-                      }
-                    }}
-                    placeholder="Type a message..."
-                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 transition-colors"
-                    disabled={muteState.chatMuted}
-                    enterKeyHint="send"
-                  />
-                  
-                  {/* Voice Button */}
+                <div className="flex items-end gap-3">
+                  {/* Voice Recorder */}
                   <VoiceRecorder
                     matchId={matchId}
                     playerId={user.uid}
@@ -314,6 +287,26 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
                     onTranscription={handleVoiceTranscription}
                     isMuted={muteState.micMuted}
                   />
+
+                  {/* Text Input */}
+                  <div className="flex-1 flex gap-2">
+                    <input
+                      type="text"
+                      value={textInput}
+                      onChange={(e) => setTextInput(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Type a message..."
+                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 transition-colors"
+                      disabled={muteState.chatMuted}
+                    />
+                    <button
+                      onClick={handleSendText}
+                      disabled={!textInput.trim() || muteState.chatMuted}
+                      className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg text-white font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-purple-500/50 transition-all"
+                    >
+                      Send
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>
