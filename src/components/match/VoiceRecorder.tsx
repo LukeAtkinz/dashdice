@@ -185,62 +185,27 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <button
-        className={`
-          relative w-16 h-16 rounded-full flex items-center justify-center
-          transition-all duration-200 select-none
-          ${disabled || isMuted 
-            ? 'bg-gray-600 cursor-not-allowed opacity-50' 
-            : isRecording 
-              ? 'bg-red-500 shadow-lg shadow-red-500/50 scale-110' 
-              : 'bg-gradient-to-br from-purple-500 to-pink-500 hover:scale-105 active:scale-95'
-          }
-          ${isProcessing ? 'animate-pulse' : ''}
-        `}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        disabled={disabled || isMuted || isProcessing}
-        title={isMuted ? 'Microphone is muted' : 'Hold to speak'}
-      >
-        {isProcessing ? (
-          <svg className="w-8 h-8 text-white animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-        ) : isRecording ? (
-          <svg className="w-8 h-8 text-white animate-pulse" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-          </svg>
-        ) : (
-          <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-          </svg>
-        )}
-
-        {isRecording && (
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full animate-ping" />
-        )}
-      </button>
-
-      <div className="text-center">
-        {isProcessing ? (
-          <span className="text-xs text-gray-400">Processing...</span>
-        ) : isRecording ? (
-          <span className="text-xs text-red-400 font-bold">
-            {recordingDuration.toFixed(1)}s
-          </span>
-        ) : (
-          <span className="text-xs text-gray-400">
-            {isMuted ? 'Muted' : 'Hold to speak'}
-          </span>
-        )}
-      </div>
-    </div>
+    <button
+      className={`
+        px-6 py-3 rounded-lg font-bold transition-all min-w-[100px]
+        ${
+          isRecording
+            ? 'bg-red-500 hover:bg-red-600 text-white'
+            : isMuted
+            ? 'bg-gray-600 text-white cursor-not-allowed opacity-50'
+            : isProcessing
+            ? 'bg-purple-400 text-white cursor-wait'
+            : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:shadow-lg hover:shadow-purple-500/50'
+        }
+      `}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      disabled={disabled || isMuted || isProcessing}
+    >
+      {isProcessing ? 'Processing...' : isMuted ? 'Muted' : isRecording ? 'Recording...' : 'Voice'}
+    </button>
   );
 };

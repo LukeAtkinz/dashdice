@@ -152,21 +152,7 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <div className="flex items-center gap-3">
-                  <svg className="w-6 h-6 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-                  </svg>
-                  <div>
-                    <h3 className="text-white font-bold" style={{ fontFamily: 'Audiowide' }}>
-                      Match Chat
-                    </h3>
-                    <p className="text-xs text-white/50">
-                      {session.player1DisplayName} vs {session.player2DisplayName}
-                    </p>
-                  </div>
-                </div>
-
+              <div className="flex items-center justify-end p-4 border-b border-white/10">
                 {/* Controls */}
                 <div className="flex items-center gap-2">
                   {/* Mute Chat Button */}
@@ -281,8 +267,25 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
 
               {/* Input Area */}
               <div className="p-4 border-t border-white/10">
-                <div className="flex items-end gap-3">
-                  {/* Voice Recorder */}
+                <div className="flex items-end gap-2">
+                  {/* Text Input */}
+                  <input
+                    type="text"
+                    value={textInput}
+                    onChange={(e) => setTextInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendText();
+                      }
+                    }}
+                    placeholder="Type a message..."
+                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 transition-colors"
+                    disabled={muteState.chatMuted}
+                    enterKeyHint="send"
+                  />
+                  
+                  {/* Voice Button */}
                   <VoiceRecorder
                     matchId={matchId}
                     playerId={user.uid}
@@ -290,26 +293,6 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
                     onTranscription={handleVoiceTranscription}
                     isMuted={muteState.micMuted}
                   />
-
-                  {/* Text Input */}
-                  <div className="flex-1 flex gap-2">
-                    <input
-                      type="text"
-                      value={textInput}
-                      onChange={(e) => setTextInput(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Type a message..."
-                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 transition-colors"
-                      disabled={muteState.chatMuted}
-                    />
-                    <button
-                      onClick={handleSendText}
-                      disabled={!textInput.trim() || muteState.chatMuted}
-                      className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg text-white font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-purple-500/50 transition-all"
-                    >
-                      Send
-                    </button>
-                  </div>
                 </div>
               </div>
             </motion.div>
