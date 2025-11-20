@@ -125,33 +125,20 @@ export const toUserBackground = (background: Background) => ({
 /**
  * Get optimized background variants for a given background
  * Returns paths to FULL, MOBILE, and PREVIEW versions
+ * 
+ * NEW STRUCTURE: All video formats (MP4 + WebM) are in /backgrounds/ root
+ * VideoPlayer component automatically selects the right format per browser
  */
 export const getBackgroundVariants = (background: Background): BackgroundVariants => {
-  const baseName = background.filename.replace(/\.(jpg|png|mp4)$/i, '');
+  const baseName = background.filename.replace(/\.(jpg|png|mp4|webm)$/i, '');
   
-  // Map to actual file naming conventions in folders
-  const mobileVideoMap: Record<string, string> = {
-    'New Day': 'New Day - Mobile.webm',
-    'On A Mission': 'On A Mission - Mobile.webm',
-    'Underwater': 'Underwater - Mobile.webm',
-    'As they fall': 'As they fall - Mobile.webm',
-    'End of the Dragon': 'End of the Dragon Mobile.webm'
-  };
-  
-  const previewVideoMap: Record<string, string> = {
-    'New Day': 'New-Day - Preview.webm',
-    'On A Mission': 'On-A-Mission-Preview.webm',
-    'Underwater': 'Underwater-Preview.webm',
-    'As they fall': 'As-they-fall - Preview.webm',
-    'End of the Dragon': 'End-of-the-Dragon - Preview.webm'
-  };
-  
-  // For videos: desktop and mobile use same video, images use different sizes
+  // For videos: Use base path (VideoPlayer will add .mp4 or .webm automatically)
   if (background.type === 'video') {
+    const videoBasePath = `/backgrounds/${baseName}`;
     return {
-      full: `/backgrounds/Mobile/${mobileVideoMap[baseName] || background.filename}`,      // Videos in Mobile folder (same for desktop)
-      mobile: `/backgrounds/Mobile/${mobileVideoMap[baseName] || background.filename}`,    // Same video for mobile
-      preview: `/backgrounds/Preview/${previewVideoMap[baseName] || baseName + ' - Preview.webm'}`,  // Preview is always webm for videos
+      full: videoBasePath,      // VideoPlayer handles MP4+WebM fallback
+      mobile: videoBasePath,    // Same path - VideoPlayer chooses format
+      preview: videoBasePath,   // Same path - VideoPlayer chooses format
     };
   }
   
