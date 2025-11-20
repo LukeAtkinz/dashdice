@@ -216,45 +216,60 @@ export class EnhancedFriendInviteService {
           };
         }
 
-        // Clear any existing sessions for both players before creating new session
-        console.log('🧹 Clearing existing sessions for both players...');
-        await Promise.all([
-          this.clearUserCurrentSession(invite.fromUserId),
-          this.clearUserCurrentSession(invite.toUserId)
+        // 🎯 SIMPLIFIED APPROACH: Create waiting room like clicking "Casual"
+        // This is the EXACT same flow as clicking a game mode
+        console.log('🎮 Creating friend waiting room (same as Casual button)...');
+        
+        // Get both user profiles
+        const [hostProfile, guestProfile] = await Promise.all([
+          UserService.getUserProfile(invite.fromUserId),
+          UserService.getUserProfile(invite.toUserId)
         ]);
 
-        // Create the game session using our unified matchmaking service
-        const sessionResult = await NewMatchmakingService.createFriendMatch(
-          invite.fromUserId,
-          invite.toUserId,
-          invite.gameMode,
-          invite.gameType
-        );
-
-        if (!sessionResult.success || !sessionResult.sessionId) {
-          throw new Error(sessionResult.error || 'Failed to create game session');
+        if (!hostProfile || !guestProfile) {
+          throw new Error('User profiles not found');
         }
+
+        // Create a waiting room document (just like Casual does)
+        const { addDoc, collection } = await import('firebase/firestore');
+        const waitingRoomData = {
+          gameMode: invite.gameMode,
+          gameType: invite.gameType === 'ranked' ? 'Ranked' : 'Friend Match',
+          playersRequired: 2,
+          createdAt: serverTimestamp(),
+          friendInvitation: true, // Mark as friend match
+          allowedPlayerIds: [invite.fromUserId, invite.toUserId], // Only these 2 can join
+          hostData: {
+            playerDisplayName: hostProfile.displayName || 'Unknown',
+            playerId: invite.fromUserId,
+            displayBackgroundEquipped: hostProfile.inventory.displayBackgroundEquipped,
+            matchBackgroundEquipped: hostProfile.inventory.matchBackgroundEquipped,
+            playerStats: hostProfile.stats
+          },
+          opponentData: {
+            playerDisplayName: guestProfile.displayName || 'Unknown',
+            playerId: invite.toUserId,
+            displayBackgroundEquipped: guestProfile.inventory.displayBackgroundEquipped,
+            matchBackgroundEquipped: guestProfile.inventory.matchBackgroundEquipped,
+            playerStats: guestProfile.stats
+          }
+        };
+
+        const waitingRoomRef = await addDoc(collection(db, 'waitingroom'), waitingRoomData);
+        const roomId = waitingRoomRef.id;
+
+        console.log('✅ Created friend waiting room:', roomId);
 
         // Update invitation status
         transaction.update(inviteRef, {
           status: 'accepted',
           acceptedAt: serverTimestamp(),
-          sessionId: sessionResult.sessionId
+          sessionId: roomId
         });
-
-        // Start heartbeats for both players and update their currentGame status
-        await Promise.all([
-          PlayerHeartbeatService.startHeartbeat(invite.fromUserId, sessionResult.sessionId, sessionResult.sessionId),
-          PlayerHeartbeatService.startHeartbeat(invite.toUserId, sessionResult.sessionId, sessionResult.sessionId),
-          PlayerHeartbeatService.updateCurrentGame(invite.fromUserId, sessionResult.sessionId),
-          PlayerHeartbeatService.updateCurrentGame(invite.toUserId, sessionResult.sessionId)
-        ]);
-
-        console.log('✅ Invitation accepted, session created:', sessionResult.sessionId);
-        console.log('🎯 Sending both players to waiting room for ready-up...');
+        
+        console.log('🎯 Sending both players to waiting room...');
         
         // Send notifications to both users to join the waiting room
-        // They will navigate to the waiting room, not directly to match
         await Promise.all([
           this.sendNotification(invite.fromUserId, {
             type: 'invite_accepted',
@@ -264,7 +279,7 @@ export class EnhancedFriendInviteService {
               id: invite.toUserId,
               displayName: invite.toDisplayName
             },
-            sessionId: sessionResult.sessionId, // Send to waiting room
+            sessionId: roomId,
             inviteId,
             createdAt: serverTimestamp() as Timestamp,
             read: false
@@ -277,7 +292,7 @@ export class EnhancedFriendInviteService {
               id: invite.fromUserId,
               displayName: invite.fromDisplayName
             },
-            sessionId: sessionResult.sessionId, // Send to waiting room
+            sessionId: roomId,
             inviteId,
             createdAt: serverTimestamp() as Timestamp,
             read: false
@@ -286,7 +301,7 @@ export class EnhancedFriendInviteService {
         
         return { 
           success: true, 
-          sessionId: sessionResult.sessionId // Return waiting room ID for navigation
+          sessionId: roomId // Return waiting room ID for navigation
         };
       });
 
