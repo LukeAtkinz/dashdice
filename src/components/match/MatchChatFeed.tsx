@@ -88,8 +88,8 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
           className="cursor-pointer select-none active:scale-95 transition-transform"
           style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
         >
-          {/* Messages Preview - Single line with animation */}
-          <div className="h-[32px] overflow-hidden">
+          {/* Messages Preview - Up to 2 lines with animation */}
+          <div className="min-h-[32px] max-h-[52px] overflow-hidden">
             {recentMessages.length === 0 ? (
               <div className="flex items-center justify-center h-[32px] bg-black rounded-lg px-3">
                 <span className="text-white/40 text-xs">Tap to open chat</span>
@@ -99,11 +99,12 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
                 {(() => {
                   // Get the last message and split into lines if needed
                   const lastMessage = recentMessages[recentMessages.length - 1];
-                  const isCurrentUser = lastMessage.fromUserId === user.uid;
                   const messageText = lastMessage.translatedText || lastMessage.originalText;
                   
-                  // Simple line break - show first line only in compact view
-                  const firstLine = messageText.split('\n')[0];
+                  // Split by newlines and show up to 2 lines
+                  const lines = messageText.split('\n');
+                  const displayLines = lines.slice(0, 2);
+                  const isTwoLines = displayLines.length === 2;
                   
                   return (
                     <motion.div
@@ -112,17 +113,21 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.3 }}
-                      className="flex items-center h-[32px]"
+                      className={`flex items-center ${isTwoLines ? 'h-auto py-1' : 'h-[32px]'}`}
                     >
-                      <div className="bg-black rounded-lg px-3 py-1.5 flex items-center gap-1.5 max-w-full">
+                      <div className="bg-black rounded-lg px-3 py-1.5 flex items-start gap-1.5 max-w-full">
                         {lastMessage.isVoice && (
-                          <svg className="w-3 h-3 text-white/60 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3 h-3 text-white/60 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
                           </svg>
                         )}
-                        <p className="text-white text-xs truncate leading-none">
-                          {firstLine}
-                        </p>
+                        <div className="text-white text-xs leading-tight">
+                          {displayLines.map((line, i) => (
+                            <div key={i} className="truncate">
+                              {line}
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </motion.div>
                   );
@@ -157,13 +162,13 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
                 {/* Username vs Username */}
                 <div className="flex-1 min-w-0 mr-4">
                   <div className="flex items-center justify-center gap-2 overflow-hidden">
-                    <span className="text-white font-bold truncate" style={{ fontSize: 'clamp(12px, 3vw, 16px)' }}>
+                    <span className="text-white font-bold truncate" style={{ fontSize: 'clamp(14px, 4vw, 20px)' }}>
                       {session.player1DisplayName}
                     </span>
-                    <span className="text-yellow-500 font-bold flex-shrink-0" style={{ fontSize: 'clamp(12px, 3vw, 16px)', fontFamily: 'Audiowide' }}>
+                    <span className="text-yellow-500 font-bold flex-shrink-0" style={{ fontSize: 'clamp(14px, 4vw, 20px)', fontFamily: 'Audiowide' }}>
                       VS
                     </span>
-                    <span className="text-white font-bold truncate" style={{ fontSize: 'clamp(12px, 3vw, 16px)' }}>
+                    <span className="text-white font-bold truncate" style={{ fontSize: 'clamp(14px, 4vw, 20px)' }}>
                       {session.player2DisplayName}
                     </span>
                   </div>

@@ -39,8 +39,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   }, []);
 
   const startRecording = async () => {
-    if (disabled || isMuted) {
-      onError?.('Microphone is muted');
+    if (disabled || isMuted || isRecording || isProcessing) {
       return;
     }
 
@@ -97,28 +96,30 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
+    if (!isRecording) return;
+    
+    setIsRecording(false);
 
-      if (durationIntervalRef.current) {
-        clearInterval(durationIntervalRef.current);
-        durationIntervalRef.current = null;
-      }
-
-      // Stop media stream
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
-      }
-
-      console.log('⏹️ Recording stopped');
+    if (durationIntervalRef.current) {
+      clearInterval(durationIntervalRef.current);
+      durationIntervalRef.current = null;
     }
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
+
+    // Stop media stream immediately
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+
+    console.log('⏹️ Recording stopped');
   };
 
   const processRecording = async () => {
-    if (audioChunksRef.current.length === 0) {
-      onError?.('No audio recorded');
+    if (audioChunksRef.current.length === 0 || isProcessing) {
       return;
     }
 
@@ -203,9 +204,9 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       onMouseLeave={handleMouseUp}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      disabled={disabled || isMuted || isProcessing}
+      disabled={disabled || isMuted}
     >
-      {isProcessing ? 'Processing...' : isMuted ? 'Muted' : isRecording ? 'Recording...' : 'Voice'}
+      {isMuted ? 'Muted' : isRecording ? 'Voice' : 'Voice'}
     </button>
   );
 };
