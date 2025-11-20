@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
 import { BackgroundService } from '@/services/backgroundService';
 import { usePlayerCardBackground } from '@/hooks/useOptimizedBackground';
+import { VideoPlayer } from '@/components/shared/VideoPlayer';
 
 interface PlayerStats {
   uid: string;
@@ -71,23 +72,12 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
       {backgroundPath && (
         <>
           {isVideo ? (
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              webkit-playsinline="true"
-              x5-playsinline="true"
-              controls={false}
-              preload="metadata"
-              disablePictureInPicture
-              disableRemotePlayback
+            <VideoPlayer
+              src={backgroundPath.replace(/\.(mp4|webm)$/i, '')}
+              transparent={false}
               className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-100"
               style={{ pointerEvents: 'none' }}
-            >
-              <source src={backgroundPath} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
+            />
           ) : (
             <div 
               className="absolute inset-0 rounded-xl opacity-100"

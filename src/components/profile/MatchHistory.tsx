@@ -6,6 +6,7 @@ import { ChevronDown, ChevronUp, Clock, Trophy, Target, Users } from 'lucide-rea
 import { MatchHistoryService, MatchHistoryEntry } from '@/services/matchHistoryService';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
+import { VideoPlayer } from '@/components/shared/VideoPlayer';
 
 // Game mode icon mapping
 const getGameModeIcon = (gameType: string): string => {
@@ -159,18 +160,14 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
           onClick={() => toggleExpanded(match.id)}
         >
           {/* Video Background Support */}
-          {match.opponentBackgroundFile && match.opponentBackgroundFile.endsWith('.mp4') ? (
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
+          {match.opponentBackgroundFile && match.opponentBackgroundFile.endsWith('.mp4') && (
+            <VideoPlayer
+              src={match.opponentBackgroundFile.replace(/\.(mp4|webm)$/i, '')}
+              transparent={false}
               className="absolute inset-0 w-full h-full object-cover"
               style={{ zIndex: 0 }}
-            >
-              <source src={match.opponentBackgroundFile} type="video/mp4" />
-            </video>
-          ) : null}
+            />
+          )}
 
           {/* Background Image or Fallback */}
           <div 

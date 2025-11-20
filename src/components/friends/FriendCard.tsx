@@ -13,6 +13,7 @@ import { useBackground } from '@/context/BackgroundContext';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { ProfilePicture } from '@/components/ui/ProfilePicture';
 import { usePlayerCardBackground } from '@/hooks/useOptimizedBackground';
+import { VideoPlayer } from '@/components/shared/VideoPlayer';
 
 // Game mode icon mapping
 const getGameModeIcon = (gameType: string): string => {
@@ -448,23 +449,12 @@ export default function FriendCard({ friend, compact = false, showActions = true
     >
       {/* Video background for friends with video display backgrounds */}
       {isVideo && backgroundPath && (
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          controls={false}
-          webkit-playsinline="true"
-          x5-playsinline="true"
-          preload="metadata"
-          disablePictureInPicture
-          disableRemotePlayback
+        <VideoPlayer
+          src={backgroundPath.replace(/\.(mp4|webm)$/i, '')}
+          transparent={false}
           className="absolute inset-0 w-full h-full object-cover z-0"
           style={{ borderRadius: '20px', pointerEvents: 'none' }}
-        >
-          <source src={backgroundPath} type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+        />
       )}
       
       {/* Dark overlay gradient for text readability - left (black) to right (transparent) */}
