@@ -142,7 +142,17 @@ export const MatchVoiceButton: React.FC<MatchVoiceButtonProps> = ({
       const result: VoiceTranscriptionResponse = await response.json();
 
       if (result.text && result.text.trim()) {
-        onTranscription(result.text, result.duration);
+        // Remove any branding text that might appear
+        let cleanText = result.text.trim();
+        cleanText = cleanText.replace(/transcribed by otter\.ai/gi, '');
+        cleanText = cleanText.replace(/powered by otter\.ai/gi, '');
+        cleanText = cleanText.trim();
+        
+        if (cleanText) {
+          onTranscription(cleanText, result.duration);
+        } else {
+          onError?.('No speech detected');
+        }
       } else {
         onError?.('No speech detected');
       }
@@ -192,7 +202,6 @@ export const MatchVoiceButton: React.FC<MatchVoiceButtonProps> = ({
         height: '60px',
         borderRadius: '50%',
         border: '2px solid white',
-        background: isRecording ? 'rgba(239, 68, 68, 0.3)' : 'transparent',
         cursor: disabled || isMuted ? 'not-allowed' : 'pointer',
         opacity: disabled || isMuted ? 0.3 : 1,
         userSelect: 'none',
@@ -201,12 +210,11 @@ export const MatchVoiceButton: React.FC<MatchVoiceButtonProps> = ({
       }}
       disabled={disabled || isMuted || isProcessing}
       animate={{
-        scale: isRecording ? [1, 1.1, 1] : 1,
-        borderColor: isRecording ? ['#ffffff', '#ef4444', '#ffffff'] : '#ffffff'
+        backgroundColor: isRecording ? 'rgba(239, 68, 68, 1)' : 'transparent',
+        borderColor: isRecording ? '#ef4444' : '#ffffff'
       }}
       transition={{
-        duration: isRecording ? 1 : 0.2,
-        repeat: isRecording ? Infinity : 0,
+        duration: 0.3,
         ease: 'easeInOut'
       }}
       whileTap={{ scale: 0.95 }}

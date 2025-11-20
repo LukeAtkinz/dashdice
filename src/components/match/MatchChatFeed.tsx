@@ -77,11 +77,14 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
     <>
       {/* Compact Chat Feed - Single line display */}
       <div className={`relative ${className}`}>
+        <div
+          onClick={() => setOverlayOpen(true)}
+          className="cursor-pointer"
+          style={{ touchAction: 'manipulation' }}
+        >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          onClick={() => setOverlayOpen(true)}
-          className="cursor-pointer"
         >
           {/* Messages Preview - Single line with animation */}
           <div className="h-[32px] overflow-hidden">
@@ -127,6 +130,7 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
             <div ref={messagesEndRef} />
           </div>
         </motion.div>
+        </div>
       </div>
 
       {/* Overlay Chat Window */}

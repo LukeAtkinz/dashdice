@@ -1538,7 +1538,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           <div className="md:hidden flex flex-col items-center w-full" style={{ maxWidth: '100vw', margin: '0 auto' }}>
             
             {/* TOP SECTION: Player Profiles + Chat */}
-            <div className="w-full" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 60px)' }}>
+            <div className="w-full" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 60px)', paddingBottom: 'max(12px, 2vh)' }}>
               {/* User Profiles Section */}
               <AnimatePresence>
                 {(matchData.gameData.gamePhase as string) !== 'turnDecider' && !showTurnAnnouncement && (
@@ -1548,7 +1548,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       gap: '0px',
                       paddingLeft: '16px',
                       paddingRight: '16px',
-                      paddingBottom: '12px'
+                      paddingBottom: 'max(8px, 1.5vh)'
                     }}
                   initial={{ opacity: 0, y: -60, scale: 0.8 }}
                   animate={{ 
@@ -1803,8 +1803,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 transition={{ delay: 0.8, duration: 0.5 }}
                 className="w-full px-4"
                 style={{ 
-                  paddingTop: '6px',
-                  paddingBottom: '6px'
+                  marginTop: 'max(8px, 1.5vh)',
+                  marginBottom: 'max(8px, 1.5vh)'
                 }}
               >
                 <MatchChatFeed matchId={matchData.id} />
@@ -1818,9 +1818,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 transition={{ delay: 1, duration: 0.4 }}
                 className="md:hidden fixed"
                 style={{
-                  bottom: 'calc(80px + 20px + 70px)',
+                  bottom: 'max(calc(80px + 20px + 70px), calc(15vh + 70px))',
                   right: '16px',
-                  zIndex: 20
+                  zIndex: 30
                 }}
               >
                 <MatchVoiceButton
