@@ -13,7 +13,6 @@ import { useBackground } from '@/context/BackgroundContext';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { ProfilePicture } from '@/components/ui/ProfilePicture';
 import { usePlayerCardBackground } from '@/hooks/useOptimizedBackground';
-import { VideoPlayer } from '@/components/shared/VideoPlayer';
 
 // Game mode icon mapping
 const getGameModeIcon = (gameType: string): string => {
@@ -380,8 +379,8 @@ export default function FriendCard({ friend, compact = false, showActions = true
             preload="metadata"
             disablePictureInPicture
             disableRemotePlayback
-            className="absolute inset-0 w-full h-full object-cover z-0"
-            style={{ borderRadius: '20px', pointerEvents: 'none' }}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ borderRadius: '20px', pointerEvents: 'none', zIndex: 0 }}
           >
             <source src={backgroundPath} type="video/mp4" />
             Your browser does not support the video tag.
@@ -394,11 +393,12 @@ export default function FriendCard({ friend, compact = false, showActions = true
           style={{
             background: 'linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)',
             borderRadius: '20px',
-            zIndex: 1
+            zIndex: 1,
+            pointerEvents: 'none'
           }}
         ></div>
         
-        <div className="relative z-10 flex items-center gap-3 p-3">
+        <div className="relative flex items-center gap-3 p-3" style={{ zIndex: 10 }}>
           <div className="relative">
             <ProfilePicture
               src={friend.friendData?.profilePicture || friend.friendData?.photoURL}
@@ -449,12 +449,23 @@ export default function FriendCard({ friend, compact = false, showActions = true
     >
       {/* Video background for friends with video display backgrounds */}
       {isVideo && backgroundPath && (
-        <VideoPlayer
-          src={backgroundPath.replace(/\.(mp4|webm)$/i, '')}
-          transparent={false}
-          className="absolute inset-0 w-full h-full object-cover z-0"
-          style={{ borderRadius: '20px', pointerEvents: 'none' }}
-        />
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          controls={false}
+          webkit-playsinline="true"
+          x5-playsinline="true"
+          preload="metadata"
+          disablePictureInPicture
+          disableRemotePlayback
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ borderRadius: '20px', pointerEvents: 'none', zIndex: 0 }}
+        >
+          <source src={backgroundPath} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
       )}
       
       {/* Dark overlay gradient for text readability - left (black) to right (transparent) */}
@@ -463,11 +474,12 @@ export default function FriendCard({ friend, compact = false, showActions = true
         style={{
           background: 'linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)',
           borderRadius: '20px',
-          zIndex: 1
+          zIndex: 1,
+          pointerEvents: 'none'
         }}
       ></div>
       
-      <div className="relative z-10 p-4">
+      <div className="relative p-4" style={{ zIndex: 10 }}>
         {/* Action buttons - Desktop: inline, Mobile: stacked below */}
         {showActions && (
           <motion.div 
