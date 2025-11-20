@@ -106,31 +106,43 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const handleError = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     const video = e.currentTarget;
     const currentSource = video.currentSrc;
+    const videoError = video.error;
+    
+    // Only treat as real error if we have an actual error code
+    // networkState 2 = NETWORK_LOADING is not an error
+    if (!videoError) {
+      console.warn('Video element error event but no error object - ignoring');
+      return;
+    }
     
     console.error('Video failed to load:', {
       baseSrc,
       currentSource,
-      error: video.error,
+      errorCode: videoError?.code,
+      errorMessage: videoError?.message,
       networkState: video.networkState,
       readyState: video.readyState
     });
 
-    // Retry logic: try next source or fail gracefully
-    if (retryCount < 2) {
+    // Only retry on actual media errors, not network loading states
+    if (retryCount < 3 && videoError.code > 0) {
       setRetryCount(prev => prev + 1);
       
       // Force reload to try next source
       setTimeout(() => {
         video.load();
-      }, 100);
+      }, 500);
       
       return;
     }
 
-    setError(true);
-    
-    if (onError) {
-      onError(new Error(`Failed to load video after ${retryCount} attempts: ${baseSrc}`));
+    // Only set error if we have a real error code
+    if (videoError.code > 0) {
+      setError(true);
+      
+      if (onError) {
+        onError(new Error(`Failed to load video (code ${videoError.code}): ${baseSrc}`));
+      }
     }
   };
 
@@ -160,12 +172,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       playsInline={playsInline}
       // @ts-ignore - webkit-playsinline is valid but not in TS types
       webkit-playsinline="true" // Required for older iOS (pre-iOS 10)
-      preload="metadata"
+      preload="auto"
       controls={false}
       disablePictureInPicture
       disableRemotePlayback
       poster={posterSrc}
       onLoadedData={handleLoadedData}
+      onCanPlay={() => setLoaded(true)}
       onEnded={onEnded}
       onError={handleError}
       style={{
