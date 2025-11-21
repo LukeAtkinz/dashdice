@@ -1,7 +1,7 @@
 ﻿'use client';
 
 // CACHE BUST: v2.0.0 - React Error #310 FIX DEPLOYED
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { MatchService } from '@/services/matchService';
@@ -54,7 +54,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   } = useMatchAchievements();
   
   // Track match start time for duration calculation
-  const matchStartTime = React.useRef<number | null>(null);
+  const matchStartTime = useRef<number | null>(null);
   
   // Remove performance-impacting debug logs
   // console.log('🔍 DEBUG: Match component context:', {
@@ -139,7 +139,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   
   // 🍀 REMOVE LUCK TURNER EFFECT WHEN ROLL COMPLETES
   // Track isRolling state and clear luck_turner effect when roll finishes
-  const previousRollingState = React.useRef<boolean | null>(null);
+  const previousRollingState = useRef<boolean | null>(null);
   
   useEffect(() => {
     if (!matchData || !user?.uid) return;

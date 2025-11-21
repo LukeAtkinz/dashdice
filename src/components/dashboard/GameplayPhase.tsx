@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MatchData } from '@/types/match';
 import { SlotMachineDice } from './SlotMachineDice';
@@ -57,14 +57,14 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   const hasMultiplier = hasDoubleMultiplier || hasTripleMultiplier || hasQuadMultiplier;
   
   // State for score shooting animation
-  const [isScoreShooting, setIsScoreShooting] = React.useState(false);
+  const [isScoreShooting, setIsScoreShooting] = useState(false);
   
   // State for Aura Forge selection mode
-  const [isAuraForgeActive, setIsAuraForgeActive] = React.useState(false);
-  const [auraForgeCallback, setAuraForgeCallback] = React.useState<((amount: number) => void) | null>(null);
+  const [isAuraForgeActive, setIsAuraForgeActive] = useState(false);
+  const [auraForgeCallback, setAuraForgeCallback] = useState<((amount: number) => void) | null>(null);
   
   // Wrapped ability handler to detect Aura Forge activation
-  const handleAbilityUsed = React.useCallback((effect: any) => {
+  const handleAbilityUsed = useCallback((effect: any) => {
     // Check if this is Aura Forge activation
     if (effect?.abilityId === 'aura_forge' || effect?.type === 'aura_forge_pending') {
       // Activate selection mode
@@ -82,7 +82,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   }, [onAbilityUsed]);
   
   // Handle Aura Forge amount selection
-  const handleAuraForgeSelect = React.useCallback(async (amount: number) => {
+  const handleAuraForgeSelect = useCallback(async (amount: number) => {
     if (auraForgeCallback) {
       await auraForgeCallback(amount);
     }

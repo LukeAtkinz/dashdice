@@ -15,7 +15,7 @@
  * - Static display when not animating
  */
 
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MatchData } from '@/types/match';
 
@@ -97,7 +97,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   const displayValue = getDisplayValue();
 
   // Check if Luck Turner ability is active for any player
-  const isLuckTurnerActive = React.useMemo(() => {
+  const isLuckTurnerActive = useMemo(() => {
     if (!matchData?.gameData?.activeEffects) {
       console.log('🍀 Luck Turner check: No activeEffects in matchData');
       return false;
@@ -126,10 +126,10 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   }, [matchData?.gameData?.activeEffects]);
 
   // 🍳 Check if Pan Slap ability is active for any player
-  const [isPanSlapActive, setIsPanSlapActive] = React.useState(false);
-  const [showRedDice, setShowRedDice] = React.useState(false);
+  const [isPanSlapActive, setIsPanSlapActive] = useState(false);
+  const [showRedDice, setShowRedDice] = useState(false);
   
-  React.useEffect(() => {
+  useEffect(() => {
     if (!matchData?.gameData?.activeEffects) {
       return;
     }
