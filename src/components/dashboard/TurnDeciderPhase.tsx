@@ -318,7 +318,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             <motion.div
               className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 translate-y-8"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.15 }}
+              animate={{ opacity: 0.08 }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
               <span 
@@ -466,7 +466,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             <motion.div
               className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 translate-y-8"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.15 }}
+              animate={{ opacity: 0.08 }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
               <span 
