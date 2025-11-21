@@ -262,7 +262,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="fixed inset-0 w-full h-full flex flex-col"
+          className="fixed inset-0 w-full h-full flex flex-col bg-white"
         >
           {/* ODD Button - Top Half with Flying Animation */}
           <motion.button
@@ -309,6 +309,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 loop
                 muted
                 playsInline
+                preload="auto"
                 className="absolute inset-0 w-full h-full object-cover"
                 style={{ height: '720px', maxHeight: '50vh' }}
               />
@@ -360,7 +361,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 className="text-[20vw] md:text-[10rem] text-white font-bold tracking-wider"
                 style={{ 
                   fontFamily: 'Audiowide',
-                  textShadow: '0 0 30px rgba(255,255,255,0.9), 0 0 60px rgba(255,255,255,0.6), 0 0 100px rgba(255,255,255,0.3)',
+                  textShadow: '0 0 40px rgba(255,255,255,1), 0 0 80px rgba(255,255,255,0.9), 0 0 120px rgba(255,255,255,0.7), 0 0 160px rgba(255,255,255,0.5)',
                   WebkitFontSmoothing: 'antialiased'
                 }}
                 initial={{ scale: 0, opacity: 0 }}
@@ -371,9 +372,9 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                   textShadow: transitionPhase === 'choice-returning' ? 
                     '0 0 0px rgba(255,255,255,0), 0 0 0px rgba(255,255,255,0), 0 0 0px rgba(255,255,255,0)' : 
                     [
-                      '0 0 30px rgba(255,255,255,0.9), 0 0 60px rgba(255,255,255,0.6), 0 0 100px rgba(255,255,255,0.3)',
-                      '0 0 40px rgba(255,255,255,1.0), 0 0 80px rgba(255,255,255,0.8), 0 0 120px rgba(255,255,255,0.5)',
-                      '0 0 30px rgba(255,255,255,0.9), 0 0 60px rgba(255,255,255,0.6), 0 0 100px rgba(255,255,255,0.3)'
+                      '0 0 40px rgba(255,255,255,1), 0 0 80px rgba(255,255,255,0.9), 0 0 120px rgba(255,255,255,0.7), 0 0 160px rgba(255,255,255,0.5)',
+                      '0 0 50px rgba(255,255,255,1.0), 0 0 100px rgba(255,255,255,1.0), 0 0 150px rgba(255,255,255,0.8), 0 0 200px rgba(255,255,255,0.6)',
+                      '0 0 40px rgba(255,255,255,1), 0 0 80px rgba(255,255,255,0.9), 0 0 120px rgba(255,255,255,0.7), 0 0 160px rgba(255,255,255,0.5)'
                     ]
                 }}
                 transition={
@@ -456,6 +457,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 loop
                 muted
                 playsInline
+                preload="auto"
                 className="absolute inset-0 w-full h-full object-cover"
                 style={{ height: '720px', maxHeight: '50vh' }}
               />
