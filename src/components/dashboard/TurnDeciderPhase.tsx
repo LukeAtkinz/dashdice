@@ -55,6 +55,7 @@ interface TurnDeciderPhaseProps {
     currentNumber: number;
     finalNumber: number | null;
     reelSpeed?: number;
+    animationKey?: number;
   };
   onChoiceSelect: (choice: 'odd' | 'even') => void;
   onForceGameplay?: () => void; // Debug function to force gameplay
@@ -345,7 +346,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                     isSpinning: diceAnimation.isSpinning,
                     currentNumber: diceAnimation.currentNumber,
                     finalNumber: diceAnimation.finalNumber,
-                    reelSpeed: diceAnimation.reelSpeed
+                    reelSpeed: diceAnimation.reelSpeed,
+                    animationKey: diceAnimation.animationKey
                   }}
                   matchRollPhase="rolling"
                   actualValue={diceAnimation.finalNumber || diceAnimation.currentNumber}
