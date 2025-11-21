@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MatchData } from '@/types/match';
+import { SlotMachineDice } from './SlotMachineDice';
 
 // Simple Pulse Dice Component
 const PulseDice: React.FC<{ finalNumber: number | null; onComplete?: () => void }> = ({ finalNumber, onComplete }) => {
@@ -68,6 +69,29 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
   onChoiceSelect,
   onForceGameplay
 }) => {
+  // Video backgrounds state - MUST be at top before any computed values
+  const [topVideo, setTopVideo] = useState<string>('');
+  const [bottomVideo, setBottomVideo] = useState<string>('');
+  const videoInitialized = useRef(false);
+  
+  // Available world videos
+  const worldVideos = useMemo(() => [
+    '/World/Awaken/Awakened.mp4',
+    '/World/Lead the way/Lead the way.mp4',
+    '/World/Little Critters/Little Critters.mp4',
+    '/World/Web Climber/Web Climber.mp4'
+  ], []);
+  
+  // Initialize random videos on mount
+  useEffect(() => {
+    if (!videoInitialized.current && worldVideos.length > 0) {
+      const shuffled = [...worldVideos].sort(() => Math.random() - 0.5);
+      setTopVideo(shuffled[0]);
+      setBottomVideo(shuffled[1]);
+      videoInitialized.current = true;
+    }
+  }, [worldVideos]);
+  
   const isMyTurnToDecide = (isHost && matchData.gameData.turnDecider === 1) || 
                           (!isHost && matchData.gameData.turnDecider === 2);
   
@@ -222,7 +246,14 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center">
+    <motion.div
+      initial={{ x: '100%' }}
+      animate={{ x: 0 }}
+      exit={{ x: '-100%' }}
+      transition={{ type: 'tween', duration: 0.5, ease: 'easeInOut' }}
+      className="absolute inset-0"
+    >
+      <div className="flex flex-col items-center justify-center h-full">
       {/* Old dice display removed to prevent layout switching */}
 
       {/* Choice Selection with Stunning Slide Transitions */}
@@ -267,9 +298,21 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             }}
             whileHover={transitionPhase === 'choosing' ? { scale: 1.02 } : {}}
             whileTap={transitionPhase === 'choosing' ? { scale: 0.96, transition: { duration: 0.1 } } : {}}
-            className="relative flex-1 w-full flex flex-col items-center justify-center bg-transparent transition-all duration-200"
+            className="relative flex-1 w-full flex flex-col items-center justify-center bg-transparent transition-all duration-200 overflow-hidden"
             style={{ fontFamily: "Audiowide" }}
           >
+            {/* Video Background - Top */}
+            {topVideo && (
+              <video
+                src={topVideo}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ height: '720px', maxHeight: '50vh' }}
+              />
+            )}
             {/* Background Text Shadow */}
             <motion.div
               className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 translate-y-8"
@@ -288,40 +331,26 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               </span>
             </motion.div>
 
-            {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 -translate-y-16">
-              <motion.img 
-                src="/Design Elements/Match/Turn Decider/Odd.webp" 
-                alt="Odd" 
-                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain mb-8"
-                style={{
-                  imageRendering: 'auto',
-                  WebkitFontSmoothing: 'antialiased'
-                }}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ 
-                  scale: transitionPhase === 'choosing' ? 1 : 0.3,
-                  opacity: transitionPhase === 'choosing' ? 1 : 0
-                }}
-                transition={{ 
-                  delay: transitionPhase === 'choosing' ? 1.0 : 0, // Same as button timing
-                  duration: transitionPhase === 'choosing' ? 1.5 : 0.5, // Same as button timing
-                  ease: transitionPhase === 'choosing' ? "backOut" : "easeIn",
-                  type: transitionPhase === 'choosing' ? "spring" : "tween",
-                  stiffness: transitionPhase === 'choosing' ? 120 : undefined,
-                  damping: transitionPhase === 'choosing' ? 15 : undefined
-                }}
-              />
-            </div>
           </motion.button>
 
           {/* VS Element or Dice - Centered */}
           <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30">
-            {hasDice && diceAnimation.isSpinning ? (
-              // Show simple pulse dice animation
+            {hasDice ? (
+              // Show slot machine dice animation
               <div className="w-48 h-48 md:w-60 md:h-60 flex items-center justify-center">
-                <PulseDice 
-                  finalNumber={matchData.gameData.turnDeciderDice || null} 
+                <SlotMachineDice
+                  diceNumber={'turnDecider' as any}
+                  animationState={{
+                    isSpinning: diceAnimation.isSpinning,
+                    currentNumber: diceAnimation.currentNumber,
+                    finalNumber: diceAnimation.finalNumber,
+                    reelSpeed: diceAnimation.reelSpeed
+                  }}
+                  matchRollPhase="rolling"
+                  actualValue={diceAnimation.finalNumber || diceAnimation.currentNumber}
+                  isGameRolling={diceAnimation.isSpinning}
+                  isTurnDecider={true}
+                  matchData={matchData}
                 />
               </div>
             ) : transitionPhase === 'choosing' || transitionPhase === 'choice-returning' ? (
@@ -416,9 +445,21 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             }}
             whileHover={transitionPhase === 'choosing' ? { scale: 1.02 } : {}}
             whileTap={transitionPhase === 'choosing' ? { scale: 0.96, transition: { duration: 0.1 } } : {}}
-            className="relative flex-1 w-full flex flex-col items-center justify-center bg-transparent transition-all duration-200"
+            className="relative flex-1 w-full flex flex-col items-center justify-center bg-transparent transition-all duration-200 overflow-hidden"
             style={{ fontFamily: "Audiowide" }}
           >
+            {/* Video Background - Bottom */}
+            {bottomVideo && (
+              <video
+                src={bottomVideo}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ height: '720px', maxHeight: '50vh' }}
+              />
+            )}
             {/* Background Text Shadow */}
             <motion.div
               className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 translate-y-8"
@@ -436,32 +477,6 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 EVEN
               </span>
             </motion.div>
-
-            {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 -translate-y-16">
-              <motion.img 
-                src="/Design Elements/Match/Turn Decider/Even.webp" 
-                alt="Even" 
-                className="w-[45vw] md:w-[35vw] h-[45vw] md:h-[35vw] max-w-80 max-h-80 object-contain mb-8"
-                style={{
-                  imageRendering: 'auto',
-                  WebkitFontSmoothing: 'antialiased'
-                }}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ 
-                  scale: transitionPhase === 'choosing' ? 1 : 0.3,
-                  opacity: transitionPhase === 'choosing' ? 1 : 0
-                }}
-                transition={{ 
-                  delay: transitionPhase === 'choosing' ? 1.0 : 0, // Same as button timing
-                  duration: transitionPhase === 'choosing' ? 1.5 : 0.5, // Same as button timing
-                  ease: transitionPhase === 'choosing' ? "backOut" : "easeIn",
-                  type: transitionPhase === 'choosing' ? "spring" : "tween",
-                  stiffness: transitionPhase === 'choosing' ? 120 : undefined,
-                  damping: transitionPhase === 'choosing' ? 15 : undefined
-                }}
-              />
-            </div>
           </motion.button>
         </motion.div>
       )}
@@ -851,6 +866,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </motion.div>
   );
 };
