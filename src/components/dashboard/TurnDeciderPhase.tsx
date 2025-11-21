@@ -349,7 +349,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                     reelSpeed: diceAnimation.reelSpeed,
                     animationKey: diceAnimation.animationKey
                   }}
-                  matchRollPhase="rolling"
+                  matchRollPhase="turnDecider"
                   actualValue={diceAnimation.finalNumber || diceAnimation.currentNumber}
                   isGameRolling={diceAnimation.isSpinning}
                   isTurnDecider={true}

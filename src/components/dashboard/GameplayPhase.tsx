@@ -382,13 +382,6 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           <motion.div 
             className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" 
             style={{ width: 'min(600px, 70vw)' }}
-            initial={{ opacity: 0, x: -100, rotateY: -15 }}
-            animate={{ opacity: 1, x: 0, rotateY: 0 }}
-            transition={{ 
-              duration: 0.8, 
-              ease: [0.4, 0, 0.2, 1],
-              delay: 0.2
-            }}
             whileHover={{ 
               scale: 1.05,
               rotateX: 2,
@@ -758,13 +751,6 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           <motion.div 
             className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" 
             style={{ width: 'min(600px, 70vw)' }}
-            initial={{ opacity: 0, x: 100, rotateY: 15 }}
-            animate={{ opacity: 1, x: 0, rotateY: 0 }}
-            transition={{ 
-              duration: 0.8, 
-              ease: [0.4, 0, 0.2, 1],
-              delay: 0.4 // Slight delay after first dice
-            }}
             whileHover={{ 
               scale: 1.05,
               rotateX: -2,
