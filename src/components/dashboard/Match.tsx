@@ -141,6 +141,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   // Track isRolling state and clear luck_turner effect when roll finishes
   const previousRollingState = useRef<boolean | null>(null);
   
+  // Track previous turn decider dice value to trigger animation only once
+  const previousTurnDeciderDice = useRef<number | null>(null);
+  
   useEffect(() => {
     if (!matchData || !user?.uid) return;
     
@@ -978,17 +981,16 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   useEffect(() => {
     if (!matchData) return;
 
-    // Turn decider dice animation - trigger when isRolling becomes true
+    // Turn decider dice animation - trigger when dice value changes
     if (matchData.gameData.gamePhase === 'turnDecider' && 
-        matchData.gameData.turnDeciderChoice && 
-        matchData.gameData.isRolling &&
         matchData.gameData.turnDeciderDice && 
+        previousTurnDeciderDice.current !== matchData.gameData.turnDeciderDice &&
         !turnDeciderDiceAnimation.isSpinning) {
-      // Remove performance-impacting logs
-      // console.log('🎰 Starting turn decider dice animation for result:', matchData.gameData.turnDeciderDice);
+      console.log('🎰 Starting turn decider dice animation for result:', matchData.gameData.turnDeciderDice);
       // 🎰 Animation Durations per specification:
       // Turn Decider Dice: 2000ms (2.0 seconds) - slower for dramatic effect
       startSlotMachineAnimation('turnDecider', matchData.gameData.turnDeciderDice, 2000);
+      previousTurnDeciderDice.current = matchData.gameData.turnDeciderDice;
     }
 
     // Gameplay dice animations - Always animate even for same values
@@ -1316,8 +1318,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   />
                 )}
 
-                {/* Turn Announcement - Shows who goes first */}
-                {showTurnAnnouncement && turnAnnouncementData && (
+                {/* Turn Announcement - DISABLED per user request */}
+                {false && showTurnAnnouncement && turnAnnouncementData && (
                   <motion.div
                     key="turnAnnouncement"
                     initial={{ opacity: 0, scale: 0.8, y: 20 }}
@@ -1863,8 +1865,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   </motion.div>
                 )}
 
-                {/* Turn Announcement - Mobile */}
-                {showTurnAnnouncement && turnAnnouncementData && (
+                {/* Turn Announcement - Mobile - DISABLED per user request */}
+                {false && showTurnAnnouncement && turnAnnouncementData && (
                   <motion.div
                     key="turnAnnouncement-mobile"
                     initial={{ opacity: 0, scale: 0.8, y: 20 }}
