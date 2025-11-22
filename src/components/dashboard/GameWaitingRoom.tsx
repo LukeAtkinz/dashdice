@@ -148,6 +148,27 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const opponentBackground = opponentData?.matchBackgroundEquipped || opponentData?.displayBackgroundEquipped;
   const { backgroundPath: opponentBgPath, isVideo: opponentBgIsVideo } = useWaitingRoomBackground(opponentBackground as any);
   
+  // World video backgrounds for split-screen layout
+  const [topVideo, setTopVideo] = useState<string>('');
+  const [bottomVideo, setBottomVideo] = useState<string>('');
+  const videoInitialized = React.useRef(false);
+  
+  const worldVideos = useMemo(() => [
+    '/World/Awaken/Awakened.mp4',
+    '/World/Lead the way/Lead the way.mp4',
+    '/World/Little Critters/Little Critters.mp4',
+    '/World/Web Climber/Web Climber.mp4'
+  ], []);
+  
+  useEffect(() => {
+    if (!videoInitialized.current && worldVideos.length > 0) {
+      const shuffled = [...worldVideos].sort(() => Math.random() - 0.5);
+      setTopVideo(shuffled[0]);
+      setBottomVideo(shuffled[1]);
+      videoInitialized.current = true;
+    }
+  }, [worldVideos]);
+  
   // Handle transition completion
   const handleTransitionComplete = () => {
     console.log('🎬 GameWaitingRoom: Transition completed, navigating to match...');
