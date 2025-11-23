@@ -63,7 +63,13 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   const [isAuraForgeActive, setIsAuraForgeActive] = useState(false);
   const [auraForgeCallback, setAuraForgeCallback] = useState<((amount: number) => void) | null>(null);
   
-  // Wrapped ability handler to detect Aura Forge activation
+  // State for Vital Rush animation
+  const [vitalRushActive, setVitalRushActive] = useState(false);
+  const [showVitalRushInitial, setShowVitalRushInitial] = useState(false);
+  const [showVitalRushTopDice, setShowVitalRushTopDice] = useState(false);
+  const [showVitalRushBottomDice, setShowVitalRushBottomDice] = useState(false);
+  
+  // Wrapped ability handler to detect Aura Forge and Vital Rush activation
   const handleAbilityUsed = useCallback((effect: any) => {
     // Check if this is Aura Forge activation
     if (effect?.abilityId === 'aura_forge' || effect?.type === 'aura_forge_pending') {
@@ -73,7 +79,26 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
       if (effect.callback) {
         setAuraForgeCallback(() => effect.callback);
       }
-    } else {
+    } 
+    // Check if this is Vital Rush activation
+    else if (effect?.abilityId === 'vital_rush' || effect?.ability?.id === 'vital_rush') {
+      console.log('🎬 Vital Rush activated - starting animation sequence');
+      setVitalRushActive(true);
+      
+      // Start initial animation immediately
+      setShowVitalRushInitial(true);
+      
+      // Start top dice animation after 0.5s
+      setTimeout(() => {
+        setShowVitalRushTopDice(true);
+      }, 500);
+      
+      // Start bottom dice animation after 0.8s
+      setTimeout(() => {
+        setShowVitalRushBottomDice(true);
+      }, 800);
+    } 
+    else {
       // Pass through to parent handler
       if (onAbilityUsed) {
         onAbilityUsed(effect);
@@ -90,6 +115,20 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
     setIsAuraForgeActive(false);
     setAuraForgeCallback(null);
   }, [auraForgeCallback]);
+
+  // Cleanup Vital Rush animations when turn ends
+  useEffect(() => {
+    // Clear animations when turn score resets or turn changes
+    if (matchData.gameData.turnScore === 0 || !isMyTurn) {
+      if (vitalRushActive) {
+        console.log('🎬 Clearing Vital Rush animations - turn ended');
+        setVitalRushActive(false);
+        setShowVitalRushInitial(false);
+        setShowVitalRushTopDice(false);
+        setShowVitalRushBottomDice(false);
+      }
+    }
+  }, [matchData.gameData.turnScore, isMyTurn, vitalRushActive]);
 
   // Handle bank/save with animation
   const handleBankScore = () => {
@@ -381,7 +420,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           {/* Dice 1 - Enhanced Slot Machine */}
           <motion.div 
             className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" 
-            style={{ width: 'min(600px, 70vw)' }}
+            style={{ width: 'min(600px, 70vw)', position: 'relative' }}
             whileHover={{ 
               scale: 1.05,
               rotateX: 2,
@@ -397,6 +436,27 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               matchData={matchData}
               isTopDice={true} // Top dice - normal orientation
             />
+            
+            {/* Vital Rush Top Dice Animation Overlay */}
+            {showVitalRushTopDice && (
+              <video
+                key="vital-rush-top-dice"
+                src="/Abilities/Animations/Vital Rush/Vital Rush Top Dice Container.webm"
+                autoPlay
+                loop
+                muted
+                playsInline
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  pointerEvents: 'none',
+                  zIndex: 10
+                }}
+              />
+            )}
           </motion.div>
           
           {/* Turn Score - Positioned absolutely between dice - Mobile bigger and more padding */}
@@ -750,7 +810,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           {/* Dice 2 - Enhanced Slot Machine */}
           <motion.div 
             className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" 
-            style={{ width: 'min(600px, 70vw)' }}
+            style={{ width: 'min(600px, 70vw)', position: 'relative' }}
             whileHover={{ 
               scale: 1.05,
               rotateX: -2,
@@ -766,8 +826,52 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               matchData={matchData}
               isTopDice={false} // Bottom dice - flipped vertically
             />
+            
+            {/* Vital Rush Bottom Dice Animation Overlay */}
+            {showVitalRushBottomDice && (
+              <video
+                key="vital-rush-bottom-dice"
+                src="/Abilities/Animations/Vital Rush/Vital Rush Bottom Dice Container.webm"
+                autoPlay
+                loop
+                muted
+                playsInline
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  pointerEvents: 'none',
+                  zIndex: 10
+                }}
+              />
+            )}
           </motion.div>
         </motion.div>
+        
+        {/* Vital Rush Initial Animation - 90deg rotated, positioned next to top dice */}
+        {showVitalRushInitial && (
+          <video
+            key="vital-rush-initial"
+            src="/Abilities/Animations/Vital Rush/Vital Rush Initial.webm"
+            autoPlay
+            muted
+            playsInline
+            onEnded={() => setShowVitalRushInitial(false)}
+            style={{
+              position: 'absolute',
+              width: 'min(600px, 70vw)',
+              height: 'auto',
+              transform: 'rotate(90deg) translateX(-50%)',
+              transformOrigin: 'left center',
+              left: 'calc(50% - min(300px, 35vw))',
+              top: 'calc(50% - 30px - min(300px, 35vw))',
+              pointerEvents: 'none',
+              zIndex: 20
+            }}
+          />
+        )}
 
         {/* Desktop Abilities Display - Enhanced animations */}
         {user && onAbilityUsed && (
