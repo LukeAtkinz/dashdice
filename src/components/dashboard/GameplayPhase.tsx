@@ -59,9 +59,18 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   // State for score shooting animation
   const [isScoreShooting, setIsScoreShooting] = useState(false);
   
-  // State for Aura Forge selection mode
+  // State for Aura Forge selection mode and animations
   const [isAuraForgeActive, setIsAuraForgeActive] = useState(false);
   const [auraForgeCallback, setAuraForgeCallback] = useState<((amount: number) => void) | null>(null);
+  const [showAuraForgeBottom, setShowAuraForgeBottom] = useState(false); // Stage 1: Bottom transition video
+  const [showAuraForgeTurnScore, setShowAuraForgeTurnScore] = useState(false); // Stage 2: Turn score animation
+  const [showAuraForgeAura, setShowAuraForgeAura] = useState(false); // Stage 2: Aura animation
+  const [auraForgeAnimationKey, setAuraForgeAnimationKey] = useState(0); // For triggering video replays
+  const [auraForgePulseCount, setAuraForgePulseCount] = useState(0); // Track current pulse
+  const [auraForgeAmount, setAuraForgeAmount] = useState(0); // Selected amount
+  const [turnScoreDisplay, setTurnScoreDisplay] = useState(0); // Animated turn score
+  const [totalScoreDisplay, setTotalScoreDisplay] = useState(0); // Animated total score
+  const [auraDisplay, setAuraDisplay] = useState(0); // Animated aura value
   
   // State for Vital Rush animation
   const [vitalRushActive, setVitalRushActive] = useState(false);
@@ -73,8 +82,11 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   const handleAbilityUsed = useCallback((effect: any) => {
     // Check if this is Aura Forge activation
     if (effect?.abilityId === 'aura_forge' || effect?.type === 'aura_forge_pending') {
+      console.log('🔥 Aura Forge activated - Stage 1: showing bottom transition video');
       // Activate selection mode
       setIsAuraForgeActive(true);
+      // Show Stage 1: Bottom transition video
+      setShowAuraForgeBottom(true);
       // Store the callback for when user selects an amount
       if (effect.callback) {
         setAuraForgeCallback(() => effect.callback);
@@ -106,15 +118,88 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
     }
   }, [onAbilityUsed]);
   
-  // Handle Aura Forge amount selection
+  // Handle Aura Forge amount selection and Stage 2 animations
   const handleAuraForgeSelect = useCallback(async (amount: number) => {
-    if (auraForgeCallback) {
-      await auraForgeCallback(amount);
-    }
-    // Reset state
+    console.log(`🔥 Aura Forge Stage 2: User selected ${amount} aura to convert`);
+    
+    // Store the selected amount
+    setAuraForgeAmount(amount);
+    
+    // Initialize display values from current game state
+    const activePlayer = currentPlayer.turnActive ? currentPlayer : opponent;
+    const currentTurnScore = matchData.gameData.turnScore || 0;
+    const currentTotalScore = matchData.gameMode === 'zero-hour' 
+      ? (activePlayer.playerScore || 0) - currentTurnScore
+      : (activePlayer.playerScore || 0) + currentTurnScore;
+    const currentAura = currentUserAura || 0;
+    
+    setTurnScoreDisplay(currentTurnScore);
+    setTotalScoreDisplay(currentTotalScore);
+    setAuraDisplay(currentAura);
+    
+    // Hide bottom video and number selectors
+    setShowAuraForgeBottom(false);
     setIsAuraForgeActive(false);
-    setAuraForgeCallback(null);
-  }, [auraForgeCallback]);
+    
+    // Start Stage 2: Turn Score and Aura animations
+    console.log('🔥 Starting Stage 2 animations: Turn Score + Aura');
+    setShowAuraForgeTurnScore(true);
+    setShowAuraForgeAura(true);
+    setAuraForgeAnimationKey(prev => prev + 1);
+    setAuraForgePulseCount(0);
+    
+    // Determine timing based on amount
+    const videoPlayCount = amount <= 2 ? 1 : 2;
+    const pulsesInFirstSecond = Math.min(amount, 2);
+    const pulsesInSecondSecond = amount > 2 ? amount - 2 : 0;
+    
+    // Execute pulses in first second
+    for (let i = 0; i < pulsesInFirstSecond; i++) {
+      setTimeout(() => {
+        console.log(`🔥 Pulse ${i + 1}: -5 turn/total, +1 aura`);
+        setTurnScoreDisplay(prev => prev - 5);
+        setTotalScoreDisplay(prev => prev - 5);
+        setAuraDisplay(prev => prev + 1);
+        setAuraForgePulseCount(i + 1);
+      }, (i * 500) + 100); // Space pulses 500ms apart, start 100ms in
+    }
+    
+    // If amount is 3 or 4, play videos again and do additional pulses
+    if (amount > 2) {
+      setTimeout(() => {
+        console.log('🔥 Playing second set of animations');
+        setAuraForgeAnimationKey(prev => prev + 1); // Trigger video replay
+        
+        // Execute remaining pulses in second second
+        for (let i = 0; i < pulsesInSecondSecond; i++) {
+          setTimeout(() => {
+            console.log(`🔥 Pulse ${pulsesInFirstSecond + i + 1}: -5 turn/total, +1 aura`);
+            setTurnScoreDisplay(prev => prev - 5);
+            setTotalScoreDisplay(prev => prev - 5);
+            setAuraDisplay(prev => prev + 1);
+            setAuraForgePulseCount(pulsesInFirstSecond + i + 1);
+          }, (i * 500) + 100);
+        }
+      }, 1000); // Start second set after 1 second
+    }
+    
+    // Clean up after animations complete
+    const totalDuration = videoPlayCount * 1000;
+    setTimeout(() => {
+      console.log('🔥 Aura Forge animations complete, calling backend');
+      setShowAuraForgeTurnScore(false);
+      setShowAuraForgeAura(false);
+      setAuraForgeAmount(0);
+      setAuraForgePulseCount(0);
+      
+      // Execute the actual backend callback
+      if (auraForgeCallback) {
+        auraForgeCallback(amount);
+      }
+      setAuraForgeCallback(null);
+    }, totalDuration + 200); // Extra 200ms buffer
+    
+  }, [auraForgeCallback, currentPlayer, opponent, matchData.gameData.turnScore, matchData.gameMode, currentUserAura]);
 
   // Cleanup Vital Rush animations when turn ends
   useEffect(() => {
@@ -549,13 +634,39 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       Turn Score
                     </p>
                     
-                    {/* Number */}
+                    {/* Number - Show animated value during Aura Forge, otherwise real value */}
                     <p 
                       className={`text-2xl md:text-4xl font-bold ${textColor}`}
                       style={{ fontFamily: "Audiowide" }}
                     >
-                      {matchData.gameData.turnScore}
+                      {showAuraForgeTurnScore ? turnScoreDisplay : matchData.gameData.turnScore}
                     </p>
+                    
+                    {/* 🔥 AURA FORGE TURN SCORE ANIMATION - STAGE 2 */}
+                    {showAuraForgeTurnScore && (
+                      <motion.div
+                        key={auraForgeAnimationKey}
+                        className="absolute inset-0 pointer-events-none z-50"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <video
+                          src="/Abilities/Animations/Aura Forge/Aura Forge Turn Score.webm"
+                          autoPlay
+                          loop={false}
+                          muted
+                          playsInline
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            borderRadius: '16px'
+                          }}
+                        />
+                      </motion.div>
+                    )}
                   </motion.div>
                 );
               })()}
@@ -644,12 +755,12 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       Total
                     </p>
                     
-                    {/* Number */}
+                    {/* Number - Show animated value during Aura Forge, otherwise real value */}
                     <p 
                       className={`text-lg md:text-xl font-bold ${totalTextColor}`}
                       style={{ fontFamily: "Audiowide" }}
                     >
-                      {totalScore}
+                      {showAuraForgeTurnScore ? totalScoreDisplay : totalScore}
                     </p>
                   </motion.div>
                 );
@@ -1108,12 +1219,69 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   }}
                 >
                   <AuraCounter 
-                    auraValue={currentUserAura} 
+                    auraValue={showAuraForgeAura ? auraDisplay : currentUserAura} 
                     size="medium"
                     className="flex items-center"
                   />
+                  
+                  {/* 🔥 AURA FORGE AURA ANIMATION - STAGE 2 */}
+                  {showAuraForgeAura && (
+                    <motion.div
+                      key={auraForgeAnimationKey}
+                      className="absolute pointer-events-none z-50"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      style={{
+                        left: '-20%',
+                        right: '-20%',
+                        top: '-20%',
+                        bottom: '-20%',
+                        width: '140%',
+                        height: '140%'
+                      }}
+                    >
+                      <video
+                        src="/Abilities/Animations/Aura Forge/Aura Forge Aura.webm"
+                        autoPlay
+                        loop={false}
+                        muted
+                        playsInline
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                      />
+                    </motion.div>
+                  )}
                 </motion.div>
 
+                {/* 🔥 AURA FORGE BOTTOM ANIMATION - STAGE 1 */}
+                {showAuraForgeBottom && (
+                  <motion.div
+                    className="absolute inset-0 pointer-events-none z-40"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <video
+                      src="/Abilities/Animations/Aura Forge/Aura Forge Bottom.webm"
+                      autoPlay
+                      loop={false}
+                      muted
+                      playsInline
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                  </motion.div>
+                )}
+                
                 {/* AURA FORGE: Show 1,2,3,4 selection buttons when active */}
                 {isAuraForgeActive ? (
                   <>
