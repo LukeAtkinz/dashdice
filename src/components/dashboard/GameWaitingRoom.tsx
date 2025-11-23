@@ -2745,931 +2745,254 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         }
       `}</style>
 
-      {/* Main Content Container */}
+      {/* Split Screen Layout */}
       <div
         style={{
+          position: 'fixed',
+          inset: 0,
+          width: '100%',
+          height: '100vh',
           display: 'flex',
-          width: '100vw',
-          maxWidth: '100vw',
           flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: window.innerWidth < 768 ? '30px' : '50px',
-          background: 'transparent',
-          padding: window.innerWidth < 768 ? '15px' : '20px',
-          paddingBottom: window.innerWidth < 768 ? '100px' : '20px', // Extra space for mobile button
-          boxSizing: 'border-box'
+          background: '#FFFFFF'
         }}
       >
-        {/* Game Mode Title */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '10px'
-          }}
-        >
-          <h1
-            className="text-center"
-            style={{
-              color: '#E2E2E2',
-              fontFamily: 'Audiowide',
-              fontSize: window.innerWidth < 768 ? '32px' : '64px',
-              fontStyle: 'normal',
-              fontWeight: 400,
-              lineHeight: window.innerWidth < 768 ? '36px' : '72px',
-              textTransform: 'uppercase',
-              margin: 0,
-              textShadow: "0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4), 0 0 60px rgba(255, 215, 0, 0.2)",
-              whiteSpace: window.innerWidth < 768 ? 'nowrap' : 'normal'
-            }}
-          >
-            {currentGameMode.name}
-          </h1>
+        {/* Top Section - Opponent or World Video */}
+        <div style={{ position: 'relative', flex: '0 0 50%', width: '100%', overflow: 'hidden' }}>
+          {topVideo && (
+            <video
+              src={topVideo}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
+            />
+          )}
           
-          {/* Game Type Badge */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            marginTop: '10px'
-          }}>
-            <div style={{
-              backgroundColor: gameType === 'ranked' ? 'rgba(255, 215, 0, 0.2)' : 'rgba(0, 150, 255, 0.2)',
-              border: `2px solid ${gameType === 'ranked' ? '#FFD700' : '#0096FF'}`,
-              borderRadius: '20px',
-              padding: '8px 16px',
-              color: gameType === 'ranked' ? '#FFD700' : '#0096FF',
-              fontFamily: 'Audiowide',
-              fontSize: '14px',
-              fontWeight: 'bold',
-              textTransform: 'uppercase',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              {(() => {
-                // Determine the game type display based on various flags
-                if (waitingRoomEntry?.friendInvitation) {
-                  return (
-                    <>
-                      👥 Private Match
-                    </>
-                  );
-                } else if (waitingRoomEntry?.gameType === 'Private Rematch') {
-                  return (
-                    <>
-                      🔄 Rematch
-                    </>
-                  );
-                } else if (gameType === 'ranked') {
-                  return (
-                    <>
-                      🏆 Ranked Match
-                    </>
-                  );
-                } else {
-                  return (
-                    <>
-                      ⚡ Quick Game
-                    </>
-                  );
-                }
-              })()}
-            </div>
-          </div>
-        </div>
-
-        {/* Profile VS Information */}
-        <div
-          style={{
-            display: 'flex',
-            height: window.innerWidth < 768 ? 'auto' : '410px',
-            flexDirection: window.innerWidth < 768 ? 'column' : 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: window.innerWidth < 768 ? '20px' : '30px',
-            alignSelf: 'stretch'
-          }}
-        >
-          {/* Host Profile and Stats */}
-          <div
-            style={{
-              display: 'flex',
-              height: window.innerWidth < 768 ? '200px' : '410px',
-              padding: window.innerWidth < 768 ? '15px' : '20px',
-              alignItems: 'flex-start',
-              gap: window.innerWidth < 768 ? '15px' : '20px',
-              flex: window.innerWidth < 768 ? 'none' : '1 0 0',
-              width: window.innerWidth < 768 ? '100%' : 'auto',
-              borderRadius: '20px',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              background: 'transparent'
-            }}
-          >
-            {/* Host Display Background */}
-            <div
+          {opponentData ? (
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              transition={{ type: 'tween', duration: 0.5, ease: 'easeInOut' }}
               style={{
+                position: 'absolute',
+                inset: 0,
                 display: 'flex',
-                padding: window.innerWidth < 768 ? '15px' : '20px',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-                flex: window.innerWidth < 768 ? '0 0 55%' : '0 0 60%',
-                alignSelf: 'stretch',
-                borderRadius: '15px',
-                position: 'relative',
-                overflow: 'hidden',
-                ...getBackgroundStyle()
-              }}
-            >
-              {renderPlayerBackground()}
-              
-              {/* Bottom-left to transparent gradient overlay for readability */}
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '40%',
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)',
-                  zIndex: 1,
-                  pointerEvents: 'none'
-                }}
-              />
-              
-              {/* Player Name in bottom left with better readability */}
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: '20px',
-                  left: '20px',
-                  color: '#FFF',
-                  fontFamily: 'Audiowide',
-                  fontSize: window.innerWidth < 768 ? '18px' : '28px',
-                  fontWeight: 400,
-                  textTransform: 'uppercase',
-                  textShadow: '2px 2px 8px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)',
-                  zIndex: 2
-                }}
-              >
-                {waitingRoomEntry?.hostData?.playerDisplayName || 'Unknown Player'}
-              </div>
-            </div>
-
-            {/* Host Stats */}
-            <div
-              style={{
-                display: 'grid',
-                rowGap: window.innerWidth < 768 ? '8px' : '10px',
-                columnGap: window.innerWidth < 768 ? '8px' : '10px',
-                maxWidth: window.innerWidth < 768 ? '95vw' : '500px',
-                flex: '1 0 0',
-                alignSelf: 'stretch',
-                gridTemplateRows: 'repeat(2, minmax(0, 1fr))',
-                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))'
-              }}
-            >
-              {/* Match Wins */}
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                flex: '1 0 0', 
-                alignSelf: 'stretch', 
-                gridRow: '1 / span 1', 
-                gridColumn: '1 / span 1'
-              }}>
-                <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: window.innerWidth < 768 ? '4px' : '8px' }}>
-                  <div style={{ 
-                    color: '#E2E2E2', 
-                    textAlign: 'center', 
-                    fontFamily: 'Audiowide', 
-                    fontSize: window.innerWidth < 768 ? '24px' : '48px', 
-                    fontStyle: 'normal', 
-                    fontWeight: 400, 
-                    lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
-                    textTransform: 'uppercase' 
-                  }}>
-                    {waitingRoomEntry?.hostData?.playerStats?.matchWins || 0}
-                  </div>
-                  <div style={{ 
-                    color: '#E2E2E2', 
-                    textAlign: 'center', 
-                    fontFamily: 'Audiowide', 
-                    fontSize: window.innerWidth < 768 ? '8px' : '11px', 
-                    fontStyle: 'normal', 
-                    fontWeight: 400, 
-                    lineHeight: window.innerWidth < 768 ? '12px' : '16px', 
-                    textTransform: 'uppercase',
-                    opacity: 0.8
-                  }}>
-                    Match<br />Wins
-                  </div>
-                </div>
-              </div>
-
-              {/* Games Played */}
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                flex: '1 0 0', 
-                alignSelf: 'stretch', 
-                gridRow: '1 / span 1', 
-                gridColumn: '2 / span 1'
-              }}>
-                <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: window.innerWidth < 768 ? '4px' : '8px' }}>
-                  <div style={{ 
-                    color: '#E2E2E2', 
-                    textAlign: 'center', 
-                    fontFamily: 'Audiowide', 
-                    fontSize: window.innerWidth < 768 ? '24px' : '48px', 
-                    fontStyle: 'normal', 
-                    fontWeight: 400, 
-                    lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
-                    textTransform: 'uppercase' 
-                  }}>
-                    {waitingRoomEntry?.hostData?.playerStats?.gamesPlayed || 0}
-                  </div>
-                  <div style={{ 
-                    color: '#E2E2E2', 
-                    textAlign: 'center', 
-                    fontFamily: 'Audiowide', 
-                    fontSize: window.innerWidth < 768 ? '8px' : '11px', 
-                    fontStyle: 'normal', 
-                    fontWeight: 400, 
-                    lineHeight: window.innerWidth < 768 ? '12px' : '16px', 
-                    textTransform: 'uppercase',
-                    opacity: 0.8
-                  }}>
-                    Games<br />Played
-                  </div>
-                </div>
-              </div>
-
-              {/* Best Streak */}
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                flex: '1 0 0', 
-                alignSelf: 'stretch', 
-                gridRow: '2 / span 1', 
-                gridColumn: '1 / span 1'
-              }}>
-                <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: window.innerWidth < 768 ? '4px' : '8px' }}>
-                  <div style={{ 
-                    color: '#E2E2E2', 
-                    textAlign: 'center', 
-                    fontFamily: 'Audiowide', 
-                    fontSize: window.innerWidth < 768 ? '24px' : '48px', 
-                    fontStyle: 'normal', 
-                    fontWeight: 400, 
-                    lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
-                    textTransform: 'uppercase' 
-                  }}>
-                    {waitingRoomEntry?.hostData?.playerStats?.bestStreak || 0}
-                  </div>
-                  <div style={{ 
-                    color: '#E2E2E2', 
-                    textAlign: 'center', 
-                    fontFamily: 'Audiowide', 
-                    fontSize: window.innerWidth < 768 ? '8px' : '11px', 
-                    fontStyle: 'normal', 
-                    fontWeight: 400, 
-                    lineHeight: window.innerWidth < 768 ? '12px' : '16px', 
-                    textTransform: 'uppercase',
-                    opacity: 0.8
-                  }}>
-                    Best<br />Streak
-                  </div>
-                </div>
-              </div>
-
-              {/* Current Streak */}
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                flex: '1 0 0', 
-                alignSelf: 'stretch', 
-                gridRow: '2 / span 1', 
-                gridColumn: '2 / span 1'
-              }}>
-                <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: window.innerWidth < 768 ? '4px' : '8px' }}>
-                  <div style={{ 
-                    color: '#E2E2E2', 
-                    textAlign: 'center', 
-                    fontFamily: 'Audiowide', 
-                    fontSize: window.innerWidth < 768 ? '24px' : '48px', 
-                    fontStyle: 'normal', 
-                    fontWeight: 400, 
-                    lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
-                    textTransform: 'uppercase' 
-                  }}>
-                    {waitingRoomEntry?.hostData?.playerStats?.currentStreak || 0}
-                  </div>
-                  <div style={{ 
-                    color: '#E2E2E2', 
-                    textAlign: 'center', 
-                    fontFamily: 'Audiowide', 
-                    fontSize: window.innerWidth < 768 ? '8px' : '11px', 
-                    fontStyle: 'normal', 
-                    fontWeight: 400, 
-                    lineHeight: window.innerWidth < 768 ? '12px' : '16px', 
-                    textTransform: 'uppercase',
-                    opacity: 0.8
-                  }}>
-                    Current<br />Streak
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* VS Section with Countdown */}
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: '20px',
-              order: window.innerWidth < 768 ? 1 : 0, // Place VS in middle for mobile
-              padding: window.innerWidth < 768 ? '10px 0' : '0'
-            }}
-          >
-            {vsCountdown !== null ? (
-              // Use motion for morphing transition - layoutId connects to TurnDeciderPhase
-              <motion.div
-                layoutId="vs-morph-text" // This creates the morphing connection to turn decider
-                style={{
-                  color: vsCountdown === 0 ? '#00FF00' : '#E2E2E2',
-                  fontFamily: 'Audiowide',
-                  fontSize: window.innerWidth < 768 ? (vsCountdown === 0 ? '48px' : '40px') : (vsCountdown === 0 ? '72px' : '64px'),
-                  fontStyle: 'normal',
-                  fontWeight: 400,
-                  lineHeight: window.innerWidth < 768 ? (vsCountdown === 0 ? '52px' : '44px') : (vsCountdown === 0 ? '80px' : '72px'),
-                  textTransform: 'uppercase',
-                  textShadow: vsCountdown === 0 
-                    ? '0 0 20px rgba(0, 255, 0, 0.8), 0 0 40px rgba(0, 255, 0, 0.4)' 
-                    : '0 0 15px rgba(255, 255, 255, 0.4)',
-                  animation: vsCountdown === 0 ? 'goGlow 1s ease-in-out' : 'subtleGlow 1.5s infinite'
-                }}
-                transition={{
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 30,
-                  duration: 0.8
-                }}
-              >
-                {vsCountdown === 0 ? 'GO!' : vsCountdown}
-              </motion.div>
-            ) : opponentDisplayLoading ? (
-              <div
-                style={{
-                  color: '#FFB347',
-                  fontFamily: 'Audiowide',
-                  fontSize: window.innerWidth < 768 ? '20px' : '32px',
-                  fontStyle: 'normal',
-                  fontWeight: 400,
-                  lineHeight: window.innerWidth < 768 ? '24px' : '36px',
-                  textTransform: 'uppercase',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '10px'
-                }}
-              >
-                <div>PREPARING MATCH</div>
-                <div
-                  style={{
-                    width: '24px',
-                    height: '24px',
-                    border: '2px solid rgba(255, 179, 71, 0.3)',
-                    borderTop: '2px solid #FFB347',
-                    borderRadius: '50%',
-                    animation: 'spin 1s linear infinite'
-                  }}
-                />
-              </div>
-            ) : (
-              <div
-                style={{
-                  color: '#E2E2E2',
-                  fontFamily: 'Audiowide',
-                  fontSize: window.innerWidth < 768 ? '32px' : '48px',
-                  fontStyle: 'normal',
-                  fontWeight: 400,
-                  lineHeight: window.innerWidth < 768 ? '36px' : '56px',
-                  textTransform: 'uppercase'
-                }}
-              >
-                VS
-              </div>
-            )}
-          </div>
-
-          {/* Opponent Section - Show opponent card or waiting */}
-          {getOpponentData() ? (
-            // Show opponent card when joined - Stats on left, Background on right (opposite of host)
-            <div
-              style={{
-                display: 'flex',
-                height: window.innerWidth < 768 ? '200px' : '410px',
-                padding: window.innerWidth < 768 ? '15px' : '20px',
-                alignItems: 'flex-start',
-                gap: window.innerWidth < 768 ? '15px' : '20px',
-                flex: window.innerWidth < 768 ? 'none' : '1 0 0',
-                width: window.innerWidth < 768 ? '100%' : 'auto',
-                borderRadius: '20px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                background: 'transparent',
-                order: window.innerWidth < 768 ? 2 : 0 // Place opponent last for mobile
-              }}
-            >
-              {/* Opponent Stats - on the left (inside) */}
-              <div
-                style={{
-                  display: 'grid',
-                  rowGap: window.innerWidth < 768 ? '8px' : '10px',
-                  columnGap: window.innerWidth < 768 ? '8px' : '10px',
-                  maxWidth: window.innerWidth < 768 ? '95vw' : '500px',
-                  flex: '1 0 0',
-                  alignSelf: 'stretch',
-                  gridTemplateRows: 'repeat(2, minmax(0, 1fr))',
-                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))'
-                }}
-              >
-                {/* Match Wins */}
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  alignItems: 'center', 
-                  flex: '1 0 0', 
-                  alignSelf: 'stretch', 
-                  gridRow: '1 / span 1', 
-                  gridColumn: '1 / span 1'
-                }}>
-                  <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: window.innerWidth < 768 ? '4px' : '8px' }}>
-                    <div style={{ 
-                      color: '#E2E2E2', 
-                      textAlign: 'center', 
-                      fontFamily: 'Audiowide', 
-                      fontSize: window.innerWidth < 768 ? '24px' : '48px', 
-                      fontStyle: 'normal', 
-                      fontWeight: 400, 
-                      lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
-                      textTransform: 'uppercase' 
-                    }}>
-                      {getOpponentData()?.playerStats?.matchWins || 0}
-                    </div>
-                    <div style={{ 
-                      color: '#E2E2E2', 
-                      textAlign: 'center', 
-                      fontFamily: 'Audiowide', 
-                      fontSize: window.innerWidth < 768 ? '8px' : '11px', 
-                      fontStyle: 'normal', 
-                      fontWeight: 400, 
-                      lineHeight: window.innerWidth < 768 ? '12px' : '16px', 
-                      textTransform: 'uppercase',
-                      opacity: 0.8
-                    }}>
-                      Match<br />Wins
-                    </div>
-                  </div>
-                </div>
-
-                {/* Games Played */}
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  alignItems: 'center', 
-                  flex: '1 0 0', 
-                  alignSelf: 'stretch', 
-                  gridRow: '1 / span 1', 
-                  gridColumn: '2 / span 1'
-                }}>
-                  <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: window.innerWidth < 768 ? '4px' : '8px' }}>
-                    <div style={{ 
-                      color: '#E2E2E2', 
-                      textAlign: 'center', 
-                      fontFamily: 'Audiowide', 
-                      fontSize: window.innerWidth < 768 ? '24px' : '48px', 
-                      fontStyle: 'normal', 
-                      fontWeight: 400, 
-                      lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
-                      textTransform: 'uppercase' 
-                    }}>
-                      {getOpponentData()?.playerStats?.gamesPlayed || 0}
-                    </div>
-                    <div style={{ 
-                      color: '#E2E2E2', 
-                      textAlign: 'center', 
-                      fontFamily: 'Audiowide', 
-                      fontSize: window.innerWidth < 768 ? '8px' : '11px', 
-                      fontStyle: 'normal', 
-                      fontWeight: 400, 
-                      lineHeight: window.innerWidth < 768 ? '12px' : '16px', 
-                      textTransform: 'uppercase',
-                      opacity: 0.8
-                    }}>
-                      Games<br />Played
-                    </div>
-                  </div>
-                </div>
-
-                {/* Best Streak */}
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  alignItems: 'center', 
-                  flex: '1 0 0', 
-                  alignSelf: 'stretch', 
-                  gridRow: '2 / span 1', 
-                  gridColumn: '1 / span 1'
-                }}>
-                  <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: window.innerWidth < 768 ? '4px' : '8px' }}>
-                    <div style={{ 
-                      color: '#E2E2E2', 
-                      textAlign: 'center', 
-                      fontFamily: 'Audiowide', 
-                      fontSize: window.innerWidth < 768 ? '24px' : '48px', 
-                      fontStyle: 'normal', 
-                      fontWeight: 400, 
-                      lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
-                      textTransform: 'uppercase' 
-                    }}>
-                      {getOpponentData()?.playerStats?.bestStreak || 0}
-                    </div>
-                    <div style={{ 
-                      color: '#E2E2E2', 
-                      textAlign: 'center', 
-                      fontFamily: 'Audiowide', 
-                      fontSize: window.innerWidth < 768 ? '8px' : '11px', 
-                      fontStyle: 'normal', 
-                      fontWeight: 400, 
-                      lineHeight: window.innerWidth < 768 ? '12px' : '16px', 
-                      textTransform: 'uppercase',
-                      opacity: 0.8
-                    }}>
-                      Best<br />Streak
-                    </div>
-                  </div>
-                </div>
-
-                {/* Current Streak */}
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  alignItems: 'center', 
-                  flex: '1 0 0', 
-                  alignSelf: 'stretch', 
-                  gridRow: '2 / span 1', 
-                  gridColumn: '2 / span 1'
-                }}>
-                  <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: window.innerWidth < 768 ? '4px' : '8px' }}>
-                    <div style={{ 
-                      color: '#E2E2E2', 
-                      textAlign: 'center', 
-                      fontFamily: 'Audiowide', 
-                      fontSize: window.innerWidth < 768 ? '24px' : '48px', 
-                      fontStyle: 'normal', 
-                      fontWeight: 400, 
-                      lineHeight: window.innerWidth < 768 ? '24px' : '48px', 
-                      textTransform: 'uppercase' 
-                    }}>
-                      {getOpponentData()?.playerStats?.currentStreak || 0}
-                    </div>
-                    <div style={{ 
-                      color: '#E2E2E2', 
-                      textAlign: 'center', 
-                      fontFamily: 'Audiowide', 
-                      fontSize: window.innerWidth < 768 ? '8px' : '11px', 
-                      fontStyle: 'normal', 
-                      fontWeight: 400, 
-                      lineHeight: window.innerWidth < 768 ? '12px' : '16px', 
-                      textTransform: 'uppercase',
-                      opacity: 0.8
-                    }}>
-                      Current<br />Streak
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Opponent Display Background - on the right (outside) */}
-              <div
-                style={{
-                  display: 'flex',
-                  padding: window.innerWidth < 768 ? '15px' : '20px',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  flex: window.innerWidth < 768 ? '0 0 55%' : '0 0 60%',
-                  alignSelf: 'stretch',
-                  borderRadius: '15px',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  background: !opponentBgIsVideo && opponentBgPath 
-                    ? `url('${opponentBgPath}') center/cover no-repeat` 
-                    : '#332A63'
-                }}
-              >
-                {/* Loading overlay while opponent display is loading */}
-                {opponentDisplayLoading && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      zIndex: 10,
-                      backdropFilter: 'blur(4px)'
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        border: '3px solid rgba(255, 255, 255, 0.3)',
-                        borderTop: '3px solid #00ff66',
-                        borderRadius: '50%',
-                        animation: 'spin 1s linear infinite',
-                        marginBottom: '15px'
-                      }}
-                    />
-                    <div
-                      style={{
-                        color: '#E2E2E2',
-                        fontFamily: 'Audiowide',
-                        fontSize: '14px',
-                        textAlign: 'center',
-                        textTransform: 'uppercase'
-                      }}
-                    >
-                      Loading Display...
-                    </div>
-                  </div>
-                )}
-                {/* Render opponent video background if it's a video */}
-                {opponentBgIsVideo && opponentBgPath && (
-                  <video
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    webkit-playsinline="true"
-                    x5-playsinline="true"
-                    controls={false}
-                    preload="metadata"
-                    disablePictureInPicture
-                    disableRemotePlayback
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      zIndex: 0,
-                      pointerEvents: 'none',
-                      outline: 'none'
-                    }}
-                  >
-                    <source src={opponentBgPath} type="video/mp4" />
-                  </video>
-                )}
-                
-                {/* Bottom-left to transparent gradient overlay for readability */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '40%',
-                    background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)',
-                    zIndex: 1,
-                    pointerEvents: 'none'
-                  }}
-                />
-                
-                {/* Opponent Name in bottom left with better readability */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: '20px',
-                    left: '20px',
-                    color: '#FFF',
-                    fontFamily: 'Audiowide',
-                    fontSize: window.innerWidth < 768 ? '18px' : '28px',
-                    fontWeight: 400,
-                    textTransform: 'uppercase',
-                    textShadow: '2px 2px 8px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)',
-                    zIndex: 2
-                  }}
-                >
-                  {getOpponentData()?.playerDisplayName || 'Unknown Player'}
-                </div>
-              </div>
-            </div>
-          ) : (
-            // Show waiting for opponent
-            <div
-              style={{
-                color: '#E2E2E2',
-                textAlign: 'center',
-                fontFamily: 'Audiowide',
-                fontSize: window.innerWidth < 768 ? '20px' : '48px',
-                fontStyle: 'normal',
-                fontWeight: 400,
-                lineHeight: window.innerWidth < 768 ? '24px' : '56px',
-                textTransform: 'uppercase',
-                flex: window.innerWidth < 768 ? 'none' : '1 0 0',
-                width: window.innerWidth < 768 ? '100%' : 'auto',
-                display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                flexDirection: 'column',
-                gap: '10px',
-                order: window.innerWidth < 768 ? 2 : 0, // Place after VS on mobile
-                padding: window.innerWidth < 768 ? '20px' : '0',
-                borderRadius: window.innerWidth < 768 ? '20px' : '0',
-                border: window.innerWidth < 768 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
-                background: window.innerWidth < 768 ? 'transparent' : 'transparent'
+                padding: '40px',
+                background: 'rgba(0, 0, 0, 0.5)',
+                backdropFilter: 'blur(10px)'
               }}
             >
+              <div style={{
+                color: '#FFF',
+                fontFamily: 'Audiowide',
+                fontSize: window.innerWidth < 768 ? '32px' : '48px',
+                fontWeight: 400,
+                textTransform: 'uppercase',
+                textShadow: '0 0 20px rgba(255,255,255,0.8)',
+                marginBottom: '30px'
+              }}>
+                {opponentData.playerDisplayName}
+              </div>
+              <div style={{
+                display: 'flex',
+                gap: window.innerWidth < 768 ? '20px' : '40px',
+                fontSize: window.innerWidth < 768 ? '18px' : '24px',
+                color: '#FFF',
+                fontFamily: 'Audiowide'
+              }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ opacity: 0.7, fontSize: window.innerWidth < 768 ? '14px' : '16px' }}>Wins</div>
+                  <div style={{ fontSize: window.innerWidth < 768 ? '24px' : '32px', textShadow: '0 0 10px rgba(255,215,0,0.6)' }}>
+                    {opponentData.playerStats?.matchWins || 0}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ opacity: 0.7, fontSize: window.innerWidth < 768 ? '14px' : '16px' }}>Streak</div>
+                  <div style={{ fontSize: window.innerWidth < 768 ? '24px' : '32px', textShadow: '0 0 10px rgba(255,215,0,0.6)' }}>
+                    {opponentData.playerStats?.currentStreak || 0}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ opacity: 0.7, fontSize: window.innerWidth < 768 ? '14px' : '16px' }}>Best</div>
+                  <div style={{ fontSize: window.innerWidth < 768 ? '24px' : '32px', textShadow: '0 0 10px rgba(255,215,0,0.6)' }}>
+                    {opponentData.playerStats?.bestStreak || 0}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#FFF',
+              fontFamily: 'Audiowide',
+              fontSize: window.innerWidth < 768 ? '24px' : '32px',
+              textShadow: '0 0 20px rgba(255,255,255,0.8)',
+              opacity: 0.7,
+              textAlign: 'center',
+              padding: '20px'
+            }}>
               {searchingText}
-              
-              {/* Bot Countdown Timer - Hidden from UI but logic preserved */}
-              {false && botFallbackActive && botCountdown !== null && (
-                <div
-                  style={{
-                    color: '#FFB347',
-                    fontFamily: 'Audiowide',
-                    fontSize: window.innerWidth < 768 ? '16px' : '20px',
-                    fontWeight: 400,
-                    textAlign: 'center',
-                    marginTop: '15px',
-                    padding: '12px 20px',
-                    borderRadius: '12px',
-                    background: 'rgba(255, 179, 71, 0.1)',
-                    border: '1px solid rgba(255, 179, 71, 0.3)',
-                    textTransform: 'uppercase',
-                    animation: 'pulse 1s ease-in-out infinite'
-                  }}
-                >
-                  AI Opponent in {botCountdown}s
-                </div>
-              )}
-              
-              {/* Friend Invitation Auto-Ready Status */}
-              {waitingRoomEntry?.friendInvitation && waitingRoomEntry?.opponentData && (
-                <div
-                  style={{
-                    color: '#00FF80',
-                    fontFamily: 'Audiowide',
-                    fontSize: window.innerWidth < 768 ? '14px' : '24px',
-                    fontWeight: 400,
-                    textAlign: 'center',
-                    marginTop: '10px',
-                    padding: '10px 20px',
-                    borderRadius: '12px',
-                    background: 'rgba(0, 255, 128, 0.1)',
-                    border: '1px solid rgba(0, 255, 128, 0.3)',
-                    textTransform: 'uppercase',
-                    animation: 'glow 2s ease-in-out infinite alternate'
-                  }}
-                >
-                  Both Players Ready - Starting Soon!
-                </div>
-              )}
             </div>
           )}
         </div>
 
-        {/* Ready Button for Friend Invitations - REMOVED: Auto-ready implemented */}
-        {/* For friend invitations, both players are automatically ready and countdown starts immediately */}
-        {waitingRoomEntry?.friendInvitation && waitingRoomEntry?.opponentData && vsCountdown === null && false && (
+        {/* Center - VS */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 100
+        }}>
+          <motion.div
+            layoutId="vs-morph-text"
+            style={{
+              fontFamily: 'Audiowide',
+              fontSize: window.innerWidth < 768 ? '6rem' : '10rem',
+              color: '#FFF',
+              fontWeight: 'bold',
+              textShadow: '0 0 40px rgba(255,255,255,1), 0 0 80px rgba(255,255,255,0.9), 0 0 120px rgba(255,255,255,0.7), 0 0 160px rgba(255,255,255,0.5)',
+              WebkitFontSmoothing: 'antialiased'
+            }}
+          >
+            VS
+          </motion.div>
+        </div>
+
+        {/* Bottom Section - Current User */}
+        <div style={{ position: 'relative', flex: '0 0 50%', width: '100%', overflow: 'hidden' }}>
+          {bottomVideo && (
+            <video
+              src={bottomVideo}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
+            />
+          )}
+          
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '40px',
+            background: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <div style={{
+              color: '#FFF',
+              fontFamily: 'Audiowide',
+              fontSize: window.innerWidth < 768 ? '32px' : '48px',
+              fontWeight: 400,
+              textTransform: 'uppercase',
+              textShadow: '0 0 20px rgba(255,255,255,0.8)',
+              marginBottom: '30px'
+            }}>
+              {waitingRoomEntry?.hostData?.playerDisplayName || 'You'}
+            </div>
+            <div style={{
+              display: 'flex',
+              gap: window.innerWidth < 768 ? '20px' : '40px',
+              fontSize: window.innerWidth < 768 ? '18px' : '24px',
+              color: '#FFF',
+              fontFamily: 'Audiowide'
+            }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ opacity: 0.7, fontSize: window.innerWidth < 768 ? '14px' : '16px' }}>Wins</div>
+                <div style={{ fontSize: window.innerWidth < 768 ? '24px' : '32px', textShadow: '0 0 10px rgba(255,215,0,0.6)' }}>
+                  {waitingRoomEntry?.hostData?.playerStats?.matchWins || 0}
+                </div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ opacity: 0.7, fontSize: window.innerWidth < 768 ? '14px' : '16px' }}>Streak</div>
+                <div style={{ fontSize: window.innerWidth < 768 ? '24px' : '32px', textShadow: '0 0 10px rgba(255,215,0,0.6)' }}>
+                  {waitingRoomEntry?.hostData?.playerStats?.currentStreak || 0}
+                </div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ opacity: 0.7, fontSize: window.innerWidth < 768 ? '14px' : '16px' }}>Best</div>
+                <div style={{ fontSize: window.innerWidth < 768 ? '24px' : '32px', textShadow: '0 0 10px rgba(255,215,0,0.6)' }}>
+                  {waitingRoomEntry?.hostData?.playerStats?.bestStreak || 0}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Leave Button Overlay */}
+        <div style={{
+          position: 'absolute',
+          bottom: window.innerWidth < 768 ? '20px' : '40px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 200
+        }}>
           <button
-            onClick={handlePlayerReady}
-            disabled={isMarkingReady || isReady}
+            onClick={handleLeave}
+            disabled={vsCountdown !== null || opponentJoined || isLeaving}
             style={{
               display: 'flex',
-              padding: window.innerWidth < 768 ? '15px 20px' : '20px',
+              padding: window.innerWidth < 768 ? '15px 30px' : '20px 40px',
               justifyContent: 'center',
               alignItems: 'center',
               gap: '10px',
               borderRadius: '18px',
-              background: isReady ? '#00FF80' : isMarkingReady ? '#666666' : '#0080FF',
-              backdropFilter: 'blur(20px)',
+              background: (vsCountdown !== null || opponentJoined || isLeaving) ? '#666666' : '#FF0080',
               color: '#FFF',
               fontFamily: 'Audiowide',
-              fontSize: window.innerWidth < 768 ? '18px' : '36px',
-              fontStyle: 'normal',
+              fontSize: window.innerWidth < 768 ? '18px' : '24px',
               fontWeight: 400,
-              lineHeight: '30px',
               border: 'none',
-              cursor: isMarkingReady || isReady ? 'not-allowed' : 'pointer',
-              opacity: isMarkingReady || isReady ? 0.7 : 1,
+              cursor: (vsCountdown !== null || opponentJoined || isLeaving) ? 'not-allowed' : 'pointer',
+              opacity: (vsCountdown !== null || opponentJoined || isLeaving) ? 0.5 : 1,
               textTransform: 'uppercase',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              margin: window.innerWidth < 768 ? '10px 20px' : '20px auto',
-              width: window.innerWidth < 768 ? 'calc(100vw - 40px)' : 'auto',
-              boxShadow: isReady ? 
-                '0 4px 15px rgba(0, 255, 128, 0.4)' : 
-                '0 4px 15px rgba(0, 128, 255, 0.3)'
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)'
             }}
             onMouseEnter={(e) => {
-              if (!isMarkingReady && !isReady) {
+              if (vsCountdown === null && !opponentJoined && !isLeaving) {
                 e.currentTarget.style.transform = 'scale(1.05)';
-                e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 128, 255, 0.5)';
+                e.currentTarget.style.boxShadow = '0 10px 30px rgba(255, 0, 128, 0.5)';
               }
             }}
             onMouseLeave={(e) => {
-              if (!isMarkingReady && !isReady) {
+              if (vsCountdown === null && !opponentJoined && !isLeaving) {
                 e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 128, 255, 0.3)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
               }
             }}
           >
-            {isMarkingReady ? 'Marking Ready...' : 
-             isReady ? 'Ready!' : 'Mark Ready'}
+            {vsCountdown !== null ? 'Starting Game...' : 
+             isLeaving ? 'Leaving...' : 'Leave Game'}
           </button>
-        )}
-
-        {/* Leave Button */}
-        <button
-          onClick={handleLeave}
-          disabled={vsCountdown !== null || opponentJoined || isLeaving}
-          style={{
-            display: 'flex',
-            padding: window.innerWidth < 768 ? '15px 20px' : '20px',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '10px',
-            borderRadius: '18px',
-            background: (vsCountdown !== null || opponentJoined || isLeaving) ? '#666666' : '#FF0080',
-            backdropFilter: 'blur(20px)',
-            color: '#FFF',
-            fontFamily: 'Audiowide',
-            fontSize: window.innerWidth < 768 ? '18px' : '40px',
-            fontStyle: 'normal',
-            fontWeight: 400,
-            lineHeight: '30px',
-            border: 'none',
-            cursor: (vsCountdown !== null || opponentJoined || isLeaving) ? 'not-allowed' : 'pointer',
-            opacity: (vsCountdown !== null || opponentJoined || isLeaving) ? 0.5 : 1,
-            textTransform: 'uppercase',
-            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-            // Mobile positioning and animation
-            position: window.innerWidth < 768 ? 'fixed' : 'static',
-            bottom: window.innerWidth < 768 ? (isScrolled ? '140px' : '0px') : 'auto', // Higher position
-            left: window.innerWidth < 768 ? '20px' : 'auto',
-            right: window.innerWidth < 768 ? '20px' : 'auto',
-            zIndex: window.innerWidth < 768 ? 45 : 'auto',
-            transform: window.innerWidth < 768 ? 
-              (isScrolled ? 'translateY(0) scale(1)' : 'translateY(calc(100% + 140px)) scale(0.95)') : 
-              'none',
-            margin: window.innerWidth < 768 ? '0' : 'auto',
-            width: window.innerWidth < 768 ? 'calc(100vw - 40px)' : 'auto',
-            animation: window.innerWidth < 768 && isScrolled ? 'buttonPulse 2s infinite' : 'none',
-            boxShadow: window.innerWidth < 768 && isScrolled ? 
-              '0 8px 25px rgba(255, 0, 128, 0.4), 0 0 40px rgba(255, 0, 128, 0.2)' : 
-              '0 4px 15px rgba(0, 0, 0, 0.3)'
-          }}
-          onMouseEnter={(e) => {
-            if (vsCountdown === null && !opponentJoined && !isLeaving) {
-              e.currentTarget.style.transform = window.innerWidth < 768 ? 
-                (isScrolled ? 'translateY(0) scale(1.03)' : 'translateY(calc(100% + 140px))') :
-                'scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 10px 30px rgba(255, 0, 128, 0.5)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (vsCountdown === null && !opponentJoined && !isLeaving) {
-              e.currentTarget.style.transform = window.innerWidth < 768 ? 
-                (isScrolled ? 'translateY(0) scale(1)' : 'translateY(calc(100% + 140px))') :
-                'scale(1)';
-              e.currentTarget.style.boxShadow = window.innerWidth < 768 && isScrolled ? 
-                '0 8px 25px rgba(255, 0, 128, 0.4)' : 
-                '0 4px 15px rgba(0, 0, 0, 0.3)';
-            }
-          }}
-        >
-          {vsCountdown !== null ? 'Starting Game...' : 
-           isLeaving ? 'Leaving...' : 'Leave Game'}
-        </button>
+        </div>
       </div>
     </motion.div>
   );
