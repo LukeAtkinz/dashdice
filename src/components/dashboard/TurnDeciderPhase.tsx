@@ -748,7 +748,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="fixed inset-0 w-full h-full flex flex-col"
         >
-          {/* Waiting Icon - Top Half */}
+          {/* Waiting Text - Top Half */}
           <motion.div
             initial={{ opacity: 0, y: -100 }}
             animate={{ opacity: 1, y: 0 }}
@@ -758,22 +758,21 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               
             }}
           >
-            {/* Background Pattern */}
-            
-            
-            {/* Background Pattern - No text */}
-            
-
-            {/* Content */}
+            {/* Content - Just Text */}
             <div className="relative z-10 flex flex-col items-center justify-center md:translate-y-0 translate-y-4">
-              <motion.img 
-                src="/Design Elements/Match/Turn Decider/Waiting.webp" 
-                alt="Waiting" 
-                className="w-[55vw] md:w-[35vw] h-[55vw] md:h-[35vw] max-w-80 max-h-80 object-contain filter drop-shadow-2xl"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.4, duration: 0.5, type: "spring", stiffness: 100 }}
-              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                style={{
+                  color: '#FFF',
+                  fontFamily: 'Audiowide',
+                  fontSize: 'clamp(32px, 8vw, 64px)',
+                  textShadow: '0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.5)'
+                }}
+              >
+                WAITING
+              </motion.div>
             </div>
 
             {/* Subtle shine effect */}

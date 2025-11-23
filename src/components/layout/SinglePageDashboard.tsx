@@ -617,14 +617,15 @@ const DashboardContent: React.FC = () => {
         {(currentSection === 'match' || currentSection === 'waiting-room') ? (
           // Full-screen centered layout for match, waiting-room, and winner screens
           <main className="flex-1 w-full h-full min-h-0 overflow-hidden flex items-center justify-center">
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
               <motion.div
                 key={currentSection}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ type: 'tween', duration: 0.5, ease: 'easeInOut' }}
                 className="w-full h-full flex items-center justify-center"
+                style={{ position: 'absolute', inset: 0 }}
               >
                 {currentSection === 'match' && (
                   <Match 

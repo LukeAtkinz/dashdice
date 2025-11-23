@@ -1306,7 +1306,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
             {/* Center Dice Area */}
             <div className="flex flex-col items-center justify-center relative z-10" style={{ alignSelf: 'center', minWidth: '600px', width: '600px', height: '60vh', overflow: 'visible' }}>
               {/* Phase-specific content with transitions */}
-              <AnimatePresence mode="wait">
+              <AnimatePresence>
                 {matchData.gameData.gamePhase === 'turnDecider' && (
                   <TurnDeciderPhase
                     key="turnDecider"
