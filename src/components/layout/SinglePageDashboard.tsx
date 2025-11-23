@@ -631,6 +631,8 @@ const DashboardContent: React.FC = () => {
                     key={`match-${sectionParams.matchId || "dev-room-123"}`}
                     gameMode={sectionParams.gameMode}
                     roomId={sectionParams.matchId || "dev-room-123"}
+                    topVideo={sectionParams.topVideo}
+                    bottomVideo={sectionParams.bottomVideo}
                   />
                 )}
                 {currentSection === 'waiting-room' && (

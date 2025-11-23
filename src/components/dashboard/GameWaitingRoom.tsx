@@ -1890,7 +1890,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         console.log('🎮 GameWaitingRoom: Using pending match data for navigation');
         // Track game start analytics
         analyticsService.trackGameStart(pendingMatchData.gameMode, 'pending_match');
-        setCurrentSection('match', pendingMatchData);
+        setCurrentSection('match', { ...pendingMatchData, topVideo, bottomVideo });
         setPendingMatchData(null); // Clear pending data
         return;
       }
@@ -1982,7 +1982,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           setCurrentSection('match', {
             gameMode: matchData.gameMode || gameMode,
             matchId: existingMatch.id,
-            roomId: existingMatch.id
+            roomId: existingMatch.id,
+            topVideo,
+            bottomVideo
           });
           return;
         }
@@ -2268,7 +2270,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       
       setCurrentSection('match', {
         gameMode: roomData.gameMode,
-        matchId: matchDocRef.id
+        matchId: matchDocRef.id,
+        topVideo,
+        bottomVideo
       });
       console.log('✅ GameWaitingRoom: Navigation called successfully!');
       console.log('🔍 DEBUG: Navigation completed - should now be in match section');
@@ -2309,7 +2313,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           
           setCurrentSection('match', {
             gameMode: userMatch.data().gameMode || gameMode || 'classic',
-            matchId: userMatch.id
+            matchId: userMatch.id,
+            topVideo,
+            bottomVideo
           });
           return;
         }
@@ -2367,7 +2373,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         
         setCurrentSection('match', {
           gameMode: fallbackGameMode,
-          matchId: fallbackMatch.id
+          matchId: fallbackMatch.id,
+          topVideo,
+          bottomVideo
         });
         console.log('✅ GameWaitingRoom: Fallback match created successfully!');
         
@@ -2790,8 +2798,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: '40px',
-                background: 'rgba(0, 0, 0, 0.5)',
-                backdropFilter: 'blur(10px)'
+                background: 'rgba(0, 0, 0, 0.5)'
               }}
             >
               <div style={{
@@ -2903,8 +2910,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             alignItems: 'center',
             justifyContent: 'center',
             padding: '40px',
-            background: 'rgba(0, 0, 0, 0.5)',
-            backdropFilter: 'blur(10px)'
+            background: 'rgba(0, 0, 0, 0.5)'
           }}>
             <div style={{
               color: '#FFF',

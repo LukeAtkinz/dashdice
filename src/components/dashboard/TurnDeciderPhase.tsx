@@ -59,6 +59,8 @@ interface TurnDeciderPhaseProps {
   };
   onChoiceSelect: (choice: 'odd' | 'even') => void;
   onForceGameplay?: () => void; // Debug function to force gameplay
+  topVideo?: string; // Video URL from GameWaitingRoom
+  bottomVideo?: string; // Video URL from GameWaitingRoom
 }
 
 export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
@@ -68,30 +70,13 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
   isHost,
   diceAnimation,
   onChoiceSelect,
-  onForceGameplay
+  onForceGameplay,
+  topVideo: propTopVideo,
+  bottomVideo: propBottomVideo
 }) => {
-  // Video backgrounds state - MUST be at top before any computed values
-  const [topVideo, setTopVideo] = useState<string>('');
-  const [bottomVideo, setBottomVideo] = useState<string>('');
-  const videoInitialized = useRef(false);
-  
-  // Available world videos
-  const worldVideos = useMemo(() => [
-    '/World/Awaken/Awakened.mp4',
-    '/World/Lead the way/Lead the way.mp4',
-    '/World/Little Critters/Little Critters.mp4',
-    '/World/Web Climber/Web Climber.mp4'
-  ], []);
-  
-  // Initialize random videos on mount
-  useEffect(() => {
-    if (!videoInitialized.current && worldVideos.length > 0) {
-      const shuffled = [...worldVideos].sort(() => Math.random() - 0.5);
-      setTopVideo(shuffled[0]);
-      setBottomVideo(shuffled[1]);
-      videoInitialized.current = true;
-    }
-  }, [worldVideos]);
+  // Use videos from props if available, otherwise fallback to defaults
+  const topVideo = propTopVideo || '/World/Awaken/Awakened.mp4';
+  const bottomVideo = propBottomVideo || '/World/Lead the way/Lead the way.mp4';
   
   const isMyTurnToDecide = (isHost && matchData.gameData.turnDecider === 1) || 
                           (!isHost && matchData.gameData.turnDecider === 2);

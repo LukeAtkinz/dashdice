@@ -25,9 +25,11 @@ import { useMatchChat } from '@/context/MatchChatContext';
 interface MatchProps {
   gameMode?: string;
   roomId?: string;
+  topVideo?: string;
+  bottomVideo?: string;
 }
 
-export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
+export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottomVideo }) => {
   // Remove performance-impacting debug logs
   // console.log('🎮 Match: Component rendered with props:', { gameMode, roomId });
   // console.log('🔍 DEBUG: Match component entry point:', {
@@ -1315,6 +1317,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     diceAnimation={turnDeciderDiceAnimation}
                     onChoiceSelect={handleTurnDeciderChoice}
                     onForceGameplay={handleForceGameplay}
+                    topVideo={topVideo}
+                    bottomVideo={bottomVideo}
                   />
                 )}
 
