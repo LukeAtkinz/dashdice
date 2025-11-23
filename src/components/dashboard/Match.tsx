@@ -1168,17 +1168,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
             {/* Player 1 (Current User - Left Side) */}
             <AnimatePresence>
               {(matchData.gameData.gamePhase as string) !== 'turnDecider' && !showTurnAnnouncement && (
-                <motion.div 
-                  className="w-[40%] max-w-lg"
-                  initial={{ opacity: 0, x: 80, scale: 0.9 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: -50, scale: 0.9 }}
-                  transition={{ 
-                    duration: 0.7, 
-                    ease: "easeOut",
-                    delay: 0.3
-                  }}
-                >
+                <div className="w-[40%] max-w-lg">
               {/* Player Name Above Container - Left Aligned */}
               <motion.h2 
                 className="text-3xl font-bold mb-4 text-left"
@@ -1299,7 +1289,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
                   {currentPlayerBackground?.rarity || 'COMMON'}
                 </span>
               </div>
-                </motion.div>
+                </div>
               )}
             </AnimatePresence>
 
@@ -1308,18 +1298,34 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
               {/* Phase-specific content with transitions */}
               <AnimatePresence>
                 {matchData.gameData.gamePhase === 'turnDecider' && (
-                  <TurnDeciderPhase
-                    key="turnDecider"
-                    matchData={matchData}
-                    currentPlayer={currentPlayer}
-                    opponent={opponent}
-                    isHost={isHost}
-                    diceAnimation={turnDeciderDiceAnimation}
-                    onChoiceSelect={handleTurnDeciderChoice}
-                    onForceGameplay={handleForceGameplay}
-                    topVideo={topVideo}
-                    bottomVideo={bottomVideo}
-                  />
+                  <>
+                    <TurnDeciderPhase
+                      key="turnDecider"
+                      matchData={matchData}
+                      currentPlayer={currentPlayer}
+                      opponent={opponent}
+                      isHost={isHost}
+                      diceAnimation={turnDeciderDiceAnimation}
+                      onChoiceSelect={handleTurnDeciderChoice}
+                      onForceGameplay={handleForceGameplay}
+                      topVideo={topVideo}
+                      bottomVideo={bottomVideo}
+                    />
+                    {/* Preload GameplayPhase in background for instant transition */}
+                    <div style={{ display: 'none' }}>
+                      <GameplayPhase
+                        matchData={matchData}
+                        currentPlayer={currentPlayer}
+                        opponent={opponent}
+                        isHost={isHost}
+                        dice1Animation={dice1Animation}
+                        dice2Animation={dice2Animation}
+                        onRollDice={handleRollDice}
+                        onBankScore={handleBankScore}
+                        onAbilityUsed={handleAbilityUsed}
+                      />
+                    </div>
+                  </>
                 )}
 
                 {/* Turn Announcement - DISABLED per user request */}
@@ -1400,17 +1406,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
             {/* Player 2 (Opponent - Right Side) */}
             <AnimatePresence>
               {(matchData.gameData.gamePhase as string) !== 'turnDecider' && !showTurnAnnouncement && (
-                <motion.div 
-                  className="w-[40%] max-w-lg"
-                  initial={{ opacity: 0, x: 80, scale: 0.9 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: 50, scale: 0.9 }}
-                  transition={{ 
-                    duration: 0.7, 
-                    ease: "easeOut",
-                    delay: 0.5
-                  }}
-                >
+                <div className="w-[40%] max-w-lg">
               {/* Player Name Above Container - Right Aligned */}
               <motion.h2 
                 className="text-3xl font-bold mb-4 text-right"
@@ -1528,7 +1524,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
                   {opponentBackground?.rarity || 'COMMON'}
                 </span>
               </div>
-                </motion.div>
+                </div>
               )}
             </AnimatePresence>
           </div>
