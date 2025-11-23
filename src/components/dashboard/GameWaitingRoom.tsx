@@ -2596,28 +2596,84 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   }
 
   return (
-    <motion.div 
-      className="waiting-room-container" 
-      initial={{ x: '100%', opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: '-100%', opacity: 0 }}
-      transition={{ 
-        type: "spring", 
-        stiffness: 300, 
-        damping: 30,
-        mass: 0.8
-      }}
-      style={{ 
+    <>
+      {/* Static Background Layer - Videos persist across transitions */}
+      <div style={{ 
+        position: 'fixed', 
+        inset: 0, 
         width: '100%', 
         height: '100vh', 
-        maxHeight: '100vh',
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        padding: '0',
-        margin: '0',
-        background: 'transparent',
-        overflow: 'hidden'
+        background: '#FFFFFF',
+        zIndex: 0
+      }}>
+        {/* Top Video Background - 50% height */}
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '50%', overflow: 'hidden' }}>
+          {topVideo && (
+            <video 
+              src={topVideo} 
+              autoPlay 
+              loop 
+              muted 
+              playsInline 
+              preload="auto"
+              style={{ 
+                position: 'absolute', 
+                inset: 0, 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'cover' 
+              }}
+            />
+          )}
+        </div>
+        
+        {/* Bottom Video Background - 50% height */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '50%', overflow: 'hidden' }}>
+          {bottomVideo && (
+            <video 
+              src={bottomVideo} 
+              autoPlay 
+              loop 
+              muted 
+              playsInline 
+              preload="auto"
+              style={{ 
+                position: 'absolute', 
+                inset: 0, 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'cover' 
+              }}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Animated Content Layer */}
+      <motion.div 
+        className="waiting-room-container" 
+        initial={{ x: '100%', opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: '-100%', opacity: 0 }}
+        transition={{ 
+          type: "tween",
+          duration: 0.5,
+          ease: 'easeInOut'
+        }}
+        style={{ 
+          position: 'fixed',
+          inset: 0,
+          width: '100%', 
+          height: '100vh', 
+          maxHeight: '100vh',
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          padding: '0',
+          margin: '0',
+          background: 'transparent',
+          overflow: 'hidden',
+          zIndex: 10
       }}>
       {/* Match Transition Animation */}
       {showMatchTransition && transitionMatchData && (
@@ -2753,7 +2809,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         }
       `}</style>
 
-      {/* Split Screen Layout */}
+      {/* Split Screen Layout - Content Only */}
       <div
         style={{
           position: 'fixed',
@@ -2761,29 +2817,11 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           width: '100%',
           height: '100vh',
           display: 'flex',
-          flexDirection: 'column',
-          background: '#FFFFFF'
+          flexDirection: 'column'
         }}
       >
-        {/* Top Section - Opponent or World Video */}
+        {/* Top Section - Opponent Overlay */}
         <div style={{ position: 'relative', flex: '0 0 50%', width: '100%', overflow: 'hidden' }}>
-          {topVideo && (
-            <video
-              src={topVideo}
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              style={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover'
-              }}
-            />
-          )}
           
           {opponentData ? (
             <motion.div
@@ -2882,26 +2920,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           </motion.div>
         </div>
 
-        {/* Bottom Section - Current User */}
+        {/* Bottom Section - Current User Overlay */}
         <div style={{ position: 'relative', flex: '0 0 50%', width: '100%', overflow: 'hidden' }}>
-          {bottomVideo && (
-            <video
-              src={bottomVideo}
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              style={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover'
-              }}
-            />
-          )}
-          
           <div style={{
             position: 'absolute',
             inset: 0,
@@ -2952,54 +2972,62 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           </div>
         </div>
 
-        {/* Leave Button Overlay */}
-        <div style={{
-          position: 'absolute',
-          bottom: window.innerWidth < 768 ? '20px' : '40px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 200
-        }}>
-          <button
-            onClick={handleLeave}
-            disabled={vsCountdown !== null || opponentJoined || isLeaving}
+        {/* Leave Button Overlay - Animates down when opponent joins */}
+        {!opponentJoined && (
+          <motion.div
+            initial={{ y: 0 }}
+            animate={{ y: 0 }}
+            exit={{ y: 200, opacity: 0 }}
+            transition={{ type: 'tween', duration: 0.5, ease: 'easeInOut' }}
             style={{
-              display: 'flex',
-              padding: window.innerWidth < 768 ? '15px 30px' : '20px 40px',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: '10px',
-              borderRadius: '18px',
-              background: (vsCountdown !== null || opponentJoined || isLeaving) ? '#666666' : '#FF0080',
-              color: '#FFF',
-              fontFamily: 'Audiowide',
-              fontSize: window.innerWidth < 768 ? '18px' : '24px',
-              fontWeight: 400,
-              border: 'none',
-              cursor: (vsCountdown !== null || opponentJoined || isLeaving) ? 'not-allowed' : 'pointer',
-              opacity: (vsCountdown !== null || opponentJoined || isLeaving) ? 0.5 : 1,
-              textTransform: 'uppercase',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)'
-            }}
-            onMouseEnter={(e) => {
-              if (vsCountdown === null && !opponentJoined && !isLeaving) {
-                e.currentTarget.style.transform = 'scale(1.05)';
-                e.currentTarget.style.boxShadow = '0 10px 30px rgba(255, 0, 128, 0.5)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (vsCountdown === null && !opponentJoined && !isLeaving) {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
-              }
+              position: 'absolute',
+              bottom: window.innerWidth < 768 ? '20px' : '40px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 200
             }}
           >
-            {vsCountdown !== null ? 'Starting Game...' : 
-             isLeaving ? 'Leaving...' : 'Leave Game'}
-          </button>
-        </div>
+            <button
+              onClick={handleLeave}
+              disabled={vsCountdown !== null || isLeaving}
+              style={{
+                display: 'flex',
+                padding: window.innerWidth < 768 ? '15px 30px' : '20px 40px',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '10px',
+                borderRadius: '18px',
+                background: (vsCountdown !== null || isLeaving) ? '#666666' : '#FF0080',
+                color: '#FFF',
+                fontFamily: 'Audiowide',
+                fontSize: window.innerWidth < 768 ? '18px' : '24px',
+                fontWeight: 400,
+                border: 'none',
+                cursor: (vsCountdown !== null || isLeaving) ? 'not-allowed' : 'pointer',
+                opacity: (vsCountdown !== null || isLeaving) ? 0.5 : 1,
+                textTransform: 'uppercase',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                if (vsCountdown === null && !isLeaving) {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                  e.currentTarget.style.boxShadow = '0 10px 30px rgba(255, 0, 128, 0.5)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (vsCountdown === null && !isLeaving) {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
+                }
+              }}
+            >
+              {isLeaving ? 'Leaving...' : 'Leave Game'}
+            </button>
+          </motion.div>
+        )}
       </div>
     </motion.div>
+    </>
   );
 };

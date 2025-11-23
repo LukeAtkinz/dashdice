@@ -24,6 +24,18 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   const [rematchRoomId, setRematchRoomId] = useState<string | null>(null);
   const [incomingRematch, setIncomingRematch] = useState<RematchRoom | null>(null);
   const [showGameModeSelector, setShowGameModeSelector] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  
+  // Random victory video
+  const [victoryVideo] = useState(() => {
+    const videos = [
+      '/Victory Screens/Can\'t Run.mp4',
+      '/Victory Screens/Nightfall.mp4',
+      '/Victory Screens/Prey.mp4',
+      '/Victory Screens/Wind Blade.mp4'
+    ];
+    return videos[Math.floor(Math.random() * videos.length)];
+  });
   
   const winner = matchData.gameData.winner;
   const reason = matchData.gameData.gameOverReason;
@@ -211,12 +223,28 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   }, [rematchRoomId, rematchState, onRematch]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center relative p-4 md:p-8 space-y-6 pb-24 md:pb-8"
-      style={{
-        touchAction: 'pan-y',
-        WebkitOverflowScrolling: 'touch'
-      }}
-    >
+    <>
+      {/* Victory Video Background */}
+      <div className="fixed inset-0 w-full h-full bg-white" style={{ zIndex: 0 }}>
+        <video 
+          src={victoryVideo} 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      </div>
+
+      {/* Content Layer */}
+      <div className="min-h-screen flex flex-col items-center justify-center relative p-4 md:p-8 space-y-6 pb-24 md:pb-8"
+        style={{
+          touchAction: 'pan-y',
+          WebkitOverflowScrolling: 'touch',
+          zIndex: 10
+        }}
+      >
       {/* Victory/Defeat Announcement - Now visible on Mobile */}
       <motion.div
         initial={{ opacity: 0, scale: 0.5 }}
@@ -229,12 +257,26 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
           className="text-6xl md:text-8xl font-bold mb-4"
-          style={{ fontFamily: "Audiowide" }}
+          style={{ fontFamily: "Audiowide", textAlign: 'center' }}
         >
           {winner === currentUser.playerDisplayName ? (
-            <span className="text-yellow-400 drop-shadow-lg">VICTORY!</span>
+            <div>
+              <div className="text-yellow-400 drop-shadow-lg" style={{ textShadow: '0 0 40px rgba(255,215,0,0.8)' }}>
+                {winner}
+              </div>
+              <div className="text-5xl md:text-6xl text-yellow-400 drop-shadow-lg mt-2" style={{ textShadow: '0 0 20px rgba(255,215,0,0.6)' }}>
+                WINS!
+              </div>
+            </div>
           ) : (
-            <span className="text-red-400 drop-shadow-lg">DEFEAT</span>
+            <div>
+              <div className="text-red-400 drop-shadow-lg" style={{ textShadow: '0 0 40px rgba(255,0,0,0.8)' }}>
+                {winner}
+              </div>
+              <div className="text-5xl md:text-6xl text-red-400 drop-shadow-lg mt-2" style={{ textShadow: '0 0 20px rgba(255,0,0,0.6)' }}>
+                WINS!
+              </div>
+            </div>
           )}
         </motion.h1>
 
@@ -289,16 +331,47 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         </div>
       </motion.div>
 
-      {/* Match Statistics - New 3-Column Layout */}
-      <motion.div
+      {/* Stats Toggle Button */}
+      <motion.button
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.3 }}
-        className="block p-4 md:p-6 bg-black/20 rounded-2xl border border-gray-600"
+        onClick={() => setShowStats(!showStats)}
+        style={{
+          fontFamily: "Audiowide",
+          textTransform: "uppercase",
+          display: 'flex',
+          width: '209px',
+          height: '56px',
+          padding: '4px 16px',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '10px',
+          borderRadius: '18px',
+          border: '2px solid rgba(255, 255, 255, 0.3)',
+          backdropFilter: 'blur(6px)',
+          background: "linear-gradient(135deg, #FFD700 0%, transparent 100%)",
+          color: "#000",
+          boxShadow: "0 4px 15px rgba(255, 215, 0, 0.3)",
+          cursor: 'pointer'
+        }}
+        className="hover:scale-105 transition-transform"
       >
-        <h3 className="text-base md:text-lg font-bold text-white mb-4 md:mb-6 text-center" style={{ fontFamily: "Audiowide" }}>
-          MATCH STATISTICS
-        </h3>
+        {showStats ? 'HIDE STATS' : 'STATS'}
+      </motion.button>
+
+      {/* Match Statistics - Collapsible */}
+      {showStats && (
+        <motion.div
+          initial={{ opacity: 0, y: 20, height: 0 }}
+          animate={{ opacity: 1, y: 0, height: 'auto' }}
+          exit={{ opacity: 0, y: -20, height: 0 }}
+          transition={{ duration: 0.3 }}
+          className="block p-4 md:p-6 bg-black/40 rounded-2xl border border-gray-600 backdrop-blur-md"
+        >
+          <h3 className="text-base md:text-lg font-bold text-white mb-4 md:mb-6 text-center" style={{ fontFamily: "Audiowide" }}>
+            MATCH STATISTICS
+          </h3>
         
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-8">
           {/* Left Column - Host Stats */}
@@ -364,7 +437,8 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
             </div>
           </div>
         </div>
-      </motion.div>
+        </motion.div>
+      )}
 
       {/* Incoming Rematch Request - Hidden on Mobile */}
       {incomingRematch && (
@@ -634,7 +708,8 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         onSelect={handleGameModeSelect}
         onCancel={handleGameModeCancel}
       />
-    </div>
+      </div>
+    </>
   );
 };
 
