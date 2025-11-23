@@ -232,24 +232,62 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
   };
 
   return (
-    <motion.div
-      initial={{ x: '100%' }}
-      animate={{ x: 0 }}
-      exit={{ x: '-100%' }}
-      transition={{ type: 'tween', duration: 0.5, ease: 'easeInOut' }}
-      className="absolute inset-0"
-    >
-      <div className="flex flex-col items-center justify-center h-full">
-      {/* Old dice display removed to prevent layout switching */}
+    <>
+      {/* Static Background Layer - Videos and White BG */}
+      <div className="fixed inset-0 w-full h-full bg-white" style={{ zIndex: 0 }}>
+        {/* Top Video Background - 50% height */}
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '50%', overflow: 'hidden' }}>
+          {topVideo && (
+            <video 
+              src={topVideo} 
+              autoPlay 
+              loop 
+              muted 
+              playsInline 
+              preload="auto"
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ height: '720px', maxHeight: '50vh' }}
+            />
+          )}
+        </div>
+        
+        {/* Bottom Video Background - 50% height */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '50%', overflow: 'hidden' }}>
+          {bottomVideo && (
+            <video 
+              src={bottomVideo} 
+              autoPlay 
+              loop 
+              muted 
+              playsInline 
+              preload="auto"
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ height: '720px', maxHeight: '50vh' }}
+            />
+          )}
+        </div>
+      </div>
 
-      {/* Choice Selection with Stunning Slide Transitions */}
-      {!hasChoice && isMyTurnToDecide && isInTurnDeciderPhase && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="fixed inset-0 w-full h-full flex flex-col bg-white"
-        >
+      {/* Animated Content Layer - Swipes over static backgrounds */}
+      <motion.div
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '-100%' }}
+        transition={{ type: 'tween', duration: 0.5, ease: 'easeInOut' }}
+        className="absolute inset-0"
+        style={{ zIndex: 10 }}
+      >
+        <div className="flex flex-col items-center justify-center h-full">
+        {/* Old dice display removed to prevent layout switching */}
+
+        {/* Choice Selection with Stunning Slide Transitions */}
+        {!hasChoice && isMyTurnToDecide && isInTurnDeciderPhase && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="fixed inset-0 w-full h-full flex flex-col"
+          >
           {/* ODD Button - Top Half with Flying Animation */}
           <motion.button
             onClick={() => handleChoice('odd')}
@@ -287,19 +325,6 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             className="relative flex-1 w-full flex flex-col items-center justify-center bg-transparent transition-all duration-200 overflow-hidden"
             style={{ fontFamily: "Audiowide" }}
           >
-            {/* Video Background - Top */}
-            {topVideo && (
-              <video
-                src={topVideo}
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-                className="absolute inset-0 w-full h-full object-cover"
-                style={{ height: '720px', maxHeight: '50vh' }}
-              />
-            )}
             {/* Background Text Shadow */}
             <motion.div
               className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 -translate-y-8"
@@ -436,19 +461,6 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             className="relative flex-1 w-full flex flex-col items-center justify-center bg-transparent transition-all duration-200 overflow-hidden"
             style={{ fontFamily: "Audiowide" }}
           >
-            {/* Video Background - Bottom */}
-            {bottomVideo && (
-              <video
-                src={bottomVideo}
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-                className="absolute inset-0 w-full h-full object-cover"
-                style={{ height: '720px', maxHeight: '50vh' }}
-              />
-            )}
             {/* Background Text Shadow */}
             <motion.div
               className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 translate-y-8"
@@ -855,7 +867,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           </div>
         </div>
       )}
-      </div>
-    </motion.div>
+        </div>
+      </motion.div>
+    </>
   );
 };
