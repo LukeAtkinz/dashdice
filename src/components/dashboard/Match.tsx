@@ -69,6 +69,15 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
   const [error, setError] = useState<string | null>(null);
   const [showGameOverScreen, setShowGameOverScreen] = useState(false);
   
+  // 🧢 Hard Hat animation states
+  const [showHardHatInitialCurrent, setShowHardHatInitialCurrent] = useState(false);
+  const [showHardHatInitialOpponent, setShowHardHatInitialOpponent] = useState(false);
+  const [hardHatWhiteBorderCurrent, setHardHatWhiteBorderCurrent] = useState(false);
+  const [hardHatWhiteBorderOpponent, setHardHatWhiteBorderOpponent] = useState(false);
+  const [showHardHatUsedCurrent, setShowHardHatUsedCurrent] = useState(false);
+  const [showHardHatUsedOpponent, setShowHardHatUsedOpponent] = useState(false);
+  const previousHardHatStateRef = useRef<{current: boolean, opponent: boolean}>({current: false, opponent: false});
+  
   // Initialize match start time when match data first loads
   useEffect(() => {
     if (matchData && !matchStartTime.current) {
@@ -202,6 +211,59 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
     // Update previous state
     previousRollingState.current = currentIsRolling;
   }, [matchData?.gameData.isRolling, matchData?.id, user?.uid]);
+  
+  // 🧢 HARD HAT ANIMATION LOGIC
+  // Monitor Hard Hat activation and usage
+  useEffect(() => {
+    if (!matchData || !user?.uid) return;
+    
+    const hostId = matchData.hostData.playerId;
+    const opponentId = matchData.opponentData.playerId;
+    const isHost = hostId === user.uid;
+    const currentPlayerId = user.uid;
+    const opponentPlayerId = isHost ? opponentId : hostId;
+    
+    // Check current player's Hard Hat status
+    const currentHasHardHat = matchData.gameData.activeEffects?.[currentPlayerId]?.some((effect: any) =>
+      effect.abilityId === 'hard_hat' || effect.effectId?.includes('hard_hat')
+    ) || false;
+    
+    // Check opponent's Hard Hat status
+    const opponentHasHardHat = matchData.gameData.activeEffects?.[opponentPlayerId]?.some((effect: any) =>
+      effect.abilityId === 'hard_hat' || effect.effectId?.includes('hard_hat')
+    ) || false;
+    
+    // CURRENT PLAYER: Hard Hat just activated
+    if (currentHasHardHat && !previousHardHatStateRef.current.current) {
+      console.log('🧢 Current player activated Hard Hat - showing initial animation');
+      setShowHardHatInitialCurrent(true);
+    }
+    
+    // CURRENT PLAYER: Hard Hat was active but now deactivated (it was used)
+    if (!currentHasHardHat && previousHardHatStateRef.current.current) {
+      console.log('🧢 Current player Hard Hat was triggered - showing used animation');
+      setShowHardHatUsedCurrent(true);
+      setHardHatWhiteBorderCurrent(false); // Remove border immediately
+      
+      setTimeout(() => {
+        setShowHardHatUsedCurrent(false);
+      }, 2000); // Clear after animation
+    }
+    
+    // OPPONENT: Hard Hat was active but now deactivated (it was used) - BOTH PLAYERS SEE THIS
+    if (!opponentHasHardHat && previousHardHatStateRef.current.opponent) {
+      console.log('🧢 Opponent Hard Hat was triggered - showing used animation (visible to both players)');
+      setShowHardHatUsedOpponent(true);
+      setHardHatWhiteBorderOpponent(false); // Remove border (only on opponent's screen)
+      
+      setTimeout(() => {
+        setShowHardHatUsedOpponent(false);
+      }, 2000);
+    }
+    
+    // Update previous state
+    previousHardHatStateRef.current = { current: currentHasHardHat, opponent: opponentHasHardHat };
+  }, [matchData?.gameData.activeEffects, user?.uid, matchData?.hostData.playerId, matchData?.opponentData.playerId]);
   
   // Turn announcement state
   const [showTurnAnnouncement, setShowTurnAnnouncement] = useState(false);
@@ -1189,20 +1251,86 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
               </motion.h2>
               
               <motion.div
-                className="relative rounded-3xl overflow-hidden shadow-2xl border-4 z-20"
+                className="relative rounded-3xl overflow-hidden shadow-2xl z-20"
                 style={{ 
+                  borderWidth: hardHatWhiteBorderCurrent ? '2px' : '4px',
+                  borderStyle: 'solid',
                   borderColor: '#ffffff',
                   height: '500px'
                 }}
                 animate={{
                   borderColor: '#ffffff',
-                  boxShadow: '0 0 15px rgba(255, 255, 255, 0.2)'
+                  boxShadow: hardHatWhiteBorderCurrent 
+                    ? '0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.4)'
+                    : '0 0 15px rgba(255, 255, 255, 0.2)'
                 }}
                 transition={{ 
                   duration: 0.5,
                   ease: "easeInOut"
                 }}
               >
+                {/* 🧢 HARD HAT INITIAL ANIMATION - Only visible to activating player */}
+                {showHardHatInitialCurrent && (
+                  <motion.div
+                    className="absolute inset-0 pointer-events-none z-50"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <video
+                      src="/Abilities/Animations/Hard Hat/Hard Hat Initial.webm"
+                      autoPlay
+                      loop={false}
+                      muted
+                      playsInline
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '24px'
+                      }}
+                      onTimeUpdate={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        // Show white border just before video ends (last 0.2s)
+                        if (video.duration - video.currentTime < 0.2 && !hardHatWhiteBorderCurrent) {
+                          console.log('🧢 Showing white border before video ends');
+                          setHardHatWhiteBorderCurrent(true);
+                        }
+                      }}
+                      onEnded={() => {
+                        console.log('🧢 Hard Hat Initial animation ended');
+                        setShowHardHatInitialCurrent(false);
+                      }}
+                    />
+                  </motion.div>
+                )}
+                
+                {/* 🧢 HARD HAT USED ANIMATION - Visible to both players */}
+                {showHardHatUsedCurrent && (
+                  <motion.div
+                    className="absolute inset-0 pointer-events-none z-50"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <video
+                      src="/Abilities/Animations/Hard Hat/Hard Hat Used.webm"
+                      autoPlay
+                      loop={false}
+                      muted
+                      playsInline
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '24px'
+                      }}
+                    />
+                  </motion.div>
+                )}
+                
                 {/* Player Background */}
                 {currentPlayerBgPath ? (
                   currentPlayerBgIsVideo ? (
@@ -1427,8 +1555,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
               </motion.h2>
               
               <motion.div
-                className="relative rounded-3xl overflow-hidden shadow-2xl border-4 z-20"
+                className="relative rounded-3xl overflow-hidden shadow-2xl z-20"
                 style={{ 
+                  borderWidth: '4px',
+                  borderStyle: 'solid',
                   borderColor: '#ffffff',
                   height: '500px'
                 }}
@@ -1441,6 +1571,31 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
                   ease: "easeInOut"
                 }}
               >
+                {/* 🧢 HARD HAT USED ANIMATION - Visible to both players when opponent's Hard Hat triggers */}
+                {showHardHatUsedOpponent && (
+                  <motion.div
+                    className="absolute inset-0 pointer-events-none z-50"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <video
+                      src="/Abilities/Animations/Hard Hat/Hard Hat Used.webm"
+                      autoPlay
+                      loop={false}
+                      muted
+                      playsInline
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '24px'
+                      }}
+                    />
+                  </motion.div>
+                )}
+                
                 {/* Player Background */}
                 {opponentBgPath ? (
                   opponentBgIsVideo ? (
