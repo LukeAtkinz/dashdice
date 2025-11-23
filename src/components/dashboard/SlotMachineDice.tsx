@@ -34,6 +34,7 @@ interface SlotMachineDiceProps {
   isTurnDecider?: boolean;
   matchData?: MatchData;
   isTopDice?: boolean; // NEW: Identify if this is the top dice (for animation orientation)
+  isVitalRushActive?: boolean; // NEW: Vital Rush ability active state
 }
 
 export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({ 
@@ -44,7 +45,8 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   isGameRolling,
   isTurnDecider = false,
   matchData,
-  isTopDice = true // Default to top dice
+  isTopDice = true, // Default to top dice
+  isVitalRushActive = false // Default to inactive
 }) => {
   // For turn decider, handle animation logic differently with proper timing
   const isCurrentlyRolling = isTurnDecider ? 
@@ -96,27 +98,27 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   
   const displayValue = getDisplayValue();
 
+  // 🍀 Luck Turner ability state management
+  const [luckTurnerVideoPlaying, setLuckTurnerVideoPlaying] = useState(false);
+  const [luckTurnerVideoEnded, setLuckTurnerVideoEnded] = useState(false);
+  const [luckTurnerFreezeFrame, setLuckTurnerFreezeFrame] = useState(false);
+  const [luckTurnerWhiteBackground, setLuckTurnerWhiteBackground] = useState(false);
+  const [luckTurnerHasPlayed, setLuckTurnerHasPlayed] = useState(false);
+  
   // Check if Luck Turner ability is active for any player
   const isLuckTurnerActive = useMemo(() => {
     if (!matchData?.gameData?.activeEffects) {
-      console.log('🍀 Luck Turner check: No activeEffects in matchData');
       return false;
     }
-    
-    console.log('🍀 Luck Turner check: activeEffects =', matchData.gameData.activeEffects);
     
     // Check all players' active effects for luck_turner
     for (const playerId in matchData.gameData.activeEffects) {
       const effects = matchData.gameData.activeEffects[playerId];
-      console.log(`🍀 Checking player ${playerId}:`, effects);
       if (effects && Array.isArray(effects)) {
         const hasLuckTurner = effects.some(effect => {
-          const match = effect.abilityId === 'luck_turner' || effect.effectId?.includes('luck_turner');
-          console.log(`🍀 Effect check:`, effect, 'Match:', match);
-          return match;
+          return effect.abilityId === 'luck_turner' || effect.effectId?.includes('luck_turner');
         });
         if (hasLuckTurner) {
-          console.log('✅ LUCK TURNER IS ACTIVE! Showing video overlay');
           return true;
         }
       }
@@ -124,6 +126,46 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
     
     return false;
   }, [matchData?.gameData?.activeEffects]);
+  
+  // Handle Luck Turner activation and video playback sequence
+  useEffect(() => {
+    if (isLuckTurnerActive && !luckTurnerHasPlayed) {
+      console.log('🍀 Luck Turner activated - starting video sequence');
+      setLuckTurnerVideoPlaying(true);
+      setLuckTurnerHasPlayed(true);
+    }
+  }, [isLuckTurnerActive, luckTurnerHasPlayed]);
+  
+  // Handle video end sequence: freeze frame → white background
+  useEffect(() => {
+    if (luckTurnerVideoEnded && !luckTurnerFreezeFrame) {
+      console.log('🍀 Luck Turner video ended - starting freeze frame (0.2s)');
+      setLuckTurnerFreezeFrame(true);
+      
+      // After 0.2s freeze, wait 0.1s then show white background
+      setTimeout(() => {
+        console.log('🍀 Freeze frame complete - transitioning to white background');
+        setLuckTurnerVideoPlaying(false); // Hide video
+        
+        setTimeout(() => {
+          console.log('🍀 Showing white background');
+          setLuckTurnerWhiteBackground(true);
+        }, 100); // 0.1s delay
+      }, 200); // 0.2s freeze
+    }
+  }, [luckTurnerVideoEnded, luckTurnerFreezeFrame]);
+  
+  // Clean up Luck Turner effect after ability expires (1 roll)
+  useEffect(() => {
+    if (!isLuckTurnerActive && luckTurnerHasPlayed) {
+      console.log('🍀 Luck Turner expired - resetting to normal state');
+      setLuckTurnerVideoPlaying(false);
+      setLuckTurnerVideoEnded(false);
+      setLuckTurnerFreezeFrame(false);
+      setLuckTurnerWhiteBackground(false);
+      setLuckTurnerHasPlayed(false);
+    }
+  }, [isLuckTurnerActive, luckTurnerHasPlayed]);
 
   // 🍳 Check if Pan Slap ability is active for any player
   const [isPanSlapActive, setIsPanSlapActive] = useState(false);
@@ -307,6 +349,10 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   
   // Determine dice number color based on multiplier (white for x2/x3, black for x4)
   const getDiceNumberColor = () => {
+    // 🍀 Luck Turner white background shows BLACK dice
+    if (luckTurnerWhiteBackground) return '#000000';
+    // 💨 Vital Rush turns dice WHITE
+    if (isVitalRushActive) return '#FFFFFF';
     // 🍳 Pan Slap turns dice RED
     if (showRedDice) return '#FF0000'; // Bright red for Pan Slap
     if (hasQuadMultiplier) return '#000000'; // Black for x4
@@ -318,7 +364,15 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   let borderStyle = '';
   let backgroundStyle = '';
   
-  if (hasQuadMultiplier) {
+  if (luckTurnerWhiteBackground) {
+    // 🍀 Luck Turner - White Background
+    borderStyle = 'border-white/90';
+    backgroundStyle = 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95))';
+  } else if (isVitalRushActive) {
+    // 💨 Vital Rush - Light Blue Themed
+    borderStyle = 'border-blue-400/70';
+    backgroundStyle = 'linear-gradient(to bottom right, rgba(173, 216, 230, 0.7), rgba(135, 206, 250, 0.7))';
+  } else if (hasQuadMultiplier) {
     // x4 Multiplier - White Themed
     borderStyle = 'border-white/70';
     backgroundStyle = 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.7), rgba(174, 238, 238, 0.7))';
@@ -558,18 +612,18 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
       )}
       
       {/* 🍀 LUCK TURNER ABILITY ANIMATION 🍀 */}
-      {isLuckTurnerActive && (
+      {luckTurnerVideoPlaying && (
         <motion.div
           className="absolute inset-0 pointer-events-none z-20"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.3 }}
         >
           <video
             src="/Abilities/Animations/Luck Turner Animation.webm"
             autoPlay
-            loop
+            loop={false}
             muted
             playsInline
             preload="auto"
@@ -586,10 +640,9 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden'
             }}
-            // 1.5x speed for snappier animation
-            onLoadedData={(e) => {
-              const video = e.target as HTMLVideoElement;
-              video.playbackRate = 1.5;
+            onEnded={() => {
+              console.log('🍀 Luck Turner video playback ended');
+              setLuckTurnerVideoEnded(true);
             }}
           />
         </motion.div>

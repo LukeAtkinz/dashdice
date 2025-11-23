@@ -132,6 +132,14 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
 
   // Handle bank/save with animation
   const handleBankScore = () => {
+    // Clear Vital Rush animations immediately when banking
+    if (vitalRushActive) {
+      console.log('🎬 Clearing Vital Rush animations - player banked');
+      setVitalRushActive(false);
+      setShowVitalRushInitial(false);
+      setShowVitalRushTopDice(false);
+      setShowVitalRushBottomDice(false);
+    }
     if (!canBank) return;
     
     // Trigger shooting animation
@@ -420,7 +428,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           {/* Dice 1 - Enhanced Slot Machine */}
           <motion.div 
             className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" 
-            style={{ width: 'min(600px, 70vw)', position: 'relative' }}
+            style={{ width: 'min(600px, 70vw)', position: 'relative', overflow: 'hidden', borderRadius: '20px' }}
             whileHover={{ 
               scale: 1.05,
               rotateX: 2,
@@ -435,6 +443,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               isGameRolling={matchData.gameData.isRolling || false}
               matchData={matchData}
               isTopDice={true} // Top dice - normal orientation
+              isVitalRushActive={vitalRushActive} // Vital Rush ability state
             />
             
             {/* Vital Rush Top Dice Animation Overlay */}
@@ -810,7 +819,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           {/* Dice 2 - Enhanced Slot Machine */}
           <motion.div 
             className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" 
-            style={{ width: 'min(600px, 70vw)', position: 'relative' }}
+            style={{ width: 'min(600px, 70vw)', position: 'relative', overflow: 'hidden', borderRadius: '20px' }}
             whileHover={{ 
               scale: 1.05,
               rotateX: -2,
@@ -825,6 +834,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               isGameRolling={matchData.gameData.isRolling || false}
               matchData={matchData}
               isTopDice={false} // Bottom dice - flipped vertically
+              isVitalRushActive={vitalRushActive} // Vital Rush ability state
             />
             
             {/* Vital Rush Bottom Dice Animation Overlay */}
@@ -852,25 +862,35 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         
         {/* Vital Rush Initial Animation - 90deg rotated, positioned next to top dice */}
         {showVitalRushInitial && (
-          <video
-            key="vital-rush-initial"
-            src="/Abilities/Animations/Vital Rush/Vital Rush Initial.webm"
-            autoPlay
-            muted
-            playsInline
-            onEnded={() => setShowVitalRushInitial(false)}
-            style={{
-              position: 'absolute',
-              width: 'min(600px, 70vw)',
-              height: 'auto',
-              transform: 'rotate(90deg) translateX(-50%)',
-              transformOrigin: 'left center',
-              left: 'calc(50% - min(300px, 35vw))',
-              top: 'calc(50% - 30px - min(300px, 35vw))',
-              pointerEvents: 'none',
-              zIndex: 20
-            }}
-          />
+          <div style={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, calc(-50% - 60px))',
+            width: 'min(600px, 70vw)',
+            height: 'min(600px, 70vw)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            pointerEvents: 'none',
+            zIndex: 20
+          }}>
+            <video
+              key="vital-rush-initial"
+              src="/Abilities/Animations/Vital Rush/Vital Rush Initial.webm"
+              autoPlay
+              muted
+              playsInline
+              onEnded={() => setShowVitalRushInitial(false)}
+              style={{
+                width: '100%',
+                height: 'auto',
+                transform: 'rotate(90deg)',
+                transformOrigin: 'center center',
+                marginLeft: '-50%'
+              }}
+            />
+          </div>
         )}
 
         {/* Desktop Abilities Display - Enhanced animations */}
