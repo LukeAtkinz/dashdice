@@ -294,13 +294,14 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             <motion.div
               className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 -translate-y-8"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.25 }}
+              animate={{ opacity: 0.6 }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
               <span 
-                className="text-[25vw] md:text-[20rem] text-white font-bold tracking-wider leading-none select-none"
+                className="text-[30vw] md:text-[22rem] text-white font-bold tracking-wider leading-none select-none"
                 style={{ 
                   fontFamily: 'Audiowide',
+                  textShadow: '0 0 60px rgba(255, 215, 0, 0.8), 0 0 120px rgba(255, 215, 0, 0.5)',
                   WebkitFontSmoothing: 'antialiased'
                 }}
               >
@@ -310,11 +311,26 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
 
           </motion.button>
 
-          {/* VS Element or Dice - Centered */}
-          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30" style={{ width: 'min(90vw, 600px)' }}>
-            {(diceAnimation.isSpinning || hasDice) ? (
-              // Show slot machine dice animation (while spinning OR after result)
-              <div className="w-full flex items-center justify-center">
+          {/* FULL SCREEN Dice Animation */}
+          {(diceAnimation.isSpinning || hasDice) && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.5 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="fixed inset-0 flex items-center justify-center z-40"
+              style={{
+                width: '100vw',
+                height: '100vh',
+                pointerEvents: 'none'
+              }}
+            >
+              {/* Giant Vertical Reel Dice */}
+              <div style={{
+                width: 'min(90vw, 700px)',
+                height: 'clamp(200px, 40vh, 400px)',
+                position: 'relative'
+              }}>
                 <SlotMachineDice
                   diceNumber={'turnDecider' as any}
                   animationState={{
@@ -331,7 +347,12 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                   matchData={matchData}
                 />
               </div>
-            ) : transitionPhase === 'choosing' || transitionPhase === 'choice-returning' ? (
+            </motion.div>
+          )}
+
+          {/* VS Element - Centered */}
+          <div className="fixed left-0 right-0 top-1/2 transform -translate-y-1/2 z-30 flex items-center justify-center">
+            {transitionPhase === 'choosing' || transitionPhase === 'choice-returning' ? (
               // Show VS with morphing capability - starts as GO! from waiting room
               <motion.span 
                 layoutId="vs-morph-text" // Same layoutId for morphing from GameWaitingRoom
@@ -430,13 +451,14 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             <motion.div
               className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 translate-y-8"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.25 }}
+              animate={{ opacity: 0.6 }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
               <span 
-                className="text-[25vw] md:text-[20rem] text-white font-bold tracking-wider leading-none select-none"
+                className="text-[30vw] md:text-[22rem] text-white font-bold tracking-wider leading-none select-none"
                 style={{ 
                   fontFamily: 'Audiowide',
+                  textShadow: '0 0 60px rgba(100, 149, 237, 0.8), 0 0 120px rgba(100, 149, 237, 0.5)',
                   WebkitFontSmoothing: 'antialiased'
                 }}
               >

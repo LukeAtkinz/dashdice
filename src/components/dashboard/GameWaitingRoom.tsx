@@ -2981,14 +2981,15 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             exit={{ y: 200, opacity: 0 }}
             transition={{ type: 'tween', duration: 0.5, ease: 'easeInOut' }}
             style={{
-              position: 'absolute',
+              position: 'fixed',
               bottom: window.innerWidth < 768 ? '20px' : '40px',
-              left: '50%',
-              transform: 'translateX(-50%)',
+              left: 0,
+              right: 0,
               zIndex: 200,
-              width: 'auto',
               display: 'flex',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              alignItems: 'center',
+              pointerEvents: 'none'
             }}
           >
             <button
@@ -3012,7 +3013,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 textTransform: 'uppercase',
                 transition: 'all 0.3s ease',
                 boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
-                width: window.innerWidth < 768 ? 'auto' : 'auto'
+                pointerEvents: 'auto'
               }}
               onMouseEnter={(e) => {
                 if (vsCountdown === null && !isLeaving) {
