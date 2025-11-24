@@ -380,8 +380,8 @@ const ProfileSection: React.FC = () => {
       `}</style>
       
       <div className="w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] mt-[7vh] md:mt-0">
-        {/* Header */}
-        <div className="text-center mb-8 flex-shrink-0">
+        {/* Header - Desktop Only */}
+        <div className="hidden md:block text-center mb-8 flex-shrink-0">
           <h1 
             className="text-5xl font-bold text-white mb-4"
             style={{
@@ -394,8 +394,8 @@ const ProfileSection: React.FC = () => {
           </h1>
         </div>
 
-        {/* Navigation Tabs - Matching Inventory Style */}
-        <div className="w-full px-4 md:px-8 py-2 md:py-4 pb-[0.5rem] md:pb-[1rem]">
+        {/* Navigation Tabs - Desktop Only (top) */}
+        <div className="hidden md:block w-full px-4 md:px-8 py-2 md:py-4 pb-[0.5rem] md:pb-[1rem]">
           <div className="flex items-center justify-center gap-2 md:gap-4">
             {tabs.map((tab) => (
               <button
@@ -440,56 +440,102 @@ const ProfileSection: React.FC = () => {
           {/* Profile Tab Content */}
           {activeTab === 'profile' && (
             <div className="space-y-6 px-4 md:px-4">
-              {/* Player Profile Card - Friends Style */}
+              {/* Profile Card Container */}
               <motion.div 
-                className="relative overflow-hidden touch-manipulation w-full md:w-auto"
-                style={{
-                  background: MatchBackgroundEquip?.id 
-                    ? `url(${resolveBackgroundPath(MatchBackgroundEquip.id, 'profile-viewer')?.path})`
-                    : 'linear-gradient(135deg, #667eea, #764ba2)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  borderRadius: '20px',
-                  width: 'calc(100vw - 2rem)', // 100% viewport width minus padding on mobile
-                  maxWidth: '100%'
-                }}
+                className="relative w-full md:w-auto"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                {/* Dark overlay gradient for text readability */}
+                {/* Profile Header Section with Match Background */}
                 <div 
-                  className="absolute inset-0"
+                  className="relative overflow-hidden touch-manipulation rounded-t-[20px]"
                   style={{
-                    background: 'linear-gradient(to right, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%)',
-                    borderRadius: '20px',
-                    zIndex: 1
+                    background: MatchBackgroundEquip?.id 
+                      ? `url(${resolveBackgroundPath(MatchBackgroundEquip.id, 'profile-viewer')?.path})`
+                      : 'linear-gradient(135deg, #667eea, #764ba2)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    width: 'calc(100vw - 2rem)',
+                    maxWidth: '100%'
                   }}
-                ></div>
+                >
+                  {/* Dark overlay gradient for text readability */}
+                  <div 
+                    className="absolute inset-0"
+                    style={{
+                      background: 'linear-gradient(to right, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.2) 100%)',
+                      zIndex: 1
+                    }}
+                  ></div>
 
-                <div className="relative z-10 p-6">
-                  {/* Profile Header */}
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="relative">
-                      <ProfilePicture
-                        src={user?.profilePicture || user?.photoURL}
-                        alt={`${user?.displayName || 'Player'}'s profile picture`}
-                        size="lg"
-                        fallbackInitials={user?.displayName?.charAt(0)?.toUpperCase() || '?'}
-                      />
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-2 border-gray-800"></div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h2 className="text-white text-2xl font-semibold font-audiowide truncate">
-                        {user?.displayName || 'Player'}
-                      </h2>
-                      <p className="text-white/80 text-lg font-montserrat">Online</p>
-                      <p className="text-white/60 text-sm font-montserrat">
-                        Member since {user?.createdAt?.toLocaleDateString() || 'Unknown'}
-                      </p>
+                  <div className="relative z-10 p-6">
+                    {/* Profile Header */}
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <ProfilePicture
+                          src={user?.profilePicture || user?.photoURL}
+                          alt={`${user?.displayName || 'Player'}'s profile picture`}
+                          size="lg"
+                          fallbackInitials={user?.displayName?.charAt(0)?.toUpperCase() || '?'}
+                        />
+                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-2 border-gray-800"></div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h2 className="text-white text-2xl font-semibold font-audiowide truncate">
+                          {user?.displayName || 'Player'}
+                        </h2>
+                        <p className="text-white/90 text-lg font-montserrat">Online</p>
+                        <p className="text-white/70 text-sm font-montserrat">
+                          Member since {user?.createdAt?.toLocaleDateString() || 'Unknown'}
+                        </p>
+                      </div>
                     </div>
                   </div>
+                </div>
 
+                {/* Victory Screen Section */}
+                <div className="relative bg-black/40 backdrop-blur-sm border-x border-gray-700/50 p-6" style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}>
+                  <h3 className="text-white text-lg font-audiowide uppercase mb-3">Victory Screen</h3>
+                  <div className="relative rounded-lg overflow-hidden" style={{ height: '200px' }}>
+                    <video
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full h-full object-cover"
+                    >
+                      <source src="/VictoryScreens/VictoryScreen1.mp4" type="video/mp4" />
+                    </video>
+                  </div>
+                </div>
+
+                {/* Match Decider Section */}
+                <div className="relative bg-black/40 backdrop-blur-sm border-x border-b border-gray-700/50 rounded-b-[20px] p-6" style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}>
+                  <h3 className="text-white text-lg font-audiowide uppercase mb-3">Match Decider</h3>
+                  <div className="relative rounded-lg overflow-hidden" style={{ height: '200px' }}>
+                    <video
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full h-full object-cover"
+                    >
+                      <source src="/WORLD/WORLD1.mp4" type="video/mp4" />
+                    </video>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Statistics Section - Now Separate Card */}
+              <motion.div 
+                className="relative overflow-hidden rounded-[20px] bg-black/40 backdrop-blur-sm border border-gray-700/50"
+                style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <div className="p-6">
                   {/* Statistics Grid - Friends Card Style */}
                   <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 -mx-4 md:-mx-4">
                     <h3 className="text-white text-xl font-audiowide mb-4 uppercase text-center md:text-left">Player Statistics</h3>
@@ -1206,6 +1252,36 @@ const ProfileSection: React.FC = () => {
               </motion.div>
             </div>
           )}
+        </div>
+
+        {/* Mobile Tab Navigation - Fixed Above Bottom Nav */}
+        <div className="md:hidden fixed bottom-[80px] left-0 right-0 bg-black/90 backdrop-blur-lg border-t border-gray-700/50 z-40 px-4 py-3">
+          <div className="flex items-center justify-center gap-4">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`tab-button profile-section-tab flex items-center justify-center gap-2 px-6 py-2.5 rounded-[18px] transition-all duration-300 ${
+                  activeTab === tab.id ? 'active' : ''
+                }`}
+                style={{
+                  border: activeTab === tab.id ? '2px solid #FFD700' : '2px solid rgba(255, 255, 255, 0.1)',
+                  background: activeTab === tab.id ? 'rgba(255, 215, 0, 0.1)' : 'transparent',
+                  boxShadow: activeTab === tab.id ? '0 0 15px rgba(255, 215, 0, 0.3)' : 'none',
+                }}
+              >
+                <span style={{
+                  color: activeTab === tab.id ? '#FFD700' : '#FFF',
+                  fontFamily: 'Audiowide', 
+                  fontSize: '14px', 
+                  fontWeight: 400, 
+                  textTransform: 'uppercase' 
+                }}>
+                  {tab.label}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </>
