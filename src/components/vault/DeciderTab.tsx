@@ -140,12 +140,8 @@ export default function DeciderTab() {
       {previewBackground && (
         <MobileBackgroundPreview
           background={previewBackground}
+          type="dashboard"
           onClose={() => setPreviewBackground(null)}
-          onEquip={() => {
-            handleEquipDecider(previewBackground);
-            setPreviewBackground(null);
-          }}
-          isEquipped={isEquippedDecider(previewBackground)}
         />
       )}
     </>

@@ -140,12 +140,8 @@ export default function VictoryTab() {
       {previewBackground && (
         <MobileBackgroundPreview
           background={previewBackground}
+          type="dashboard"
           onClose={() => setPreviewBackground(null)}
-          onEquip={() => {
-            handleEquipVictory(previewBackground);
-            setPreviewBackground(null);
-          }}
-          isEquipped={isEquippedVictory(previewBackground)}
         />
       )}
     </>
