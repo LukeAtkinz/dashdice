@@ -452,12 +452,10 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.3 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="fixed inset-0 flex items-center justify-center z-50"
+          className="fixed top-1/2 left-1/2 z-50"
           style={{
-            width: '100vw',
-            height: '100vh',
-            pointerEvents: 'none',
-            background: 'rgba(0, 0, 0, 0.5)'
+            transform: 'translate(-50%, -50%)',
+            pointerEvents: 'none'
           }}
         >
           {/* Giant Vertical Reel Dice Container */}

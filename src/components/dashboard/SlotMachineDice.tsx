@@ -394,7 +394,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   const hasAnyMultiplier = hasDoubleMultiplier || hasTripleMultiplier || hasQuadMultiplier;
   
   return (
-    <div className={`relative rounded-[30px] border overflow-hidden ${borderStyle}`}
+    <div className={`relative rounded-[30px] overflow-hidden ${isTurnDecider ? '' : `border ${borderStyle}`}`}
          style={{
            display: 'flex',
            height: 'clamp(150px, 35vw, 300px)', // Reduced from 50vw to 35vw for mobile
@@ -404,8 +404,8 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
            justifyContent: 'space-between',
            alignItems: 'center',
            alignSelf: 'stretch',
-           backdropFilter: 'blur(5px)',
-           background: backgroundStyle || undefined
+           backdropFilter: isTurnDecider ? 'none' : 'blur(5px)',
+           background: isTurnDecider ? 'transparent' : (backgroundStyle || undefined)
          }}>
       {shouldShowAnimation ? (
         // Conditional reel animation: VERTICAL for turn decider, HORIZONTAL for match
