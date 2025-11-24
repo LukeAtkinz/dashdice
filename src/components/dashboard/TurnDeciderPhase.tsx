@@ -452,9 +452,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.3 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="fixed top-1/2 left-1/2 z-50"
+          className="fixed inset-0 flex items-center justify-center z-50"
           style={{
-            transform: 'translate(-50%, -50%)',
             pointerEvents: 'none'
           }}
         >
@@ -462,7 +461,6 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           <div style={{
             width: 'min(95vw, 800px)',
             height: 'clamp(250px, 45vh, 450px)',
-            position: 'relative',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
