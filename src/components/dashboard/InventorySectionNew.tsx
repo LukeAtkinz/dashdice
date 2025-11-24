@@ -44,7 +44,7 @@ const rarityColors = {
 export const InventorySection: React.FC = () => {
   const { setCurrentSection, sectionParams } = useNavigation();
   const [selectedCategory, setSelectedCategory] = useState('vault');
-  const [vaultTab, setVaultTab] = useState<'power' | 'vibin' | 'flexin'>(
+  const [vaultTab, setVaultTab] = useState<'power' | 'vibin' | 'flexin' | 'decider' | 'victory'>(
     sectionParams.vaultTab || 'power'
   );
 

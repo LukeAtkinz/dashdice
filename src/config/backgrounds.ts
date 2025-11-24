@@ -94,6 +94,130 @@ export const AVAILABLE_BACKGROUNDS: Background[] = [
     description: 'Serene underwater scene with flowing currents',
     tags: ['animated', 'underwater', 'serene'],
     rarity: 'RARE'
+  },
+  
+  // ==================== TURN DECIDER BACKGROUNDS (7) ====================
+  {
+    id: 'arcade-assault',
+    name: 'Arcade Assault',
+    category: 'Videos',
+    description: 'Intense arcade action for turn decider',
+    tags: ['arcade', 'action', 'intense'],
+    rarity: 'RARE'
+  },
+  {
+    id: 'burning-the-wasteland',
+    name: 'Burning The Wasteland',
+    category: 'Videos',
+    description: 'Fiery wasteland for turn decider',
+    tags: ['fire', 'wasteland', 'intense'],
+    rarity: 'EPIC'
+  },
+  {
+    id: 'crazy-cough',
+    name: 'Crazy Cough',
+    category: 'Videos',
+    description: 'Wild and chaotic turn decider background',
+    tags: ['chaotic', 'wild', 'action'],
+    rarity: 'RARE'
+  },
+  {
+    id: 'from-the-deep',
+    name: 'From The Deep',
+    category: 'Videos',
+    description: 'Mysterious depths for turn decider',
+    tags: ['underwater', 'mysterious', 'deep'],
+    rarity: 'RARE'
+  },
+  {
+    id: 'into-inferno',
+    name: 'Into Inferno',
+    category: 'Videos',
+    description: 'Blazing inferno for turn decider',
+    tags: ['fire', 'inferno', 'intense'],
+    rarity: 'EPIC'
+  },
+  {
+    id: 'ivory-tower',
+    name: 'Ivory Tower',
+    category: 'Videos',
+    description: 'Majestic tower for turn decider',
+    tags: ['tower', 'majestic', 'elegant'],
+    rarity: 'LEGENDARY'
+  },
+  {
+    id: 'jump',
+    name: 'Jump',
+    category: 'Videos',
+    description: 'Dynamic jumping sequence for turn decider',
+    tags: ['action', 'jump', 'dynamic'],
+    rarity: 'RARE'
+  },
+  
+  // ==================== VICTORY SCREENS (8) ====================
+  {
+    id: 'clout-shot',
+    name: 'Clout Shot',
+    category: 'Videos',
+    description: 'Victory celebration with style',
+    tags: ['victory', 'celebration', 'style'],
+    rarity: 'EPIC'
+  },
+  {
+    id: 'great-white',
+    name: 'Great White',
+    category: 'Videos',
+    description: 'Powerful victory with great white energy',
+    tags: ['victory', 'powerful', 'ocean'],
+    rarity: 'LEGENDARY'
+  },
+  {
+    id: 'headshot',
+    name: 'Headshot',
+    category: 'Videos',
+    description: 'Precision victory screen',
+    tags: ['victory', 'precision', 'skill'],
+    rarity: 'EPIC'
+  },
+  {
+    id: 'lab-rat',
+    name: 'Lab Rat',
+    category: 'Videos',
+    description: 'Experimental victory screen',
+    tags: ['victory', 'experimental', 'unique'],
+    rarity: 'RARE'
+  },
+  {
+    id: 'meow',
+    name: 'Meow',
+    category: 'Videos',
+    description: 'Playful victory celebration',
+    tags: ['victory', 'playful', 'fun'],
+    rarity: 'RARE'
+  },
+  {
+    id: 'nightfall',
+    name: 'Nightfall',
+    category: 'Videos',
+    description: 'Dark and mysterious victory',
+    tags: ['victory', 'dark', 'mysterious'],
+    rarity: 'EPIC'
+  },
+  {
+    id: 'shadow-step',
+    name: 'Shadow Step',
+    category: 'Videos',
+    description: 'Stealthy victory screen',
+    tags: ['victory', 'stealth', 'shadow'],
+    rarity: 'EPIC'
+  },
+  {
+    id: 'wind-blade',
+    name: 'Wind Blade',
+    category: 'Videos',
+    description: 'Swift victory with wind blade',
+    tags: ['victory', 'swift', 'blade'],
+    rarity: 'LEGENDARY'
   }
 ];
 
@@ -145,6 +269,17 @@ export const buildBackgroundPath = (
   // Determine which folder to use
   let folder: string;
   let extension: string;
+  let baseFolder = 'backgrounds';
+  
+  // Check if it's a Turn Decider or Victory Screen background
+  const turnDeciderIds = ['arcade-assault', 'burning-the-wasteland', 'crazy-cough', 'from-the-deep', 'into-inferno', 'ivory-tower', 'jump'];
+  const victoryIds = ['clout-shot', 'great-white', 'headshot', 'lab-rat', 'meow', 'nightfall', 'shadow-step', 'wind-blade'];
+  
+  if (turnDeciderIds.includes(background.id)) {
+    baseFolder = 'backgrounds/Game Backgrounds/Turn Decider';
+  } else if (victoryIds.includes(background.id)) {
+    baseFolder = 'backgrounds/Game Backgrounds/Victory Screens';
+  }
   
   if (background.category === 'Videos') {
     if (forceImage) {
@@ -164,7 +299,7 @@ export const buildBackgroundPath = (
     extension = 'webp';
   }
   
-  return `/backgrounds/${folder}/${qualityFolder}/${background.name}.${extension}`;
+  return `/${baseFolder}/${folder}/${qualityFolder}/${background.name}.${extension}`;
 };
 
 /**
@@ -282,5 +417,32 @@ export const migrateLegacyBackground = (legacyRef: any): string => {
  */
 export const getAllBackgroundIds = (): string[] => {
   return AVAILABLE_BACKGROUNDS.map(bg => bg.id);
+};
+
+/**
+ * Get backgrounds for Vibin tab (display backgrounds)
+ */
+export const getVibinBackgrounds = (): Background[] => {
+  return AVAILABLE_BACKGROUNDS.filter(bg => 
+    ['as-they-fall', 'end-of-the-dragon', 'new-day', 'on-a-mission', 'underwater', 'long-road-ahead', 'relax'].includes(bg.id)
+  );
+};
+
+/**
+ * Get backgrounds for Turn Decider tab
+ */
+export const getTurnDeciderBackgrounds = (): Background[] => {
+  return AVAILABLE_BACKGROUNDS.filter(bg => 
+    ['arcade-assault', 'burning-the-wasteland', 'crazy-cough', 'from-the-deep', 'into-inferno', 'ivory-tower', 'jump'].includes(bg.id)
+  );
+};
+
+/**
+ * Get backgrounds for Victory Screen tab
+ */
+export const getVictoryBackgrounds = (): Background[] => {
+  return AVAILABLE_BACKGROUNDS.filter(bg => 
+    ['clout-shot', 'great-white', 'headshot', 'lab-rat', 'meow', 'nightfall', 'shadow-step', 'wind-blade'].includes(bg.id)
+  );
 };
 

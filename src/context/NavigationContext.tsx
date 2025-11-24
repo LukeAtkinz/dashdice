@@ -15,7 +15,7 @@ interface SectionParams {
   isOptimistic?: boolean; // Add flag for optimistic UI state
   isGuestMatch?: boolean; // Add flag for guest bot matches
   botOpponent?: any; // Add bot opponent data for guest matches
-  vaultTab?: 'power' | 'vibin' | 'flexin'; // Add vault tab for power loadout navigation
+  vaultTab?: 'power' | 'vibin' | 'flexin' | 'decider' | 'victory'; // Add vault tab for power loadout navigation
   topVideo?: string; // Add top World video URL for TurnDecider continuity
   bottomVideo?: string; // Add bottom World video URL for TurnDecider continuity
 }

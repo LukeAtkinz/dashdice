@@ -12,9 +12,14 @@ type Background = BackgroundType;
 interface BackgroundContextType {
   DisplayBackgroundEquip: Background | null;
   MatchBackgroundEquip: Background | null;
+  TurnDeciderBackgroundEquip: Background | null;
+  VictoryBackgroundEquip: Background | null;
   setDisplayBackgroundEquip: (background: Background | null) => void;
   setMatchBackgroundEquip: (background: Background | null) => void;
+  setTurnDeciderBackgroundEquip: (background: Background | null) => void;
+  setVictoryBackgroundEquip: (background: Background | null) => void;
   availableBackgrounds: Background[];
+  user: any;
 }
 
 const BackgroundContext = createContext<BackgroundContextType | undefined>(undefined);
@@ -96,6 +101,8 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
   // State for equipped backgrounds
   const [DisplayBackgroundEquip, setDisplayBackgroundEquipState] = useState<Background | null>(null);
   const [MatchBackgroundEquip, setMatchBackgroundEquipState] = useState<Background | null>(null);
+  const [TurnDeciderBackgroundEquip, setTurnDeciderBackgroundEquipState] = useState<Background | null>(null);
+  const [VictoryBackgroundEquip, setVictoryBackgroundEquipState] = useState<Background | null>(null);
 
   // Helper function to ensure background is a complete object
   const ensureCompleteBackgroundObject = (background: Background | string | any | null): Background | null => {
@@ -182,6 +189,62 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
     }
   };
 
+  const setTurnDeciderBackgroundEquip = async (background: Background | null) => {
+    try {
+      const completeBackground = ensureCompleteBackgroundObject(background);
+      setTurnDeciderBackgroundEquipState(completeBackground);
+      
+      if (user && completeBackground) {
+        console.log('BackgroundContext: Saving turn decider background to Firebase:', completeBackground);
+        const userRef = doc(db, 'users', user.uid);
+        
+        await updateDoc(userRef, {
+          'inventory.turnDeciderBackgroundEquipped': {
+            id: completeBackground.id,
+            name: completeBackground.name,
+            category: completeBackground.category,
+            rarity: completeBackground.rarity
+          }
+        });
+        
+        console.log('✅ Turn Decider background saved to Firebase successfully:', {
+          id: completeBackground.id,
+          name: completeBackground.name
+        });
+      }
+    } catch (error) {
+      console.error('❌ Error saving turn decider background to Firebase:', error);
+    }
+  };
+
+  const setVictoryBackgroundEquip = async (background: Background | null) => {
+    try {
+      const completeBackground = ensureCompleteBackgroundObject(background);
+      setVictoryBackgroundEquipState(completeBackground);
+      
+      if (user && completeBackground) {
+        console.log('BackgroundContext: Saving victory background to Firebase:', completeBackground);
+        const userRef = doc(db, 'users', user.uid);
+        
+        await updateDoc(userRef, {
+          'inventory.victoryBackgroundEquipped': {
+            id: completeBackground.id,
+            name: completeBackground.name,
+            category: completeBackground.category,
+            rarity: completeBackground.rarity
+          }
+        });
+        
+        console.log('✅ Victory background saved to Firebase successfully:', {
+          id: completeBackground.id,
+          name: completeBackground.name
+        });
+      }
+    } catch (error) {
+      console.error('❌ Error saving victory background to Firebase:', error);
+    }
+  };
+
   // Apply theme to document based on DisplayBackgroundEquip
   useEffect(() => {
     const theme = getThemeFromBackground(DisplayBackgroundEquip);
@@ -193,6 +256,8 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
     if (!user) {
       setDisplayBackgroundEquipState(null);
       setMatchBackgroundEquipState(null);
+      setTurnDeciderBackgroundEquipState(null);
+      setVictoryBackgroundEquipState(null);
       return;
     }
 
@@ -280,6 +345,66 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
         } else {
           setMatchBackgroundEquipState(null);
         }
+        
+        // Handle turn decider background (with default: crazy-cough)
+        const turnDeciderBgData = userData.inventory?.turnDeciderBackgroundEquipped;
+        if (turnDeciderBgData) {
+          if (typeof turnDeciderBgData === 'object' && turnDeciderBgData.id) {
+            const found = getBackgroundById(turnDeciderBgData.id);
+            if (found) {
+              setTurnDeciderBackgroundEquipState(found);
+              console.log('✅ Loaded turn decider background from Firebase:', found.name);
+            } else {
+              console.warn('⚠️ Turn Decider background ID not found:', turnDeciderBgData.id);
+              const defaultBg = getBackgroundById('crazy-cough');
+              setTurnDeciderBackgroundEquipState(defaultBg || null);
+            }
+          } else if (typeof turnDeciderBgData === 'string') {
+            const found = getBackgroundById(turnDeciderBgData);
+            if (found) setTurnDeciderBackgroundEquipState(found);
+            else {
+              const defaultBg = getBackgroundById('crazy-cough');
+              setTurnDeciderBackgroundEquipState(defaultBg || null);
+            }
+          } else {
+            const defaultBg = getBackgroundById('crazy-cough');
+            setTurnDeciderBackgroundEquipState(defaultBg || null);
+          }
+        } else {
+          // Set default if none equipped
+          const defaultBg = getBackgroundById('crazy-cough');
+          setTurnDeciderBackgroundEquipState(defaultBg || null);
+        }
+        
+        // Handle victory background (with default: wind-blade)
+        const victoryBgData = userData.inventory?.victoryBackgroundEquipped;
+        if (victoryBgData) {
+          if (typeof victoryBgData === 'object' && victoryBgData.id) {
+            const found = getBackgroundById(victoryBgData.id);
+            if (found) {
+              setVictoryBackgroundEquipState(found);
+              console.log('✅ Loaded victory background from Firebase:', found.name);
+            } else {
+              console.warn('⚠️ Victory background ID not found:', victoryBgData.id);
+              const defaultBg = getBackgroundById('wind-blade');
+              setVictoryBackgroundEquipState(defaultBg || null);
+            }
+          } else if (typeof victoryBgData === 'string') {
+            const found = getBackgroundById(victoryBgData);
+            if (found) setVictoryBackgroundEquipState(found);
+            else {
+              const defaultBg = getBackgroundById('wind-blade');
+              setVictoryBackgroundEquipState(defaultBg || null);
+            }
+          } else {
+            const defaultBg = getBackgroundById('wind-blade');
+            setVictoryBackgroundEquipState(defaultBg || null);
+          }
+        } else {
+          // Set default if none equipped
+          const defaultBg = getBackgroundById('wind-blade');
+          setVictoryBackgroundEquipState(defaultBg || null);
+        }
       }
     }, (error) => {
       console.error('BackgroundContext: Error listening to user data:', error);
@@ -340,9 +465,14 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
   const value: BackgroundContextType = {
     DisplayBackgroundEquip,
     MatchBackgroundEquip,
+    TurnDeciderBackgroundEquip,
+    VictoryBackgroundEquip,
     setDisplayBackgroundEquip,
     setMatchBackgroundEquip,
+    setTurnDeciderBackgroundEquip,
+    setVictoryBackgroundEquip,
     availableBackgrounds,
+    user,
   };
 
   return (
