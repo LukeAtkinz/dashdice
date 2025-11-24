@@ -311,10 +311,10 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           </motion.button>
 
           {/* VS Element or Dice - Centered */}
-          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30">
+          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30" style={{ width: 'min(90vw, 600px)' }}>
             {(diceAnimation.isSpinning || hasDice) ? (
               // Show slot machine dice animation (while spinning OR after result)
-              <div className="w-48 h-48 md:w-60 md:h-60 flex items-center justify-center">
+              <div className="w-full flex items-center justify-center">
                 <SlotMachineDice
                   diceNumber={'turnDecider' as any}
                   animationState={{
