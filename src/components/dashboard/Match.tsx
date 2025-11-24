@@ -1346,18 +1346,16 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
               >
                 {/* 🧢 HARD HAT INITIAL ANIMATION - Only visible to activating player */}
                 {showHardHatInitialCurrent && (
-                  <motion.div
-                    className="absolute inset-0 pointer-events-none z-50"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ zIndex: 9999 }}
                   >
                     <video
                       src="/Abilities/Animations/Hard Hat/Hard Hat Initial.webm"
                       onLoadStart={() => console.log('🧢 Video loading started')}
                       onCanPlay={() => console.log('🧢 Video can play')}
                       onPlay={() => console.log('🧢 Video started playing')}
+                      onError={(e) => console.error('🧢 Video error:', e)}
                       autoPlay
                       loop={false}
                       muted
@@ -1366,7 +1364,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
-                        borderRadius: '24px'
+                        borderRadius: '24px',
+                        opacity: 1
                       }}
                       onTimeUpdate={(e) => {
                         const video = e.target as HTMLVideoElement;
@@ -1381,17 +1380,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
                         setShowHardHatInitialCurrent(false);
                       }}
                     />
-                  </motion.div>
+                  </div>
                 )}
                 
                 {/* 🧢 HARD HAT USED ANIMATION - Visible to both players */}
                 {showHardHatUsedCurrent && (
-                  <motion.div
-                    className="absolute inset-0 pointer-events-none z-50"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ zIndex: 9999 }}
                   >
                     <video
                       src="/Abilities/Animations/Hard Hat/Hard Hat Used.webm"
@@ -1403,10 +1399,16 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
-                        borderRadius: '24px'
+                        borderRadius: '24px',
+                        opacity: 1
+                      }}
+                      onEnded={() => {
+                        console.log('🧢 Hard Hat Used animation ended');
+                        setShowHardHatUsedCurrent(false);
+                        setHardHatWhiteBorderCurrent(false);
                       }}
                     />
-                  </motion.div>
+                  </div>
                 )}
                 
                 {/* Player Background */}
@@ -1651,12 +1653,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
               >
                 {/* 🧢 HARD HAT USED ANIMATION - Visible to both players when opponent's Hard Hat triggers */}
                 {showHardHatUsedOpponent && (
-                  <motion.div
-                    className="absolute inset-0 pointer-events-none z-50"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ zIndex: 9999 }}
                   >
                     <video
                       src="/Abilities/Animations/Hard Hat/Hard Hat Used.webm"
@@ -1668,10 +1667,16 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
-                        borderRadius: '24px'
+                        borderRadius: '24px',
+                        opacity: 1
+                      }}
+                      onEnded={() => {
+                        console.log('🧢 Opponent Hard Hat Used animation ended');
+                        setShowHardHatUsedOpponent(false);
+                        setHardHatWhiteBorderOpponent(false);
                       }}
                     />
-                  </motion.div>
+                  </div>
                 )}
                 
                 {/* Player Background */}
