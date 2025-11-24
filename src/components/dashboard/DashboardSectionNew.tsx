@@ -18,6 +18,7 @@ import { CompactLeaderboard } from '@/components/ranked/Leaderboard';
 import { CompactProgressionDisplay } from '@/components/ranked/ProgressionDisplay';
 import { AlreadyInMatchNotification } from '@/components/notifications/AlreadyInMatchNotification';
 import { GameModeIcon } from '@/components/ui/OptimizedImage';
+import { getBackgroundById } from '@/config/backgrounds';
 import { db } from '@/services/firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
 
@@ -218,13 +219,15 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
 
   // Get background-specific game mode selector styling
   const getGameModeSelectorBackground = () => {
-    switch (DisplayBackgroundEquip?.name) {
-      case 'Relax':
+    // Get background by ID (handles migration internally)
+    const backgroundId = DisplayBackgroundEquip?.id || DisplayBackgroundEquip?.name;
+    const background = backgroundId ? getBackgroundById(backgroundId) : null;
+    
+    switch (background?.id) {
+      case 'relax':
         return 'rgba(37, 37, 37, 0.6)';
-      case 'New Day':
+      case 'new-day':
         return 'linear-gradient(135deg, #192E39, transparent)';
-      case 'All For Glory':
-        return 'linear-gradient(135deg, #CC2E2E, transparent)';
       default:
         return 'var(--ui-game-mode-bg, linear-gradient(rgba(37, 37, 37, 0.12), rgba(37, 37, 37, 0.12)), linear-gradient(242.59deg, #192e39 30%, rgba(153, 153, 153, 0)))';
     }
@@ -232,10 +235,11 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
 
   // Get background-specific Live Play button styling
   const getLivePlayButtonBackground = () => {
-    switch (DisplayBackgroundEquip?.name) {
-      case 'All For Glory':
-        return '#2a2a2a'; // Off-black, lighter than straight black
-      case 'Relax':
+    const backgroundId = DisplayBackgroundEquip?.id || DisplayBackgroundEquip?.name;
+    const background = backgroundId ? getBackgroundById(backgroundId) : null;
+    
+    switch (background?.id) {
+      case 'relax':
         return '#3c5822'; // Specific green color
       default:
         return 'var(--ui-background-container)';

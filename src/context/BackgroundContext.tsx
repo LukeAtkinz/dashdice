@@ -4,12 +4,10 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useAuth } from './AuthContext';
 import { doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '@/services/firebase';
+import { AVAILABLE_BACKGROUNDS, getBackgroundById, migrateLegacyBackground, type Background as BackgroundType } from '@/config/backgrounds';
 
-interface Background {
-  name: string;
-  file: string;
-  type: 'image' | 'video';
-}
+// Use the Background type from the new background system
+type Background = BackgroundType;
 
 interface BackgroundContextType {
   DisplayBackgroundEquip: Background | null;
@@ -36,17 +34,8 @@ interface BackgroundProviderProps {
 export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children }) => {
   const { user } = useAuth();
   
-  // Available backgrounds from the reference
-  const availableBackgrounds: Background[] = [
-    { name: "All For Glory", file: "/backgrounds/All For Glory.jpg", type: "image" },
-    { name: "New Day", file: "/backgrounds/New Day.mp4", type: "video" },
-    { name: "On A Mission", file: "/backgrounds/On A Mission.mp4", type: "video" },
-    { name: "Relax", file: "/backgrounds/Relax.png", type: "image" },
-    { name: "Underwater", file: "/backgrounds/Underwater.mp4", type: "video" },
-    { name: "Long Road Ahead", file: "/backgrounds/Long Road Ahead.jpg", type: "image" },
-    { name: "As They Fall", file: "/backgrounds/As they fall.mp4", type: "video" },
-    { name: "End Of The Dragon", file: "/backgrounds/End of the Dragon.mp4", type: "video" }
-  ];
+  // Use new background system (imported from backgrounds.ts)
+  const availableBackgrounds = AVAILABLE_BACKGROUNDS;
 
   // Helper function to find background by item ID from inventory
   const findBackgroundByItemId = (itemId: string, inventory: any[]): Background | null => {
@@ -59,9 +48,13 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
     
     if (!item) return null;
     
-    const foundBackground = availableBackgrounds.find(bg => bg.name === item.name);
+    // Migrate legacy name to ID, then find background
+    const backgroundId = migrateLegacyBackground(item.name);
+    const foundBackground = getBackgroundById(backgroundId);
+    
     console.log('BackgroundContext: Found background match', {
       itemName: item.name,
+      migratedId: backgroundId,
       foundBackground
     });
     
@@ -70,49 +63,34 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
 
   // Helper function to find background by name/ID
   const findBackgroundByName = (backgroundId: string): Background | null => {
-    // Try to find by exact name match first
-    let background = availableBackgrounds.find(bg => 
-      bg.name.toLowerCase().replace(/\s+/g, '-') === backgroundId
-    );
-    
-    // If not found, try by name directly
-    if (!background) {
-      background = availableBackgrounds.find(bg => 
-        bg.name.toLowerCase() === backgroundId.toLowerCase()
-      );
-    }
-    
-    // If still not found, try without spaces/dashes
-    if (!background) {
-      background = availableBackgrounds.find(bg => 
-        bg.name.toLowerCase().replace(/[\s-]/g, '') === backgroundId.toLowerCase().replace(/[\s-]/g, '')
-      );
-    }
+    // Migrate legacy references (handles "All For Glory", "Neon City", etc.)
+    const migratedId = migrateLegacyBackground(backgroundId);
+    const background = getBackgroundById(migratedId);
     
     console.log('BackgroundContext: findBackgroundByName', {
       backgroundId,
+      migratedId,
       found: background
     });
     
     return background || null;
   };
 
-  // Theme mapping for backgrounds
+  // Theme mapping for backgrounds (uses new IDs)
   const getThemeFromBackground = (background: Background | null): string => {
     if (!background) return 'default';
     
     const themeMap: Record<string, string> = {
-      'New Day': 'new-day',
-      'On A Mission': 'on-a-mission', 
-      'Underwater': 'underwater',
-      'Relax': 'relax',
-      'All For Glory': 'all-for-glory',
-      'Long Road Ahead': 'long-road-ahead',
-      'As They Fall': 'long-road-ahead',
-      'End Of The Dragon': 'long-road-ahead'
+      'new-day': 'new-day',
+      'on-a-mission': 'on-a-mission', 
+      'underwater': 'underwater',
+      'relax': 'relax',
+      'long-road-ahead': 'long-road-ahead',
+      'as-they-fall': 'long-road-ahead',
+      'end-of-the-dragon': 'long-road-ahead'
     };
     
-    return themeMap[background.name] || 'default';
+    return themeMap[background.id] || 'default';
   };
 
   // State for equipped backgrounds
@@ -120,12 +98,18 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
   const [MatchBackgroundEquip, setMatchBackgroundEquipState] = useState<Background | null>(null);
 
   // Helper function to ensure background is a complete object
-  const ensureCompleteBackgroundObject = (background: Background | string | null): Background | null => {
+  const ensureCompleteBackgroundObject = (background: Background | string | any | null): Background | null => {
     if (!background) return null;
     
-    // If it's already a complete object, return it
-    if (typeof background === 'object' && background.name && background.file && background.type) {
-      return background;
+    // If it's already a new Background object (has id field), return it
+    if (typeof background === 'object' && background.id) {
+      const bg = getBackgroundById(background.id);
+      return bg || null;
+    }
+    
+    // If it's a legacy object (has name/file/type), migrate it
+    if (typeof background === 'object' && background.name) {
+      return findBackgroundByName(background.name);
     }
     
     // If it's a string, try to find the complete object
@@ -148,19 +132,19 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
         console.log('BackgroundContext: Saving display background to Firebase:', completeBackground);
         const userRef = doc(db, 'users', user.uid);
         
-        // Save only to the inventory.displayBackgroundEquipped field
+        // Save using new Background System V2.0 format (ID only)
         await updateDoc(userRef, {
           'inventory.displayBackgroundEquipped': {
+            id: completeBackground.id,
             name: completeBackground.name,
-            file: completeBackground.file,
-            type: completeBackground.type
+            category: completeBackground.category,
+            rarity: completeBackground.rarity
           }
         });
         
         console.log('✅ Display background saved to Firebase successfully:', {
-          name: completeBackground.name,
-          file: completeBackground.file,
-          type: completeBackground.type
+          id: completeBackground.id,
+          name: completeBackground.name
         });
       }
     } catch (error) {
@@ -178,19 +162,19 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
         console.log('BackgroundContext: Saving match background to Firebase:', completeBackground);
         const userRef = doc(db, 'users', user.uid);
         
-        // Save only to the inventory.matchBackgroundEquipped field
+        // Save using new Background System V2.0 format (ID only)
         await updateDoc(userRef, {
           'inventory.matchBackgroundEquipped': {
+            id: completeBackground.id,
             name: completeBackground.name,
-            file: completeBackground.file,
-            type: completeBackground.type
+            category: completeBackground.category,
+            rarity: completeBackground.rarity
           }
         });
         
         console.log('✅ Match background saved to Firebase successfully:', {
-          name: completeBackground.name,
-          file: completeBackground.file,
-          type: completeBackground.type
+          id: completeBackground.id,
+          name: completeBackground.name
         });
       }
     } catch (error) {
@@ -277,7 +261,9 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
       if (savedDisplayBackground) {
         try {
           const parsed = JSON.parse(savedDisplayBackground);
-          const found = availableBackgrounds.find(bg => bg.file === parsed.file);
+          // Migrate legacy format to new ID-based system
+          const backgroundId = migrateLegacyBackground(parsed.id || parsed.name || parsed.file);
+          const found = getBackgroundById(backgroundId);
           if (found) setDisplayBackgroundEquipState(found);
         } catch (error) {
           console.error('Error loading saved display background:', error);
@@ -287,7 +273,9 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
       if (savedMatchBackground) {
         try {
           const parsed = JSON.parse(savedMatchBackground);
-          const found = availableBackgrounds.find(bg => bg.file === parsed.file);
+          // Migrate legacy format to new ID-based system
+          const backgroundId = migrateLegacyBackground(parsed.id || parsed.name || parsed.file);
+          const found = getBackgroundById(backgroundId);
           if (found) setMatchBackgroundEquipState(found);
         } catch (error) {
           console.error('Error loading saved match background:', error);

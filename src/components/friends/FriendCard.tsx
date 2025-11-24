@@ -13,6 +13,7 @@ import { useBackground } from '@/context/BackgroundContext';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { ProfilePicture } from '@/components/ui/ProfilePicture';
 import { usePlayerCardBackground } from '@/hooks/useOptimizedBackground';
+import { resolveBackgroundPath, migrateLegacyBackground } from '@/config/backgrounds';
 
 // Game mode icon mapping
 const getGameModeIcon = (gameType: string): string => {
@@ -50,29 +51,14 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
       
       // Handle complete background objects with name, file, and type
       if (typeof background === 'object' && background.file && background.type) {
-        // For video backgrounds, we need to return empty style object since videos are handled separately
-        if (background.type === 'video') {
-          return {}; // Videos will be handled in JSX with <video> element
-        }
+        // For video backgrounds, friend cards should use static images (Video Images)
+        // Migrate the background ID and resolve as image
+        const backgroundId = migrateLegacyBackground(background.name || background.file);
+        const resolved = resolveBackgroundPath(backgroundId, 'friend-card'); // Always returns images
         
-        // For image backgrounds - fix path handling
-        if (background.type === 'image' && background.file) {
-          let backgroundPath = background.file;
-          
-          // Fix common background paths
-          if (backgroundPath === 'All For Glory.jpg' || backgroundPath === '/backgrounds/All For Glory.jpg') {
-            backgroundPath = '/backgrounds/All For Glory.jpg';
-          } else if (backgroundPath === 'Long Road Ahead.jpg' || backgroundPath === '/backgrounds/Long Road Ahead.jpg') {
-            backgroundPath = '/backgrounds/Long Road Ahead.jpg';
-          } else if (backgroundPath === 'Relax.png' || backgroundPath === '/backgrounds/Relax.png') {
-            backgroundPath = '/backgrounds/Relax.png';
-          } else if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
-            // If it's a filename without path, prepend /backgrounds/
-            backgroundPath = `/backgrounds/${backgroundPath}`;
-          }
-          
+        if (resolved) {
           return {
-            backgroundImage: `url("${backgroundPath}")`,
+            backgroundImage: `url("${resolved.path}")`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
@@ -86,21 +72,31 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
       // Legacy support: Handle string URLs or background objects with different structure
       const backgroundUrl = typeof background === 'string' ? background : background?.file;
       if (backgroundUrl && typeof backgroundUrl === 'string') {
-        let backgroundPath = backgroundUrl;
+        const backgroundId = migrateLegacyBackground(backgroundUrl);
+        const resolved = resolveBackgroundPath(backgroundId, 'friend-card');
         
-        // Fix common background paths for legacy format
-        if (backgroundPath === 'All For Glory.jpg' || backgroundPath === '/backgrounds/All For Glory.jpg') {
-          backgroundPath = '/backgrounds/All For Glory.jpg';
-        } else if (backgroundPath === 'Long Road Ahead.jpg' || backgroundPath === '/backgrounds/Long Road Ahead.jpg') {
-          backgroundPath = '/backgrounds/Long Road Ahead.jpg';
-        } else if (backgroundPath === 'Relax.png' || backgroundPath === '/backgrounds/Relax.png') {
-          backgroundPath = '/backgrounds/Relax.png';
-        } else if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
-          backgroundPath = `/backgrounds/${backgroundPath}`;
+        if (resolved) {
+          return {
+            backgroundImage: `url("${resolved.path}")`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            WebkitBackgroundSize: 'cover',
+            MozBackgroundSize: 'cover',
+            backgroundAttachment: 'scroll'
+          };
         }
-        
+      }
+    }
+    
+    // Fallback: Check legacy equippedBackground field
+    if (friendData?.equippedBackground && typeof friendData.equippedBackground === 'string') {
+      const backgroundId = migrateLegacyBackground(friendData.equippedBackground);
+      const resolved = resolveBackgroundPath(backgroundId, 'friend-card');
+      
+      if (resolved) {
         return {
-          backgroundImage: `url("${backgroundPath}")`,
+          backgroundImage: `url("${resolved.path}")`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -109,32 +105,6 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
           backgroundAttachment: 'scroll'
         };
       }
-    }
-    
-    // Fallback: Check legacy equippedBackground field
-    if (friendData?.equippedBackground && typeof friendData.equippedBackground === 'string') {
-      let backgroundPath = friendData.equippedBackground;
-      
-      // Fix paths for legacy equippedBackground
-      if (backgroundPath === 'All For Glory.jpg' || backgroundPath === '/backgrounds/All For Glory.jpg') {
-        backgroundPath = '/backgrounds/All For Glory.jpg';
-      } else if (backgroundPath === 'Long Road Ahead.jpg' || backgroundPath === '/backgrounds/Long Road Ahead.jpg') {
-        backgroundPath = '/backgrounds/Long Road Ahead.jpg';
-      } else if (backgroundPath === 'Relax.png' || backgroundPath === '/backgrounds/Relax.png') {
-        backgroundPath = '/backgrounds/Relax.png';
-      } else if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
-        backgroundPath = `/backgrounds/${backgroundPath}`;
-      }
-      
-      return {
-        backgroundImage: `url("${backgroundPath}")`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        WebkitBackgroundSize: 'cover',
-        MozBackgroundSize: 'cover',
-        backgroundAttachment: 'scroll'
-      };
     }
     
     // Final fallback: Check if they have any background in their inventory array
@@ -143,28 +113,20 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
         item && typeof item === 'object' && item.type === 'background'
       );
       if (backgroundItem?.imageUrl && typeof backgroundItem.imageUrl === 'string') {
-        let backgroundPath = backgroundItem.imageUrl;
+        const backgroundId = migrateLegacyBackground(backgroundItem.imageUrl);
+        const resolved = resolveBackgroundPath(backgroundId, 'friend-card');
         
-        // Fix paths for inventory backgrounds
-        if (backgroundPath === 'All For Glory.jpg' || backgroundPath === '/backgrounds/All For Glory.jpg') {
-          backgroundPath = '/backgrounds/All For Glory.jpg';
-        } else if (backgroundPath === 'Long Road Ahead.jpg' || backgroundPath === '/backgrounds/Long Road Ahead.jpg') {
-          backgroundPath = '/backgrounds/Long Road Ahead.jpg';
-        } else if (backgroundPath === 'Relax.png' || backgroundPath === '/backgrounds/Relax.png') {
-          backgroundPath = '/backgrounds/Relax.png';
-        } else if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
-          backgroundPath = `/backgrounds/${backgroundPath}`;
+        if (resolved) {
+          return {
+            backgroundImage: `url("${resolved.path}")`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            WebkitBackgroundSize: 'cover',
+            MozBackgroundSize: 'cover',
+            backgroundAttachment: 'scroll'
+          };
         }
-        
-        return {
-          backgroundImage: `url("${backgroundPath}")`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          WebkitBackgroundSize: 'cover',
-          MozBackgroundSize: 'cover',
-          backgroundAttachment: 'scroll'
-        };
       }
     }
     
