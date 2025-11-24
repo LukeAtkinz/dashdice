@@ -546,9 +546,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
       // Handle Hard Hat ability - trigger initial animation immediately from callback
       if (effect.abilityId === 'hard_hat') {
         console.log('🧢 Hard Hat ability activated via callback - triggering initial animation');
+        console.log('🧢 Setting showHardHatInitialCurrent to TRUE');
         setShowHardHatInitialCurrent(true);
-        
-        showToast('🧢 Hard Hat activated! Next opponent ability will be blocked.', 'success', 3000);
+        console.log('🧢 State update called - animation should start');
         
         return;
       }
@@ -1355,6 +1355,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
                   >
                     <video
                       src="/Abilities/Animations/Hard Hat/Hard Hat Initial.webm"
+                      onLoadStart={() => console.log('🧢 Video loading started')}
+                      onCanPlay={() => console.log('🧢 Video can play')}
+                      onPlay={() => console.log('🧢 Video started playing')}
                       autoPlay
                       loop={false}
                       muted
