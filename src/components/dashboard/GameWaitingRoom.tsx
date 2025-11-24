@@ -2984,7 +2984,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               bottom: window.innerWidth < 768 ? '20px' : '40px',
               left: '50%',
               transform: 'translateX(-50%)',
-              zIndex: 200
+              zIndex: 200,
+              width: window.innerWidth < 768 ? '100%' : 'auto',
+              display: 'flex',
+              justifyContent: 'center',
+              paddingLeft: window.innerWidth < 768 ? '20px' : '0',
+              paddingRight: window.innerWidth < 768 ? '20px' : '0'
             }}
           >
             <button
@@ -3007,7 +3012,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 opacity: (vsCountdown !== null || isLeaving) ? 0.5 : 1,
                 textTransform: 'uppercase',
                 transition: 'all 0.3s ease',
-                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)'
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+                width: window.innerWidth < 768 ? 'auto' : 'auto'
               }}
               onMouseEnter={(e) => {
                 if (vsCountdown === null && !isLeaving) {
@@ -3022,7 +3028,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 }
               }}
             >
-              {isLeaving ? 'Leaving...' : 'Leave Game'}
+              {isLeaving ? 'Leaving...' : 'Leave'}
             </button>
           </motion.div>
         )}

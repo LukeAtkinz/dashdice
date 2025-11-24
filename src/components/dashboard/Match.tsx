@@ -543,6 +543,16 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
         return;
       }
       
+      // Handle Hard Hat ability - trigger initial animation immediately from callback
+      if (effect.abilityId === 'hard_hat') {
+        console.log('🧢 Hard Hat ability activated via callback - triggering initial animation');
+        setShowHardHatInitialCurrent(true);
+        
+        showToast('🧢 Hard Hat activated! Next opponent ability will be blocked.', 'success', 3000);
+        
+        return;
+      }
+      
       // Handle other ability effects here
       console.log('Other ability effects not yet implemented');
       
@@ -1183,6 +1193,58 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
 
   return (
     <div suppressHydrationWarning>
+      {/* Static Background Layer - Videos persist across all phases */}
+      <div style={{ 
+        position: 'fixed', 
+        inset: 0, 
+        width: '100%', 
+        height: '100vh', 
+        background: '#FFFFFF',
+        zIndex: 0
+      }}>
+        {/* Top Video Background - 50% height */}
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '50%', overflow: 'hidden' }}>
+          {topVideo && (
+            <video 
+              src={topVideo} 
+              autoPlay 
+              loop 
+              muted 
+              playsInline 
+              preload="auto"
+              style={{ 
+                position: 'absolute', 
+                inset: 0, 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'cover' 
+              }}
+            />
+          )}
+        </div>
+        
+        {/* Bottom Video Background - 50% height */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '50%', overflow: 'hidden' }}>
+          {bottomVideo && (
+            <video 
+              src={bottomVideo} 
+              autoPlay 
+              loop 
+              muted 
+              playsInline 
+              preload="auto"
+              style={{ 
+                position: 'absolute', 
+                inset: 0, 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'cover' 
+              }}
+            />
+          )}
+        </div>
+      </div>
+
       {/* Match Abandonment Notification */}
       {showAbandonmentNotification && (
         <MatchAbandonmentNotification
@@ -1233,7 +1295,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className={`w-full h-screen match-container ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-start md:justify-center px-2`}
-        style={{ position: 'relative', left: 0, top: 0, transform: 'none' }}
+        style={{ position: 'relative', left: 0, top: 0, transform: 'none', zIndex: 10 }}
       >
         {/* Game Arena */}
         <div className="w-[90vw] mx-auto flex items-center justify-center" style={{ position: 'relative' }}>

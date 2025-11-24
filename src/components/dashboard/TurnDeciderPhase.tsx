@@ -233,41 +233,6 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
 
   return (
     <>
-      {/* Static Background Layer - Videos and White BG */}
-      <div className="fixed inset-0 w-full h-full bg-white" style={{ zIndex: 0 }}>
-        {/* Top Video Background - 50% height */}
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '50%', overflow: 'hidden' }}>
-          {topVideo && (
-            <video 
-              src={topVideo} 
-              autoPlay 
-              loop 
-              muted 
-              playsInline 
-              preload="auto"
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ height: '720px', maxHeight: '50vh' }}
-            />
-          )}
-        </div>
-        
-        {/* Bottom Video Background - 50% height */}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '50%', overflow: 'hidden' }}>
-          {bottomVideo && (
-            <video 
-              src={bottomVideo} 
-              autoPlay 
-              loop 
-              muted 
-              playsInline 
-              preload="auto"
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ height: '720px', maxHeight: '50vh' }}
-            />
-          )}
-        </div>
-      </div>
-
       {/* Animated Content Layer - Swipes over static backgrounds */}
       <motion.div
         initial={{ x: '100%' }}
