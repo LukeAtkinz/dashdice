@@ -78,12 +78,6 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   const [showVitalRushTopDice, setShowVitalRushTopDice] = useState(false);
   const [showVitalRushBottomDice, setShowVitalRushBottomDice] = useState(false);
   
-  // State for Hard Hat animation
-  const [showHardHatInitial, setShowHardHatInitial] = useState(false);
-  const [hardHatWhiteBorder, setHardHatWhiteBorder] = useState(false);
-  const [showHardHatUsed, setShowHardHatUsed] = useState(false);
-  const [hardHatUsedOnPlayer, setHardHatUsedOnPlayer] = useState<'current' | 'opponent' | null>(null);
-  
   // Wrapped ability handler to detect Aura Forge and Vital Rush activation
   const handleAbilityUsed = useCallback((effect: any) => {
     // Check if this is Aura Forge activation
@@ -116,13 +110,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         setShowVitalRushBottomDice(true);
       }, 800);
     }
-    // Check if this is Hard Hat activation (defensive ability)
-    else if (effect?.abilityId === 'hard_hat' || effect?.ability?.id === 'hard_hat') {
-      console.log('🧢 Hard Hat activated - showing initial animation and border');
-      setShowHardHatInitial(true);
-    }
     else {
-      // Pass through to parent handler
+      // Pass through to parent handler (including Hard Hat which is handled in Match.tsx)
       if (onAbilityUsed) {
         onAbilityUsed(effect);
       }
@@ -225,45 +214,6 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
       }
     }
   }, [matchData.gameData.turnScore, isMyTurn, vitalRushActive]);
-  
-  // Monitor for Hard Hat trigger (when opponent uses an ability while Hard Hat is active)
-  useEffect(() => {
-    if (!matchData.gameData?.activeEffects || !user) return;
-    
-    // Check if current user has Hard Hat active
-    const currentUserEffects = matchData.gameData.activeEffects[user.uid];
-    const hasHardHat = currentUserEffects?.some(effect => 
-      effect.abilityId === 'hard_hat' || effect.effectId?.includes('hard_hat')
-    );
-    
-    // If Hard Hat was active but is now gone, it was used - show Used animation
-    if (hardHatWhiteBorder && !hasHardHat) {
-      console.log('🧢 Hard Hat triggered - showing Used animation');
-      setShowHardHatUsed(true);
-      setHardHatUsedOnPlayer('current');
-      setHardHatWhiteBorder(false); // Remove border
-      
-      // Clear after animation completes
-      setTimeout(() => {
-        setShowHardHatUsed(false);
-        setHardHatUsedOnPlayer(null);
-      }, 2000);
-    }
-    
-    // Check if opponent has Hard Hat active and it was just triggered
-    const opponentId = Object.keys(matchData.gameData.activeEffects).find(id => id !== user.uid);
-    if (opponentId) {
-      const opponentEffects = matchData.gameData.activeEffects[opponentId];
-      const opponentHasHardHat = opponentEffects?.some(effect => 
-        effect.abilityId === 'hard_hat' || effect.effectId?.includes('hard_hat')
-      );
-      
-      // If we just used an ability and opponent's Hard Hat disappeared, show Used animation on opponent
-      if (!opponentHasHardHat && showHardHatUsed === false) {
-        // This will be detected by the opponent's client, not this one
-      }
-    }
-  }, [matchData.gameData?.activeEffects, hardHatWhiteBorder, user, showHardHatUsed]);
 
   // Handle bank/save with animation
   const handleBankScore = () => {
