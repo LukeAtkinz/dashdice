@@ -21,7 +21,8 @@ import { useMatchBackground } from '@/hooks/useOptimizedBackground';
 import { MatchChatFeed } from '@/components/match/MatchChatFeed';
 import { MatchVoiceButton } from '@/components/match/MatchVoiceButton';
 import { useMatchChat } from '@/context/MatchChatContext';
-import { getBackgroundById } from '@/config/backgrounds';
+import { getBackgroundById, resolveBackgroundPath } from '@/config/backgrounds';
+import { useBackground } from '@/context/BackgroundContext';
 
 interface MatchProps {
   gameMode?: string;
@@ -43,6 +44,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
   const { user } = useAuth();
   const { setCurrentSection, isGameOver, setIsGameOver } = useNavigation();
   const { showToast } = useToast();
+  const { DisplayBackgroundEquip } = useBackground(); // Get user's Vibin background
   const { initializeChat, endChat, clearChat, sendMessage, muteState, session } = useMatchChat();
   // Legacy achievement system - temporarily disabled to prevent concurrent updates
   // const { recordGameCompletion } = useGameAchievements();
@@ -1212,56 +1214,64 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
 
   return (
     <div suppressHydrationWarning>
-      {/* Static Background Layer - Videos persist across all phases */}
+      {/* Static Background Layer - User's Vibin (Display) background */}
       <div style={{ 
         position: 'fixed', 
         inset: 0, 
         width: '100%', 
         height: '100vh', 
-        background: '#FFFFFF',
+        background: '#000000',
         zIndex: 0
       }}>
-        {/* Top Video Background - 50% height */}
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '50%', overflow: 'hidden' }}>
-          {topVideo && (
-            <video 
-              src={topVideo} 
-              autoPlay 
-              loop 
-              muted 
-              playsInline 
-              preload="auto"
-              style={{ 
-                position: 'absolute', 
-                inset: 0, 
-                width: '100%', 
-                height: '100%', 
-                objectFit: 'cover' 
-              }}
-            />
-          )}
-        </div>
-        
-        {/* Bottom Video Background - 50% height */}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '50%', overflow: 'hidden' }}>
-          {bottomVideo && (
-            <video 
-              src={bottomVideo} 
-              autoPlay 
-              loop 
-              muted 
-              playsInline 
-              preload="auto"
-              style={{ 
-                position: 'absolute', 
-                inset: 0, 
-                width: '100%', 
-                height: '100%', 
-                objectFit: 'cover' 
-              }}
-            />
-          )}
-        </div>
+        {(() => {
+          // Use user's Display (Vibin) background for match arena
+          if (DisplayBackgroundEquip) {
+            const resolved = resolveBackgroundPath(DisplayBackgroundEquip.id, 'dashboard-display');
+            if (resolved) {
+              if (resolved.type === 'video') {
+                return (
+                  <video 
+                    src={resolved.path}
+                    autoPlay 
+                    loop 
+                    muted 
+                    playsInline 
+                    preload="auto"
+                    style={{ 
+                      position: 'absolute', 
+                      inset: 0, 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover' 
+                    }}
+                  />
+                );
+              } else {
+                return (
+                  <img
+                    src={resolved.path}
+                    alt="Match Background"
+                    style={{ 
+                      position: 'absolute', 
+                      inset: 0, 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover' 
+                    }}
+                  />
+                );
+              }
+            }
+          }
+          // Fallback gradient if no background
+          return (
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'radial-gradient(50% 50% at 50% 50%, rgba(120, 119, 198, 0.30) 0%, rgba(255, 255, 255, 0.00) 100%), linear-gradient(180deg, #3533CD 0%, #7209B7 100%)'
+            }} />
+          );
+        })()}
       </div>
 
       {/* Match Abandonment Notification */}
