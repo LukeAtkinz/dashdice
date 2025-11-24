@@ -275,9 +275,12 @@ export const buildBackgroundPath = (
   const turnDeciderIds = ['arcade-assault', 'burning-the-wasteland', 'crazy-cough', 'from-the-deep', 'into-inferno', 'ivory-tower', 'jump'];
   const victoryIds = ['clout-shot', 'great-white', 'headshot', 'lab-rat', 'meow', 'nightfall', 'shadow-step', 'wind-blade'];
   
-  if (turnDeciderIds.includes(background.id)) {
+  const isTurnDecider = turnDeciderIds.includes(background.id);
+  const isVictory = victoryIds.includes(background.id);
+  
+  if (isTurnDecider) {
     baseFolder = 'backgrounds/Game Backgrounds/Turn Decider';
-  } else if (victoryIds.includes(background.id)) {
+  } else if (isVictory) {
     baseFolder = 'backgrounds/Game Backgrounds/Victory Screens';
   }
   
@@ -287,11 +290,18 @@ export const buildBackgroundPath = (
       folder = 'Video Images';
       extension = 'webp';
     } else {
-      // Use actual video
-      folder = 'Videos';
-      extension = 'mp4';
-      // Videos don't have Low Quality
-      if (quality === 'low') quality = 'medium';
+      // Use actual video - Game Backgrounds don't have a Videos subfolder
+      if (isTurnDecider || isVictory) {
+        folder = ''; // No Videos subfolder for Game Backgrounds
+        extension = 'mp4';
+        // Videos don't have Low Quality
+        if (quality === 'low') quality = 'medium';
+      } else {
+        folder = 'Videos';
+        extension = 'mp4';
+        // Videos don't have Low Quality
+        if (quality === 'low') quality = 'medium';
+      }
     }
   } else {
     // Images category
@@ -299,7 +309,12 @@ export const buildBackgroundPath = (
     extension = 'webp';
   }
   
-  return `/${baseFolder}/${folder}/${qualityFolder}/${background.name}.${extension}`;
+  // Construct path - handle empty folder for Game Backgrounds
+  if (folder === '') {
+    return `/${baseFolder}/${qualityFolder}/${background.name}.${extension}`;
+  } else {
+    return `/${baseFolder}/${folder}/${qualityFolder}/${background.name}.${extension}`;
+  }
 };
 
 /**
