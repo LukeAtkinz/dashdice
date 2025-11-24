@@ -121,8 +121,10 @@ export const InventorySection: React.FC = () => {
   };
 
   const handleTabChange = (newTab: string) => {
-    // Map PowerTab's vibin/flexin to display/match
-    const mappedTab = newTab === 'vibin' ? 'display' : newTab === 'flexin' ? 'match' : newTab;
+    // Map PowerTab's vibin/flexin/decider/victory to display/match/decider/victory
+    const mappedTab = newTab === 'vibin' ? 'display' : 
+                      newTab === 'flexin' ? 'match' : 
+                      newTab;
     console.log('🔄 Tab change:', newTab, '→', mappedTab);
     setActiveTab(mappedTab);
     setSelectedBackground(null);
