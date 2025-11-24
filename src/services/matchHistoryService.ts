@@ -152,10 +152,11 @@ export class MatchHistoryService {
               opponentScore: opponentData?.playerScore || 0,
               gameMode: gameMode,
               gameType: gameMode, // Use the same value for both fields for consistency
-              background: playerData?.matchBackgroundEquipped?.name || playerData?.displayBackgroundEquipped?.name,
-              backgroundFile: playerData?.matchBackgroundEquipped?.file || playerData?.displayBackgroundEquipped?.file,
-              opponentBackground: opponentData?.matchBackgroundEquipped?.name || opponentData?.displayBackgroundEquipped?.name,
-              opponentBackgroundFile: opponentData?.matchBackgroundEquipped?.file || opponentData?.displayBackgroundEquipped?.file,
+              // Background System V2.0 - Store ID instead of name/file
+              background: playerData?.matchBackgroundEquipped?.id || playerData?.displayBackgroundEquipped?.id,
+              backgroundFile: playerData?.matchBackgroundEquipped?.file || playerData?.displayBackgroundEquipped?.file, // Keep for backward compat
+              opponentBackground: opponentData?.matchBackgroundEquipped?.id || opponentData?.displayBackgroundEquipped?.id,
+              opponentBackgroundFile: opponentData?.matchBackgroundEquipped?.file || opponentData?.displayBackgroundEquipped?.file, // Keep for backward compat
               completedAt: data.completedAt || data.endedAt,
               duration: data.duration,
               isFriendMatch: data.isFriendMatch || false,

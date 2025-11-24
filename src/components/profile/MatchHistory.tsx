@@ -6,6 +6,7 @@ import { ChevronDown, ChevronUp, Clock, Trophy, Target, Users } from 'lucide-rea
 import { MatchHistoryService, MatchHistoryEntry } from '@/services/matchHistoryService';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
+import { resolveBackgroundPath } from '@/config/backgrounds';
 
 // Game mode icon mapping
 const getGameModeIcon = (gameType: string): string => {
@@ -158,40 +159,18 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({ className = '' }) =>
           }`}
           onClick={() => toggleExpanded(match.id)}
         >
-          {/* Video Background Support */}
-          {match.opponentBackgroundFile && match.opponentBackgroundFile.endsWith('.mp4') ? (
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ zIndex: 0 }}
-            >
-              <source src={match.opponentBackgroundFile} type="video/mp4" />
-            </video>
-          ) : null}
-
-          {/* Background Image or Fallback */}
+          {/* Background Image - Use leaderboard-card context for low quality static images */}
           <div 
             className="absolute inset-0"
             style={{
               zIndex: 0,
               background: (() => {
-                if (match.opponentBackgroundFile) {
-                  // Handle video backgrounds - skip the background image for videos
-                  if (match.opponentBackgroundFile.endsWith('.mp4')) {
-                    return 'rgba(31, 41, 55, 0.8)';
+                // Use new background system with leaderboard-card context (low quality images)
+                if (match.opponentBackground) {
+                  const resolved = resolveBackgroundPath(match.opponentBackground, 'leaderboard-card');
+                  if (resolved) {
+                    return `linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url("${resolved.path}")`;
                   }
-                  // Handle image backgrounds with proper path fixing
-                  let backgroundPath = match.opponentBackgroundFile;
-                  
-                  // Fix common background paths (same logic as in other components)
-                  if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
-                    backgroundPath = `/backgrounds/${backgroundPath}`;
-                  }
-                  
-                  return `linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url("${backgroundPath}")`;
                 }
                 
                 // Fallback background
