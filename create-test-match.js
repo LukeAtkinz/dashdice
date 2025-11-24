@@ -40,8 +40,8 @@ async function createTestMatch() {
           playerScore: 0,
           turnActive: false
         },
-        displayBackgroundEquipped: { rarity: 'RARE', name: 'Galaxy' },
-        matchBackgroundEquipped: { rarity: 'EPIC', name: 'Neon City' }
+        displayBackgroundEquipped: { id: 'relax', name: 'Relax', category: 'Images', rarity: 'COMMON' },
+        matchBackgroundEquipped: { id: 'new-day', name: 'New Day', category: 'Videos', rarity: 'RARE' }
       },
       
       opponentData: {
@@ -57,7 +57,7 @@ async function createTestMatch() {
           playerScore: 0,
           turnActive: false
         },
-        displayBackgroundEquipped: { rarity: 'LEGENDARY', name: 'Dragon Fire' },
+        displayBackgroundEquipped: { id: 'underwater', name: 'Underwater', category: 'Videos', rarity: 'RARE' },
         matchBackgroundEquipped: { rarity: 'COMMON', name: 'Classic Blue' }
       },
       

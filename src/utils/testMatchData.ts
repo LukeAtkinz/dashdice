@@ -1,5 +1,6 @@
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/services/firebase';
+import { getBackgroundById } from '@/config/backgrounds';
 
 /**
  * Creates test match data for local development
@@ -19,16 +20,8 @@ export const createTestMatch = async () => {
       
       // Host player data (Test Player 1 - You)
       hostData: {
-        displayBackgroundEquipped: {
-          name: "All For Glory",
-          file: "/backgrounds/All For Glory.jpg",
-          type: "image"
-        },
-        matchBackgroundEquipped: {
-          name: "New Day", 
-          file: "/backgrounds/New Day.mp4",
-          type: "video"
-        },
+        displayBackgroundEquipped: getBackgroundById('relax'), // Changed from "All For Glory" (ghost background)
+        matchBackgroundEquipped: getBackgroundById('new-day'),
         playerDisplayName: "You (TestPlayer1)",
         playerId: "test-user-1", // Use test-user-1 as host so you can play
         playerStats: {

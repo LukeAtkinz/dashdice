@@ -9,6 +9,7 @@ import { useFriends } from '@/context/FriendsContext';
 import { useNavigation } from '@/context/NavigationContext';
 import MessageList from './MessageList';
 import ChatInput from './ChatInput';
+import { resolveBackgroundPath, migrateLegacyBackground } from '@/config/backgrounds';
 
 interface ChatTab {
   id: string;
@@ -417,19 +418,13 @@ export default function UnifiedChatWindow({
           return {}; 
         }
         
-        // For image backgrounds
-        if (background.type === 'image' && background.file) {
-          let backgroundPath = background.file;
-          
-          // Fix common background paths
-          if (backgroundPath === 'All For Glory.jpg' || backgroundPath === '/backgrounds/All For Glory.jpg') {
-            backgroundPath = '/backgrounds/All For Glory.jpg';
-          } else if (!backgroundPath.startsWith('/') && !backgroundPath.startsWith('http')) {
-            backgroundPath = `/backgrounds/${backgroundPath}`;
-          }
-          
+        // Migrate legacy background to new ID-based system
+        const backgroundId = migrateLegacyBackground(background.name || background.file);
+        const resolved = resolveBackgroundPath(backgroundId, 'friend-card'); // Chat uses friend-card context
+        
+        if (resolved) {
           return {
-            backgroundImage: `url('${backgroundPath}')`,
+            backgroundImage: `url('${resolved.path}')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat'
