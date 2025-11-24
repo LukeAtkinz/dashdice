@@ -286,7 +286,7 @@ export const buildBackgroundPath = (
   
   if (background.category === 'Videos') {
     if (forceImage) {
-      // Use Video Images for static previews
+      // Use Video Images for static previews - always has folder structure
       folder = 'Video Images';
       extension = 'webp';
     } else {
@@ -309,8 +309,8 @@ export const buildBackgroundPath = (
     extension = 'webp';
   }
   
-  // Construct path - handle empty folder for Game Backgrounds
-  if (folder === '') {
+  // Construct path - handle empty folder for Game Background videos only
+  if (folder === '' && !forceImage) {
     return `/${baseFolder}/${qualityFolder}/${background.name}.${extension}`;
   } else {
     return `/${baseFolder}/${folder}/${qualityFolder}/${background.name}.${extension}`;
