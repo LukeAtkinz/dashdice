@@ -170,6 +170,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   // 🍳 Check if Pan Slap ability is active for any player
   const [isPanSlapActive, setIsPanSlapActive] = useState(false);
   const [showRedDice, setShowRedDice] = useState(false);
+  const [panSlapPulsing, setPanSlapPulsing] = useState(false);
   
   useEffect(() => {
     if (!matchData?.gameData?.activeEffects) {
@@ -196,15 +197,16 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
       // Pan Slap just activated
       setIsPanSlapActive(true);
       
-      // Start red dice after 0.2s (200ms)
+      // Start red dice after 0.4s (400ms)
       setTimeout(() => {
         console.log('🍳 Showing RED dice numbers');
         setShowRedDice(true);
-      }, 200);
+      }, 400);
     } else if (!panSlapFound && isPanSlapActive) {
       // Pan Slap deactivated - reset states
       setIsPanSlapActive(false);
       setShowRedDice(false);
+      setPanSlapPulsing(false);
     }
   }, [matchData?.gameData?.activeEffects, isPanSlapActive]);
 
@@ -564,17 +566,33 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               {displayValue}
             </motion.span>
           ) : (
-            <span style={{
-              color: getDiceNumberColor(),
-              fontFamily: 'Orbitron, monospace',
-              fontSize: 'clamp(120px, 18vw, 200px)', // Responsive font size for mobile
-              fontStyle: 'normal',
-              fontWeight: 500,
-              lineHeight: '42px',
-              textTransform: 'uppercase'
-            }} className="relative z-10">
+            <motion.span 
+              style={{
+                color: getDiceNumberColor(),
+                fontFamily: 'Orbitron, monospace',
+                fontSize: 'clamp(120px, 18vw, 200px)', // Responsive font size for mobile
+                fontStyle: 'normal',
+                fontWeight: 500,
+                lineHeight: '42px',
+                textTransform: 'uppercase'
+              }} 
+              className="relative z-10"
+              animate={panSlapPulsing ? {
+                scale: [1, 1.1, 1],
+                textShadow: [
+                  '0 0 0px rgba(255, 0, 0, 0)',
+                  '0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(255, 0, 0, 0.4)',
+                  '0 0 0px rgba(255, 0, 0, 0)'
+                ]
+              } : {}}
+              transition={panSlapPulsing ? {
+                duration: 0.8,
+                repeat: Infinity,
+                ease: "easeInOut"
+              } : {}}
+            >
               {displayValue}
-            </span>
+            </motion.span>
           )}
         </div>
       )}
@@ -651,7 +669,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
       {/* 🍳 PAN SLAP ABILITY ANIMATION 🍳 */}
       {isPanSlapActive && (
         <motion.div
-          className="absolute inset-0 pointer-events-none z-30"
+          className="absolute inset-0 pointer-events-none z-50"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -677,7 +695,8 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               WebkitBackfaceVisibility: 'hidden'
             }}
             onEnded={() => {
-              console.log('🍳 Pan Slap video finished playing');
+              console.log('🍳 Pan Slap video finished - starting dice pulse animation');
+              setPanSlapPulsing(true);
             }}
             onError={(e) => {
               console.error('🍳 Pan Slap video failed to load:', e);
