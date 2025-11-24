@@ -18,6 +18,7 @@ import { NewMatchmakingService } from './newMatchmakingService';
 import { PlayerHeartbeatService } from './playerHeartbeatService';
 import { SessionCompatibilityService } from './sessionCompatibilityService';
 import { AbandonedMatchService } from './abandonedMatchService';
+import { resolveBackgroundPath, migrateLegacyBackground } from '../config/backgrounds';
 
 // Initialize the new unified system
 let systemInitialized = false;
@@ -570,43 +571,32 @@ export class MatchmakingService {
    * Helper method to convert background string to object structure
    */
   private static convertBackgroundToObject(backgroundId: string) {
-    // Available backgrounds reference
-    const availableBackgrounds = [
-      { name: "All For Glory", file: "/backgrounds/All For Glory.jpg", type: "image" },
-      { name: "New Day", file: "/backgrounds/New Day.mp4", type: "video" },
-      { name: "On A Mission", file: "/backgrounds/On A Mission.mp4", type: "video" },
-      { name: "Relax", file: "/backgrounds/Relax.png", type: "image" },
-      { name: "Underwater", file: "/backgrounds/Underwater.mp4", type: "video" },
-      { name: "Long Road Ahead", file: "/backgrounds/Long Road Ahead.jpg", type: "image" },
-      { name: "As They Fall", file: "/backgrounds/As they fall.mp4", type: "video" },
-      { name: "End Of The Dragon", file: "/backgrounds/End of the Dragon.mp4", type: "video" }
-    ];
-    
     console.log('🔧 MatchmakingService: Converting background string to object:', backgroundId);
     
     // If 'default' or no background, use Relax as default
     if (!backgroundId || backgroundId === 'default') {
-      const defaultBg = availableBackgrounds.find(bg => bg.name === "Relax");
-      console.log('🔧 MatchmakingService: Using default background (Relax):', defaultBg);
-      return defaultBg;
+      const resolved = resolveBackgroundPath('relax', 'match-player-card');
+      if (resolved) {
+        console.log('🔧 MatchmakingService: Using default background (Relax):', resolved);
+        return { name: resolved.name, file: resolved.path, type: resolved.type };
+      }
     }
     
-    // Try to find by name first
-    let background = availableBackgrounds.find(bg => bg.name === backgroundId);
+    // Migrate legacy background references (handles "All For Glory", "Neon City", etc.)
+    const migratedId = migrateLegacyBackground(backgroundId);
+    console.log('🔧 MatchmakingService: Migrated background ID:', migratedId);
     
-    // If not found by name, try to find by file path
-    if (!background) {
-      background = availableBackgrounds.find(bg => bg.file === backgroundId);
-    }
+    // Resolve using new background system
+    const resolved = resolveBackgroundPath(migratedId, 'match-player-card');
     
-    // If still not found, return default
-    if (!background) {
+    if (!resolved) {
       console.log('⚠️ MatchmakingService: Background not found, using default:', backgroundId);
-      background = availableBackgrounds.find(bg => bg.name === "Relax");
+      const fallback = resolveBackgroundPath('relax', 'match-player-card');
+      return fallback ? { name: fallback.name, file: fallback.path, type: fallback.type } : null;
     }
     
-    console.log('✅ MatchmakingService: Converted background:', background);
-    return background;
+    console.log('✅ MatchmakingService: Converted background:', resolved);
+    return { name: resolved.name, file: resolved.path, type: resolved.type };
   }
 
 }
