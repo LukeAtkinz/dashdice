@@ -99,9 +99,11 @@ export const InventorySection: React.FC = () => {
     
     if (activeTab === 'display' && bgToEquip) {
       setDisplayBackgroundEquip(bgToEquip);
+      setSelectedBackground(background); // Keep this background selected after equipping
       console.log('Equipped Display Background:', bgToEquip);
     } else if (activeTab === 'match' && bgToEquip) {
       setMatchBackgroundEquip(bgToEquip);
+      setSelectedBackground(background); // Keep this background selected after equipping
       console.log('Equipped Match Background:', bgToEquip);
     }
   };
