@@ -311,25 +311,30 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
 
           </motion.button>
 
-          {/* FULL SCREEN Dice Animation */}
-          {(diceAnimation.isSpinning || hasDice) && (
+          {/* FULL SCREEN Dice Animation - Shows after choice during transitioning/rolling phases */}
+          {(transitionPhase === 'transitioning' || transitionPhase === 'rolling' || diceAnimation.isSpinning || hasDice) && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
+              key="turn-decider-dice-fullscreen"
+              initial={{ opacity: 0, scale: 0.3 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.5 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              className="fixed inset-0 flex items-center justify-center z-40"
+              exit={{ opacity: 0, scale: 0.3 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="fixed inset-0 flex items-center justify-center z-50"
               style={{
                 width: '100vw',
                 height: '100vh',
-                pointerEvents: 'none'
+                pointerEvents: 'none',
+                background: 'rgba(0, 0, 0, 0.4)'
               }}
             >
-              {/* Giant Vertical Reel Dice */}
+              {/* Giant Vertical Reel Dice Container */}
               <div style={{
-                width: 'min(90vw, 700px)',
-                height: 'clamp(200px, 40vh, 400px)',
-                position: 'relative'
+                width: 'min(95vw, 800px)',
+                height: 'clamp(250px, 45vh, 450px)',
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}>
                 <SlotMachineDice
                   diceNumber={'turnDecider' as any}

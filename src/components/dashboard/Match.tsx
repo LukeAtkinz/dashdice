@@ -606,29 +606,49 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
     return defaultBackground;
   }, []);
 
-  const VideoBackground = useCallback(({ src, className }: { src: string; className: string }) => (
-    <video
-      autoPlay
-      loop
-      muted
-      playsInline
-      controls={false}
-      preload="metadata"
-      disablePictureInPicture
-      disableRemotePlayback
-      className={className}
-      style={{ 
-        pointerEvents: 'none',
-        outline: 'none'
-      }}
-      onError={(e) => {
-        console.error('❌ Background video failed to load:', src, e);
-      }}
-    >
-      <source src={src} type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
-  ), []);
+  const VideoBackground = useCallback(({ src, className }: { src: string; className: string }) => {
+    const [videoLoaded, setVideoLoaded] = useState(false);
+    const videoImageSrc = src.replace('/Videos/', '/Video Images/').replace('.mp4', '.webp');
+
+    return (
+      <>
+        {/* Show image placeholder until video loads */}
+        {!videoLoaded && (
+          <img
+            src={videoImageSrc}
+            alt="Loading background"
+            className={className}
+            style={{ position: 'absolute', inset: 0 }}
+          />
+        )}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          controls={false}
+          preload="auto"
+          disablePictureInPicture
+          disableRemotePlayback
+          className={className}
+          style={{ 
+            pointerEvents: 'none',
+            outline: 'none',
+            opacity: videoLoaded ? 1 : 0,
+            transition: 'opacity 0.3s ease'
+          }}
+          onLoadedData={() => setVideoLoaded(true)}
+          onError={(e) => {
+            console.error('❌ Background video failed to load:', src, e);
+            setVideoLoaded(true); // Show placeholder on error
+          }}
+        >
+          <source src={src} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </>
+    );
+  }, []);
 
   const ImageBackground = useCallback(({ src, alt, className }: { src: string; alt: string; className: string }) => (
     <img
@@ -1606,8 +1626,17 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
                       topVideo={topVideo}
                       bottomVideo={bottomVideo}
                     />
-                    {/* Preload GameplayPhase in background for instant transition */}
-                    <div style={{ display: 'none' }}>
+                    {/* Preload ALL GameplayPhase content during turn decider for instant transition */}
+                    <div style={{ 
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      opacity: 0,
+                      pointerEvents: 'none',
+                      zIndex: -1
+                    }}>
                       <GameplayPhase
                         matchData={matchData}
                         currentPlayer={currentPlayer}

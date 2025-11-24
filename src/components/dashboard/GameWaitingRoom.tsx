@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { UserService } from '@/services/userService';
@@ -122,6 +122,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const [isReady, setIsReady] = useState(false); // Track if current player is ready
   const [isMarkingReady, setIsMarkingReady] = useState(false); // Track ready button state
   const [isScrolled, setIsScrolled] = useState(false); // Track scroll position for mobile button animation
+  const [scrollY, setScrollY] = useState(0); // Track scroll position
+  const scrollContainerRef = useRef<HTMLDivElement>(null); // Ref for scroll container
   const [goBackendOpponentData, setGoBackendOpponentData] = useState<any>(null); // Store opponent data from Go backend
   
   // Abandonment notification state
@@ -1531,6 +1533,36 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       }
     };
   }, [waitingRoomEntry, goBackendOpponentData, opponentJoined, opponentLastSeen, abandonmentTimer, showAbandonmentNotification, gameHasStarted]);
+
+  // Scroll detection for mobile Leave button reveal
+  useEffect(() => {
+    if (typeof window === 'undefined' || window.innerWidth >= 768) return; // Only on mobile
+
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          const scrollingUp = currentScrollY < lastScrollY;
+          
+          if (scrollingUp && currentScrollY > 50) {
+            setScrollY(100); // Show button
+          } else if (!scrollingUp || currentScrollY < 20) {
+            setScrollY(0); // Hide button
+          }
+          
+          lastScrollY = currentScrollY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Safe function to start countdown only after opponent display is ready
   const startVsCountdownWhenReady = () => {
@@ -2973,13 +3005,17 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           </div>
         </div>
 
-        {/* Leave Button Overlay - Animates down when opponent joins */}
+        {/* Leave Button Overlay - Mobile: scroll reveal | Desktop: always visible | Animates away when match starts */}
         {!opponentJoined && (
           <motion.div
             initial={{ y: 0 }}
-            animate={{ y: 0 }}
-            exit={{ y: 200, opacity: 0 }}
-            transition={{ type: 'tween', duration: 0.5, ease: 'easeInOut' }}
+            animate={{ 
+              y: vsCountdown !== null ? 300 : // Animate down when match starts
+                 window.innerWidth < 768 ? (scrollY > 50 ? 0 : 100) : // Mobile: reveal on scroll up
+                 0 // Desktop: always visible
+            }}
+            exit={{ y: 300, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             style={{
               position: 'fixed',
               bottom: window.innerWidth < 768 ? '20px' : '40px',
