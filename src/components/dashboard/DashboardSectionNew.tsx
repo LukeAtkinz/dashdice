@@ -585,38 +585,35 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        console.log(`🎮 ${mode.toUpperCase()} RANKED CLICKED - Redirecting to donation page!`);
-                        window.location.href = '/helpus';
+                        // Placeholder - do nothing
                       }}
                       onTouchEnd={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        console.log(`🎮 ${mode.toUpperCase()} RANKED TOUCH END - Redirecting to donation page!`);
-                        window.location.href = '/helpus';
+                        // Placeholder - do nothing
                       }}
-                      className="w-full flex flex-col justify-center items-center hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300 pointer-events-auto"
+                      className="w-full flex flex-col justify-center items-center transition-all duration-300 pointer-events-auto opacity-60 cursor-not-allowed"
                       style={{
                         borderRadius: '30px',
-                        background: 'linear-gradient(135deg, #8B5CF6 0%, #A855F7 50%, #9333EA 100%)',
+                        background: 'linear-gradient(135deg, #6B7280 0%, #9CA3AF 50%, #6B7280 100%)',
                         height: '80px',
                         alignContent: 'center',
                         justifyContent: 'center',
                         border: 0,
-                        boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)',
+                        boxShadow: '0 4px 15px rgba(107, 114, 128, 0.3)',
                         touchAction: 'manipulation',
                         zIndex: 10,
-                        position: 'relative',
-                        cursor: 'pointer'
+                        position: 'relative'
                       }}
                     >
                       <div className="flex items-center gap-2 pointer-events-none">
                         <img 
                           src="/Design Elements/Player Profiles/Ranked.webp" 
-                          alt="Ranked" 
-                          className="w-8 h-8 md:w-12 md:h-12 object-contain"
+                          alt="Coming Soon" 
+                          className="w-8 h-8 md:w-12 md:h-12 object-contain opacity-50"
                         />
                         <span
-                          className="text-[22px] md:text-[32px] leading-[26px] md:leading-[36px]"
+                          className="text-[18px] md:text-[24px] leading-[22px] md:leading-[28px]"
                           style={{
                             color: '#E2E2E2',
                             textAlign: 'center',
@@ -626,7 +623,7 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
                             textTransform: 'uppercase',
                           }}
                         >
-                          RANKED
+                          COMING SOON!
                         </span>
                       </div>
                     </button>
