@@ -73,10 +73,11 @@ export const InventorySection: React.FC = () => {
 
   // Set selected background when switching tabs and check equipped state
   useEffect(() => {
-    if (activeTab === 'display' && DisplayBackgroundEquip && !selectedBackground) {
+    // Handle both vibin/display and flexin/match
+    if ((activeTab === 'display' || activeTab === 'vibin') && DisplayBackgroundEquip && !selectedBackground) {
       const found = ownedDisplayBackgrounds.find(bg => bg.id === DisplayBackgroundEquip.id);
       if (found) setSelectedBackground(found);
-    } else if (activeTab === 'match' && MatchBackgroundEquip && !selectedBackground) {
+    } else if ((activeTab === 'match' || activeTab === 'flexin') && MatchBackgroundEquip && !selectedBackground) {
       const found = ownedMatchBackgrounds.find(bg => bg.id === MatchBackgroundEquip.id);
       if (found) setSelectedBackground(found);
     }
@@ -84,7 +85,8 @@ export const InventorySection: React.FC = () => {
 
   // Check if background is equipped
   const isBackgroundEquipped = (background: any) => {
-    if (activeTab === 'display') {
+    // Handle both vibin/display and flexin/match
+    if (activeTab === 'display' || activeTab === 'vibin') {
       return DisplayBackgroundEquip && DisplayBackgroundEquip.id === background.id;
     } else {
       return MatchBackgroundEquip && MatchBackgroundEquip.id === background.id;
@@ -92,19 +94,25 @@ export const InventorySection: React.FC = () => {
   };
 
   const handleEquipBackground = async (background: any) => {
-    console.log('Equip Button Clicked:', { tab: activeTab, background });
+    console.log('✅ Equip Button Clicked:', { tab: activeTab, background });
     
     // Find the actual background object from availableBackgrounds
     const bgToEquip = availableBackgrounds.find(bg => bg.id === background.id);
     
-    if (activeTab === 'display' && bgToEquip) {
-      setDisplayBackgroundEquip(bgToEquip);
+    if (!bgToEquip) {
+      console.error('Background not found:', background.id);
+      return;
+    }
+    
+    // Handle both vibin/display and flexin/match
+    if (activeTab === 'display' || activeTab === 'vibin') {
+      await setDisplayBackgroundEquip(bgToEquip);
       setSelectedBackground(background); // Keep this background selected after equipping
-      console.log('Equipped Display Background:', bgToEquip);
-    } else if (activeTab === 'match' && bgToEquip) {
-      setMatchBackgroundEquip(bgToEquip);
+      console.log('✅ Equipped Display Background:', bgToEquip);
+    } else if (activeTab === 'match' || activeTab === 'flexin') {
+      await setMatchBackgroundEquip(bgToEquip);
       setSelectedBackground(background); // Keep this background selected after equipping
-      console.log('Equipped Match Background:', bgToEquip);
+      console.log('✅ Equipped Match Background:', bgToEquip);
     }
   };
 
@@ -113,16 +121,19 @@ export const InventorySection: React.FC = () => {
   };
 
   const handleTabChange = (newTab: string) => {
-    setActiveTab(newTab);
+    // Map PowerTab's vibin/flexin to display/match
+    const mappedTab = newTab === 'vibin' ? 'display' : newTab === 'flexin' ? 'match' : newTab;
+    console.log('🔄 Tab change:', newTab, '→', mappedTab);
+    setActiveTab(mappedTab);
     setSelectedBackground(null);
   };
 
   const getCurrentBackgrounds = () => {
-    return activeTab === 'display' ? ownedDisplayBackgrounds : ownedMatchBackgrounds;
+    return (activeTab === 'display' || activeTab === 'vibin') ? ownedDisplayBackgrounds : ownedMatchBackgrounds;
   };
 
   const getEquippedBackground = () => {
-    return activeTab === 'display' ? DisplayBackgroundEquip : MatchBackgroundEquip;
+    return (activeTab === 'display' || activeTab === 'vibin') ? DisplayBackgroundEquip : MatchBackgroundEquip;
   };
 
   if (loading) {

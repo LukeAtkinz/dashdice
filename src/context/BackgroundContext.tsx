@@ -211,16 +211,34 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
           });
         }
         
-        // Handle display background from inventory
+        // Handle display background from inventory (Background System V2.0)
         const displayBgData = userData.inventory?.displayBackgroundEquipped;
         if (displayBgData) {
-          // If it's already a complete background object, use it directly
-          if (typeof displayBgData === 'object' && displayBgData.name && displayBgData.file && displayBgData.type) {
-            setDisplayBackgroundEquipState(displayBgData);
-          } else if (typeof displayBgData === 'string') {
-            // Legacy support: if it's a string, try to find the background
-            const displayBackground = findBackgroundByName(displayBgData);
-            setDisplayBackgroundEquipState(displayBackground);
+          // New format: { id, name, category } - Background System V2.0
+          if (typeof displayBgData === 'object' && displayBgData.id) {
+            const found = getBackgroundById(displayBgData.id);
+            if (found) {
+              setDisplayBackgroundEquipState(found);
+              console.log('✅ Loaded display background from Firebase:', found.name);
+            } else {
+              console.warn('⚠️ Display background ID not found:', displayBgData.id);
+              setDisplayBackgroundEquipState(null);
+            }
+          } 
+          // Legacy format: { name, file, type }
+          else if (typeof displayBgData === 'object' && displayBgData.name) {
+            const migrated = migrateLegacyBackground(displayBgData);
+            const found = getBackgroundById(migrated);
+            if (found) {
+              setDisplayBackgroundEquipState(found);
+              console.log('✅ Migrated display background:', found.name);
+            }
+          } 
+          // Legacy string format
+          else if (typeof displayBgData === 'string') {
+            const migrated = migrateLegacyBackground(displayBgData);
+            const found = getBackgroundById(migrated);
+            if (found) setDisplayBackgroundEquipState(found);
           } else {
             setDisplayBackgroundEquipState(null);
           }
@@ -228,16 +246,34 @@ export const BackgroundProvider: React.FC<BackgroundProviderProps> = ({ children
           setDisplayBackgroundEquipState(null);
         }
         
-        // Handle match background from inventory
+        // Handle match background from inventory (Background System V2.0)
         const matchBgData = userData.inventory?.matchBackgroundEquipped;
         if (matchBgData) {
-          // If it's already a complete background object, use it directly
-          if (typeof matchBgData === 'object' && matchBgData.name && matchBgData.file && matchBgData.type) {
-            setMatchBackgroundEquipState(matchBgData);
-          } else if (typeof matchBgData === 'string') {
-            // Legacy support: if it's a string, try to find the background
-            const matchBackground = findBackgroundByName(matchBgData);
-            setMatchBackgroundEquipState(matchBackground);
+          // New format: { id, name, category } - Background System V2.0
+          if (typeof matchBgData === 'object' && matchBgData.id) {
+            const found = getBackgroundById(matchBgData.id);
+            if (found) {
+              setMatchBackgroundEquipState(found);
+              console.log('✅ Loaded match background from Firebase:', found.name);
+            } else {
+              console.warn('⚠️ Match background ID not found:', matchBgData.id);
+              setMatchBackgroundEquipState(null);
+            }
+          } 
+          // Legacy format: { name, file, type }
+          else if (typeof matchBgData === 'object' && matchBgData.name) {
+            const migrated = migrateLegacyBackground(matchBgData);
+            const found = getBackgroundById(migrated);
+            if (found) {
+              setMatchBackgroundEquipState(found);
+              console.log('✅ Migrated match background:', found.name);
+            }
+          } 
+          // Legacy string format
+          else if (typeof matchBgData === 'string') {
+            const migrated = migrateLegacyBackground(matchBgData);
+            const found = getBackgroundById(migrated);
+            if (found) setMatchBackgroundEquipState(found);
           } else {
             setMatchBackgroundEquipState(null);
           }
