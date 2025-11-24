@@ -408,72 +408,152 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
            background: backgroundStyle || undefined
          }}>
       {shouldShowAnimation ? (
-        // Casino-style VERTICAL slot machine reel effect
+        // Conditional reel animation: VERTICAL for turn decider, HORIZONTAL for match
         <div className="absolute inset-0 overflow-hidden">
-          {/* 🎰 Vertical spinning reel background - casino style */}
-          <motion.div
-            className="absolute inset-0 flex flex-col items-center justify-start"
-            animate={{
-              y: [-900, 0, -900],
-            }}
-            transition={{
-              duration: getAnimationSpeed(), // Use dynamic speed
-              repeat: Infinity,
-              ease: "linear"
-            }}
-          >
-            {createReelNumbers().map((num, index) => (
-              <div
-                key={`reel-${index}`}
-                className="w-full flex items-center justify-center opacity-30"
-                style={{ 
-                  minHeight: '100%',
-                  backgroundColor: index % 2 === 0 ? 'rgba(0,0,0,0.05)' : 'transparent',
-                  color: isTurnDecider ? '#FFD700' : '#000',
+          {isTurnDecider ? (
+            // 🎰 TURN DECIDER: Vertical spinning reel - casino style
+            <>
+              <motion.div
+                className="absolute inset-0 flex flex-col items-center justify-start"
+                animate={{
+                  y: [-900, 0, -900],
+                }}
+                transition={{
+                  duration: getAnimationSpeed(),
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+              >
+                {createReelNumbers().map((num, index) => (
+                  <div
+                    key={`reel-${index}`}
+                    className="w-full flex items-center justify-center opacity-30"
+                    style={{ 
+                      minHeight: '100%',
+                      backgroundColor: index % 2 === 0 ? 'rgba(0,0,0,0.05)' : 'transparent',
+                      color: '#FFD700',
+                      fontFamily: 'Orbitron, monospace',
+                      fontSize: 'clamp(80px, 18vw, 200px)',
+                      fontStyle: 'normal',
+                      fontWeight: 500,
+                      lineHeight: '1',
+                      textTransform: 'uppercase',
+                      textShadow: '0 0 15px rgba(255, 215, 0, 0.6)',
+                      WebkitFontSmoothing: 'antialiased'
+                    }}
+                  >
+                    {num}
+                  </div>
+                ))}
+              </motion.div>
+              
+              {/* Main spinning number - NO scale/rotate, pure vertical scroll */}
+              <div className="absolute inset-0 flex items-center justify-center z-10">
+                <span style={{
+                  color: getDiceNumberColor(),
                   fontFamily: 'Orbitron, monospace',
-                  fontSize: 'clamp(80px, 18vw, 200px)',
+                  fontSize: 'clamp(120px, 18vw, 200px)',
                   fontStyle: 'normal',
                   fontWeight: 500,
                   lineHeight: '1',
                   textTransform: 'uppercase',
-                  textShadow: isTurnDecider ? '0 0 15px rgba(255, 215, 0, 0.6)' : 'none',
+                  textShadow: '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4)',
                   WebkitFontSmoothing: 'antialiased'
+                }}>
+                  {animationState.currentNumber}
+                </span>
+              </div>
+              
+              {/* Vertical glow effect */}
+              <motion.div 
+                className="absolute inset-0 bg-gradient-to-b from-yellow-300/40 via-transparent to-yellow-300/40"
+                animate={{
+                  opacity: [0.3, 0.8, 0.3]
+                }}
+                transition={{
+                  duration: 0.2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+            </>
+          ) : (
+            // 🎰 MATCH GAMEPLAY: Horizontal spinning reel - original style
+            <>
+              <motion.div
+                className="absolute inset-0 flex flex-row items-center"
+                animate={{
+                  x: [-600, 0, -600],
+                }}
+                transition={{
+                  duration: getAnimationSpeed(),
+                  repeat: Infinity,
+                  ease: "linear"
                 }}
               >
-                {num}
-              </div>
-            ))}
-          </motion.div>
-          
-          {/* 🎰 Main spinning number - NO scale/rotate animations, pure vertical scroll */}
-          <div className="absolute inset-0 flex items-center justify-center z-10">
-            <span style={{
-              color: getDiceNumberColor(),
-              fontFamily: 'Orbitron, monospace',
-              fontSize: 'clamp(120px, 18vw, 200px)',
-              fontStyle: 'normal',
-              fontWeight: 500,
-              lineHeight: '1',
-              textTransform: 'uppercase',
-              textShadow: isTurnDecider ? '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4)' : 'none',
-              WebkitFontSmoothing: 'antialiased'
-            }}>
-              {animationState.currentNumber}
-            </span>
-          </div>
-          
-          {/* Vertical slot machine glow effect */}
-          <motion.div 
-            className="absolute inset-0 bg-gradient-to-b from-yellow-300/40 via-transparent to-yellow-300/40"
-            animate={{
-              opacity: [0.3, 0.8, 0.3]
-            }}
-            transition={{
-              duration: 0.2,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
+                {createReelNumbers().map((num, index) => (
+                  <div
+                    key={`reel-${index}`}
+                    className="h-full flex items-center justify-center opacity-30"
+                    style={{ 
+                      minWidth: '100%',
+                      backgroundColor: index % 2 === 0 ? 'rgba(0,0,0,0.05)' : 'transparent',
+                      color: '#000',
+                      fontFamily: 'Orbitron, monospace',
+                      fontSize: 'clamp(80px, 18vw, 200px)',
+                      fontStyle: 'normal',
+                      fontWeight: 500,
+                      lineHeight: '42px',
+                      textTransform: 'uppercase',
+                      WebkitFontSmoothing: 'antialiased'
+                    }}
+                  >
+                    {num}
+                  </div>
+                ))}
+              </motion.div>
+              
+              {/* Main spinning number with micro-animations */}
+              <motion.div
+                className="absolute inset-0 flex items-center justify-center z-10"
+                animate={{
+                  scale: [1, 1.1, 1],
+                  rotate: [0, 2, -2, 0]
+                }}
+                transition={{
+                  duration: 0.15,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                <span style={{
+                  color: getDiceNumberColor(),
+                  fontFamily: 'Orbitron, monospace',
+                  fontSize: 'clamp(120px, 18vw, 200px)',
+                  fontStyle: 'normal',
+                  fontWeight: 500,
+                  lineHeight: '42px',
+                  textTransform: 'uppercase',
+                  WebkitFontSmoothing: 'antialiased'
+                }}>
+                  {animationState.currentNumber}
+                </span>
+              </motion.div>
+              
+              {/* Horizontal glow effect */}
+              <motion.div 
+                className="absolute inset-0 bg-gradient-to-t from-yellow-300/40 via-transparent to-yellow-300/40"
+                animate={{
+                  opacity: [0.3, 0.8, 0.3]
+                }}
+                transition={{
+                  duration: 0.2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+            </>
+          )}
 
           {/* Multiplier active glow effect during spin */}
           {hasAnyMultiplier && (

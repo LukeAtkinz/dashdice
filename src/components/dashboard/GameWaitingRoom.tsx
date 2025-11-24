@@ -2986,11 +2986,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 200,
-              width: window.innerWidth < 768 ? '100%' : 'auto',
+              width: 'auto',
               display: 'flex',
-              justifyContent: 'center',
-              paddingLeft: window.innerWidth < 768 ? '20px' : '0',
-              paddingRight: window.innerWidth < 768 ? '20px' : '0'
+              justifyContent: 'center'
             }}
           >
             <button
