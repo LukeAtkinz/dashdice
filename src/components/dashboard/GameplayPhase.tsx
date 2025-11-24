@@ -1328,6 +1328,10 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                         height: '100%',
                         objectFit: 'cover'
                       }}
+                      onEnded={() => {
+                        console.log('🔥 Aura Forge Bottom animation ended - hiding video');
+                        setShowAuraForgeBottom(false);
+                      }}
                     />
                   </motion.div>
                 )}

@@ -223,6 +223,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
     const currentPlayerId = user.uid;
     const opponentPlayerId = isHost ? opponentId : hostId;
     
+    console.log('🧢 Checking Hard Hat status:', {
+      currentPlayerId,
+      opponentPlayerId,
+      activeEffects: matchData.gameData.activeEffects
+    });
+    
     // Check current player's Hard Hat status
     const currentHasHardHat = matchData.gameData.activeEffects?.[currentPlayerId]?.some((effect: any) =>
       effect.abilityId === 'hard_hat' || effect.effectId?.includes('hard_hat')
@@ -232,6 +238,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
     const opponentHasHardHat = matchData.gameData.activeEffects?.[opponentPlayerId]?.some((effect: any) =>
       effect.abilityId === 'hard_hat' || effect.effectId?.includes('hard_hat')
     ) || false;
+    
+    console.log('🧢 Hard Hat status:', {
+      currentHasHardHat,
+      opponentHasHardHat,
+      previousCurrent: previousHardHatStateRef.current.current,
+      previousOpponent: previousHardHatStateRef.current.opponent
+    });
     
     // CURRENT PLAYER: Hard Hat just activated
     if (currentHasHardHat && !previousHardHatStateRef.current.current) {

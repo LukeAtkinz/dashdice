@@ -639,7 +639,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
           transition={{ duration: 0.3 }}
         >
           <video
-            src="/Abilities/Animations/Luck Turner Animation.webm"
+            src="/Abilities/Animations/Luck Turner/Luck Turner Animation.webm"
             autoPlay
             loop={false}
             muted
