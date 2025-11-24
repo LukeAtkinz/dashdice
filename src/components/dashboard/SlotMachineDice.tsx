@@ -408,13 +408,13 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
            background: backgroundStyle || undefined
          }}>
       {shouldShowAnimation ? (
-        // Slot machine reel effect
-        <div className="absolute inset-0">
-          {/* 🎰 Spinning reel background with progressive speed changes */}
+        // Casino-style VERTICAL slot machine reel effect
+        <div className="absolute inset-0 overflow-hidden">
+          {/* 🎰 Vertical spinning reel background - casino style */}
           <motion.div
-            className="absolute inset-0 flex flex-row items-center"
+            className="absolute inset-0 flex flex-col items-center justify-start"
             animate={{
-              x: [-600, 0, -600],
+              y: [-900, 0, -900],
             }}
             transition={{
               duration: getAnimationSpeed(), // Use dynamic speed
@@ -425,16 +425,16 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             {createReelNumbers().map((num, index) => (
               <div
                 key={`reel-${index}`}
-                className="h-full flex items-center justify-center opacity-30"
+                className="w-full flex items-center justify-center opacity-30"
                 style={{ 
-                  minWidth: '100%',
+                  minHeight: '100%',
                   backgroundColor: index % 2 === 0 ? 'rgba(0,0,0,0.05)' : 'transparent',
                   color: isTurnDecider ? '#FFD700' : '#000',
                   fontFamily: 'Orbitron, monospace',
                   fontSize: 'clamp(80px, 18vw, 200px)',
                   fontStyle: 'normal',
                   fontWeight: 500,
-                  lineHeight: '42px',
+                  lineHeight: '1',
                   textTransform: 'uppercase',
                   textShadow: isTurnDecider ? '0 0 15px rgba(255, 215, 0, 0.6)' : 'none',
                   WebkitFontSmoothing: 'antialiased'
@@ -445,37 +445,26 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             ))}
           </motion.div>
           
-          {/* 🎰 Main spinning number with micro-animations */}
-          <motion.div
-            className="absolute inset-0 flex items-center justify-center z-10"
-            animate={{
-              scale: [1, 1.1, 1],
-              rotate: [0, 2, -2, 0]
-            }}
-            transition={{
-              duration: 0.15,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
+          {/* 🎰 Main spinning number - NO scale/rotate animations, pure vertical scroll */}
+          <div className="absolute inset-0 flex items-center justify-center z-10">
             <span style={{
               color: getDiceNumberColor(),
               fontFamily: 'Orbitron, monospace',
               fontSize: 'clamp(120px, 18vw, 200px)',
               fontStyle: 'normal',
               fontWeight: 500,
-              lineHeight: '42px',
+              lineHeight: '1',
               textTransform: 'uppercase',
               textShadow: isTurnDecider ? '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4)' : 'none',
               WebkitFontSmoothing: 'antialiased'
             }}>
               {animationState.currentNumber}
             </span>
-          </motion.div>
+          </div>
           
-          {/* Slot machine glow effect */}
+          {/* Vertical slot machine glow effect */}
           <motion.div 
-            className="absolute inset-0 bg-gradient-to-t from-yellow-300/40 via-transparent to-yellow-300/40"
+            className="absolute inset-0 bg-gradient-to-b from-yellow-300/40 via-transparent to-yellow-300/40"
             animate={{
               opacity: [0.3, 0.8, 0.3]
             }}

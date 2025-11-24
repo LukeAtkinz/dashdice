@@ -1214,7 +1214,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
 
   return (
     <div suppressHydrationWarning>
-      {/* Static Background Layer - User's Vibin (Display) background */}
+      {/* Background Layer - World videos during Turn Decider, User's Vibin background during Gameplay */}
       <div style={{ 
         position: 'fixed', 
         inset: 0, 
@@ -1224,7 +1224,65 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
         zIndex: 0
       }}>
         {(() => {
-          // Use user's Display (Vibin) background for match arena
+          // Show world videos during Turn Decider phase
+          if (matchData.gameData.gamePhase === 'turnDecider') {
+            return (
+              <>
+                {/* Top half - host/top video */}
+                <div style={{ 
+                  position: 'absolute', 
+                  top: 0, 
+                  left: 0, 
+                  width: '100%', 
+                  height: '50%', 
+                  overflow: 'hidden' 
+                }}>
+                  <video 
+                    src={topVideo}
+                    autoPlay 
+                    loop 
+                    muted 
+                    playsInline 
+                    preload="auto"
+                    style={{ 
+                      position: 'absolute', 
+                      inset: 0, 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover' 
+                    }}
+                  />
+                </div>
+                {/* Bottom half - opponent/bottom video */}
+                <div style={{ 
+                  position: 'absolute', 
+                  bottom: 0, 
+                  left: 0, 
+                  width: '100%', 
+                  height: '50%', 
+                  overflow: 'hidden' 
+                }}>
+                  <video 
+                    src={bottomVideo}
+                    autoPlay 
+                    loop 
+                    muted 
+                    playsInline 
+                    preload="auto"
+                    style={{ 
+                      position: 'absolute', 
+                      inset: 0, 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover' 
+                    }}
+                  />
+                </div>
+              </>
+            );
+          }
+          
+          // After Turn Decider completes, show user's Display (Vibin) background for match arena
           if (DisplayBackgroundEquip) {
             const resolved = resolveBackgroundPath(DisplayBackgroundEquip.id, 'dashboard-display');
             if (resolved) {

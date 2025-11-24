@@ -447,7 +447,7 @@ const ProfileSection: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                {/* Profile Header Section with Match Background */}
+                {/* Profile Header Section with Flexin (Match) Background */}
                 <div 
                   className="relative overflow-hidden touch-manipulation rounded-t-[20px]"
                   style={{
@@ -460,6 +460,25 @@ const ProfileSection: React.FC = () => {
                     maxWidth: '100%'
                   }}
                 >
+                  {/* Flexin Background Video if applicable */}
+                  {MatchBackgroundEquip?.id && (() => {
+                    const resolved = resolveBackgroundPath(MatchBackgroundEquip.id, 'dashboard-display');
+                    if (resolved?.type === 'video') {
+                      return (
+                        <video
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="absolute inset-0 w-full h-full object-cover"
+                          style={{ zIndex: 0 }}
+                        >
+                          <source src={resolved.path} type="video/mp4" />
+                        </video>
+                      );
+                    }
+                    return null;
+                  })()}
                   {/* Dark overlay gradient for text readability */}
                   <div 
                     className="absolute inset-0"
@@ -499,13 +518,14 @@ const ProfileSection: React.FC = () => {
                   <h3 className="text-white text-lg font-audiowide uppercase mb-3">Victory Screen</h3>
                   <div className="relative rounded-lg overflow-hidden" style={{ height: '200px' }}>
                     <video
+                      key="victory-screen-video"
                       autoPlay
                       loop
                       muted
                       playsInline
                       className="w-full h-full object-cover"
                     >
-                      <source src="/VictoryScreens/VictoryScreen1.mp4" type="video/mp4" />
+                      <source src="/Victory Screens/Victory Screen 1.mp4" type="video/mp4" />
                     </video>
                   </div>
                 </div>
@@ -515,13 +535,14 @@ const ProfileSection: React.FC = () => {
                   <h3 className="text-white text-lg font-audiowide uppercase mb-3">Match Decider</h3>
                   <div className="relative rounded-lg overflow-hidden" style={{ height: '200px' }}>
                     <video
+                      key="match-decider-video"
                       autoPlay
                       loop
                       muted
                       playsInline
                       className="w-full h-full object-cover"
                     >
-                      <source src="/WORLD/WORLD1.mp4" type="video/mp4" />
+                      <source src="/World/Awaken/Awakened.mp4" type="video/mp4" />
                     </video>
                   </div>
                 </div>
@@ -537,7 +558,7 @@ const ProfileSection: React.FC = () => {
               >
                 <div className="p-6">
                   {/* Statistics Grid - Friends Card Style */}
-                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 -mx-4 md:-mx-4">
+                  <div className="rounded-xl p-6 -mx-4 md:-mx-4">
                     <h3 className="text-white text-xl font-audiowide mb-4 uppercase text-center md:text-left">Player Statistics</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
@@ -655,7 +676,7 @@ const ProfileSection: React.FC = () => {
                   </div>
                   
                   {/* Ranked Statistics Section */}
-                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
+                  <div className="bg-transparent  rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
                     <h3 className="text-white text-xl font-audiowide mb-4 uppercase text-center md:text-left">Ranked</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -719,7 +740,7 @@ const ProfileSection: React.FC = () => {
                   </div>
                   
                   {/* Tournament Statistics Section */}
-                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
+                  <div className="bg-transparent  rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
                     <h3 className="text-white text-xl font-audiowide mb-4 uppercase text-center md:text-left">Tournament</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -786,7 +807,7 @@ const ProfileSection: React.FC = () => {
                   </div>
                   
                   {/* Cosmetic Statistics Section */}
-                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
+                  <div className="bg-transparent  rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
                     <h3 className="text-white text-xl font-audiowide mb-4 uppercase text-center md:text-left">Cosmetic</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -884,7 +905,7 @@ const ProfileSection: React.FC = () => {
                   </div>
                   
                   {/* Friends Statistics Section */}
-                  <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
+                  <div className="bg-transparent  rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
                     <h3 className="text-white text-xl font-audiowide mb-4 uppercase text-center md:text-left">Friends</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -1090,7 +1111,7 @@ const ProfileSection: React.FC = () => {
                     General Settings
                   </h3>
                   
-                  <div className="bg-transparent backdrop-blur-[0.5px] border border-gray-700/50 rounded-xl p-6 space-y-6">
+                  <div className="bg-transparent  border border-gray-700/50 rounded-xl p-6 space-y-6">
                     <motion.div 
                       className="flex items-center justify-between p-4 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                       whileHover={{ scale: 1.02, y: -2 }}
@@ -1219,7 +1240,7 @@ const ProfileSection: React.FC = () => {
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
                 <div className="p-6">
-                  <div className="bg-transparent backdrop-blur-[0.5px] border border-gray-700/50 rounded-xl p-6">
+                  <div className="bg-transparent  border border-gray-700/50 rounded-xl p-6">
                     <div className="flex flex-col sm:flex-row gap-4">
                       <motion.div
                         whileHover={{ scale: 1.02 }}
