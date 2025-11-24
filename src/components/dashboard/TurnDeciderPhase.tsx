@@ -311,50 +311,6 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
 
           </motion.button>
 
-          {/* FULL SCREEN Dice Animation - Shows after choice during transitioning/rolling phases */}
-          {(transitionPhase === 'transitioning' || transitionPhase === 'rolling' || diceAnimation.isSpinning || hasDice) && (
-            <motion.div
-              key="turn-decider-dice-fullscreen"
-              initial={{ opacity: 0, scale: 0.3 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.3 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="fixed inset-0 flex items-center justify-center z-50"
-              style={{
-                width: '100vw',
-                height: '100vh',
-                pointerEvents: 'none',
-                background: 'rgba(0, 0, 0, 0.4)'
-              }}
-            >
-              {/* Giant Vertical Reel Dice Container */}
-              <div style={{
-                width: 'min(95vw, 800px)',
-                height: 'clamp(250px, 45vh, 450px)',
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <SlotMachineDice
-                  diceNumber={'turnDecider' as any}
-                  animationState={{
-                    isSpinning: diceAnimation.isSpinning,
-                    currentNumber: diceAnimation.currentNumber,
-                    finalNumber: diceAnimation.finalNumber,
-                    reelSpeed: diceAnimation.reelSpeed,
-                    animationKey: diceAnimation.animationKey
-                  }}
-                  matchRollPhase="turnDecider"
-                  actualValue={diceAnimation.finalNumber || diceAnimation.currentNumber}
-                  isGameRolling={diceAnimation.isSpinning}
-                  isTurnDecider={true}
-                  matchData={matchData}
-                />
-              </div>
-            </motion.div>
-          )}
-
           {/* VS Element - Centered */}
           <div className="fixed left-0 right-0 top-1/2 transform -translate-y-1/2 z-30 flex items-center justify-center">
             {transitionPhase === 'choosing' || transitionPhase === 'choice-returning' ? (
@@ -488,7 +444,49 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
         </div>
       )}
 
-      {/* REMOVED: All conflicting transition displays that were blocking the dice animation */}
+      {/* FULL SCREEN Dice Animation - Independent of choice selection */}
+      {(transitionPhase === 'transitioning' || transitionPhase === 'rolling' || diceAnimation.isSpinning || hasDice) && (
+        <motion.div
+          key="turn-decider-dice-fullscreen"
+          initial={{ opacity: 0, scale: 0.3 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.3 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{
+            width: '100vw',
+            height: '100vh',
+            pointerEvents: 'none',
+            background: 'rgba(0, 0, 0, 0.5)'
+          }}
+        >
+          {/* Giant Vertical Reel Dice Container */}
+          <div style={{
+            width: 'min(95vw, 800px)',
+            height: 'clamp(250px, 45vh, 450px)',
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <SlotMachineDice
+              diceNumber={'turnDecider' as any}
+              animationState={{
+                isSpinning: diceAnimation.isSpinning,
+                currentNumber: diceAnimation.currentNumber,
+                finalNumber: diceAnimation.finalNumber,
+                reelSpeed: diceAnimation.reelSpeed,
+                animationKey: diceAnimation.animationKey
+              }}
+              matchRollPhase="turnDecider"
+              actualValue={diceAnimation.finalNumber || diceAnimation.currentNumber}
+              isGameRolling={diceAnimation.isSpinning}
+              isTurnDecider={true}
+              matchData={matchData}
+            />
+          </div>
+        </motion.div>
+      )}
 
       {/* Waiting for opponent choice - Split Screen Design */}
       {!hasChoice && !isMyTurnToDecide && isInTurnDeciderPhase && (
