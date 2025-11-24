@@ -1,101 +1,99 @@
+/**
+ * DASHDICE BACKGROUND SYSTEM V2.0
+ * 
+ * Quality-aware background system with proper video/image separation
+ * 
+ * Structure: /backgrounds/
+ *   - Images/ (Best/Medium/Low Quality) - Static backgrounds [.webp]
+ *   - Videos/ (Best/Medium Quality) - Animated backgrounds [.mp4]
+ *   - Video Images/ (Best/Medium/Low Quality) - Static frames for previews [.webp]
+ */
+
+export type BackgroundType = 'image' | 'video';
+export type BackgroundQuality = 'best' | 'medium' | 'low';
+
 export interface Background {
   id: string;
   name: string;
-  filename: string;
-  type: 'image' | 'video';
-  thumbnail?: string;
+  category: 'Images' | 'Videos';
   description?: string;
   tags?: string[];
+  rarity?: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
 }
 
-// Extended background interface with size variants for optimization
-export interface BackgroundVariants {
-  full: string;      // Desktop full-size (images only)
-  mobile: string;    // Mobile optimized (includes desktop videos)
-  preview: string;   // Preview/thumbnail for cards and selectors
-}
-
-export interface OptimizedBackground extends Background {
-  variants: BackgroundVariants;
-}
-
-// Context types for background selection
+// Context types - determines quality and whether to use video or image
 export type BackgroundContext = 
-  | 'dashboard-desktop'     // Full-size desktop dashboard
-  | 'dashboard-mobile'      // Mobile dashboard
-  | 'match-desktop'         // Full-size match background
-  | 'match-mobile'          // Mobile match background
-  | 'waiting-room-desktop'  // Waiting room desktop
-  | 'waiting-room-mobile'   // Waiting room mobile
-  | 'preview'               // Preview cards, selectors, player cards
-  | 'leaderboard'           // Leaderboard entries
-  | 'friend-card'           // Friend list cards
-  | 'profile-viewer';       // Profile viewer
+  | 'dashboard-display'    // Vibin tab - USE VIDEO - Best quality
+  | 'match-player-card'    // Match player cards with score - USE VIDEO - Best quality
+  | 'waiting-room'         // Waiting room split screen - USE VIDEO - Best quality
+  | 'friend-card'          // Friend list cards - USE IMAGE (Video Image) - Low quality
+  | 'leaderboard-card'     // Leaderboard entries - USE IMAGE (Video Image) - Low quality
+  | 'inventory-preview'    // Flexin/Vibin equip cards - USE IMAGE (Video Image) - Medium quality
+  | 'profile-viewer';      // View profile cards - USE IMAGE (Video Image) - Medium quality
 
+/**
+ * ALL AVAILABLE BACKGROUNDS - Single source of truth
+ * Removed: "All For Glory" (deleted from files), "Neon City" (never existed)
+ */
 export const AVAILABLE_BACKGROUNDS: Background[] = [
-  {
-    id: 'all-for-glory',
-    name: 'All For Glory',
-    filename: 'All For Glory.jpg',
-    type: 'image',
-    description: 'An epic battle scene with dramatic lighting',
-    tags: ['epic', 'battle', 'dramatic']
-  },
+  // ==================== IMAGES (2) ====================
   {
     id: 'long-road-ahead',
     name: 'Long Road Ahead',
-    filename: 'Long Road Ahead.jpg',
-    type: 'image',
+    category: 'Images',
     description: 'A scenic road stretching into the distance',
-    tags: ['scenic', 'journey', 'peaceful']
+    tags: ['scenic', 'journey', 'peaceful'],
+    rarity: 'COMMON'
   },
   {
     id: 'relax',
     name: 'Relax',
-    filename: 'Relax.png',
-    type: 'image',
+    category: 'Images',
     description: 'A calming and peaceful environment',
-    tags: ['calm', 'peaceful', 'zen']
+    tags: ['calm', 'peaceful', 'zen'],
+    rarity: 'COMMON'
   },
-  {
-    id: 'new-day',
-    name: 'New Day',
-    filename: 'New Day.mp4',
-    type: 'video',
-    description: 'Animated sunrise bringing hope and new beginnings',
-    tags: ['animated', 'sunrise', 'hope']
-  },
-  {
-    id: 'on-a-mission',
-    name: 'On A Mission',
-    filename: 'On A Mission.mp4',
-    type: 'video',
-    description: 'Dynamic action sequence for intense gaming',
-    tags: ['animated', 'action', 'intense']
-  },
-  {
-    id: 'underwater',
-    name: 'Underwater',
-    filename: 'Underwater.mp4',
-    type: 'video',
-    description: 'Serene underwater scene with flowing currents',
-    tags: ['animated', 'underwater', 'serene']
-  },
+  
+  // ==================== VIDEOS (5) ====================
   {
     id: 'as-they-fall',
     name: 'As They Fall',
-    filename: 'As they fall.mp4',
-    type: 'video',
+    category: 'Videos',
     description: 'Dynamic falling sequence with scenic journey vibes',
-    tags: ['animated', 'falling', 'scenic', 'journey']
+    tags: ['animated', 'falling', 'scenic'],
+    rarity: 'RARE'
   },
   {
     id: 'end-of-the-dragon',
     name: 'End Of The Dragon',
-    filename: 'End of the Dragon.mp4',
-    type: 'video',
+    category: 'Videos',
     description: 'Epic dragon finale with mystical adventure atmosphere',
-    tags: ['animated', 'dragon', 'epic', 'mystical']
+    tags: ['animated', 'dragon', 'epic'],
+    rarity: 'EPIC'
+  },
+  {
+    id: 'new-day',
+    name: 'New Day',
+    category: 'Videos',
+    description: 'Animated sunrise bringing hope and new beginnings',
+    tags: ['animated', 'sunrise', 'hope'],
+    rarity: 'RARE'
+  },
+  {
+    id: 'on-a-mission',
+    name: 'On A Mission',
+    category: 'Videos',
+    description: 'Dynamic action sequence for intense gaming',
+    tags: ['animated', 'action', 'intense'],
+    rarity: 'EPIC'
+  },
+  {
+    id: 'underwater',
+    name: 'Underwater',
+    category: 'Videos',
+    description: 'Serene underwater scene with flowing currents',
+    tags: ['animated', 'underwater', 'serene'],
+    rarity: 'RARE'
   }
 ];
 
@@ -103,159 +101,186 @@ export const getBackgroundById = (id: string): Background | undefined => {
   return AVAILABLE_BACKGROUNDS.find(bg => bg.id === id);
 };
 
-export const getBackgroundUrl = (background: Background): string => {
-  return `/backgrounds/${background.filename}`;
-};
-
 export const getDefaultBackground = (): Background => {
-  return AVAILABLE_BACKGROUNDS[0]; // All For Glory as default
+  return AVAILABLE_BACKGROUNDS.find(bg => bg.id === 'relax') || AVAILABLE_BACKGROUNDS[0];
 };
-
-// Helper function to convert Background to UserProfile background format
-export const toUserBackground = (background: Background) => ({
-  name: background.name,
-  file: `/backgrounds/${background.filename}`,
-  type: background.type as 'image' | 'video'
-});
-
-// ============================================================================
-// OPTIMIZED BACKGROUNDS WITH SIZE VARIANTS
-// ============================================================================
 
 /**
- * Get optimized background variants for a given background
- * Returns paths to FULL, MOBILE, and PREVIEW versions
+ * Quality mapping based on context
+ * Cards/previews use LOW quality, main displays use BEST
  */
-export const getBackgroundVariants = (background: Background): BackgroundVariants => {
-  const baseName = background.filename.replace(/\.(jpg|png|mp4)$/i, '');
+const CONTEXT_QUALITY_MAP: Record<BackgroundContext, BackgroundQuality> = {
+  'dashboard-display': 'best',
+  'match-player-card': 'best',
+  'waiting-room': 'best',
+  'friend-card': 'low',
+  'leaderboard-card': 'low',
+  'inventory-preview': 'medium',
+  'profile-viewer': 'medium'
+};
+
+/**
+ * Contexts that should use static images even for video backgrounds
+ */
+const USE_IMAGE_CONTEXTS: BackgroundContext[] = [
+  'friend-card',
+  'leaderboard-card',
+  'inventory-preview',
+  'profile-viewer'
+];
+
+/**
+ * Build the file path for a background
+ */
+export const buildBackgroundPath = (
+  background: Background,
+  quality: BackgroundQuality,
+  forceImage = false
+): string => {
+  const qualityFolder = 
+    quality === 'best' ? 'Best Quality' :
+    quality === 'medium' ? 'Medium Quality' :
+    'Low Quality';
   
-  // Map to actual file naming conventions in folders
-  const mobileVideoMap: Record<string, string> = {
-    'New Day': 'New Day - Mobile.webm',
-    'On A Mission': 'On A Mission - Mobile.webm',
-    'Underwater': 'Underwater - Mobile.webm',
-    'As they fall': 'As they fall - Mobile.webm',
-    'End of the Dragon': 'End of the Dragon Mobile.webm'
-  };
+  // Determine which folder to use
+  let folder: string;
+  let extension: string;
   
-  const previewVideoMap: Record<string, string> = {
-    'New Day': 'New-Day - Preview.webm',
-    'On A Mission': 'On-A-Mission-Preview.webm',
-    'Underwater': 'Underwater-Preview.webm',
-    'As they fall': 'As-they-fall - Preview.webm',
-    'End of the Dragon': 'End-of-the-Dragon - Preview.webm'
-  };
+  if (background.category === 'Videos') {
+    if (forceImage) {
+      // Use Video Images for static previews
+      folder = 'Video Images';
+      extension = 'webp';
+    } else {
+      // Use actual video
+      folder = 'Videos';
+      extension = 'mp4';
+      // Videos don't have Low Quality
+      if (quality === 'low') quality = 'medium';
+    }
+  } else {
+    // Images category
+    folder = 'Images';
+    extension = 'webp';
+  }
   
-  // For videos: desktop and mobile use same video, images use different sizes
-  if (background.type === 'video') {
+  return `/backgrounds/${folder}/${qualityFolder}/${background.name}.${extension}`;
+};
+
+/**
+ * Resolve a background to its actual path based on context
+ */
+export const resolveBackgroundPath = (
+  backgroundId: string | undefined,
+  context: BackgroundContext
+): { path: string; type: BackgroundType; name: string } | null => {
+  if (!backgroundId) {
+    const defaultBg = getDefaultBackground();
+    backgroundId = defaultBg.id;
+  }
+  
+  const background = getBackgroundById(backgroundId);
+  if (!background) {
+    console.warn(`Background not found: ${backgroundId}, using default`);
+    const defaultBg = getDefaultBackground();
+    const quality = CONTEXT_QUALITY_MAP[context];
+    const forceImage = USE_IMAGE_CONTEXTS.includes(context);
     return {
-      full: `/backgrounds/Mobile/${mobileVideoMap[baseName] || background.filename}`,      // Videos in Mobile folder (same for desktop)
-      mobile: `/backgrounds/Mobile/${mobileVideoMap[baseName] || background.filename}`,    // Same video for mobile
-      preview: `/backgrounds/Preview/${previewVideoMap[baseName] || baseName + ' - Preview.webm'}`,  // Preview is always webm for videos
+      path: buildBackgroundPath(defaultBg, quality, forceImage),
+      type: forceImage || defaultBg.category === 'Images' ? 'image' : 'video',
+      name: defaultBg.name
     };
   }
   
-  // For images: use webp format with proper naming convention
+  const quality = CONTEXT_QUALITY_MAP[context];
+  const forceImage = USE_IMAGE_CONTEXTS.includes(context);
+  
   return {
-    full: `/backgrounds/Full/${baseName} - Full.webp`,          // Full-size webp for desktop
-    mobile: `/backgrounds/Mobile/${baseName} - Mobile.webp`,    // Optimized webp for mobile
-    preview: `/backgrounds/Preview/${baseName} - Preview.webp`, // Small preview webp
+    path: buildBackgroundPath(background, quality, forceImage),
+    type: forceImage || background.category === 'Images' ? 'image' : 'video',
+    name: background.name
   };
 };
 
 /**
- * Get the appropriate background path based on context
- * This is the main function to use throughout the app
+ * Legacy format converter for backwards compatibility
  */
-export const getOptimizedBackgroundPath = (
-  background: Background | { name: string; file: string; type: 'image' | 'video' },
-  context: BackgroundContext
-): string => {
-  // Find the background in our config by name
-  const bgConfig = 'id' in background 
-    ? background as Background
-    : AVAILABLE_BACKGROUNDS.find(bg => bg.name === background.name);
+export const toLegacyFormat = (backgroundId: string) => {
+  const background = getBackgroundById(backgroundId);
+  if (!background) return null;
   
-  // If we can't find it in config, return a safe default
-  if (!bgConfig) {
-    console.warn(`Background not found in config: ${background.name}, using Relax as fallback`);
-    const fallback = AVAILABLE_BACKGROUNDS.find(bg => bg.name === 'Relax') || AVAILABLE_BACKGROUNDS[0];
-    return getBackgroundVariants(fallback).preview;
-  }
+  const resolved = resolveBackgroundPath(backgroundId, 'match-player-card');
+  if (!resolved) return null;
   
-  const variants = getBackgroundVariants(bgConfig);
-  
-  // Determine which variant to use based on context
-  switch (context) {
-    // Desktop full-size contexts
-    case 'dashboard-desktop':
-    case 'match-desktop':
-    case 'waiting-room-desktop':
-      return bgConfig.type === 'video' ? variants.mobile : variants.full;
-    
-    // Mobile contexts
-    case 'dashboard-mobile':
-    case 'match-mobile':
-    case 'waiting-room-mobile':
-      return variants.mobile;
-    
-    // Preview contexts (always use preview variant)
-    case 'preview':
-    case 'leaderboard':
-    case 'friend-card':
-    case 'profile-viewer':
-      return variants.preview;
-    
-    default:
-      return variants.mobile; // Safe default
-  }
-};
-
-/**
- * Detect if user is on mobile device
- */
-export const isMobileDevice = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-};
-
-/**
- * Get background path with automatic mobile detection
- * Use this when you want automatic device detection
- */
-export const getSmartBackgroundPath = (
-  background: Background | { name: string; file: string; type: 'image' | 'video' },
-  baseContext: 'dashboard' | 'match' | 'waiting-room' | 'preview'
-): string => {
-  const isMobile = isMobileDevice();
-  
-  let context: BackgroundContext;
-  
-  if (baseContext === 'preview') {
-    context = 'preview';
-  } else {
-    context = isMobile 
-      ? `${baseContext}-mobile` as BackgroundContext
-      : `${baseContext}-desktop` as BackgroundContext;
-  }
-  
-  return getOptimizedBackgroundPath(background, context);
-};
-
-/**
- * Convert a background to the optimized format with variants
- */
-export const toOptimizedBackground = (background: Background): OptimizedBackground => {
   return {
-    ...background,
-    variants: getBackgroundVariants(background)
+    name: background.name,
+    file: resolved.path,
+    type: resolved.type
   };
 };
 
 /**
- * Get all backgrounds with optimized variants
+ * Migration helper: Convert legacy background reference to new ID
+ * Handles: "All For Glory" (deleted), "Neon City" (never existed), old name-based refs
  */
-export const getOptimizedBackgrounds = (): OptimizedBackground[] => {
-  return AVAILABLE_BACKGROUNDS.map(toOptimizedBackground);
+export const migrateLegacyBackground = (legacyRef: any): string => {
+  // Ghost backgrounds that need to be migrated away
+  const GHOST_BACKGROUNDS = ['All For Glory', 'all-for-glory', 'Neon City', 'neon-city'];
+  
+  // Handle string references
+  if (typeof legacyRef === 'string') {
+    // Check if it's a ghost background
+    if (GHOST_BACKGROUNDS.some(ghost => legacyRef.toLowerCase().includes(ghost.toLowerCase()))) {
+      console.warn(`Migrating ghost background "${legacyRef}" to default`);
+      return getDefaultBackground().id;
+    }
+    
+    // Try to find by ID
+    const byId = getBackgroundById(legacyRef);
+    if (byId) return byId.id;
+    
+    // Try to find by name
+    const byName = AVAILABLE_BACKGROUNDS.find(bg => 
+      bg.name.toLowerCase() === legacyRef.toLowerCase()
+    );
+    if (byName) return byName.id;
+    
+    // Try extracting name from file path
+    const match = legacyRef.match(/([^\/]+)\.(jpg|png|mp4|webp)$/i);
+    if (match) {
+      const fileName = match[1];
+      const byFileName = AVAILABLE_BACKGROUNDS.find(bg =>
+        bg.name.toLowerCase() === fileName.toLowerCase()
+      );
+      if (byFileName) return byFileName.id;
+    }
+  }
+  
+  // Handle object format: { name, file, type }
+  if (legacyRef && typeof legacyRef === 'object') {
+    if (legacyRef.name) {
+      // Check for ghost backgrounds
+      if (GHOST_BACKGROUNDS.some(ghost => legacyRef.name.toLowerCase().includes(ghost.toLowerCase()))) {
+        console.warn(`Migrating ghost background "${legacyRef.name}" to default`);
+        return getDefaultBackground().id;
+      }
+      
+      const byName = AVAILABLE_BACKGROUNDS.find(bg =>
+        bg.name.toLowerCase() === legacyRef.name.toLowerCase()
+      );
+      if (byName) return byName.id;
+    }
+  }
+  
+  // Fallback to default
+  console.warn('Failed to migrate legacy background, using default:', legacyRef);
+  return getDefaultBackground().id;
+};
+
+/**
+ * Get all background IDs (for inventory ownership)
+ */
+export const getAllBackgroundIds = (): string[] => {
+  return AVAILABLE_BACKGROUNDS.map(bg => bg.id);
 };
 
