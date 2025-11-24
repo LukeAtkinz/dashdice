@@ -4,18 +4,13 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useInventory } from '@/context/InventoryContext';
 import { useNavigation } from '@/context/NavigationContext';
-import { useBackground } from '@/context/BackgroundContext';
-import { MobileBackgroundPreview } from '@/components/ui/MobileBackgroundPreview';
-import PowerTab from '@/components/vault/PowerTab';
-import { BackgroundService } from '@/services/backgroundService';
-import { resolveBackgroundPath } from '@/config/backgrounds';
+import VaultTabs from '@/components/vault/VaultTabs';
 
 const inventoryCategories = [
-  { key: 'backgrounds', name: 'Backgrounds', icon: '🖼️', color: 'linear-gradient(135deg, #667eea, #764ba2)' },
   { key: 'dice', name: 'Dice Sets', icon: '🎲', color: 'linear-gradient(135deg, #FF0080, #FF4DB8)' },
   { key: 'avatars', name: 'Avatars', icon: '👤', color: 'linear-gradient(135deg, #00FF80, #00A855)' },
   { key: 'effects', name: 'Effects', icon: '✨', color: 'linear-gradient(135deg, #FFD700, #FFA500)' },
-  { key: 'power', name: 'Power', icon: '🔮', color: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' }
+  { key: 'vault', name: 'Vault', icon: '🔮', color: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' }
 ];
 
 const mockItems = {
@@ -47,134 +42,26 @@ const rarityColors = {
 };
 
 export const InventorySection: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState('backgrounds');
-  const [previewBackground, setPreviewBackground] = useState<any>(null);
-  const [previewDisplayBackground, setPreviewDisplayBackground] = useState<any>(null);
   const { setCurrentSection, sectionParams } = useNavigation();
+  const [selectedCategory, setSelectedCategory] = useState('vault');
   const [vaultTab, setVaultTab] = useState<'power' | 'vibin' | 'flexin'>(
     sectionParams.vaultTab || 'power'
   );
-  const { 
-    availableBackgrounds, 
-    DisplayBackgroundEquip, 
-    MatchBackgroundEquip,
-    setDisplayBackgroundEquip,
-    setMatchBackgroundEquip
-  } = useBackground();
 
   // Sync vault tab with navigation params
   React.useEffect(() => {
     if (sectionParams.vaultTab) {
       setVaultTab(sectionParams.vaultTab);
-      // If navigating to power category with a specific tab, switch to power category
-      if (selectedCategory !== 'power') {
-        setSelectedCategory('power');
+      // If navigating to vault with a specific tab, switch to vault category
+      if (selectedCategory !== 'vault') {
+        setSelectedCategory('vault');
       }
     }
   }, [sectionParams.vaultTab]);
 
-  // Get background-specific styling for navigation buttons
-  const getNavButtonStyle = (category: any, isSelected: boolean) => {
-    if (DisplayBackgroundEquip?.name === 'On A Mission') {
-      return {
-        background: 'transparent',
-        boxShadow: isSelected 
-          ? "0 4px 15px rgba(14, 165, 233, 0.4)" 
-          : "0 2px 8px rgba(0, 0, 0, 0.2)",
-        minWidth: "140px",
-        minHeight: "100px",
-        border: 'transparent',
-        backdropFilter: 'blur(6px)'
-      };
-    }
-    
-    return {
-      background: 'transparent',
-      boxShadow: isSelected 
-        ? "0 4px 15px rgba(255, 255, 255, 0.2)" 
-        : "0 2px 8px rgba(0, 0, 0, 0.2)",
-      minWidth: "140px",
-      minHeight: "100px",
-      border: 'transparent'
-    };
-  };
-
-  // Get background-specific styling for equip buttons
-  const getEquipButtonStyle = (isEquipped: boolean, buttonType: 'display' | 'match') => {
-    // Default styling for all backgrounds
-    if (buttonType === 'display') {
-      return {
-        background: isEquipped 
-          ? "linear-gradient(135deg, #FFD700, #FFA500)" 
-          : "linear-gradient(135deg, #00FF80, #00A855)",
-        color: "#FFF !important",
-        fontFamily: "Audiowide",
-        textTransform: "uppercase" as const,
-      };
-    } else {
-      return {
-        background: isEquipped 
-          ? "linear-gradient(135deg, #FFD700, #FFA500)" 
-          : "linear-gradient(135deg, #FF0080, #FF4DB8)",
-        color: "#FFF !important",
-        fontFamily: "Audiowide",
-        textTransform: "uppercase" as const,
-      };
-    }
-  };
-
-  const handleBackToDashboard = () => {
-    setCurrentSection('dashboard');
-  };
-
-  // Convert backgrounds to inventory format with rarity
-  const backgroundItems = availableBackgrounds.map((bg, index) => {
-    // Get the proper background config to access preview paths
-    const bgConfig = BackgroundService.getBackgroundSafely(bg.id);
-    const resolved = resolveBackgroundPath(bg.id, 'inventory-preview');
-    const previewPath = resolved?.path;
-    
-    return {
-      id: index + 1,
-      name: bg.name,
-      preview: previewPath,
-      rarity: index === 0 ? 'epic' : index === 1 ? 'rare' : index === 2 ? 'common' : 'masterpiece',
-      background: bg
-    };
-  });
-
-  // Get current items based on category
+  // Get current items based on category (only for dice/avatars/effects)
   const getCurrentItems = () => {
-    if (selectedCategory === 'backgrounds') {
-      return backgroundItems;
-    }
     return mockItems[selectedCategory as keyof typeof mockItems] || [];
-  };
-
-  const handleEquipDisplay = (item: any) => {
-    console.log('🎯 Equipping Display Background:', item);
-    if (selectedCategory === 'backgrounds' && item.background) {
-      setDisplayBackgroundEquip(item.background);
-      console.log('✅ Display Background Equipped:', item.background);
-    }
-  };
-
-  const handleEquipMatch = (item: any) => {
-    console.log('🎯 Equipping Match Background:', item);
-    if (selectedCategory === 'backgrounds' && item.background) {
-      setMatchBackgroundEquip(item.background);
-      console.log('✅ Match Background Equipped:', item.background);
-    }
-  };
-
-  const isEquippedDisplay = (item: any) => {
-    return selectedCategory === 'backgrounds' && 
-           DisplayBackgroundEquip?.id === item.background?.id;
-  };
-
-  const isEquippedMatch = (item: any) => {
-    return selectedCategory === 'backgrounds' && 
-           MatchBackgroundEquip?.id === item.background?.id;
   };
 
   return (
@@ -292,26 +179,7 @@ export const InventorySection: React.FC = () => {
           >
             VAULT
           </h1>
-          
-          {(previewBackground || previewDisplayBackground) ? (
-            <div className="space-y-2">
-              <h1 
-                className="text-xl font-bold text-white"
-                style={{
-                  fontFamily: "Audiowide",
-                  textTransform: "uppercase",
-                  textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
-                }}
-              >
-                {previewBackground ? `Match Preview` : 
-                 previewDisplayBackground ? `Dashboard Preview` : ''}
-              </h1>
-              <p className="text-sm text-white/70" style={{ fontFamily: "Montserrat" }}>
-                {previewBackground ? previewBackground.name : 
-                 previewDisplayBackground ? previewDisplayBackground.name : ''}
-              </p>
-            </div>
-          ) : null}
+
         </div>
         
         <p 
@@ -320,9 +188,7 @@ export const InventorySection: React.FC = () => {
             fontFamily: "Montserrat",
           }}
         >
-          {previewBackground ? 'See how this background looks in matches' : 
-           previewDisplayBackground ? 'See how this background looks on dashboard' : 
-           'Manage your collection'}
+          Manage your collection
         </p>
       </div>
 
@@ -333,12 +199,20 @@ export const InventorySection: React.FC = () => {
             key={category.key}
             onClick={() => setSelectedCategory(category.key)}
             className={`tab-button flex flex-col items-center justify-center gap-2 p-2 md:p-3 rounded-[15px] transition-all duration-300 h-10 md:h-12 px-3 md:px-4 min-w-[100px] md:min-w-[120px] ${selectedCategory === category.key ? 'active' : ''}`}
-            style={getNavButtonStyle(category, selectedCategory === category.key)}
+            style={{
+              background: 'transparent',
+              boxShadow: selectedCategory === category.key
+                ? "0 4px 15px rgba(255, 255, 255, 0.2)" 
+                : "0 2px 8px rgba(0, 0, 0, 0.2)",
+              minWidth: "140px",
+              minHeight: "100px",
+              border: 'transparent'
+            }}
           >
             <div className="text-sm md:text-lg mb-1">{category.icon}</div>
             <span
               style={{
-                color: DisplayBackgroundEquip?.name === 'On A Mission' ? "#FFF" : "#FFF",
+                color: "#FFF",
                 fontFamily: "Audiowide",
                 fontSize: "10px",
                 fontWeight: 400,
@@ -351,34 +225,16 @@ export const InventorySection: React.FC = () => {
         ))}
       </div>
 
-      {/* Match UI Preview - Only show for backgrounds and when preview is active */}
-      {selectedCategory === 'backgrounds' && previewBackground && (
-        <MobileBackgroundPreview
-          background={previewBackground}
-          type="match"
-          onClose={() => setPreviewBackground(null)}
-        />
-      )}
-
-      {/* Dashboard Preview - Only show for backgrounds and when display preview is active */}
-      {selectedCategory === 'backgrounds' && previewDisplayBackground && (
-        <MobileBackgroundPreview
-          background={previewDisplayBackground}
-          type="dashboard"
-          onClose={() => setPreviewDisplayBackground(null)}
-        />
-      )}
-
-      {/* Power Tab - Show when power category is selected */}
-      {selectedCategory === 'power' && (
-        <PowerTab 
-          activeTab={vaultTab}
-          onTabChange={(tab) => setVaultTab(tab as 'power' | 'vibin' | 'flexin')}
+      {/* Vault Tabs - Show when vault category is selected */}
+      {selectedCategory === 'vault' && (
+        <VaultTabs 
+          initialTab={vaultTab}
+          onTabChange={(tab) => setVaultTab(tab)}
         />
       )}
 
       {/* Items Grid - Show for other categories */}
-      {selectedCategory !== 'power' && (
+      {selectedCategory !== 'vault' && (
         <div className="w-full max-w-[80rem] flex flex-row items-start justify-center flex-wrap gap-[2rem] flex-1 overflow-hidden px-4">{/* Disable scrolling on items grid */}
           {getCurrentItems().map((item) => (
           <motion.div
@@ -404,49 +260,7 @@ export const InventorySection: React.FC = () => {
                 border: `1px solid ${rarityColors[item.rarity as keyof typeof rarityColors]}`
               }}
             >
-              {selectedCategory === 'backgrounds' && item.preview.includes('.') ? (
-                item.preview.includes('.mp4') ? (
-                  <video 
-                    className="w-full h-full object-cover rounded-[15px] scrollbar-hide"
-                    src={item.preview}
-                    loop
-                    muted
-                    autoPlay
-                    playsInline
-                    controls={false}
-                    webkit-playsinline="true"
-                    x5-playsinline="true"
-                    x5-video-player-type="h5"
-                    x5-video-player-fullscreen="false"
-                    preload="metadata"
-                    disablePictureInPicture
-                    disableRemotePlayback
-                    style={{
-                      /* Ensure no scrollbars appear on background videos */
-                      overflow: 'hidden',
-                      pointerEvents: 'none'
-                    }}
-                    onLoadStart={(e) => {
-                      // Force autoplay on mobile
-                      if (typeof window !== 'undefined' && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                        e.currentTarget.play().catch(err => console.log('Inventory video autoplay failed:', err));
-                      }
-                    }}
-                  />
-                ) : (
-                  <img 
-                    className="w-full h-full object-cover rounded-[15px] scrollbar-hide"
-                    src={item.preview}
-                    alt={item.name}
-                    style={{
-                      /* Ensure no scrollbars appear on background images */
-                      overflow: 'hidden'
-                    }}
-                  />
-                )
-              ) : (
-                item.preview
-              )}
+              {item.preview}
             </div>
 
             {/* Item Info */}
@@ -474,96 +288,35 @@ export const InventorySection: React.FC = () => {
               </div>
             </div>
 
-            {/* Action Buttons - Only show for backgrounds */}
-            {selectedCategory === 'backgrounds' ? (
-              <div className="flex flex-col gap-2 mt-auto w-full">
-                <motion.button
-                  onClick={() => handleEquipDisplay(item)}
-                  className="px-4 py-2 rounded-[10px] text-sm font-bold w-full"
-                  style={getEquipButtonStyle(isEquippedDisplay(item), 'display')}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {isEquippedDisplay(item) ? '✓ Vibin' : 'Vibin'}
-                </motion.button>
-                <motion.button
-                  onClick={() => handleEquipMatch(item)}
-                  className="px-4 py-2 rounded-[10px] text-sm font-bold w-full"
-                  style={getEquipButtonStyle(isEquippedMatch(item), 'match')}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {isEquippedMatch(item) ? '✓ Flexin' : 'Flexin'}
-                </motion.button>
-                <motion.button
-                  onClick={() => setPreviewBackground(previewBackground?.id === item.id ? null : item)}
-                  className="px-4 py-2 rounded-[10px] text-sm font-bold w-full"
-                  style={{
-                    background: previewBackground?.id === item.id
-                      ? "linear-gradient(135deg, #FFD700, #FFA500)"
-                      : "linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1))",
-                    color: "#FFF",
-                    fontFamily: "Audiowide",
-                    textTransform: "uppercase",
-                    border: previewBackground?.id === item.id 
-                      ? "2px solid #FFD700" 
-                      : "2px solid transparent",
-                  }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {previewBackground?.id === item.id ? 'Hide Preview' : 'Preview Match'}
-                </motion.button>
-                <motion.button
-                  onClick={() => setPreviewDisplayBackground(previewDisplayBackground?.id === item.id ? null : item)}
-                  className="px-4 py-2 rounded-[10px] text-sm font-bold w-full"
-                  style={{
-                    background: previewDisplayBackground?.id === item.id
-                      ? "linear-gradient(135deg, #00FF80, #00A855)"
-                      : "linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1))",
-                    color: "#FFF",
-                    fontFamily: "Audiowide",
-                    textTransform: "uppercase",
-                    border: previewDisplayBackground?.id === item.id 
-                      ? "2px solid #00FF80" 
-                      : "2px solid transparent",
-                  }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {previewDisplayBackground?.id === item.id ? 'Hide Dashboard' : 'Preview Dashboard'}
-                </motion.button>
-              </div>
-            ) : (
-              <div className="flex gap-2 mt-auto">
-                <motion.button
-                  className="px-4 py-2 rounded-[10px] text-sm font-bold"
-                  style={{
-                    background: "linear-gradient(135deg, #00FF80, #00A855)",
-                    color: "#FFF",
-                    fontFamily: "Audiowide",
-                    textTransform: "uppercase",
-                  }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Equip
-                </motion.button>
-                <motion.button
-                  className="px-4 py-2 rounded-[10px] text-sm font-bold"
-                  style={{
-                    background: "rgba(255, 255, 255, 0.2)",
-                    color: "#FFF",
-                    fontFamily: "Audiowide",
-                    textTransform: "uppercase",
-                  }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Details
-                </motion.button>
-              </div>
-            )}
+            {/* Action Buttons */}
+            <div className="flex gap-2 mt-auto">
+              <motion.button
+                className="px-4 py-2 rounded-[10px] text-sm font-bold"
+                style={{
+                  background: "linear-gradient(135deg, #00FF80, #00A855)",
+                  color: "#FFF",
+                  fontFamily: "Audiowide",
+                  textTransform: "uppercase",
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Equip
+              </motion.button>
+              <motion.button
+                className="px-4 py-2 rounded-[10px] text-sm font-bold"
+                style={{
+                  background: "rgba(255, 255, 255, 0.2)",
+                  color: "#FFF",
+                  fontFamily: "Audiowide",
+                  textTransform: "uppercase",
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Details
+              </motion.button>
+            </div>
           </motion.div>
         ))}
         </div>
@@ -571,7 +324,7 @@ export const InventorySection: React.FC = () => {
 
       {/* Back Button */}
       <motion.button
-        onClick={handleBackToDashboard}
+        onClick={() => setCurrentSection('dashboard')}
         className="mt-8 flex items-center justify-center gap-2 px-8 py-4 rounded-[20px] transition-all duration-300 flex-shrink-0"
         style={{
           background: "linear-gradient(135deg, #192E39, #667eea)",
