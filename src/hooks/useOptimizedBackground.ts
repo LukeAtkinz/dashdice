@@ -2,9 +2,8 @@ import { useMemo } from 'react';
 import { 
   Background, 
   BackgroundContext, 
-  getOptimizedBackgroundPath,
-  getSmartBackgroundPath,
-  isMobileDevice
+  resolveBackgroundPath,
+  migrateLegacyBackground
 } from '@/config/backgrounds';
 
 /**
@@ -27,28 +26,40 @@ export const useOptimizedBackground = (
   background: Background | { name: string; file: string; type: 'image' | 'video' } | null | undefined,
   baseContext: 'dashboard' | 'match' | 'waiting-room' | 'preview'
 ) => {
-  const isMobile = useMemo(() => isMobileDevice(), []);
+  const isMobile = useMemo(() => window.innerWidth < 768, []);
   
-  const backgroundPath = useMemo(() => {
+  const backgroundData = useMemo(() => {
     if (!background) return null;
     
-    return getSmartBackgroundPath(background, baseContext);
+    // Map base context to actual BackgroundContext
+    const contextMap: Record<string, BackgroundContext> = {
+      'dashboard': 'dashboard-display',
+      'match': 'match-player-card',
+      'waiting-room': 'waiting-room',
+      'preview': 'inventory-preview'
+    };
+    
+    const context = contextMap[baseContext] || 'match-player-card';
+    
+    // Handle both new Background type and legacy format
+    let backgroundId: string;
+    if ('id' in background && background.id) {
+      backgroundId = background.id;
+    } else if ('name' in background) {
+      backgroundId = migrateLegacyBackground(background.name);
+    } else {
+      return null;
+    }
+    
+    return resolveBackgroundPath(backgroundId, context);
   }, [background, baseContext]);
   
-  const context: BackgroundContext = useMemo(() => {
-    if (baseContext === 'preview') return 'preview';
-    
-    return isMobile 
-      ? `${baseContext}-mobile` as BackgroundContext
-      : `${baseContext}-desktop` as BackgroundContext;
-  }, [baseContext, isMobile]);
-  
   return {
-    backgroundPath,
+    backgroundPath: backgroundData?.path || null,
     isMobile,
-    context,
-    isVideo: background?.type === 'video',
-    isImage: background?.type === 'image'
+    context: baseContext,
+    isVideo: backgroundData?.type === 'video',
+    isImage: backgroundData?.type === 'image'
   };
 };
 
@@ -68,28 +79,38 @@ export const useOptimizedBackgroundWithContext = (
   background: Background | { name: string; file: string; type: 'image' | 'video' } | null | undefined,
   context: BackgroundContext
 ) => {
-  const backgroundPath = useMemo(() => {
+  const backgroundData = useMemo(() => {
     if (!background) return null;
     
-    return getOptimizedBackgroundPath(background, context);
+    // Handle both new Background type and legacy format
+    let backgroundId: string;
+    if ('id' in background && background.id) {
+      backgroundId = background.id;
+    } else if ('name' in background) {
+      backgroundId = migrateLegacyBackground(background.name);
+    } else {
+      return null;
+    }
+    
+    return resolveBackgroundPath(backgroundId, context);
   }, [background, context]);
   
   return {
-    backgroundPath,
-    isVideo: background?.type === 'video',
-    isImage: background?.type === 'image',
+    backgroundPath: backgroundData?.path || null,
+    isVideo: backgroundData?.type === 'video',
+    isImage: backgroundData?.type === 'image',
     context
   };
 };
 
 /**
- * Hook for player card backgrounds (always uses preview)
+ * Hook for player card backgrounds (uses friend-card context - low quality images)
  * Optimized specifically for friend cards, profile cards, etc.
  */
 export const usePlayerCardBackground = (
   background: Background | { name: string; file: string; type: 'image' | 'video' } | null | undefined
 ) => {
-  return useOptimizedBackgroundWithContext(background, 'preview');
+  return useOptimizedBackgroundWithContext(background, 'friend-card');
 };
 
 /**

@@ -56,7 +56,7 @@ const DashboardContent: React.FC = () => {
   
   // Create button gradient style based on user's display background
   const getButtonGradientStyle = (baseColor: string) => {
-    if (DisplayBackgroundEquip?.file) {
+    if (DisplayBackgroundEquip?.id) {
       return {
         background: `var(--ui-button-bg, linear-gradient(243deg, ${baseColor} 25.17%, rgba(153, 153, 153, 0.00) 109.89%))`,
         backdropFilter: 'blur(5px)',

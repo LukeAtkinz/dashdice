@@ -8,7 +8,7 @@ import { useBackground } from '@/context/BackgroundContext';
 import { MobileBackgroundPreview } from '@/components/ui/MobileBackgroundPreview';
 import PowerTab from '@/components/vault/PowerTab';
 import { BackgroundService } from '@/services/backgroundService';
-import { getOptimizedBackgroundPath } from '@/config/backgrounds';
+import { resolveBackgroundPath } from '@/config/backgrounds';
 
 const inventoryCategories = [
   { key: 'backgrounds', name: 'Backgrounds', icon: '🖼️', color: 'linear-gradient(135deg, #667eea, #764ba2)' },
@@ -130,8 +130,9 @@ export const InventorySection: React.FC = () => {
   // Convert backgrounds to inventory format with rarity
   const backgroundItems = availableBackgrounds.map((bg, index) => {
     // Get the proper background config to access preview paths
-    const bgConfig = BackgroundService.getBackgroundSafely(bg.name);
-    const previewPath = getOptimizedBackgroundPath(bgConfig, 'preview');
+    const bgConfig = BackgroundService.getBackgroundSafely(bg.id);
+    const resolved = resolveBackgroundPath(bg.id, 'inventory-preview');
+    const previewPath = resolved?.path;
     
     return {
       id: index + 1,
@@ -168,12 +169,12 @@ export const InventorySection: React.FC = () => {
 
   const isEquippedDisplay = (item: any) => {
     return selectedCategory === 'backgrounds' && 
-           DisplayBackgroundEquip?.file === item.background?.file;
+           DisplayBackgroundEquip?.id === item.background?.id;
   };
 
   const isEquippedMatch = (item: any) => {
     return selectedCategory === 'backgrounds' && 
-           MatchBackgroundEquip?.file === item.background?.file;
+           MatchBackgroundEquip?.id === item.background?.id;
   };
 
   return (

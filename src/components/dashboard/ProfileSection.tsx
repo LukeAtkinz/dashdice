@@ -14,6 +14,7 @@ import { useBackground } from '@/context/BackgroundContext';
 import { useUserStats } from '@/hooks/useUserStats';
 import { FriendStatsService, FriendStats } from '@/services/friendStatsService';
 import { validateDisplayName } from '@/utils/contentModeration';
+import { resolveBackgroundPath } from '@/config/backgrounds';
 
 // CSS for custom button styling
 const buttonStyles = `
@@ -443,8 +444,8 @@ const ProfileSection: React.FC = () => {
               <motion.div 
                 className="relative overflow-hidden touch-manipulation w-full md:w-auto"
                 style={{
-                  background: MatchBackgroundEquip?.file 
-                    ? `url(${MatchBackgroundEquip.file})`
+                  background: MatchBackgroundEquip?.id 
+                    ? `url(${resolveBackgroundPath(MatchBackgroundEquip.id, 'profile-viewer')?.path})`
                     : 'linear-gradient(135deg, #667eea, #764ba2)',
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',

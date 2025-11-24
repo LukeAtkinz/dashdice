@@ -14,7 +14,7 @@ import {
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db, googleProvider, appleProvider } from '@/services/firebase';
 import { User, AuthContextType } from '@/types';
-import { AVAILABLE_BACKGROUNDS, getDefaultBackground, toUserBackground } from '@/config/backgrounds';
+import { AVAILABLE_BACKGROUNDS, getDefaultBackground } from '@/config/backgrounds';
 import { UserService } from '@/services/userService';
 import { FriendsService } from '@/services/friendsService';
 import { validateDisplayName, formatDisplayName, generateDisplayNameFromEmail } from '@/utils/contentModeration';
@@ -77,8 +77,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             showActivity: true
           },
           inventory: {
-            displayBackgroundEquipped: toUserBackground(newDayBackground),
-            matchBackgroundEquipped: toUserBackground(longRoadAheadBackground),
+            displayBackgroundEquipped: newDayBackground, // Now using Background type directly
+            matchBackgroundEquipped: longRoadAheadBackground,
             ownedBackgrounds: AVAILABLE_BACKGROUNDS.map(bg => bg.id) // Grant all backgrounds to new users
           },
           ownedBackgrounds: AVAILABLE_BACKGROUNDS.map(bg => bg.id), // Grant all backgrounds to new users (legacy support)
