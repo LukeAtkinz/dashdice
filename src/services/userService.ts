@@ -1,6 +1,7 @@
 import { doc, getDoc, updateDoc, setDoc, increment, collection, getDocs, writeBatch } from 'firebase/firestore';
 import { db, auth } from './firebase';
 import { validateDisplayName, formatDisplayName } from '@/utils/contentModeration';
+import { resolveBackgroundPath } from '@/config/backgrounds';
 
 // Background interface to match the structure used throughout the app
 interface Background {
@@ -140,19 +141,12 @@ export class UserService {
         const botData = botSnap.data();
         console.log('✅ UserService: Found bot profile:', botData);
         
-        // Helper function to get random background
+        // Helper function to get random background using new system
         const getRandomBackground = () => {
-          const backgrounds = [
-            { name: 'All For Glory', file: '/backgrounds/All For Glory.jpg', type: 'image' },
-            { name: 'Long Road Ahead', file: '/backgrounds/Long Road Ahead.jpg', type: 'image' },
-            { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
-            { name: 'New Day', file: '/backgrounds/New Day.mp4', type: 'video' },
-            { name: 'On A Mission', file: '/backgrounds/On A Mission.mp4', type: 'video' },
-            { name: 'Underwater', file: '/backgrounds/Underwater.mp4', type: 'video' },
-            { name: 'As They Fall', file: '/backgrounds/As they fall.mp4', type: 'video' },
-            { name: 'End Of The Dragon', file: '/backgrounds/End of the Dragon.mp4', type: 'video' }
-          ];
-          return backgrounds[Math.floor(Math.random() * backgrounds.length)];
+          const backgroundIds = ['relax', 'long-road-ahead', 'new-day', 'on-a-mission', 'underwater', 'as-they-fall', 'end-of-the-dragon'];
+          const randomId = backgroundIds[Math.floor(Math.random() * backgroundIds.length)];
+          const resolved = resolveBackgroundPath(randomId, 'match-player-card');
+          return resolved ? { name: resolved.name, file: resolved.path, type: resolved.type } : { name: 'Relax', file: '/backgrounds/Images/Best Quality/Relax.webp', type: 'image' as const };
         };
         
         // Assign random backgrounds if bot doesn't have any
@@ -172,7 +166,7 @@ export class UserService {
           inventory: {
             displayBackgroundEquipped: displayBg,
             matchBackgroundEquipped: matchBg,
-            ownedBackgrounds: botData.inventory?.ownedBackgrounds || ['Relax', 'All For Glory', 'Long Road Ahead']
+            ownedBackgrounds: botData.inventory?.ownedBackgrounds || ['relax', 'long-road-ahead', 'new-day']
           },
           stats: {
             bestStreak: botData.stats?.bestStreak || 0,

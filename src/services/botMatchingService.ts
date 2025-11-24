@@ -3,6 +3,7 @@ import { collection, query, where, getDocs, doc, getDoc, limit, orderBy } from '
 import { BotProfile, BotMatchingCriteria, BotMatchingResult, SkillLevel } from '../types/bot';
 import { SessionPlayerData } from './gameSessionService';
 import { BotAutomationService } from './botAutomationService';
+import { resolveBackgroundPath } from '../config/backgrounds';
 
 /**
  * Bot Matching Service
@@ -198,23 +199,27 @@ export class BotMatchingService {
    * 🎨 Get random match background for bots
    */
   private static getRandomMatchBackground() {
-    const backgrounds = [
-      { name: 'New Day', file: '/backgrounds/New Day.mp4', type: 'video' },
-      { name: 'Long Road Ahead', file: '/backgrounds/Long Road Ahead.jpg', type: 'image' },
-      { name: 'All For Glory', file: '/backgrounds/All For Glory.jpg', type: 'image' },
-      { name: 'Underwater', file: '/backgrounds/Underwater.mp4', type: 'video' },
-      { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
-      { name: 'As They Fall', file: '/backgrounds/As they fall.mp4', type: 'video' },
-      { name: 'End Of The Dragon', file: '/backgrounds/End of the Dragon.mp4', type: 'video' },
-      { name: 'Neon City', file: '/backgrounds/Neon City.jpg', type: 'image' },
-      { name: 'Classic Blue', file: '/backgrounds/Classic Blue.jpg', type: 'image' },
-      { name: 'Sunset', file: '/backgrounds/Sunset.mp4', type: 'video' },
-      { name: 'Forest', file: '/backgrounds/Forest.jpg', type: 'image' },
-      { name: 'Ocean Waves', file: '/backgrounds/Ocean Waves.mp4', type: 'video' }
+    // Use new background system - only actual backgrounds
+    const backgroundIds = [
+      'new-day',
+      'long-road-ahead',
+      'underwater',
+      'relax',
+      'as-they-fall',
+      'end-of-the-dragon',
+      'on-a-mission'
     ];
     
-    const randomIndex = Math.floor(Math.random() * backgrounds.length);
-    return backgrounds[randomIndex];
+    const randomId = backgroundIds[Math.floor(Math.random() * backgroundIds.length)];
+    const resolved = resolveBackgroundPath(randomId, 'match-player-card');
+    
+    if (!resolved) {
+      // Fallback to default
+      const defaultResolved = resolveBackgroundPath('relax', 'match-player-card');
+      return defaultResolved ? { name: defaultResolved.name, file: defaultResolved.path, type: defaultResolved.type } : { name: 'Relax', file: '/backgrounds/Images/Best Quality/Relax.webp', type: 'image' as const };
+    }
+    
+    return { name: resolved.name, file: resolved.path, type: resolved.type };
   }
   
   /**
