@@ -6,6 +6,7 @@ import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { GameModeSelector } from '@/components/ui/GameModeSelector';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
+import { resolveBackgroundPath } from '@/config/backgrounds';
 
 interface MatchSummaryScreenProps {
   matchData: MatchData;
@@ -19,23 +20,12 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   onRematch
 }) => {
   const { user } = useAuth();
-  const { DisplayBackgroundEquip } = useBackground();
+  const { DisplayBackgroundEquip, VictoryBackgroundEquip } = useBackground();
   const [rematchState, setRematchState] = useState<'idle' | 'requesting' | 'waiting' | 'accepted' | 'expired' | 'opponent_left'>('idle');
   const [rematchRoomId, setRematchRoomId] = useState<string | null>(null);
   const [incomingRematch, setIncomingRematch] = useState<RematchRoom | null>(null);
   const [showGameModeSelector, setShowGameModeSelector] = useState(false);
   const [showStats, setShowStats] = useState(false);
-  
-  // Random victory video
-  const [victoryVideo] = useState(() => {
-    const videos = [
-      '/Victory Screens/Can\'t Run.mp4',
-      '/Victory Screens/Nightfall.mp4',
-      '/Victory Screens/Prey.mp4',
-      '/Victory Screens/Wind Blade.mp4'
-    ];
-    return videos[Math.floor(Math.random() * videos.length)];
-  });
   
   const winner = matchData.gameData.winner;
   const reason = matchData.gameData.gameOverReason;
@@ -46,6 +36,32 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   const opponent = isHost ? matchData.opponentData : matchData.hostData;
   const opponentDisplayName = opponent.playerDisplayName;
   const opponentId = opponent.playerId;
+  
+  // Determine winner's Victory background
+  const winnerIsCurrentUser = winner === user?.uid;
+  const winnerData = winnerIsCurrentUser ? matchData.hostData : matchData.opponentData;
+  
+  // Get winner's victory background - use their equipped background or fallback
+  const victoryVideo = (() => {
+    // If current user won, use their VictoryBackgroundEquip
+    if (winnerIsCurrentUser && VictoryBackgroundEquip) {
+      const resolved = resolveBackgroundPath(VictoryBackgroundEquip.id, 'dashboard-display');
+      if (resolved?.path) return resolved.path;
+    }
+    
+    // If opponent won, use their victoryBackgroundEquipped from match data
+    if (!winnerIsCurrentUser && winnerData.victoryBackgroundEquipped) {
+      const bgId = typeof winnerData.victoryBackgroundEquipped === 'string' 
+        ? winnerData.victoryBackgroundEquipped 
+        : winnerData.victoryBackgroundEquipped.id;
+      const resolved = resolveBackgroundPath(bgId, 'dashboard-display');
+      if (resolved?.path) return resolved.path;
+    }
+    
+    // Fallback to default
+    const resolved = resolveBackgroundPath('wind-blade', 'dashboard-display');
+    return resolved?.path || '/Victory Screens/Wind Blade.mp4';
+  })();
 
   // Get nav-style button styling
   const getNavButtonStyle = (buttonType: 'dashboard' | 'rematch') => {
@@ -224,9 +240,10 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
 
   return (
     <>
-      {/* Victory Video Background */}
-      <div className="fixed inset-0 w-full h-full bg-white" style={{ zIndex: 0 }}>
+      {/* Victory Video Background - Winner's selected background */}
+      <div className="fixed inset-0 w-full h-full bg-black" style={{ zIndex: 0 }}>
         <video 
+          key={victoryVideo}
           src={victoryVideo} 
           autoPlay 
           loop 

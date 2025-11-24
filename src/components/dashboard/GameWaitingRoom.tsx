@@ -88,7 +88,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   matchBackground // Add matchBackground prop
 }) => {
   const { user } = useAuth();
-  const { DisplayBackgroundEquip, MatchBackgroundEquip, TurnDeciderBackgroundEquip } = useBackground();
+  const { DisplayBackgroundEquip, MatchBackgroundEquip, TurnDeciderBackgroundEquip, VictoryBackgroundEquip } = useBackground();
   
   // Remove performance-impacting logs
   // console.log('🎮 GameWaitingRoom: Received gameMode:', gameMode);
@@ -381,7 +381,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         matchWins: 0
       },
       displayBackgroundEquipped: DisplayBackgroundEquip,
-      matchBackgroundEquipped: MatchBackgroundEquip
+      matchBackgroundEquipped: MatchBackgroundEquip,
+      turnDeciderBackgroundEquipped: TurnDeciderBackgroundEquip,
+      victoryBackgroundEquipped: VictoryBackgroundEquip
     };
     // Remove performance-impacting logs
     // console.log('⚠️ GameWaitingRoom: Using fallback data:', fallbackData);

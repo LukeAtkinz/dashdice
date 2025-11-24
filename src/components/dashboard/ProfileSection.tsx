@@ -131,7 +131,7 @@ const useForm = <T extends Record<string, string>>(initialValues: T) => {
 const ProfileSection: React.FC = () => {
   const { user, signOut, updateUserProfile } = useAuth();
   const { currentSection } = useNavigation();
-  const { DisplayBackgroundEquip, MatchBackgroundEquip } = useBackground();
+  const { DisplayBackgroundEquip, MatchBackgroundEquip, TurnDeciderBackgroundEquip, VictoryBackgroundEquip } = useBackground();
   const { stats, loading: statsLoading, error: statsError } = useUserStats();
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'profile' | 'settings'>('profile');
@@ -518,32 +518,30 @@ const ProfileSection: React.FC = () => {
                   <h3 className="text-white text-lg font-audiowide uppercase mb-3">Victory Screen</h3>
                   <div className="relative rounded-lg overflow-hidden" style={{ height: '200px' }}>
                     <video
-                      key="victory-screen-video"
+                      key={VictoryBackgroundEquip?.id || 'victory-screen-video'}
                       autoPlay
                       loop
                       muted
                       playsInline
                       className="w-full h-full object-cover"
-                    >
-                      <source src="/Victory Screens/Victory Screen 1.mp4" type="video/mp4" />
-                    </video>
+                      src={VictoryBackgroundEquip ? resolveBackgroundPath(VictoryBackgroundEquip.id, 'dashboard-display')?.path : '/Victory Screens/Wind Blade.mp4'}
+                    />
                   </div>
                 </div>
 
                 {/* Match Decider Section */}
                 <div className="relative bg-black/40 backdrop-blur-sm border-x border-b border-gray-700/50 rounded-b-[20px] p-6" style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}>
-                  <h3 className="text-white text-lg font-audiowide uppercase mb-3">Match Decider</h3>
+                  <h3 className="text-white text-lg font-audiowide uppercase mb-3">Turn Decider</h3>
                   <div className="relative rounded-lg overflow-hidden" style={{ height: '200px' }}>
                     <video
-                      key="match-decider-video"
+                      key={TurnDeciderBackgroundEquip?.id || 'turn-decider-video'}
                       autoPlay
                       loop
                       muted
                       playsInline
                       className="w-full h-full object-cover"
-                    >
-                      <source src="/World/Awaken/Awakened.mp4" type="video/mp4" />
-                    </video>
+                      src={TurnDeciderBackgroundEquip ? resolveBackgroundPath(TurnDeciderBackgroundEquip.id, 'dashboard-display')?.path : '/Game Backgrounds/Turn Decider/Videos/Best Quality/Crazy Cough.mp4'}
+                    />
                   </div>
                 </div>
               </motion.div>
@@ -1276,7 +1274,7 @@ const ProfileSection: React.FC = () => {
         </div>
 
         {/* Mobile Tab Navigation - Fixed Above Bottom Nav */}
-        <div className="md:hidden fixed bottom-[80px] left-0 right-0 bg-black/90 backdrop-blur-lg border-t border-gray-700/50 z-40 px-4 py-3">
+        <div className="md:hidden fixed bottom-[70px] left-0 right-0 bg-black/90 backdrop-blur-lg border-t border-gray-700/50 z-[60] px-4 py-3">
           <div className="flex items-center justify-center gap-4">
             {tabs.map((tab) => (
               <button

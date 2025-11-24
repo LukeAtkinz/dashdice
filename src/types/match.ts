@@ -14,6 +14,8 @@ export interface MatchData {
   hostData: {
     displayBackgroundEquipped: any;
     matchBackgroundEquipped: any;
+    turnDeciderBackgroundEquipped?: any;
+    victoryBackgroundEquipped?: any;
     playerDisplayName: string;
     playerId: string;
     playerStats: {
@@ -43,6 +45,8 @@ export interface MatchData {
   opponentData: {
     displayBackgroundEquipped: any;
     matchBackgroundEquipped: any;
+    turnDeciderBackgroundEquipped?: any;
+    victoryBackgroundEquipped?: any;
     playerDisplayName: string;
     playerId: string;
     playerStats: {

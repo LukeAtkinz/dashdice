@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import PowerTab from './PowerTab';
 import VibinTab from '@/components/vault/VibinTab';
 import FlexinTab from '@/components/vault/FlexinTab';
-import DeciderTab from '@/components/vault/DeciderTab';
-import VictoryTab from '@/components/vault/VictoryTab';
+import DeciderTab from './DeciderTab';
+import VictoryTab from './VictoryTab';
 
 export type VaultTabType = 'power' | 'vibin' | 'flexin' | 'decider' | 'victory';
 
@@ -93,7 +93,6 @@ export default function VaultTabs({ initialTab = 'power', onTabChange }: VaultTa
               boxShadow: activeTab === 'decider' ? '0 0 20px rgba(255, 215, 0, 0.3)' : 'none',
             }}
           >
-            <span className="text-lg">🎲</span>
             <span className="text-sm font-audiowide uppercase text-white">
               Decider
             </span>
@@ -110,7 +109,6 @@ export default function VaultTabs({ initialTab = 'power', onTabChange }: VaultTa
               boxShadow: activeTab === 'victory' ? '0 0 20px rgba(255, 215, 0, 0.3)' : 'none',
             }}
           >
-            <span className="text-lg">🏆</span>
             <span className="text-sm font-audiowide uppercase text-white">
               Victory
             </span>

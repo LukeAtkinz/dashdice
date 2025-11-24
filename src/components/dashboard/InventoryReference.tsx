@@ -7,7 +7,7 @@ import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { useAuth } from '@/context/AuthContext';
 import { MatchPreview } from '@/components/ui/MatchPreview';
-import { resolveBackgroundPath } from '@/config/backgrounds';
+import { resolveBackgroundPath, getTurnDeciderBackgrounds, getVictoryBackgrounds } from '@/config/backgrounds';
 import { FriendCardPreview } from '@/components/ui/FriendCardPreview';
 import PowerTab from '@/components/vault/PowerTab';
 
@@ -22,8 +22,12 @@ export const InventorySection: React.FC = () => {
     availableBackgrounds, 
     DisplayBackgroundEquip, 
     MatchBackgroundEquip,
+    TurnDeciderBackgroundEquip,
+    VictoryBackgroundEquip,
     setDisplayBackgroundEquip,
-    setMatchBackgroundEquip
+    setMatchBackgroundEquip,
+    setTurnDeciderBackgroundEquip,
+    setVictoryBackgroundEquip
   } = useBackground();
 
   const [activeTab, setActiveTab] = useState('power'); // 'display', 'match', or 'power' - Start with power for testing
@@ -67,6 +71,30 @@ export const InventorySection: React.FC = () => {
 
   const ownedMatchBackgrounds = ownedDisplayBackgrounds; // Same backgrounds for both tabs
 
+  // Turn Decider backgrounds
+  const ownedDeciderBackgrounds = getTurnDeciderBackgrounds().map((bg) => {
+    const resolved = resolveBackgroundPath(bg.id, 'inventory-preview');
+    return {
+      id: bg.id,
+      name: bg.name,
+      previewUrl: resolved?.path || '/backgrounds/placeholder.jpg',
+      rarity: bg.rarity || 'COMMON',
+      background: bg
+    };
+  });
+
+  // Victory Screen backgrounds
+  const ownedVictoryBackgrounds = getVictoryBackgrounds().map((bg) => {
+    const resolved = resolveBackgroundPath(bg.id, 'inventory-preview');
+    return {
+      id: bg.id,
+      name: bg.name,
+      previewUrl: resolved?.path || '/backgrounds/placeholder.jpg',
+      rarity: bg.rarity || 'COMMON',
+      background: bg
+    };
+  });
+
   const handleBackToDashboard = () => {
     setCurrentSection('dashboard');
   };
@@ -80,39 +108,65 @@ export const InventorySection: React.FC = () => {
     } else if ((activeTab === 'match' || activeTab === 'flexin') && MatchBackgroundEquip && !selectedBackground) {
       const found = ownedMatchBackgrounds.find(bg => bg.id === MatchBackgroundEquip.id);
       if (found) setSelectedBackground(found);
+    } else if (activeTab === 'decider' && TurnDeciderBackgroundEquip && !selectedBackground) {
+      const found = ownedDeciderBackgrounds.find(bg => bg.id === TurnDeciderBackgroundEquip.id);
+      if (found) setSelectedBackground(found);
+    } else if (activeTab === 'victory' && VictoryBackgroundEquip && !selectedBackground) {
+      const found = ownedVictoryBackgrounds.find(bg => bg.id === VictoryBackgroundEquip.id);
+      if (found) setSelectedBackground(found);
     }
-  }, [activeTab, DisplayBackgroundEquip, MatchBackgroundEquip, selectedBackground]);
+  }, [activeTab, DisplayBackgroundEquip, MatchBackgroundEquip, TurnDeciderBackgroundEquip, VictoryBackgroundEquip, selectedBackground]);
 
   // Check if background is equipped
   const isBackgroundEquipped = (background: any) => {
     // Handle both vibin/display and flexin/match
     if (activeTab === 'display' || activeTab === 'vibin') {
       return DisplayBackgroundEquip && DisplayBackgroundEquip.id === background.id;
-    } else {
+    } else if (activeTab === 'match' || activeTab === 'flexin') {
       return MatchBackgroundEquip && MatchBackgroundEquip.id === background.id;
+    } else if (activeTab === 'decider') {
+      return TurnDeciderBackgroundEquip && TurnDeciderBackgroundEquip.id === background.id;
+    } else if (activeTab === 'victory') {
+      return VictoryBackgroundEquip && VictoryBackgroundEquip.id === background.id;
     }
+    return false;
   };
 
   const handleEquipBackground = async (background: any) => {
     console.log('✅ Equip Button Clicked:', { tab: activeTab, background });
     
-    // Find the actual background object from availableBackgrounds
-    const bgToEquip = availableBackgrounds.find(bg => bg.id === background.id);
+    // Find the actual background object
+    let bgToEquip;
+    if (activeTab === 'decider') {
+      bgToEquip = getTurnDeciderBackgrounds().find(bg => bg.id === background.id);
+    } else if (activeTab === 'victory') {
+      bgToEquip = getVictoryBackgrounds().find(bg => bg.id === background.id);
+    } else {
+      bgToEquip = availableBackgrounds.find(bg => bg.id === background.id);
+    }
     
     if (!bgToEquip) {
       console.error('Background not found:', background.id);
       return;
     }
     
-    // Handle both vibin/display and flexin/match
+    // Handle all tab types
     if (activeTab === 'display' || activeTab === 'vibin') {
       await setDisplayBackgroundEquip(bgToEquip);
-      setSelectedBackground(background); // Keep this background selected after equipping
+      setSelectedBackground(background);
       console.log('✅ Equipped Display Background:', bgToEquip);
     } else if (activeTab === 'match' || activeTab === 'flexin') {
       await setMatchBackgroundEquip(bgToEquip);
-      setSelectedBackground(background); // Keep this background selected after equipping
+      setSelectedBackground(background);
       console.log('✅ Equipped Match Background:', bgToEquip);
+    } else if (activeTab === 'decider') {
+      await setTurnDeciderBackgroundEquip(bgToEquip);
+      setSelectedBackground(background);
+      console.log('✅ Equipped Turn Decider Background:', bgToEquip);
+    } else if (activeTab === 'victory') {
+      await setVictoryBackgroundEquip(bgToEquip);
+      setSelectedBackground(background);
+      console.log('✅ Equipped Victory Background:', bgToEquip);
     }
   };
 
@@ -131,11 +185,19 @@ export const InventorySection: React.FC = () => {
   };
 
   const getCurrentBackgrounds = () => {
-    return (activeTab === 'display' || activeTab === 'vibin') ? ownedDisplayBackgrounds : ownedMatchBackgrounds;
+    if (activeTab === 'display' || activeTab === 'vibin') return ownedDisplayBackgrounds;
+    if (activeTab === 'match' || activeTab === 'flexin') return ownedMatchBackgrounds;
+    if (activeTab === 'decider') return ownedDeciderBackgrounds;
+    if (activeTab === 'victory') return ownedVictoryBackgrounds;
+    return ownedDisplayBackgrounds;
   };
 
   const getEquippedBackground = () => {
-    return (activeTab === 'display' || activeTab === 'vibin') ? DisplayBackgroundEquip : MatchBackgroundEquip;
+    if (activeTab === 'display' || activeTab === 'vibin') return DisplayBackgroundEquip;
+    if (activeTab === 'match' || activeTab === 'flexin') return MatchBackgroundEquip;
+    if (activeTab === 'decider') return TurnDeciderBackgroundEquip;
+    if (activeTab === 'victory') return VictoryBackgroundEquip;
+    return DisplayBackgroundEquip;
   };
 
   if (loading) {
@@ -315,7 +377,8 @@ export const InventorySection: React.FC = () => {
       </div>
       
       {/* Navigation - Hidden on Power tab mobile, visible on desktop and other tabs */}
-      <div className={`w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-4 flex-shrink-0 ${activeTab === 'power' ? 'hidden md:flex' : 'flex'}`}>
+      <div className={`w-full max-w-[60rem] flex flex-wrap items-center justify-center gap-[1rem] mb-4 flex-shrink-0 ${activeTab === 'power' ? 'hidden md:flex' : 'flex'}`}>
+        {/* First Row: Power, Vibin, Flexin */}
         <div className="flex items-center justify-center gap-2 md:gap-4">
           <button
             onClick={() => handleTabChange('power')}
@@ -387,6 +450,58 @@ export const InventorySection: React.FC = () => {
               textTransform: 'uppercase' 
             }}>
               Flexin
+            </span>
+          </button>
+        </div>
+        
+        {/* Second Row: Decider, Victory */}
+        <div className="flex items-center justify-center gap-2 md:gap-4 w-full md:w-auto">
+          <button
+            onClick={() => handleTabChange('decider')}
+            className={`tab-button nav-button ${activeTab === 'decider' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] transition-all duration-300 h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px]`}
+            style={{
+              display: 'flex',
+              width: 'fit-content',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '10px',
+              border: activeTab === 'decider' ? '2px solid #FFD700' : '2px solid transparent',
+              borderRadius: '18px',
+              background: 'transparent',
+              cursor: 'pointer',
+            }}
+          >
+            <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
+              color: activeTab === 'decider' ? '#FFF' : '#FFF', 
+              fontFamily: 'Audiowide', 
+              fontWeight: 400, 
+              textTransform: 'uppercase' 
+            }}>
+              Decider
+            </span>
+          </button>
+          <button
+            onClick={() => handleTabChange('victory')}
+            className={`tab-button nav-button ${activeTab === 'victory' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] transition-all duration-300 h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px]`}
+            style={{
+              display: 'flex',
+              width: 'fit-content',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '10px',
+              border: activeTab === 'victory' ? '2px solid #FFD700' : '2px solid transparent',
+              borderRadius: '18px',
+              background: 'transparent',
+              cursor: 'pointer',
+            }}
+          >
+            <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
+              color: activeTab === 'victory' ? '#FFF' : '#FFF', 
+              fontFamily: 'Audiowide', 
+              fontWeight: 400, 
+              textTransform: 'uppercase' 
+            }}>
+              Victory
             </span>
           </button>
         </div>
