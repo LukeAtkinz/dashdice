@@ -2,3 +2,8 @@ export { default as PowerTab } from './PowerTab';
 export { default as PowerCard } from './PowerCard';
 export { default as LoadoutByCategoryEditor } from './LoadoutByCategoryEditor';
 export { default as PowerRoadmap } from './PowerRoadmap';
+export { default as VibinTab } from './VibinTab';
+export { default as FlexinTab } from './FlexinTab';
+export { default as DeciderTab } from './DeciderTab';
+export { default as VictoryTab } from './VictoryTab';
+export { default as VaultTabs } from './VaultTabs';

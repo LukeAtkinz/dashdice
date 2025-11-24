@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useBackground } from '@/context/BackgroundContext';
 import { BackgroundService } from '@/services/backgroundService';
-import { resolveBackgroundPath } from '@/config/backgrounds';
+import { resolveBackgroundPath, getVibinBackgrounds } from '@/config/backgrounds';
 import { MobileBackgroundPreview } from '@/components/ui/MobileBackgroundPreview';
 
 const rarityColors = {
@@ -15,12 +15,15 @@ const rarityColors = {
 };
 
 export default function VibinTab() {
-  const { DisplayBackgroundEquip, setDisplayBackgroundEquip, availableBackgrounds } = useBackground();
+  const { DisplayBackgroundEquip, setDisplayBackgroundEquip } = useBackground();
   const [previewBackground, setPreviewBackground] = useState<any>(null);
+
+  // Get only Vibin backgrounds (display backgrounds)
+  const vibinBackgrounds = useMemo(() => getVibinBackgrounds(), []);
 
   // Convert backgrounds to inventory format with rarity
   const backgroundItems = useMemo(() => {
-    return availableBackgrounds.map((bg, index) => {
+    return vibinBackgrounds.map((bg, index) => {
       const bgConfig = BackgroundService.getBackgroundSafely(bg.id);
       const resolved = resolveBackgroundPath(bg.id, 'inventory-preview');
       const previewPath = resolved?.path;
@@ -33,11 +36,11 @@ export default function VibinTab() {
         background: bgConfig
       };
     });
-  }, [availableBackgrounds]);
+  }, [vibinBackgrounds]);
 
   const handleEquipDisplay = async (item: any) => {
     try {
-      const bgToEquip = availableBackgrounds.find(bg => bg.id === item.id);
+      const bgToEquip = vibinBackgrounds.find(bg => bg.id === item.id);
       if (bgToEquip) {
         console.log('🎨 Equipping display background:', bgToEquip);
         await setDisplayBackgroundEquip(bgToEquip);

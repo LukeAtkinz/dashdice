@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useBackground } from '@/context/BackgroundContext';
 import { BackgroundService } from '@/services/backgroundService';
-import { resolveBackgroundPath } from '@/config/backgrounds';
+import { resolveBackgroundPath, getFlexinBackgrounds } from '@/config/backgrounds';
 import { MobileBackgroundPreview } from '@/components/ui/MobileBackgroundPreview';
 
 const rarityColors = {
@@ -15,12 +15,15 @@ const rarityColors = {
 };
 
 export default function FlexinTab() {
-  const { MatchBackgroundEquip, setMatchBackgroundEquip, availableBackgrounds } = useBackground();
+  const { MatchBackgroundEquip, setMatchBackgroundEquip } = useBackground();
   const [previewBackground, setPreviewBackground] = useState<any>(null);
+
+  // Get only Flexin backgrounds (match backgrounds)
+  const flexinBackgrounds = useMemo(() => getFlexinBackgrounds(), []);
 
   // Convert backgrounds to inventory format with rarity
   const backgroundItems = useMemo(() => {
-    return availableBackgrounds.map((bg, index) => {
+    return flexinBackgrounds.map((bg, index) => {
       const bgConfig = BackgroundService.getBackgroundSafely(bg.id);
       const resolved = resolveBackgroundPath(bg.id, 'inventory-preview');
       const previewPath = resolved?.path;
@@ -33,11 +36,11 @@ export default function FlexinTab() {
         background: bgConfig
       };
     });
-  }, [availableBackgrounds]);
+  }, [flexinBackgrounds]);
 
   const handleEquipMatch = async (item: any) => {
     try {
-      const bgToEquip = availableBackgrounds.find(bg => bg.id === item.id);
+      const bgToEquip = flexinBackgrounds.find(bg => bg.id === item.id);
       if (bgToEquip) {
         console.log('🎮 Equipping match background:', bgToEquip);
         await setMatchBackgroundEquip(bgToEquip);

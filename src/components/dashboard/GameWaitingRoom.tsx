@@ -88,7 +88,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   matchBackground // Add matchBackground prop
 }) => {
   const { user } = useAuth();
-  const { DisplayBackgroundEquip, MatchBackgroundEquip } = useBackground();
+  const { DisplayBackgroundEquip, MatchBackgroundEquip, TurnDeciderBackgroundEquip } = useBackground();
   
   // Remove performance-impacting logs
   // console.log('🎮 GameWaitingRoom: Received gameMode:', gameMode);
@@ -151,26 +151,54 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const opponentBackground = opponentData?.matchBackgroundEquipped || opponentData?.displayBackgroundEquipped;
   const { backgroundPath: opponentBgPath, isVideo: opponentBgIsVideo } = useWaitingRoomBackground(opponentBackground as any);
   
-  // World video backgrounds for split-screen layout
+  // Turn Decider backgrounds for split-screen layout
   const [topVideo, setTopVideo] = useState<string>('');
   const [bottomVideo, setBottomVideo] = useState<string>('');
   const videoInitialized = React.useRef(false);
   
-  const worldVideos = useMemo(() => [
-    '/World/Awaken/Awakened.mp4',
-    '/World/Lead the way/Lead the way.mp4',
-    '/World/Little Critters/Little Critters.mp4',
-    '/World/Web Climber/Web Climber.mp4'
-  ], []);
+  const turnDeciderBackgrounds = useMemo(() => {
+    const { getTurnDeciderBackgrounds, resolveBackgroundPath } = require('@/config/backgrounds');
+    const bgs = getTurnDeciderBackgrounds();
+    return bgs.map((bg: any) => {
+      const resolved = resolveBackgroundPath(bg.id, 'waiting-room');
+      return resolved?.path || '';
+    }).filter((path: string) => path);
+  }, []);
   
   useEffect(() => {
-    if (!videoInitialized.current && worldVideos.length > 0) {
-      const shuffled = [...worldVideos].sort(() => Math.random() - 0.5);
-      setTopVideo(shuffled[0]);
-      setBottomVideo(shuffled[1]);
+    if (!videoInitialized.current) {
+      const { resolveBackgroundPath } = require('@/config/backgrounds');
+      
+      // Bottom video: User's Turn Decider background
+      if (TurnDeciderBackgroundEquip) {
+        const resolved = resolveBackgroundPath(TurnDeciderBackgroundEquip.id, 'waiting-room');
+        setBottomVideo(resolved?.path || '');
+      }
+      
+      // Top video: Opponent's Turn Decider background (or random until opponent joins)
+      if (opponentData?.turnDeciderBackgroundEquipped) {
+        const resolved = resolveBackgroundPath(opponentData.turnDeciderBackgroundEquipped.id || opponentData.turnDeciderBackgroundEquipped, 'waiting-room');
+        setTopVideo(resolved?.path || '');
+      } else if (turnDeciderBackgrounds.length > 0) {
+        // Random Turn Decider background until opponent joins
+        const randomBg = turnDeciderBackgrounds[Math.floor(Math.random() * turnDeciderBackgrounds.length)];
+        setTopVideo(randomBg);
+      }
+      
       videoInitialized.current = true;
     }
-  }, [worldVideos]);
+  }, [TurnDeciderBackgroundEquip, opponentData, turnDeciderBackgrounds]);
+  
+  // Update top video when opponent joins with their Turn Decider background
+  useEffect(() => {
+    if (opponentData?.turnDeciderBackgroundEquipped) {
+      const { resolveBackgroundPath } = require('@/config/backgrounds');
+      const resolved = resolveBackgroundPath(opponentData.turnDeciderBackgroundEquipped.id || opponentData.turnDeciderBackgroundEquipped, 'waiting-room');
+      if (resolved?.path) {
+        setTopVideo(resolved.path);
+      }
+    }
+  }, [opponentData?.turnDeciderBackgroundEquipped]);
   
   // Handle transition completion
   const handleTransitionComplete = () => {

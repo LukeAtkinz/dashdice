@@ -429,6 +429,15 @@ export const getVibinBackgrounds = (): Background[] => {
 };
 
 /**
+ * Get backgrounds for Flexin tab (match backgrounds - same as Vibin for now)
+ */
+export const getFlexinBackgrounds = (): Background[] => {
+  return AVAILABLE_BACKGROUNDS.filter(bg => 
+    ['as-they-fall', 'end-of-the-dragon', 'new-day', 'on-a-mission', 'underwater', 'long-road-ahead', 'relax'].includes(bg.id)
+  );
+};
+
+/**
  * Get backgrounds for Turn Decider tab
  */
 export const getTurnDeciderBackgrounds = (): Background[] => {
