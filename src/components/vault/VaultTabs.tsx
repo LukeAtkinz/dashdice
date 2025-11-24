@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import PowerTab from './PowerTab';
 import VibinTab from '@/components/vault/VibinTab';
 import FlexinTab from '@/components/vault/FlexinTab';
@@ -77,48 +76,25 @@ export default function VaultTabs({ initialTab = 'power', onTabChange }: VaultTa
         </button>
       </div>
 
-      {/* Tab Content with Animation */}
+      {/* Tab Content - Instant Switching */}
       <div className="flex-1 overflow-hidden">
-        <AnimatePresence mode="wait">
-          {activeTab === 'power' && (
-            <motion.div
-              key="power"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.2 }}
-              className="h-full"
-            >
-              <PowerTab activeTab={activeTab} onTabChange={handleTabChange} />
-            </motion.div>
-          )}
+        {activeTab === 'power' && (
+          <div className="h-full">
+            <PowerTab activeTab={activeTab} onTabChange={handleTabChange} />
+          </div>
+        )}
 
-          {activeTab === 'vibin' && (
-            <motion.div
-              key="vibin"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.2 }}
-              className="h-full"
-            >
-              <VibinTab />
-            </motion.div>
-          )}
+        {activeTab === 'vibin' && (
+          <div className="h-full">
+            <VibinTab />
+          </div>
+        )}
 
-          {activeTab === 'flexin' && (
-            <motion.div
-              key="flexin"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.2 }}
-              className="h-full"
-            >
-              <FlexinTab />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {activeTab === 'flexin' && (
+          <div className="h-full">
+            <FlexinTab />
+          </div>
+        )}
       </div>
     </div>
   );

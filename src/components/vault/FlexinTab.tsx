@@ -37,16 +37,19 @@ export default function FlexinTab() {
 
   const handleEquipMatch = async (item: any) => {
     try {
-      console.log('🎮 Equipping match background:', item.background);
-      await setMatchBackgroundEquip(item.background);
-      console.log('✅ Match Background Equipped:', item.background);
+      const bgToEquip = availableBackgrounds.find(bg => bg.id === item.id);
+      if (bgToEquip) {
+        console.log('🎮 Equipping match background:', bgToEquip);
+        await setMatchBackgroundEquip(bgToEquip);
+        console.log('✅ Match Background Equipped:', bgToEquip);
+      }
     } catch (error) {
       console.error('❌ Error equipping match background:', error);
     }
   };
 
   const isEquippedMatch = (item: any) => {
-    return MatchBackgroundEquip?.id === item.background?.id;
+    return MatchBackgroundEquip?.id === item.id;
   };
 
   const getEquipButtonStyle = (isEquipped: boolean) => {
@@ -89,25 +92,11 @@ export default function FlexinTab() {
                   border: `1px solid ${rarityColors[item.rarity as keyof typeof rarityColors]}`
                 }}
               >
-                {item.preview.includes('.mp4') ? (
-                  <video 
-                    className="w-full h-full object-cover rounded-[15px]"
-                    src={item.preview}
-                    loop
-                    muted
-                    autoPlay
-                    playsInline
-                    controls={false}
-                    preload="metadata"
-                    style={{ pointerEvents: 'none' }}
-                  />
-                ) : (
-                  <img 
-                    className="w-full h-full object-cover rounded-[15px]"
-                    src={item.preview}
-                    alt={item.name}
-                  />
-                )}
+                <img 
+                  className="w-full h-full object-cover rounded-[15px]"
+                  src={item.preview}
+                  alt={item.name}
+                />
               </div>
 
               {/* Background Info */}

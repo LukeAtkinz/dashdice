@@ -37,16 +37,19 @@ export default function VibinTab() {
 
   const handleEquipDisplay = async (item: any) => {
     try {
-      console.log('🎨 Equipping display background:', item.background);
-      await setDisplayBackgroundEquip(item.background);
-      console.log('✅ Display Background Equipped:', item.background);
+      const bgToEquip = availableBackgrounds.find(bg => bg.id === item.id);
+      if (bgToEquip) {
+        console.log('🎨 Equipping display background:', bgToEquip);
+        await setDisplayBackgroundEquip(bgToEquip);
+        console.log('✅ Display Background Equipped:', bgToEquip);
+      }
     } catch (error) {
       console.error('❌ Error equipping display background:', error);
     }
   };
 
   const isEquippedDisplay = (item: any) => {
-    return DisplayBackgroundEquip?.id === item.background?.id;
+    return DisplayBackgroundEquip?.id === item.id;
   };
 
   const getEquipButtonStyle = (isEquipped: boolean) => {
@@ -89,25 +92,11 @@ export default function VibinTab() {
                   border: `1px solid ${rarityColors[item.rarity as keyof typeof rarityColors]}`
                 }}
               >
-                {item.preview.includes('.mp4') ? (
-                  <video 
-                    className="w-full h-full object-cover rounded-[15px]"
-                    src={item.preview}
-                    loop
-                    muted
-                    autoPlay
-                    playsInline
-                    controls={false}
-                    preload="metadata"
-                    style={{ pointerEvents: 'none' }}
-                  />
-                ) : (
-                  <img 
-                    className="w-full h-full object-cover rounded-[15px]"
-                    src={item.preview}
-                    alt={item.name}
-                  />
-                )}
+                <img 
+                  className="w-full h-full object-cover rounded-[15px]"
+                  src={item.preview}
+                  alt={item.name}
+                />
               </div>
 
               {/* Background Info */}
