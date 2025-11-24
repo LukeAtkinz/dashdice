@@ -21,6 +21,7 @@ import { useMatchBackground } from '@/hooks/useOptimizedBackground';
 import { MatchChatFeed } from '@/components/match/MatchChatFeed';
 import { MatchVoiceButton } from '@/components/match/MatchVoiceButton';
 import { useMatchChat } from '@/context/MatchChatContext';
+import { getBackgroundById } from '@/config/backgrounds';
 
 interface MatchProps {
   gameMode?: string;
@@ -564,25 +565,43 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
   const getValidBackgroundObject = useCallback((background: any) => {
     console.log('🖼️ getValidBackgroundObject called with:', background);
     
+    // Use new Background System V2.0
+    const defaultBackground = getBackgroundById('relax');
+    
     if (!background) {
       console.log('⚠️ Background is null/undefined, using default Relax');
-      return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+      return defaultBackground;
     }
     
-    // Check if background is already a valid object
-    if (typeof background === 'object' && background.name && background.file && background.type) {
-      console.log('✅ Background object is valid:', background);
-      return background;
+    // Check if background has ID (new format)
+    if (typeof background === 'object' && background.id) {
+      const bg = getBackgroundById(background.id);
+      if (bg) {
+        console.log('✅ Background object is valid (new format):', bg);
+        return bg;
+      }
     }
     
-    // If background is a string (background ID from old system)
+    // Legacy format: has name/file/type - migrate to new system
+    if (typeof background === 'object' && background.name) {
+      const bg = getBackgroundById(background.name.toLowerCase().replace(/\s+/g, '-'));
+      if (bg) {
+        console.log('✅ Background migrated from legacy format:', bg);
+        return bg;
+      }
+    }
+    
+    // If background is a string (background ID or name)
     if (typeof background === 'string') {
-      console.log('⚠️ Background is a string (ID), using default:', background);
-      return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+      const bg = getBackgroundById(background);
+      if (bg) {
+        console.log('✅ Background resolved from ID string:', bg);
+        return bg;
+      }
     }
     
     console.log('❌ Background format unknown, using default:', background);
-    return { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' };
+    return defaultBackground;
   }, []);
 
   const VideoBackground = useCallback(({ src, className }: { src: string; className: string }) => (

@@ -19,6 +19,7 @@ import { MatchTransition } from '@/components/match/MatchTransition';
 import { MatchLifecycleService } from '@/services/matchLifecycleService';
 import { analyticsService } from '@/services/analyticsService';
 import { useWaitingRoomBackground } from '@/hooks/useOptimizedBackground';
+import { getBackgroundById } from '@/config/backgrounds';
 
 interface GameWaitingRoomProps {
   gameMode: string;
@@ -623,8 +624,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   playerId: opponentPlayerId,
                   playerDisplayName: opponentProfile?.displayName || 'Player 2',
                   playerStats: opponentProfile?.stats || {},
-                  displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
-                  matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+                  displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped || getBackgroundById('relax'),
+                  matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped || getBackgroundById('relax'),
                 };
                 setGoBackendOpponentData(opponentDisplayData);
                 // Stored Go backend opponent data
@@ -659,8 +660,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     playerId: opponentPlayerId,
                     playerDisplayName: goBackendOpponentData?.playerDisplayName || (opponentPlayerId.includes('bot') ? 'AI Player' : 'Player 2'),
                     playerStats: goBackendOpponentData?.playerStats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
-                    displayBackgroundEquipped: goBackendOpponentData?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
-                    matchBackgroundEquipped: goBackendOpponentData?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+                    displayBackgroundEquipped: goBackendOpponentData?.displayBackgroundEquipped || getBackgroundById('relax'),
+                    matchBackgroundEquipped: goBackendOpponentData?.matchBackgroundEquipped || getBackgroundById('relax'),
                   };
                   setGoBackendOpponentData(fallbackOpponentData);
                 }
@@ -755,8 +756,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     playerId: user!.uid,
                     playerDisplayName: userProfile.displayName || 'Player 1',
                     playerStats: userProfile.stats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
-                    displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
-                    matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+                    displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped || getBackgroundById('relax'),
+                    matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped || getBackgroundById('relax'),
                     playerScore: startingScore, // Use proper starting score
                     turnActive: false, // Will be set by turn decider
                     powerLoadout: hostPowerLoadout // Add power loadout for abilities
@@ -766,8 +767,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     playerId: opponentPlayerId,
                     playerDisplayName: goBackendOpponentData?.playerDisplayName || opponentProfile?.displayName || (opponentPlayerId.includes('bot') ? 'AI Player' : 'Player 2'),
                     playerStats: goBackendOpponentData?.playerStats || opponentProfile?.stats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
-                    displayBackgroundEquipped: goBackendOpponentData?.displayBackgroundEquipped || opponentProfile?.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
-                    matchBackgroundEquipped: goBackendOpponentData?.matchBackgroundEquipped || opponentProfile?.inventory?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+                    displayBackgroundEquipped: goBackendOpponentData?.displayBackgroundEquipped || opponentProfile?.inventory?.displayBackgroundEquipped || getBackgroundById('relax'),
+                    matchBackgroundEquipped: goBackendOpponentData?.matchBackgroundEquipped || opponentProfile?.inventory?.matchBackgroundEquipped || getBackgroundById('relax'),
                     playerScore: startingScore, // Use proper starting score
                     turnActive: false, // Will be set by turn decider
                     powerLoadout: opponentPowerLoadout // Add power loadout for abilities
@@ -821,8 +822,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       playerId: opponentPlayerId,
                       playerDisplayName: opponentProfile?.displayName || 'Player 2',
                       playerStats: opponentProfile?.stats || {},
-                      displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
-                      matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+                      displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped || getBackgroundById('relax'),
+                      matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped || getBackgroundById('relax'),
                     }
                   };
                   setWaitingRoomEntry(updatedWaitingRoom);
@@ -1785,8 +1786,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             const botOpponentData = {
               playerDisplayName: botResult.bot.displayName,
               playerId: botResult.bot.uid,
-              displayBackgroundEquipped: botResult.bot.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
-              matchBackgroundEquipped: botResult.bot.inventory?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+              displayBackgroundEquipped: botResult.bot.inventory?.displayBackgroundEquipped || getBackgroundById('relax'),
+              matchBackgroundEquipped: botResult.bot.inventory?.matchBackgroundEquipped || getBackgroundById('relax'),
               playerStats: {
                 bestStreak: botResult.bot.stats?.bestStreak || 0,
                 currentStreak: botResult.bot.stats?.currentStreak || 0,
