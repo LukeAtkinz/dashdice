@@ -10,7 +10,17 @@
 
 import { db } from '@/services/firebase';
 import { collection, doc, setDoc, onSnapshot, serverTimestamp, deleteDoc, Timestamp } from 'firebase/firestore';
-import { toUserBackground, getBackgroundById } from '@/config/backgrounds';
+import { getBackgroundById, resolveBackgroundPath, type Background } from '@/config/backgrounds';
+
+// Helper to convert new Background to legacy format
+const toUserBackground = (background: Background) => {
+  const resolved = resolveBackgroundPath(background.id, 'dashboard-display');
+  return {
+    name: background.name,
+    file: resolved?.path || '',
+    type: background.category === 'Videos' ? 'video' as const : 'image' as const
+  };
+};
 
 export interface GuestUserData {
   id: string;
@@ -141,16 +151,8 @@ class EnhancedGuestMatchmakingService {
       isGuest: true,
       createdAt: Date.now(),
       sessionId,
-      displayBackgroundEquipped: newDayBackground ? toUserBackground(newDayBackground) : {
-        name: 'New Day',
-        file: '/backgrounds/New Day.mp4',
-        type: 'video'
-      },
-      matchBackgroundEquipped: longRoadBackground ? toUserBackground(longRoadBackground) : {
-        name: 'Long Road Ahead',
-        file: '/backgrounds/Long Road Ahead.jpg',
-        type: 'image'
-      },
+      displayBackgroundEquipped: newDayBackground ? toUserBackground(newDayBackground) : undefined,
+      matchBackgroundEquipped: longRoadBackground ? toUserBackground(longRoadBackground) : undefined,
       playerStats: {
         bestStreak: 0,
         currentStreak: 0,

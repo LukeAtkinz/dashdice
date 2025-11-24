@@ -2,7 +2,7 @@
 
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/services/firebase';
-import { Background, AVAILABLE_BACKGROUNDS, getBackgroundById, getBackgroundUrl } from '@/config/backgrounds';
+import { Background, AVAILABLE_BACKGROUNDS, getBackgroundById, resolveBackgroundPath } from '@/config/backgrounds';
 
 export class BackgroundService {
   /**
@@ -42,7 +42,8 @@ export class BackgroundService {
    * Get background URL with proper formatting
    */
   static getBackgroundUrl(background: Background): string {
-    return getBackgroundUrl(background);
+    const resolved = resolveBackgroundPath(background.id, 'dashboard-display');
+    return resolved?.path || '';
   }
 
   /**
