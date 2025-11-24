@@ -7,6 +7,7 @@ import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { useAuth } from '@/context/AuthContext';
 import { MatchPreview } from '@/components/ui/MatchPreview';
+import { resolveBackgroundPath } from '@/config/backgrounds';
 import { FriendCardPreview } from '@/components/ui/FriendCardPreview';
 import PowerTab from '@/components/vault/PowerTab';
 
@@ -51,17 +52,18 @@ export const InventorySection: React.FC = () => {
 
   // Scrolling is now enabled for better user experience
 
-  // Convert backgrounds to inventory format matching reference
-  const ownedDisplayBackgrounds = availableBackgrounds.map((bg, index) => ({
-    id: index + 1,
-    name: bg.name,
-    url: bg.file,
-    videoUrl: bg.type === 'video' ? bg.file : null,
-    isVideo: bg.type === 'video',
-    isGradient: false,
-    rarity: index === 0 ? 'Epic' : index === 1 ? 'Rare' : index === 2 ? 'Common' : 'Masterpiece',
-    background: bg
-  }));
+  // Convert backgrounds to inventory format with Background System V2.0
+  const ownedDisplayBackgrounds = availableBackgrounds.map((bg) => {
+    // Use inventory-preview context for medium quality static images
+    const resolved = resolveBackgroundPath(bg.id, 'inventory-preview');
+    return {
+      id: bg.id, // Use background ID instead of index
+      name: bg.name,
+      previewUrl: resolved?.path || '/backgrounds/placeholder.jpg',
+      rarity: bg.rarity || 'COMMON',
+      background: bg
+    };
+  });
 
   const ownedMatchBackgrounds = ownedDisplayBackgrounds; // Same backgrounds for both tabs
 
@@ -72,10 +74,10 @@ export const InventorySection: React.FC = () => {
   // Set selected background when switching tabs and check equipped state
   useEffect(() => {
     if (activeTab === 'display' && DisplayBackgroundEquip && !selectedBackground) {
-      const found = ownedDisplayBackgrounds.find(bg => bg.background.file === DisplayBackgroundEquip.file);
+      const found = ownedDisplayBackgrounds.find(bg => bg.id === DisplayBackgroundEquip.id);
       if (found) setSelectedBackground(found);
     } else if (activeTab === 'match' && MatchBackgroundEquip && !selectedBackground) {
-      const found = ownedMatchBackgrounds.find(bg => bg.background.file === MatchBackgroundEquip.file);
+      const found = ownedMatchBackgrounds.find(bg => bg.id === MatchBackgroundEquip.id);
       if (found) setSelectedBackground(found);
     }
   }, [activeTab, DisplayBackgroundEquip, MatchBackgroundEquip, selectedBackground]);
@@ -83,21 +85,24 @@ export const InventorySection: React.FC = () => {
   // Check if background is equipped
   const isBackgroundEquipped = (background: any) => {
     if (activeTab === 'display') {
-      return DisplayBackgroundEquip && DisplayBackgroundEquip.file === background.background.file;
+      return DisplayBackgroundEquip && DisplayBackgroundEquip.id === background.id;
     } else {
-      return MatchBackgroundEquip && MatchBackgroundEquip.file === background.background.file;
+      return MatchBackgroundEquip && MatchBackgroundEquip.id === background.id;
     }
   };
 
   const handleEquipBackground = async (background: any) => {
     console.log('Equip Button Clicked:', { tab: activeTab, background });
     
-    if (activeTab === 'display') {
-      setDisplayBackgroundEquip(background.background);
-      console.log('Equipped Display Background:', background.background);
-    } else if (activeTab === 'match') {
-      setMatchBackgroundEquip(background.background);
-      console.log('Equipped Match Background:', background.background);
+    // Find the actual background object from availableBackgrounds
+    const bgToEquip = availableBackgrounds.find(bg => bg.id === background.id);
+    
+    if (activeTab === 'display' && bgToEquip) {
+      setDisplayBackgroundEquip(bgToEquip);
+      console.log('Equipped Display Background:', bgToEquip);
+    } else if (activeTab === 'match' && bgToEquip) {
+      setMatchBackgroundEquip(bgToEquip);
+      console.log('Equipped Match Background:', bgToEquip);
     }
   };
 
@@ -459,30 +464,13 @@ export const InventorySection: React.FC = () => {
                           height: '150px', 
                           borderRadius: '20px', 
                           border: selectedBackground?.id === background.id ? '2px solid #FF0080' : '1px solid rgba(255, 255, 255, 0.1)', 
-                          background: background.isGradient ? background.url : `url('${background.url}')`, 
+                          background: `url('${background.previewUrl}')`, 
                           backgroundSize: 'cover', 
                           backgroundPosition: 'center', 
                           backgroundRepeat: 'no-repeat', 
                           marginBottom: '10px' 
                         }}
                       >
-                        {background.isVideo && background.videoUrl && (
-                          <video 
-                            key={`video-${background.id}-${background.videoUrl}`} // Force re-render when video changes
-                            autoPlay 
-                            loop 
-                            muted 
-                            playsInline 
-                            controls={false}
-                            webkit-playsinline="true"
-                            x5-playsinline="true"
-                            preload="metadata"
-                            className="absolute inset-0 w-full h-full object-cover" 
-                            style={{ borderRadius: '20px' }}
-                          >
-                            <source src={background.videoUrl} type="video/mp4" />
-                          </video>
-                        )}
                         <div 
                           className="absolute inset-0 rounded-lg z-5" 
                           style={{ 
