@@ -522,8 +522,8 @@ const ProfileSection: React.FC = () => {
 
                 {/* Victory Screen Section */}
                 <div className="relative bg-black/60 backdrop-blur-sm border-x border-gray-700/50 p-6" style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}>
-                  <h3 className="text-white text-lg uppercase mb-3" style={{ fontFamily: 'Audiowide' }}>Victory Screen</h3>
-                  <div className="relative rounded-lg overflow-hidden flex items-center justify-center" style={{ height: '200px' }}>
+                  <h3 className="text-white text-lg uppercase mb-3 text-center" style={{ fontFamily: 'Audiowide' }}>Victory Screen</h3>
+                  <div className="relative rounded-xl overflow-hidden flex items-center justify-center border border-gray-700/50" style={{ height: '300px' }}>
                     <video
                       key={VictoryBackgroundEquip?.id || 'victory-screen-video'}
                       autoPlay
@@ -538,8 +538,8 @@ const ProfileSection: React.FC = () => {
 
                 {/* Match Decider Section */}
                 <div className="relative bg-black/60 backdrop-blur-sm border-x border-b border-gray-700/50 rounded-b-[20px] p-6" style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}>
-                  <h3 className="text-white text-lg uppercase mb-3" style={{ fontFamily: 'Audiowide' }}>Turn Decider</h3>
-                  <div className="relative rounded-lg overflow-hidden flex items-center justify-center" style={{ height: '200px' }}>
+                  <h3 className="text-white text-lg uppercase mb-3 text-center" style={{ fontFamily: 'Audiowide' }}>Turn Decider</h3>
+                  <div className="relative rounded-xl overflow-hidden flex items-center justify-center border border-gray-700/50" style={{ height: '300px' }}>
                     <video
                       key={TurnDeciderBackgroundEquip?.id || 'turn-decider-video'}
                       autoPlay
@@ -1281,7 +1281,21 @@ const ProfileSection: React.FC = () => {
         </div>
 
         {/* Mobile Tab Navigation - Fixed Above Bottom Nav */}
-        <div className="md:hidden fixed bottom-[70px] left-0 right-0 z-[60] px-4 py-3" style={{ background: 'rgba(0, 0, 0, 0.95)', backdropFilter: 'blur(10px)', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+        <div className="md:hidden fixed bottom-[70px] left-0 right-0 z-[60] px-4 py-3" style={{ 
+          background: DisplayBackgroundEquip?.name === 'On A Mission' 
+            ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)'
+            : (DisplayBackgroundEquip?.name === 'Long Road Ahead' || DisplayBackgroundEquip?.name === 'As They Fall' || DisplayBackgroundEquip?.name === 'End Of The Dragon')
+            ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.6) 0%, rgba(76, 29, 149, 0.4) 25%, rgba(30, 27, 75, 0.3) 50%, rgba(30, 58, 138, 0.4) 75%, rgba(59, 130, 246, 0.3) 100%)'
+            : DisplayBackgroundEquip?.name === 'New Day'
+            ? 'linear-gradient(0deg, #5a7579 0%, transparent 100%)'
+            : DisplayBackgroundEquip?.name === 'Relax'
+            ? 'linear-gradient(0deg, #407080 0%, transparent 100%)'
+            : DisplayBackgroundEquip?.name === 'Underwater'
+            ? 'linear-gradient(0deg, #00518c 0%, transparent 100%)'
+            : 'rgba(0, 0, 0, 0.95)',
+          backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' || DisplayBackgroundEquip?.name === 'As They Fall' || DisplayBackgroundEquip?.name === 'End Of The Dragon' ? 'blur(8px)' : 'blur(10px)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)' 
+        }}>
           <div className="flex items-center justify-center gap-4">
             {tabs.map((tab) => (
               <button

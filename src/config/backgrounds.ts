@@ -261,22 +261,23 @@ export const buildBackgroundPath = (
   quality: BackgroundQuality,
   forceImage = false
 ): string => {
-  const qualityFolder = 
-    quality === 'best' ? 'Best Quality' :
-    quality === 'medium' ? 'Medium Quailty' :  // Note: Actual folder is spelled 'Quailty'
-    'Low Quality';
-  
-  // Determine which folder to use
-  let folder: string;
-  let extension: string;
-  let baseFolder = 'backgrounds';
-  
   // Check if it's a Turn Decider or Victory Screen background
   const turnDeciderIds = ['arcade-assault', 'burning-the-wasteland', 'crazy-cough', 'from-the-deep', 'into-inferno', 'ivory-tower', 'jump'];
   const victoryIds = ['clout-shot', 'great-white', 'headshot', 'lab-rat', 'meow', 'nightfall', 'shadow-step', 'wind-blade'];
   
   const isTurnDecider = turnDeciderIds.includes(background.id);
   const isVictory = victoryIds.includes(background.id);
+  
+  // Game Backgrounds have typo 'Quailty', regular backgrounds use 'Quality'
+  const qualityFolder = 
+    quality === 'best' ? 'Best Quality' :
+    quality === 'medium' ? (isTurnDecider || isVictory ? 'Medium Quailty' : 'Medium Quality') :
+    'Low Quality';
+  
+  // Determine which folder to use
+  let folder: string;
+  let extension: string;
+  let baseFolder = 'backgrounds';
   
   if (isTurnDecider) {
     baseFolder = 'backgrounds/Game Backgrounds/Turn Decider';
@@ -436,19 +437,33 @@ export const getAllBackgroundIds = (): string[] => {
 
 /**
  * Get backgrounds for Vibin tab (display backgrounds)
+ * Explicitly excludes Turn Decider and Victory backgrounds
  */
 export const getVibinBackgrounds = (): Background[] => {
+  const vibinIds = ['as-they-fall', 'end-of-the-dragon', 'new-day', 'on-a-mission', 'underwater', 'long-road-ahead', 'relax'];
+  const turnDeciderIds = ['arcade-assault', 'burning-the-wasteland', 'crazy-cough', 'from-the-deep', 'into-inferno', 'ivory-tower', 'jump'];
+  const victoryIds = ['clout-shot', 'great-white', 'headshot', 'lab-rat', 'meow', 'nightfall', 'shadow-step', 'wind-blade'];
+  
   return AVAILABLE_BACKGROUNDS.filter(bg => 
-    ['as-they-fall', 'end-of-the-dragon', 'new-day', 'on-a-mission', 'underwater', 'long-road-ahead', 'relax'].includes(bg.id)
+    vibinIds.includes(bg.id) && 
+    !turnDeciderIds.includes(bg.id) && 
+    !victoryIds.includes(bg.id)
   );
 };
 
 /**
  * Get backgrounds for Flexin tab (match backgrounds - same as Vibin for now)
+ * Explicitly excludes Turn Decider and Victory backgrounds
  */
 export const getFlexinBackgrounds = (): Background[] => {
+  const flexinIds = ['as-they-fall', 'end-of-the-dragon', 'new-day', 'on-a-mission', 'underwater', 'long-road-ahead', 'relax'];
+  const turnDeciderIds = ['arcade-assault', 'burning-the-wasteland', 'crazy-cough', 'from-the-deep', 'into-inferno', 'ivory-tower', 'jump'];
+  const victoryIds = ['clout-shot', 'great-white', 'headshot', 'lab-rat', 'meow', 'nightfall', 'shadow-step', 'wind-blade'];
+  
   return AVAILABLE_BACKGROUNDS.filter(bg => 
-    ['as-they-fall', 'end-of-the-dragon', 'new-day', 'on-a-mission', 'underwater', 'long-road-ahead', 'relax'].includes(bg.id)
+    flexinIds.includes(bg.id) && 
+    !turnDeciderIds.includes(bg.id) && 
+    !victoryIds.includes(bg.id)
   );
 };
 
