@@ -47,29 +47,18 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   
   // Get winner's victory background - always use winner's victoryBackgroundEquipped from match data
   const victoryVideo = (() => {
-    console.log('🏆 Victory Screen - Winner Data:', {
-      winnerId: winner,
-      winnerData: winnerData,
-      victoryBackgroundEquipped: winnerData.victoryBackgroundEquipped,
-      hostData: matchData.hostData,
-      opponentData: matchData.opponentData
-    });
-    
     // Always use the winner's victoryBackgroundEquipped from match data
     if (winnerData.victoryBackgroundEquipped) {
       const bgId = typeof winnerData.victoryBackgroundEquipped === 'string' 
         ? winnerData.victoryBackgroundEquipped 
         : winnerData.victoryBackgroundEquipped.id;
       
-      console.log('🏆 Victory Screen - Resolving background:', { bgId });
       const resolved = resolveBackgroundPath(bgId, 'victory-screen');
-      console.log('🏆 Victory Screen - Resolved path:', resolved);
       
       if (resolved?.path) return resolved.path;
     }
     
     // Fallback to default
-    console.log('🏆 Victory Screen - Using fallback (wind-blade)');
     const resolved = resolveBackgroundPath('wind-blade', 'victory-screen');
     return resolved?.path || '/backgrounds/Game Backgrounds/Victory Screens/Best Quality/Wind Blade.mp4';
   })();
@@ -321,7 +310,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="text-6xl md:text-8xl font-bold mb-4"
+          className="text-7xl md:text-9xl font-bold mb-4"
           style={{ fontFamily: "Audiowide", textAlign: 'center' }}
         >
           {winner === currentUser.playerDisplayName ? (
@@ -329,7 +318,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
               <div className="text-yellow-400 drop-shadow-lg" style={{ textShadow: '0 0 40px rgba(255,215,0,0.8)' }}>
                 {winner}
               </div>
-              <div className="text-5xl md:text-6xl text-yellow-400 drop-shadow-lg mt-2" style={{ textShadow: '0 0 20px rgba(255,215,0,0.6)' }}>
+              <div className="text-5xl md:text-6xl text-yellow-400 drop-shadow-lg mt-2" style={{ textShadow: '0 0 20px rgba(255,215,0,0.6)', opacity: 0.7 }}>
                 WINS!
               </div>
             </div>
@@ -338,7 +327,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
               <div className="text-red-400 drop-shadow-lg" style={{ textShadow: '0 0 40px rgba(255,0,0,0.8)' }}>
                 {winner}
               </div>
-              <div className="text-5xl md:text-6xl text-red-400 drop-shadow-lg mt-2" style={{ textShadow: '0 0 20px rgba(255,0,0,0.6)' }}>
+              <div className="text-5xl md:text-6xl text-red-400 drop-shadow-lg mt-2" style={{ textShadow: '0 0 20px rgba(255,0,0,0.6)', opacity: 0.7 }}>
                 WINS!
               </div>
             </div>
@@ -396,41 +385,12 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         </div>
       </motion.div>
 
-      {/* Stats Toggle Button */}
-      <motion.button
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.3 }}
-        onClick={() => setShowStats(!showStats)}
-        style={{
-          fontFamily: "Audiowide",
-          textTransform: "uppercase",
-          display: 'flex',
-          width: '209px',
-          height: '56px',
-          padding: '4px 16px',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '10px',
-          borderRadius: '18px',
-          border: '2px solid rgba(255, 255, 255, 0.3)',
-          backdropFilter: 'blur(6px)',
-          background: "linear-gradient(135deg, #FFD700 0%, transparent 100%)",
-          color: "#000",
-          boxShadow: "0 4px 15px rgba(255, 215, 0, 0.3)",
-          cursor: 'pointer'
-        }}
-        className="hover:scale-105 transition-transform"
-      >
-        {showStats ? 'HIDE STATS' : 'STATS'}
-      </motion.button>
-
       {/* Match Statistics - Collapsible */}
       {showStats && (
         <motion.div
           initial={{ opacity: 0, y: 20, height: 0 }}
           animate={{ opacity: 1, y: 0, height: 'auto' }}
-          exit={{ opacity: 0, y: -20, height: 0 }}
+          exit={{ opacity: 0, y: 20, height: 0 }}
           transition={{ duration: 0.3 }}
           className="block p-4 md:p-6 bg-black/40 rounded-2xl border border-gray-600 backdrop-blur-md"
         >
@@ -457,13 +417,13 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
               </div>
               
               <div>
-                <p className="text-gray-300 text-sm">Biggest Turn Score</p>
+                <p className="text-gray-300 text-sm">Largest Score</p>
                 <p className="text-white font-bold text-lg">{matchData.hostData.matchStats?.biggestTurnScore || 0}</p>
               </div>
               
               <div>
-                <p className="text-gray-300 text-sm">Last Dice</p>
-                <p className="text-white font-bold text-lg">{matchData.hostData.matchStats?.lastDiceSum || 0}</p>
+                <p className="text-gray-300 text-sm">TOTAL AURA</p>
+                <p className="text-white font-bold text-lg">{matchData.hostData.matchStats?.totalAura || 0}</p>
               </div>
             </div>
           </div>
@@ -491,21 +451,19 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
               </div>
               
               <div>
-                <p className="text-gray-300 text-sm">Biggest Turn Score</p>
+                <p className="text-gray-300 text-sm">Largest Score</p>
                 <p className="text-white font-bold text-lg">{matchData.opponentData.matchStats?.biggestTurnScore || 0}</p>
               </div>
               
               <div>
-                <p className="text-gray-300 text-sm">Last Dice</p>
-                <p className="text-white font-bold text-lg">{matchData.opponentData.matchStats?.lastDiceSum || 0}</p>
+                <p className="text-gray-300 text-sm">TOTAL AURA</p>
+                <p className="text-white font-bold text-lg">{matchData.opponentData.matchStats?.totalAura || 0}</p>
               </div>
             </div>
           </div>
         </div>
-        </motion.div>
-      )}
-
-      {/* Incoming Rematch Request - Hidden on Mobile */}
+      </motion.div>
+      )}      {/* Incoming Rematch Request - Hidden on Mobile */}
       {incomingRematch && (
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -619,38 +577,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         )}
       </motion.div>
 
-      {/* Celebration Animation */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2 }}
-        className="absolute inset-0 pointer-events-none"
-      >
-        {/* Confetti-like elements */}
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            initial={{ 
-              opacity: 0, 
-              y: -100, 
-              x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 800),
-              rotate: 0
-            }}
-            animate={{ 
-              opacity: [0, 1, 0], 
-              y: (typeof window !== 'undefined' ? window.innerHeight : 800) + 100,
-              rotate: 360 * (Math.random() > 0.5 ? 1 : -1)
-            }}
-            transition={{ 
-              duration: 3 + Math.random() * 2,
-              delay: Math.random() * 2,
-              repeat: Infinity,
-              repeatDelay: 5 + Math.random() * 5
-            }}
-            className="absolute w-4 h-4 bg-yellow-400 rounded-full"
-          />
-        ))}
-      </motion.div>
+
 
       {/* Mobile Incoming Rematch Request - Above nav buttons */}
       {incomingRematch && (
@@ -724,26 +651,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         </motion.div>
       )}
 
-      {/* Stats Button - Triangle layout above Dashboard/Rematch */}
-      <div className="md:hidden fixed bottom-[80px] left-0 right-0 w-full flex justify-center z-50">
-        <button
-          onClick={() => setShowStats(!showStats)}
-          className="text-white font-bold transition-all active:scale-95 px-8 py-3"
-          style={{
-            fontFamily: "Audiowide",
-            textTransform: "uppercase" as const,
-            fontSize: '16px',
-            background: 'transparent',
-            border: 'none',
-            textDecoration: showStats ? 'underline' : 'none',
-            textUnderlineOffset: '4px'
-          }}
-        >
-          STATS
-        </button>
-      </div>
-
-      {/* Mobile Nav-Style Buttons - Fixed at bottom like Play/Save buttons */}
+      {/* Mobile Nav-Style Buttons - Fixed at bottom with STATS */}
       <div
         className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-stretch z-50 backdrop-blur-sm"
         style={{
@@ -751,11 +659,29 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
           
         }}
       >
+        {/* STATS Button */}
+        <button
+          onClick={() => setShowStats(!showStats)}
+          className="text-white text-xl font-bold transition-all active:scale-95 flex items-center justify-center"
+          style={{
+            width: rematchState === 'idle' ? '33.33%' : '50%',
+            height: '100%',
+            fontFamily: "Audiowide",
+            textTransform: "uppercase" as const,
+            border: 'none',
+            borderRadius: '0px',
+            backdropFilter: 'blur(2px)',
+          }}
+        >
+          <span className="text-center">{showStats ? 'CLOSE' : 'STATS'}</span>
+        </button>
+        
+        {/* DASHBOARD Button */}
         <button
           onClick={onLeaveMatch}
           className="text-white text-xl font-bold transition-all active:scale-95 flex items-center justify-center"
           style={{
-            width: rematchState === 'idle' ? '50%' : '100%',
+            width: rematchState === 'idle' ? '33.33%' : '50%',
             height: '100%',
             fontFamily: "Audiowide",
             textTransform: "uppercase" as const,
@@ -772,7 +698,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
             onClick={handleRequestRematch}
             className="text-white text-xl font-bold transition-all active:scale-95 flex items-center justify-center"
             style={{
-              width: '50%',
+              width: '33.33%',
               height: '100%',
               fontFamily: "Audiowide",
               textTransform: "uppercase" as const,

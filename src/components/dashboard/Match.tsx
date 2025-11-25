@@ -86,7 +86,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                            matchData.startedAt?.toMillis?.() || 
                            matchData.createdAt?.toMillis?.();
       matchStartTime.current = gameStartTime || Date.now();
-      console.log('⏱️ Match start time initialized:', new Date(matchStartTime.current));
     }
   }, [matchData]);
   
@@ -176,7 +175,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         );
         
         if (hasLuckTurner) {
-          console.log('🍀 Roll complete - removing Luck Turner effect from host');
           const remainingEffects = hostEffects.filter((effect: any) => 
             effect.abilityId !== 'luck_turner' && !effect.effectId?.includes('luck_turner')
           );
@@ -196,7 +194,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         );
         
         if (hasLuckTurner) {
-          console.log('🍀 Roll complete - removing Luck Turner effect from opponent');
           const remainingEffects = opponentEffects.filter((effect: any) => 
             effect.abilityId !== 'luck_turner' && !effect.effectId?.includes('luck_turner')
           );
@@ -224,12 +221,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     const currentPlayerId = user.uid;
     const opponentPlayerId = isHost ? opponentId : hostId;
     
-    console.log('🧢 Checking Hard Hat status:', {
-      currentPlayerId,
-      opponentPlayerId,
-      activeEffects: matchData.gameData.activeEffects
-    });
-    
     // Check current player's Hard Hat status
     const currentHasHardHat = matchData.gameData.activeEffects?.[currentPlayerId]?.some((effect: any) =>
       effect.abilityId === 'hard_hat' || effect.effectId?.includes('hard_hat')
@@ -240,22 +231,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       effect.abilityId === 'hard_hat' || effect.effectId?.includes('hard_hat')
     ) || false;
     
-    console.log('🧢 Hard Hat status:', {
-      currentHasHardHat,
-      opponentHasHardHat,
-      previousCurrent: previousHardHatStateRef.current.current,
-      previousOpponent: previousHardHatStateRef.current.opponent
-    });
-    
     // CURRENT PLAYER: Hard Hat just activated
     if (currentHasHardHat && !previousHardHatStateRef.current.current) {
-      console.log('🧢 Current player activated Hard Hat - showing initial animation');
       setShowHardHatInitialCurrent(true);
     }
     
     // CURRENT PLAYER: Hard Hat was active but now deactivated (it was used)
     if (!currentHasHardHat && previousHardHatStateRef.current.current) {
-      console.log('🧢 Current player Hard Hat was triggered - showing used animation');
       setShowHardHatUsedCurrent(true);
       setHardHatWhiteBorderCurrent(false); // Remove border immediately
       
@@ -266,7 +248,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     
     // OPPONENT: Hard Hat was active but now deactivated (it was used) - BOTH PLAYERS SEE THIS
     if (!opponentHasHardHat && previousHardHatStateRef.current.opponent) {
-      console.log('🧢 Opponent Hard Hat was triggered - showing used animation (visible to both players)');
       setShowHardHatUsedOpponent(true);
       setHardHatWhiteBorderOpponent(false); // Remove border (only on opponent's screen)
       
@@ -390,7 +371,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       
       // If Siphon is active but it's no longer the opponent's turn, reset it
       if (!opponentPlayer.turnActive) {
-        console.log('🔮 Siphon expired - opponent turn ended');
         setSiphonActive(false);
         showToast('💨 Siphon expired - opportunity missed!', 'warning', 4000);
       }
@@ -477,8 +457,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         // Show Siphon activation
         showToast(`🔮 Siphon triggered! Stolen ${pointsToSteal} points!`, 'success', 6000);
         
-        console.log(`⚔️ Siphon activated: Stealing ${pointsToSteal} points from ${currentPlayer.playerDisplayName}`);
-        
         // Prepare siphon effect for MatchService
         siphonEffect = {
           isActive: true,
@@ -496,16 +474,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   }, [matchData, user?.uid, siphonActive, showToast, setSiphonActive]);
 
   const handleAbilityUsed = useCallback((effect: any) => {
-    console.log('🔮 HANDLE ABILITY USED CALLED:', { effect, hasMatchData: !!matchData, hasUser: !!user });
-    
     if (!matchData || !user) return;
     
     try {
-      console.log('🔮 Ability effect applied:', { effect, matchId: matchData.id });
-      
       // Handle Luck Turner ability - Add to activeEffects
       if (effect.abilityId === 'luck_turner') {
-        console.log('🍀 Luck Turner ability activated - adding to activeEffects');
         
         // Add to Firestore activeEffects
         const matchRef = doc(db, 'matches', matchData.id!);
@@ -520,9 +493,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         
         updateDoc(matchRef, {
           [`gameData.activeEffects.${user.uid}`]: arrayUnion(newEffect)
-        }).then(() => {
-          console.log('✅ Luck Turner added to activeEffects in Firestore');
-          // Notification removed - visual effect on dice is enough
         }).catch((err) => {
           console.error('❌ Failed to add Luck Turner to activeEffects:', err);
         });
@@ -532,8 +502,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       
       // Handle Siphon ability specifically
       if (effect.abilityId === 'siphon') {
-        console.log('⚔️ Siphon ability activated - waiting for opponent to bank...');
-        
         // Set a flag in local state to track that Siphon is active
         // The actual stealing will happen when opponent banks
         setSiphonActive(true);
@@ -546,16 +514,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       
       // Handle Hard Hat ability - trigger initial animation immediately from callback
       if (effect.abilityId === 'hard_hat') {
-        console.log('🧢 Hard Hat ability activated via callback - triggering initial animation');
-        console.log('🧢 Setting showHardHatInitialCurrent to TRUE');
         setShowHardHatInitialCurrent(true);
-        console.log('🧢 State update called - animation should start');
-        
         return;
       }
-      
-      // Handle other ability effects here
-      console.log('Other ability effects not yet implemented');
       
     } catch (error) {
       console.error('❌ Error applying ability effect:', error);
@@ -563,13 +524,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   }, [matchData, user, showToast]);
 
   const getValidBackgroundObject = useCallback((background: any) => {
-    console.log('🖼️ getValidBackgroundObject called with:', background);
-    
     // Use new Background System V2.0
     const defaultBackground = getBackgroundById('relax');
     
     if (!background) {
-      console.log('⚠️ Background is null/undefined, using default Relax');
       return defaultBackground;
     }
     
@@ -577,7 +535,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     if (typeof background === 'object' && background.id) {
       const bg = getBackgroundById(background.id);
       if (bg) {
-        console.log('✅ Background object is valid (new format):', bg);
         return bg;
       }
     }
@@ -586,7 +543,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     if (typeof background === 'object' && background.name) {
       const bg = getBackgroundById(background.name.toLowerCase().replace(/\s+/g, '-'));
       if (bg) {
-        console.log('✅ Background migrated from legacy format:', bg);
         return bg;
       }
     }
@@ -595,12 +551,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     if (typeof background === 'string') {
       const bg = getBackgroundById(background);
       if (bg) {
-        console.log('✅ Background resolved from ID string:', bg);
         return bg;
       }
     }
     
-    console.log('❌ Background format unknown, using default:', background);
     return defaultBackground;
   }, []);
 
@@ -690,11 +644,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     if (!matchData || !user) return null;
     const isHost = matchData.hostData.playerId === user.uid;
     const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
-    console.log('🎮 Current Player Background Data:', {
-      isHost,
-      playerId: currentPlayer.playerId,
-      matchBackgroundEquipped: currentPlayer.matchBackgroundEquipped
-    });
     return getValidBackgroundObject(currentPlayer.matchBackgroundEquipped);
   }, [matchData, user]);
   
@@ -702,11 +651,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     if (!matchData || !user) return null;
     const isHost = matchData.hostData.playerId === user.uid;
     const opponent = isHost ? matchData.opponentData : matchData.hostData;
-    console.log('🎮 Opponent Background Data:', {
-      isHost,
-      playerId: opponent.playerId,
-      matchBackgroundEquipped: opponent.matchBackgroundEquipped
-    });
     return getValidBackgroundObject(opponent.matchBackgroundEquipped);
   }, [matchData, user]);
 
@@ -725,13 +669,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       ? matchData.opponentData?.turnDeciderBackgroundEquipped 
       : matchData.hostData.turnDeciderBackgroundEquipped;
     
-    console.log('🎬 TOP VIDEO (Opponent) - deciderBg:', opponentDeciderBg);
     if (opponentDeciderBg && typeof opponentDeciderBg === 'object' && 'id' in opponentDeciderBg) {
       const resolved = resolveBackgroundPath(opponentDeciderBg.id, 'waiting-room');
-      console.log('🎬 TOP VIDEO - Resolved:', resolved);
       return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
     }
-    console.log('🎬 TOP VIDEO - Using fallback');
     return '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
   }, [matchData, user]);
 
@@ -744,25 +685,18 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       ? matchData.hostData.turnDeciderBackgroundEquipped 
       : matchData.opponentData?.turnDeciderBackgroundEquipped;
     
-    console.log('🎬 BOTTOM VIDEO (Current User) - deciderBg:', currentUserDeciderBg);
     if (currentUserDeciderBg && typeof currentUserDeciderBg === 'object' && 'id' in currentUserDeciderBg) {
       const resolved = resolveBackgroundPath(currentUserDeciderBg.id, 'waiting-room');
-      console.log('🎬 BOTTOM VIDEO - Resolved:', resolved);
       return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
     }
-    console.log('🎬 BOTTOM VIDEO - Using fallback');
     return '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
   }, [matchData, user]);
 
   // Subscribe to match updates
   useEffect(() => {
-    console.log('🎮 Match: useEffect triggered with roomId:', roomId, 'user:', user?.uid);
     if (!roomId || !user) {
-      console.log('🎮 Match: Early return - missing roomId or user');
       return;
     }
-
-    console.log('🎮 Match: Subscribing to match:', roomId);
     setLoading(true);
     setError(null);
     setMatchData(null); // Clear previous match data
@@ -775,9 +709,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     setTurnDeciderDiceAnimation({ isSpinning: false, currentNumber: 1, finalNumber: null, reelSpeed: 0.1 });
 
     const unsubscribe = MatchService.subscribeToMatch(roomId, (data) => {
-      console.log('🎮 Match: Subscription callback called with data:', !!data);
       if (data) {
-        console.log('🎮 Match: Received match data for match ID:', data.id);
         setMatchData(data);
         
         // Initialize game phase if needed
@@ -791,7 +723,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           // Only set match start time if not already set (prevents resetting during game)
           if (!matchStartTime.current) {
             matchStartTime.current = Date.now();
-            console.log('⏱️ Match start time set for new match:', new Date(matchStartTime.current));
           }
         }
         
@@ -799,13 +730,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         setError(null);
       } else {
         // Don't immediately show error - match might be transitioning
-        console.log('⚠️ Match: No match data received - match may be ending or transitioning');
-        
         // Only set error after a brief delay to handle transitions
         setTimeout(() => {
           setMatchData(prev => {
             if (!prev) {
-              console.log('❌ Match: Setting error - match not found after timeout');
               setError('Match not found');
             }
             return prev;
@@ -1142,8 +1070,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     if (!matchData || !user) return;
     
     try {
-      console.log('🏆 Player claiming victory due to opponent abandonment');
-      
       // End the match with current user as winner
       await MatchService.endMatch(matchData.id!, user.uid);
       
@@ -1159,8 +1085,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   };
 
   const handleWaitForOpponent = () => {
-    console.log('⏰ Player choosing to wait for opponent return');
-    
     // Hide the notification but reset timer to check again later
     setShowAbandonmentNotification(false);
     if (abandonmentTimer) {
@@ -1181,7 +1105,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         matchData.gameData.turnDeciderDice && 
         previousTurnDeciderDice.current !== matchData.gameData.turnDeciderDice &&
         !turnDeciderDiceAnimation.isSpinning) {
-      console.log('🎰 Starting turn decider dice animation for result:', matchData.gameData.turnDeciderDice);
       // 🎰 Animation Durations per specification:
       // Turn Decider Dice: 2000ms (2.0 seconds) - slower for dramatic effect
       startSlotMachineAnimation('turnDecider', matchData.gameData.turnDeciderDice, 2000);
@@ -1204,7 +1127,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       // 🎰 Animation Durations per specification:
       // Both Dice 1 & 2: 1200ms (1.2 seconds)
       // Removed final number check to force animation even for same values
-      console.log('🎲 Starting Dice 2 animation with value:', matchData.gameData.diceTwo);
       startSlotMachineAnimation(2, matchData.gameData.diceTwo, 1200);
       
       // Record dice roll for achievements (batched - no DB write)
@@ -1567,8 +1489,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               matchId={matchData.id || ''}
               onLeaveMatch={() => setCurrentSection('dashboard')}
               onRematch={(rematchRoomId) => {
-                console.log('🎮 Match: Navigating to rematch waiting room:', rematchRoomId);
-                
                 // Navigate to waiting room instead of directly to match
                 setCurrentSection('waiting-room', { 
                   gameMode: matchData.gameMode || 'classic',
@@ -1663,12 +1583,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         const video = e.target as HTMLVideoElement;
                         // Show white border just before video ends (last 0.2s)
                         if (video.duration - video.currentTime < 0.2 && !hardHatWhiteBorderCurrent) {
-                          console.log('🧢 Showing white border before video ends');
                           setHardHatWhiteBorderCurrent(true);
                         }
                       }}
                       onEnded={() => {
-                        console.log('🧢 Hard Hat Initial animation ended');
                         setShowHardHatInitialCurrent(false);
                       }}
                     />
@@ -1695,7 +1613,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         opacity: 1
                       }}
                       onEnded={() => {
-                        console.log('🧢 Hard Hat Used animation ended');
                         setShowHardHatUsedCurrent(false);
                         setHardHatWhiteBorderCurrent(false);
                       }}
@@ -1972,7 +1889,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         opacity: 1
                       }}
                       onEnded={() => {
-                        console.log('🧢 Opponent Hard Hat Used animation ended');
                         setShowHardHatUsedOpponent(false);
                         setHardHatWhiteBorderOpponent(false);
                       }}

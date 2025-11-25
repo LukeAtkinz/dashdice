@@ -38,6 +38,7 @@ export interface MatchData {
       doubles: number;         // How many doubles player rolled
       biggestTurnScore: number; // Largest points in a single turn
       lastDiceSum: number;     // Score of the last dice rolled
+      totalAura: number;       // Total AURA collected in match
     };
   };
   
@@ -69,6 +70,7 @@ export interface MatchData {
       doubles: number;         // How many doubles player rolled
       biggestTurnScore: number; // Largest points in a single turn
       lastDiceSum: number;     // Score of the last dice rolled
+      totalAura: number;       // Total AURA collected in match
     };
   };
   

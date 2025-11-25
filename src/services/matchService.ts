@@ -200,7 +200,8 @@ export class MatchService {
                 banks: 0,
                 doubles: 0,
                 biggestTurnScore: 0,
-                lastDiceSum: 0
+                lastDiceSum: 0,
+                totalAura: 0
               }
             },
             opponentData: opponentParticipant ? {
@@ -218,7 +219,8 @@ export class MatchService {
                 banks: 0,
                 doubles: 0,
                 biggestTurnScore: 0,
-                lastDiceSum: 0
+                lastDiceSum: 0,
+                totalAura: 0
               }
             } : {
               // Default opponent data for waiting room
@@ -231,7 +233,7 @@ export class MatchService {
               playerScore: 0,
               roundScore: 0,
               isConnected: false,
-              matchStats: { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0 }
+              matchStats: { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0, totalAura: 0 }
             },
             createdAt: sessionData.createdAt,
             status: sessionData.status
@@ -831,7 +833,7 @@ export class MatchService {
             
             // Update bank statistics
             const playerStatsPath = isHost ? 'hostData.matchStats' : 'opponentData.matchStats';
-            const currentStats = currentPlayer.matchStats || { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0 };
+            const currentStats = currentPlayer.matchStats || { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0, totalAura: 0 };
             updates[`${playerStatsPath}.banks`] = currentStats.banks + 1;
           }
         } else {
@@ -893,7 +895,7 @@ export class MatchService {
       
       // Statistics tracking
       const playerStatsPath = isHost ? 'hostData.matchStats' : 'opponentData.matchStats';
-      const currentStats = currentPlayer.matchStats || { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0 };
+      const currentStats = currentPlayer.matchStats || { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0, totalAura: 0 };
       
       if (isDouble) {
         updates[`${playerStatsPath}.doubles`] = currentStats.doubles + 1;
@@ -927,6 +929,10 @@ export class MatchService {
         }
         
         updates[`gameData.playerAura.${playerId}`] = newPlayerAura;
+        
+        // Track total AURA collected in matchStats
+        const currentTotalAura = currentStats.totalAura || 0;
+        updates[`${playerStatsPath}.totalAura`] = currentTotalAura + auraGainThisRoll;
       }
       
       if (newTurnScore > currentStats.biggestTurnScore) {
@@ -1360,7 +1366,7 @@ export class MatchService {
       
       // 📊 TRACK BANKING STATISTICS (only for successful banks)
       const playerStatsPath = isHost ? 'hostData.matchStats' : 'opponentData.matchStats';
-      const currentStats = currentPlayer.matchStats || { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0 };
+      const currentStats = currentPlayer.matchStats || { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0, totalAura: 0 };
       
       if (bankingSuccess) {
         updates[`${playerStatsPath}.banks`] = currentStats.banks + 1;
@@ -1378,6 +1384,11 @@ export class MatchService {
         }
         
         updates[`gameData.playerAura.${playerId}`] = newPlayerAura;
+        
+        // Track total AURA collected in matchStats
+        const currentTotalAura = currentStats.totalAura || 0;
+        updates[`${playerStatsPath}.totalAura`] = currentTotalAura + auraGain;
+        
         console.log(`✨ AURA awarded: Player ${playerId} gained ${auraGain} AURA for banking. New total: ${newPlayerAura}`);
       }
       

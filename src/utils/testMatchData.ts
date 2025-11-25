@@ -38,7 +38,8 @@ export const createTestMatch = async () => {
           banks: 3,
           doubles: 2,
           biggestTurnScore: 16,
-          lastDiceSum: 8
+          lastDiceSum: 8,
+          totalAura: 12
         }
       },
 
@@ -150,7 +151,8 @@ export const createTestMatchWithTurnDecider = async () => {
           banks: 0,
           doubles: 0,
           biggestTurnScore: 0,
-          lastDiceSum: 0
+          lastDiceSum: 0,
+          totalAura: 0
         }
       },
 
@@ -181,7 +183,8 @@ export const createTestMatchWithTurnDecider = async () => {
           banks: 0,
           doubles: 0,
           biggestTurnScore: 0,
-          lastDiceSum: 0
+          lastDiceSum: 0,
+          totalAura: 0
         }
       },
 

@@ -414,7 +414,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             // 🎰 TURN DECIDER: Vertical spinning reel - casino style
             <>
               <motion.div
-                className="absolute inset-0 flex flex-col items-center justify-start"
+                className="absolute inset-0 flex flex-col items-center justify-center"
                 animate={{
                   y: [-900, 0, -900],
                 }}

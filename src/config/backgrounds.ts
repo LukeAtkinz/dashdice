@@ -24,8 +24,9 @@ export interface Background {
 // Context types - determines quality and whether to use video or image
 export type BackgroundContext = 
   | 'dashboard-display'    // Vibin tab - USE VIDEO - Best quality
-  | 'match-player-card'    // Match player cards with score - USE IMAGE (Video Image) - Best quality
+  | 'match-player-card'    // Match player cards with score - USE VIDEO - Best quality
   | 'waiting-room'         // Waiting room split screen - USE VIDEO - Best quality
+  | 'victory-screen'       // Victory screen - USE VIDEO - Best quality
   | 'friend-card'          // Friend list cards - USE IMAGE (Video Image) - Low quality
   | 'leaderboard-card'     // Leaderboard entries - USE IMAGE (Video Image) - Low quality
   | 'inventory-preview'    // Flexin/Vibin equip cards - USE IMAGE (Video Image) - Medium quality
@@ -235,8 +236,9 @@ export const getDefaultBackground = (): Background => {
  */
 const CONTEXT_QUALITY_MAP: Record<BackgroundContext, BackgroundQuality> = {
   'dashboard-display': 'best',
-  'match-player-card': 'best',  // Uses Video Images at best quality
+  'match-player-card': 'best',
   'waiting-room': 'best',
+  'victory-screen': 'best',
   'friend-card': 'low',
   'leaderboard-card': 'low',
   'inventory-preview': 'medium',
@@ -247,7 +249,6 @@ const CONTEXT_QUALITY_MAP: Record<BackgroundContext, BackgroundQuality> = {
  * Contexts that should use static images even for video backgrounds
  */
 const USE_IMAGE_CONTEXTS: BackgroundContext[] = [
-  'match-player-card',
   'friend-card',
   'leaderboard-card',
   'inventory-preview',
