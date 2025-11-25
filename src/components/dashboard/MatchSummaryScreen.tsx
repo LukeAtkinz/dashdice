@@ -21,9 +21,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
 }) => {
   const { user } = useAuth();
   const { DisplayBackgroundEquip, VictoryBackgroundEquip } = useBackground();
-  const [rematchState, setRematchState] = useState<'idle' | 'requesting' | 'waiting' | 'accepted' | 'expired' | 'opponent_left'>('idle');
-  const [rematchRoomId, setRematchRoomId] = useState<string | null>(null);
-  const [incomingRematch, setIncomingRematch] = useState<RematchRoom | null>(null);
+  const [rematchState, setRematchState] = useState<'idle' | 'sent'>('idle');
   const [showGameModeSelector, setShowGameModeSelector] = useState(false);
   const [showStats, setShowStats] = useState(false);
   
@@ -106,7 +104,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
     }
   };
 
-  // Rematch handlers - Simplified to use game invitations
+  // Rematch handlers - Using game invitation system (simple!)
   const handleRequestRematch = () => {
     if (!user || !opponentId || rematchState !== 'idle') return;
     setShowGameModeSelector(true);
@@ -117,9 +115,8 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
     
     try {
       setShowGameModeSelector(false);
-      setRematchState('requesting');
       
-      // Use GameInvitationService instead of complex rematch system
+      // Send game invitation with rematch flag
       const { GameInvitationService } = await import('@/services/gameInvitationService');
       
       const result = await GameInvitationService.sendGameInvitation(
@@ -135,12 +132,10 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         return;
       }
       
-      console.log('✅ Rematch invitation sent successfully');
-      setRematchState('waiting');
-      setRematchRoomId(roomId);
-      // Stay in 'requesting' state until opponent accepts
+      console.log('✅ Rematch invitation sent - opponent will see it in their game invitations');
+      setRematchState('sent');
     } catch (error) {
-      console.error('Error creating rematch room:', error);
+      console.error('Error sending rematch invitation:', error);
       setRematchState('idle');
     }
   };
@@ -148,113 +143,6 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   const handleGameModeCancel = () => {
     setShowGameModeSelector(false);
   };
-
-  const handleAcceptRematch = async () => {
-    if (!incomingRematch || !user?.uid) return;
-    
-    try {
-      // Remove performance-impacting logs
-      // console.log('🎮 Accepting rematch...', { rematchId: incomingRematch.id, userId: user.uid });
-      setRematchState('waiting');
-      setIncomingRematch(null); // Clear the incoming request
-      
-      const rematchRoomId = await RematchService.acceptRematch(incomingRematch.id, user.uid);
-      // Remove performance-impacting logs
-      // console.log('✅ Rematch accepted, waiting room ID:', rematchRoomId);
-      
-      // Navigate to waiting room instead of directly to match
-      if (onRematch && rematchRoomId) {
-        // Remove performance-impacting logs
-        // console.log('🎮 Navigating to rematch waiting room:', rematchRoomId);
-        onRematch(rematchRoomId);
-      }
-    } catch (error) {
-      console.error('❌ Error accepting rematch:', error);
-      setRematchState('idle');
-    }
-  };
-
-  const handleCancelRematch = async () => {
-    if (!rematchRoomId || !user?.uid) return;
-    
-    try {
-      await RematchService.cancelRematch(rematchRoomId, user.uid);
-      setRematchState('idle');
-      setRematchRoomId(null);
-    } catch (error) {
-      console.error('Error canceling rematch:', error);
-    }
-  };
-
-  const handleRematchTimeout = () => {
-    setRematchState('expired');
-    setRematchRoomId(null);
-    if (rematchRoomId && user?.uid) {
-      RematchService.cancelRematch(rematchRoomId, user.uid, 'timeout');
-    }
-  };
-
-  const handleLeaveMatch = () => {
-    // Cancel any pending rematch
-    if (rematchRoomId && (rematchState === 'requesting' || rematchState === 'waiting')) {
-      RematchService.cancelRematch(rematchRoomId, user?.uid || '');
-    }
-    
-    setRematchState('opponent_left');
-    onLeaveMatch();
-  };
-
-  // Listen for incoming rematch requests
-  useEffect(() => {
-    if (!user?.uid) return;
-    
-    const unsubscribe = RematchService.subscribeToIncomingRematches(
-      user.uid,
-      (rematches) => {
-        // Find rematch from current opponent
-        const relevantRematch = rematches.find(r => 
-          r.requesterUserId === opponent.playerId && 
-          r.opponentUserId === user.uid
-        );
-        
-        if (relevantRematch) {
-          setIncomingRematch(relevantRematch);
-        }
-      }
-    );
-    
-    return () => unsubscribe();
-  }, [user?.uid, opponent.playerId]);
-
-  // Listen for rematch room updates when we're the requester
-  useEffect(() => {
-    if (!rematchRoomId || (rematchState !== 'requesting' && rematchState !== 'waiting')) return;
-    
-    const unsubscribe = RematchService.subscribeToRematchRoom(
-      rematchRoomId,
-      (rematchData) => {
-        if (!rematchData) {
-          setRematchState('expired');
-          return;
-        }
-        
-        if (rematchData.status === 'accepted') {
-          setRematchState('accepted');
-          
-          // Navigate to the waiting room if newMatchId is available
-          if (rematchData.newMatchId && onRematch) {
-            // Remove performance-impacting logs
-            // console.log('🎮 Navigating to rematch waiting room:', rematchData.newMatchId);
-            onRematch(rematchData.newMatchId);
-          }
-        } else if (rematchData.status === 'expired' || rematchData.status === 'cancelled') {
-          setRematchState('expired');
-        }
-      }
-    );
-    
-    return () => unsubscribe();
-  }, [rematchRoomId, rematchState, onRematch]);
 
   return (
     <>
@@ -495,47 +383,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Incoming Rematch Request - Hidden on Mobile */}
-      {incomingRematch && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="hidden md:block mb-6 p-6 bg-green-600/20 border-2 border-green-400 rounded-2xl"
-        >
-          <div className="text-center">
-            <p className="text-xl font-bold text-green-400 mb-4" style={{ fontFamily: "Audiowide" }}>
-              {opponentDisplayName} wants a rematch!
-            </p>
-            <div className="flex justify-center items-center gap-4">
-              <CountdownTimer
-                initialSeconds={10}
-                onComplete={() => {
-                  setIncomingRematch(null);
-                  setRematchState('expired');
-                }}
-                isActive={true}
-                size="medium"
-              />
-              <div className="flex gap-3">
-                <button
-                  onClick={handleAcceptRematch}
-                  className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold transition-all transform hover:scale-105"
-                  style={{ fontFamily: "Audiowide" }}
-                >
-                  ACCEPT
-                </button>
-                <button
-                  onClick={() => setIncomingRematch(null)}
-                  className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-all transform hover:scale-105"
-                  style={{ fontFamily: "Audiowide" }}
-                >
-                  DECLINE
-                </button>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
+
 
       {/* Action Buttons - Hidden on mobile, nav style buttons will replace these */}
       <motion.div
@@ -545,14 +393,14 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         className="hidden md:flex flex-col md:flex-row justify-center gap-4"
       >
         <button
-          onClick={handleLeaveMatch}
+          onClick={onLeaveMatch}
           className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xl font-bold transition-all transform hover:scale-105"
           style={{ fontFamily: "Audiowide" }}
         >
           BACK TO DASHBOARD
         </button>
         
-        {/* Rematch Button with Timer */}
+        {/* Simple Rematch Button */}
         {rematchState === 'idle' && (
           <button
             onClick={handleRequestRematch}
@@ -563,119 +411,25 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
           </button>
         )}
         
-        {rematchState === 'requesting' && (
-          <div className="flex items-center gap-4 px-8 py-4 bg-yellow-600/20 border-2 border-yellow-400 rounded-xl">
-            <CountdownTimer
-              initialSeconds={10}
-              onComplete={handleRematchTimeout}
-              isActive={true}
-              size="small"
-            />
-            <span className="text-yellow-400 font-bold text-xl" style={{ fontFamily: "Audiowide" }}>
-              WAITING FOR {opponentDisplayName}
-            </span>
-            <button
-              onClick={handleCancelRematch}
-              className="ml-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition-all"
-              style={{ fontFamily: "Audiowide" }}
-            >
-              CANCEL
-            </button>
-          </div>
-        )}
-        
-        {rematchState === 'accepted' && (
-          <div className="px-8 py-4 bg-blue-600/20 border-2 border-blue-400 rounded-xl">
-            <span className="text-blue-400 font-bold text-xl" style={{ fontFamily: "Audiowide" }}>
-              REMATCH ACCEPTED - STARTING GAME...
-            </span>
-          </div>
-        )}
-        
-        {rematchState === 'expired' && (
-          <div className="px-8 py-4 bg-red-600/20 border-2 border-red-400 rounded-xl">
-            <span className="text-red-400 font-bold text-xl" style={{ fontFamily: "Audiowide" }}>
-              REMATCH EXPIRED
-            </span>
-          </div>
-        )}
-        
-        {rematchState === 'opponent_left' && (
-          <div className="px-8 py-4 bg-gray-600/20 border-2 border-gray-400 rounded-xl">
-            <span className="text-gray-400 font-bold text-xl" style={{ fontFamily: "Audiowide" }}>
-              {opponentDisplayName} LEFT
+        {rematchState === 'sent' && (
+          <div className="px-8 py-4 bg-green-600/20 border-2 border-green-400 rounded-xl">
+            <span className="text-green-400 font-bold text-xl" style={{ fontFamily: "Audiowide" }}>
+              REMATCH SENT ✓
             </span>
           </div>
         )}
       </motion.div>
 
-
-
-      {/* Mobile Incoming Rematch Request - Above nav buttons */}
-      {incomingRematch && (
+      {/* Simple message for mobile - rematch will appear in game invitations */}
+      {rematchState === 'sent' && (
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           className="md:hidden fixed bottom-20 left-4 right-4 z-40 p-4 bg-green-600/90 border-2 border-green-400 rounded-2xl backdrop-blur-sm"
         >
           <div className="text-center">
-            <p className="text-lg font-bold text-white mb-3" style={{ fontFamily: "Audiowide" }}>
-              {opponentDisplayName} wants a rematch!
-            </p>
-            <div className="flex justify-center items-center gap-3">
-              <CountdownTimer
-                initialSeconds={10}
-                onComplete={() => {
-                  setIncomingRematch(null);
-                  setRematchState('expired');
-                }}
-                isActive={true}
-                size="small"
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={handleAcceptRematch}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold text-sm transition-all"
-                  style={{ fontFamily: "Audiowide" }}
-                >
-                  ACCEPT
-                </button>
-                <button
-                  onClick={() => setIncomingRematch(null)}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-sm transition-all"
-                  style={{ fontFamily: "Audiowide" }}
-                >
-                  DECLINE
-                </button>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Mobile Rematch Status Display - Above nav buttons */}
-      {(rematchState === 'accepted' || rematchState === 'requesting') && (
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="md:hidden fixed bottom-20 left-4 right-4 z-40 p-4 bg-blue-600/90 border-2 border-blue-400 rounded-2xl backdrop-blur-sm"
-        >
-          <div className="text-center">
-            {rematchState === 'accepted' && (
-              <span className="text-white font-bold text-lg" style={{ fontFamily: "Audiowide" }}>
-                REMATCH ACCEPTED - STARTING GAME...
-              </span>
-            )}
-            {rematchState === 'requesting' && (
-              <div className="flex items-center justify-center gap-3">
-                <CountdownTimer
-                  initialSeconds={10}
-                  onComplete={handleRematchTimeout}
-                  isActive={true}
-                  size="small"
-                />
-                <span className="text-white font-bold text-lg" style={{ fontFamily: "Audiowide" }}>
-                  WAITING FOR {opponentDisplayName}
+            <span className="text-white font-bold text-lg" style={{ fontFamily: "Audiowide" }}>
+              REMATCH SENT TO {opponentDisplayName} ✓
                 </span>
               </div>
             )}
