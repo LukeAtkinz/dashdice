@@ -197,17 +197,19 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       const newTab = customEvent.detail;
       setActiveTab(newTab);
 
-      // Update button styling
+      // Update button styling - match Profile/Settings golden outline style
       const buttons = document.querySelectorAll('.friends-tab-btn');
       buttons.forEach(btn => {
         const button = btn as HTMLButtonElement;
-        const tab = button.dataset.tab;
-        if (tab === newTab) {
-          button.style.opacity = '1';
-          button.style.textDecoration = 'underline';
-        } else {
-          button.style.opacity = '0.6';
-          button.style.textDecoration = 'none';
+        const isActive = button.dataset.tab === newTab;
+        
+        button.style.border = isActive ? '2px solid #FFD700' : '2px solid rgba(255, 255, 255, 0.1)';
+        button.style.background = isActive ? 'rgba(255, 215, 0, 0.1)' : 'transparent';
+        button.style.boxShadow = isActive ? '0 0 15px rgba(255, 215, 0, 0.3)' : 'none';
+        
+        const span = button.querySelector('span');
+        if (span) {
+          (span as HTMLElement).style.color = isActive ? '#FFD700' : '#FFF';
         }
       });
     };
@@ -219,13 +221,15 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       const buttons = document.querySelectorAll('.friends-tab-btn');
       buttons.forEach(btn => {
         const button = btn as HTMLButtonElement;
-        const tab = button.dataset.tab;
-        if (tab === activeTab) {
-          button.style.opacity = '1';
-          button.style.textDecoration = 'underline';
-        } else {
-          button.style.opacity = '0.6';
-          button.style.textDecoration = 'none';
+        const isActive = button.dataset.tab === activeTab;
+        
+        button.style.border = isActive ? '2px solid #FFD700' : '2px solid rgba(255, 255, 255, 0.1)';
+        button.style.background = isActive ? 'rgba(255, 215, 0, 0.1)' : 'transparent';
+        button.style.boxShadow = isActive ? '0 0 15px rgba(255, 215, 0, 0.3)' : 'none';
+        
+        const span = button.querySelector('span');
+        if (span) {
+          (span as HTMLElement).style.color = isActive ? '#FFD700' : '#FFF';
         }
       });
     }, 100);

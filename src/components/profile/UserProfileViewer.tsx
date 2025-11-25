@@ -562,6 +562,21 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     video.muted = true;
                     if (video.paused) video.play().catch(() => {});
                   }}
+                  onSuspend={(e) => {
+                    const video = e.target as HTMLVideoElement;
+                    if (video.paused) video.play().catch(() => {});
+                  }}
+                  onPause={(e) => {
+                    const video = e.target as HTMLVideoElement;
+                    setTimeout(() => {
+                      if (video.paused) video.play().catch(() => {});
+                    }, 100);
+                  }}
+                  onClick={(e) => {
+                    const video = e.target as HTMLVideoElement;
+                    video.muted = true;
+                    if (video.paused) video.play().catch(() => {});
+                  }}
                   className="w-full h-full object-cover"
                   src={(userProfile.inventory as any)?.victoryBackgroundEquipped?.id ? resolveBackgroundPath((userProfile.inventory as any).victoryBackgroundEquipped.id, 'dashboard-display')?.path : '/Victory Screens/Wind Blade.mp4'}
                 />
@@ -597,6 +612,21 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     if (video.paused) video.play().catch(() => {});
                   }}
                   onLoadedData={(e) => {
+                    const video = e.target as HTMLVideoElement;
+                    video.muted = true;
+                    if (video.paused) video.play().catch(() => {});
+                  }}
+                  onSuspend={(e) => {
+                    const video = e.target as HTMLVideoElement;
+                    if (video.paused) video.play().catch(() => {});
+                  }}
+                  onPause={(e) => {
+                    const video = e.target as HTMLVideoElement;
+                    setTimeout(() => {
+                      if (video.paused) video.play().catch(() => {});
+                    }, 100);
+                  }}
+                  onClick={(e) => {
                     const video = e.target as HTMLVideoElement;
                     video.muted = true;
                     if (video.paused) video.play().catch(() => {});

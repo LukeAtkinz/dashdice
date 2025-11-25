@@ -54,6 +54,17 @@ export const InventorySection: React.FC = () => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
+  // Listen for vault tab change events from bottom nav
+  useEffect(() => {
+    const handleVaultTabChange = (event: CustomEvent) => {
+      const newTab = event.detail;
+      handleTabChange(newTab);
+    };
+
+    window.addEventListener('vaultTabChange', handleVaultTabChange as EventListener);
+    return () => window.removeEventListener('vaultTabChange', handleVaultTabChange as EventListener);
+  }, []);
+
   // Scrolling is now enabled for better user experience
 
   // Convert backgrounds to inventory format with Background System V2.0
@@ -387,8 +398,8 @@ export const InventorySection: React.FC = () => {
         </h1>
       </div>
       
-      {/* Navigation - Hidden on Power tab mobile, visible on desktop and other tabs */}
-      <div className={`w-full max-w-[60rem] flex flex-wrap items-center justify-center gap-[1rem] mb-4 flex-shrink-0 ${activeTab === 'power' ? 'hidden md:flex' : 'flex'}`}>
+      {/* Navigation - Hidden on mobile, visible on desktop */}
+      <div className="hidden md:flex w-full max-w-[60rem] flex-wrap items-center justify-center gap-[1rem] mb-4 flex-shrink-0">
         {/* First Row: Power, Vibin, Flexin */}
         <div className="flex items-center justify-center gap-2 md:gap-4">
           <button

@@ -2564,14 +2564,43 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           playsInline
           webkit-playsinline="true"
           x5-playsinline="true"
+          x5-video-player-type="h5-page"
+          x5-video-player-fullscreen="false"
           controls={false}
-          preload="metadata"
+          preload="auto"
           disablePictureInPicture
           disableRemotePlayback
-          onLoadStart={() => console.log('Video: Load started')}
-          onCanPlay={() => console.log('Video: Can play')}
+          onLoadedMetadata={(e) => {
+            const video = e.target as HTMLVideoElement;
+            video.muted = true;
+            video.play().catch(() => {});
+          }}
+          onCanPlay={(e) => {
+            const video = e.target as HTMLVideoElement;
+            video.muted = true;
+            if (video.paused) video.play().catch(() => {});
+          }}
+          onLoadedData={(e) => {
+            const video = e.target as HTMLVideoElement;
+            video.muted = true;
+            if (video.paused) video.play().catch(() => {});
+          }}
+          onSuspend={(e) => {
+            const video = e.target as HTMLVideoElement;
+            if (video.paused) video.play().catch(() => {});
+          }}
+          onPause={(e) => {
+            const video = e.target as HTMLVideoElement;
+            setTimeout(() => {
+              if (video.paused) video.play().catch(() => {});
+            }, 100);
+          }}
+          onClick={(e) => {
+            const video = e.target as HTMLVideoElement;
+            video.muted = true;
+            if (video.paused) video.play().catch(() => {});
+          }}
           onError={(e) => console.error('Video: Error loading', e)}
-          onLoadedData={() => console.log('Video: Data loaded')}
           style={{
             position: 'absolute',
             top: 0,

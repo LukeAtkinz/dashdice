@@ -51,6 +51,15 @@ const DashboardContent: React.FC = () => {
   const [userGold] = useState(1000); // Placeholder for user gold
   
   const previousSectionRef = useRef(currentSection);
+  const [prevSection, setPrevSection] = useState(currentSection);
+  
+  // Track section changes to detect transitions between expanded nav sections
+  useEffect(() => {
+    if (currentSection !== prevSection) {
+      setPrevSection(prevSection);
+      previousSectionRef.current = prevSection;
+    }
+  }, [currentSection, prevSection]);
   
   // Video transitions removed for better UX
   
@@ -101,6 +110,40 @@ const DashboardContent: React.FC = () => {
       window.removeEventListener('navigate-to-achievements', handleAchievementsNavigation);
     };
   }, [setCurrentSection]);
+
+  // Handle golden styling for Vault tabs
+  useEffect(() => {
+    const handleVaultTabChange = (event: CustomEvent) => {
+      const activeTab = event.detail;
+      const buttons = document.querySelectorAll('.vault-tab-btn');
+      
+      buttons.forEach((button) => {
+        const btn = button as HTMLButtonElement;
+        const span = btn.querySelector('span');
+        const isActive = btn.getAttribute('data-tab') === activeTab;
+        
+        if (span) {
+          // Golden outline style for active tab
+          btn.style.border = isActive ? '2px solid #FFD700' : '2px solid rgba(255, 255, 255, 0.1)';
+          btn.style.background = isActive ? 'rgba(255, 215, 0, 0.1)' : 'transparent';
+          btn.style.boxShadow = isActive ? '0 0 15px rgba(255, 215, 0, 0.3)' : 'none';
+          span.style.color = isActive ? '#FFD700' : '#FFF';
+        }
+      });
+    };
+
+    window.addEventListener('vaultTabChange', handleVaultTabChange as EventListener);
+    
+    // Initial styling - set Power tab as active by default
+    setTimeout(() => {
+      const event = new CustomEvent('vaultTabChange', { detail: 'power' });
+      window.dispatchEvent(event);
+    }, 100);
+
+    return () => {
+      window.removeEventListener('vaultTabChange', handleVaultTabChange as EventListener);
+    };
+  }, []);
 
   const handleSectionChange = async (section: string) => {
     // This function is only for manual button clicks, not for programmatic navigation
@@ -773,13 +816,13 @@ const DashboardContent: React.FC = () => {
               }}>
                 
                 {/* Profile/Settings Tabs - Only show when on profile section */}
-                <AnimatePresence>
+                <AnimatePresence mode="wait">
                   {currentSection === 'profile' && (
                     <motion.div
-                      initial={{ y: 100, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: 100, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      key="profile-tabs"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1, transition: { duration: 0.2, ease: "easeOut" } }}
+                      exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeIn" } }}
                       className="flex items-center justify-center gap-4 px-4 pt-3 pb-2"
                     >
                       <button
@@ -832,13 +875,13 @@ const DashboardContent: React.FC = () => {
                 </AnimatePresence>
 
                 {/* Friends/Manage Tabs - Only show when on friends section */}
-                <AnimatePresence>
+                <AnimatePresence mode="wait">
                   {currentSection === 'friends' && (
                     <motion.div
-                      initial={{ y: 100, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: 100, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      key="friends-tabs"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1, transition: { duration: 0.2, ease: "easeOut" } }}
+                      exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeIn" } }}
                       className="flex items-center justify-center gap-4 px-4 pt-3 pb-2"
                     >
                       <button
@@ -885,6 +928,136 @@ const DashboardContent: React.FC = () => {
                           Manage
                         </span>
                       </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Vault Tabs - Only show when on inventory section */}
+                <AnimatePresence mode="wait">
+                  {currentSection === 'inventory' && (
+                    <motion.div
+                      key="vault-tabs"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1, transition: { duration: 0.2, ease: "easeOut" } }}
+                      exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeIn" } }}
+                      className="flex flex-col items-center justify-center gap-2 px-4 pt-3 pb-2"
+                    >
+                      {/* First Row: Power, Vibin, Flexin */}
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => {
+                            const event = new CustomEvent('vaultTabChange', { detail: 'power' });
+                            window.dispatchEvent(event);
+                          }}
+                          className="vault-tab-btn flex items-center justify-center gap-2 px-4 py-2.5 rounded-[18px] transition-all duration-300"
+                          style={{
+                            border: '2px solid rgba(255, 255, 255, 0.1)',
+                            background: 'transparent',
+                          }}
+                          data-tab="power"
+                        >
+                          <span style={{
+                            color: '#FFF',
+                            fontFamily: 'Audiowide', 
+                            fontSize: '14px', 
+                            fontWeight: 400, 
+                            textTransform: 'uppercase' 
+                          }}>
+                            Power
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            const event = new CustomEvent('vaultTabChange', { detail: 'display' });
+                            window.dispatchEvent(event);
+                          }}
+                          className="vault-tab-btn flex items-center justify-center gap-2 px-4 py-2.5 rounded-[18px] transition-all duration-300"
+                          style={{
+                            border: '2px solid rgba(255, 255, 255, 0.1)',
+                            background: 'transparent',
+                          }}
+                          data-tab="display"
+                        >
+                          <span style={{
+                            color: '#FFF',
+                            fontFamily: 'Audiowide', 
+                            fontSize: '14px', 
+                            fontWeight: 400, 
+                            textTransform: 'uppercase' 
+                          }}>
+                            Vibin
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            const event = new CustomEvent('vaultTabChange', { detail: 'match' });
+                            window.dispatchEvent(event);
+                          }}
+                          className="vault-tab-btn flex items-center justify-center gap-2 px-4 py-2.5 rounded-[18px] transition-all duration-300"
+                          style={{
+                            border: '2px solid rgba(255, 255, 255, 0.1)',
+                            background: 'transparent',
+                          }}
+                          data-tab="match"
+                        >
+                          <span style={{
+                            color: '#FFF',
+                            fontFamily: 'Audiowide', 
+                            fontSize: '14px', 
+                            fontWeight: 400, 
+                            textTransform: 'uppercase' 
+                          }}>
+                            Flexin
+                          </span>
+                        </button>
+                      </div>
+                      {/* Second Row: Decider, Victory */}
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => {
+                            const event = new CustomEvent('vaultTabChange', { detail: 'decider' });
+                            window.dispatchEvent(event);
+                          }}
+                          className="vault-tab-btn flex items-center justify-center gap-2 px-4 py-2.5 rounded-[18px] transition-all duration-300"
+                          style={{
+                            border: '2px solid rgba(255, 255, 255, 0.1)',
+                            background: 'transparent',
+                          }}
+                          data-tab="decider"
+                        >
+                          <span style={{
+                            color: '#FFF',
+                            fontFamily: 'Audiowide', 
+                            fontSize: '14px', 
+                            fontWeight: 400, 
+                            textTransform: 'uppercase' 
+                          }}>
+                            Decider
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            const event = new CustomEvent('vaultTabChange', { detail: 'victory' });
+                            window.dispatchEvent(event);
+                          }}
+                          className="vault-tab-btn flex items-center justify-center gap-2 px-4 py-2.5 rounded-[18px] transition-all duration-300"
+                          style={{
+                            border: '2px solid rgba(255, 255, 255, 0.1)',
+                            background: 'transparent',
+                          }}
+                          data-tab="victory"
+                        >
+                          <span style={{
+                            color: '#FFF',
+                            fontFamily: 'Audiowide', 
+                            fontSize: '14px', 
+                            fontWeight: 400, 
+                            textTransform: 'uppercase' 
+                          }}>
+                            Victory
+                          </span>
+                        </button>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>

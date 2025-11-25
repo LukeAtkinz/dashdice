@@ -8,6 +8,7 @@ import { SectionTransition } from '@/components/layout/SectionTransition';
 import { DashboardSection as DashboardSectionComponent } from '@/components/dashboard/DashboardSectionNew';
 import { MatchSection } from '@/components/dashboard/MatchSectionNew';
 import { Match } from '@/components/dashboard/Match';
+import { resolveBackgroundPath } from '@/config/backgrounds';
 import { GameWaitingRoom } from '@/components/dashboard/GameWaitingRoom';
 // Using direct image paths from Design Elements folder
 import { InventorySection } from '@/components/dashboard/InventoryReference';
@@ -245,14 +246,51 @@ const GuestDashboardContent: React.FC = () => {
           loop
           muted
           playsInline
-          controls={false}
           webkit-playsinline="true"
+          x5-playsinline="true"
+          x5-video-player-type="h5-page"
+          x5-video-player-fullscreen="false"
+          controls={false}
+          preload="auto"
+          disablePictureInPicture
+          disableRemotePlayback
+          onLoadedMetadata={(e) => {
+            const video = e.target as HTMLVideoElement;
+            video.muted = true;
+            video.play().catch(() => {});
+            handleVideoLoad(video);
+          }}
+          onCanPlay={(e) => {
+            const video = e.target as HTMLVideoElement;
+            video.muted = true;
+            if (video.paused) video.play().catch(() => {});
+          }}
+          onLoadedData={(e) => {
+            const video = e.target as HTMLVideoElement;
+            video.muted = true;
+            if (video.paused) video.play().catch(() => {});
+            handleVideoLoad(video);
+          }}
+          onSuspend={(e) => {
+            const video = e.target as HTMLVideoElement;
+            if (video.paused) video.play().catch(() => {});
+          }}
+          onPause={(e) => {
+            const video = e.target as HTMLVideoElement;
+            setTimeout(() => {
+              if (video.paused) video.play().catch(() => {});
+            }, 100);
+          }}
+          onClick={(e) => {
+            const video = e.target as HTMLVideoElement;
+            video.muted = true;
+            if (video.paused) video.play().catch(() => {});
+          }}
           className="fixed inset-0 w-full h-full object-cover z-0"
           style={{
             objectFit: 'cover',
             objectPosition: 'center center'
           }}
-          onLoadedData={(e) => handleVideoLoad(e.target as HTMLVideoElement)}
         >
           <source src="/backgrounds/New Day.mp4" type="video/mp4" />
           Your browser does not support the video tag.
@@ -263,32 +301,70 @@ const GuestDashboardContent: React.FC = () => {
     // For authenticated users, render their equipped background
     if (DisplayBackgroundEquip) {
       const positioning = getBackgroundPosition(DisplayBackgroundEquip.name);
+      const resolved = resolveBackgroundPath(DisplayBackgroundEquip.id, 'dashboard-display');
       
-      if (DisplayBackgroundEquip.type === 'video') {
+      if (DisplayBackgroundEquip.category === 'Videos' && resolved) {
         return (
           <video
-            key={DisplayBackgroundEquip.file}
+            key={resolved.path}
             autoPlay
             loop
             muted
             playsInline
-            controls={false}
             webkit-playsinline="true"
+            x5-playsinline="true"
+            x5-video-player-type="h5-page"
+            x5-video-player-fullscreen="false"
+            controls={false}
+            preload="auto"
+            disablePictureInPicture
+            disableRemotePlayback
+            onLoadedMetadata={(e) => {
+              const video = e.target as HTMLVideoElement;
+              video.muted = true;
+              video.play().catch(() => {});
+              handleVideoLoad(video);
+            }}
+            onCanPlay={(e) => {
+              const video = e.target as HTMLVideoElement;
+              video.muted = true;
+              if (video.paused) video.play().catch(() => {});
+            }}
+            onLoadedData={(e) => {
+              const video = e.target as HTMLVideoElement;
+              video.muted = true;
+              if (video.paused) video.play().catch(() => {});
+              handleVideoLoad(video);
+            }}
+            onSuspend={(e) => {
+              const video = e.target as HTMLVideoElement;
+              if (video.paused) video.play().catch(() => {});
+            }}
+            onPause={(e) => {
+              const video = e.target as HTMLVideoElement;
+              setTimeout(() => {
+                if (video.paused) video.play().catch(() => {});
+              }, 100);
+            }}
+            onClick={(e) => {
+              const video = e.target as HTMLVideoElement;
+              video.muted = true;
+              if (video.paused) video.play().catch(() => {});
+            }}
             className="fixed inset-0 w-full h-full object-cover z-0"
             style={{
               objectFit: 'cover',
               objectPosition: positioning.objectPosition || 'center center'
             }}
-            onLoadedData={(e) => handleVideoLoad(e.target as HTMLVideoElement)}
           >
-            <source src={DisplayBackgroundEquip.file} type="video/mp4" />
+            <source src={resolved.path} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         );
-      } else {
+      } else if (resolved) {
         return (
           <img
-            src={DisplayBackgroundEquip.file}
+            src={resolved.path}
             alt={DisplayBackgroundEquip.name}
             className="fixed inset-0 w-full h-full object-cover z-0"
             style={{

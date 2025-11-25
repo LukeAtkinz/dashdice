@@ -1965,10 +1965,44 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       loop
                       muted
                       playsInline
+                      webkit-playsinline="true"
+                      x5-playsinline="true"
+                      x5-video-player-type="h5-page"
+                      x5-video-player-fullscreen="false"
                       controls={false}
-                      preload="metadata"
+                      preload="auto"
                       disablePictureInPicture
                       disableRemotePlayback
+                      onLoadedMetadata={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.muted = true;
+                        video.play().catch(() => {});
+                      }}
+                      onCanPlay={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.muted = true;
+                        if (video.paused) video.play().catch(() => {});
+                      }}
+                      onLoadedData={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.muted = true;
+                        if (video.paused) video.play().catch(() => {});
+                      }}
+                      onSuspend={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        if (video.paused) video.play().catch(() => {});
+                      }}
+                      onPause={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        setTimeout(() => {
+                          if (video.paused) video.play().catch(() => {});
+                        }, 100);
+                      }}
+                      onClick={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.muted = true;
+                        if (video.paused) video.play().catch(() => {});
+                      }}
                       className="absolute inset-0 w-full h-full object-cover"
                       style={{ 
                         pointerEvents: 'none'
@@ -2136,10 +2170,42 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         playsInline
                         webkit-playsinline="true"
                         x5-playsinline="true"
+                        x5-video-player-type="h5-page"
+                        x5-video-player-fullscreen="false"
                         controls={false}
-                        preload="metadata"
+                        preload="auto"
                         disablePictureInPicture
                         disableRemotePlayback
+                        onLoadedMetadata={(e) => {
+                          const video = e.target as HTMLVideoElement;
+                          video.muted = true;
+                          video.play().catch(() => {});
+                        }}
+                        onCanPlay={(e) => {
+                          const video = e.target as HTMLVideoElement;
+                          video.muted = true;
+                          if (video.paused) video.play().catch(() => {});
+                        }}
+                        onLoadedData={(e) => {
+                          const video = e.target as HTMLVideoElement;
+                          video.muted = true;
+                          if (video.paused) video.play().catch(() => {});
+                        }}
+                        onSuspend={(e) => {
+                          const video = e.target as HTMLVideoElement;
+                          if (video.paused) video.play().catch(() => {});
+                        }}
+                        onPause={(e) => {
+                          const video = e.target as HTMLVideoElement;
+                          setTimeout(() => {
+                            if (video.paused) video.play().catch(() => {});
+                          }, 100);
+                        }}
+                        onClick={(e) => {
+                          const video = e.target as HTMLVideoElement;
+                          video.muted = true;
+                          if (video.paused) video.play().catch(() => {});
+                        }}
                         className="absolute inset-0 w-full h-full object-cover"
                         style={{ 
                           pointerEvents: 'none',
