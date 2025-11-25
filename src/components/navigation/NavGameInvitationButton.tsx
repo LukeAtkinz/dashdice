@@ -110,11 +110,19 @@ export const NavGameInvitationButton: React.FC<NavGameInvitationButtonProps> = (
         transition={{ delay: 0.2, duration: 0.3 }}
         className="text-center"
       >
+        {invitation.gameSettings?.isRematch && (
+          <p 
+            className="text-pink-400 text-sm md:text-base font-bold mb-1 animate-pulse"
+            style={{ fontFamily: "Audiowide" }}
+          >
+            🔄 REMATCH REQUEST
+          </p>
+        )}
         <p 
           className="text-white text-lg md:text-xl font-bold mb-2"
           style={{ fontFamily: "Audiowide" }}
         >
-          {invitation.fromDisplayName} wants to play
+          {invitation.fromDisplayName} wants to {invitation.gameSettings?.isRematch ? 'rematch' : 'play'}
         </p>
         <div className="flex items-center justify-center gap-3">
           <img

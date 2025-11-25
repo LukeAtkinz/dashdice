@@ -2706,19 +2706,22 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '50%', overflow: 'hidden' }}>
           {topVideo && (
             <video 
+              key={`top-video-${topVideo}`}
               src={topVideo} 
               autoPlay 
               loop 
               muted 
-              playsInline 
-              webkit-playsinline="true"
-              x5-playsinline="true"
-              x5-video-player-type="h5-page"
-              x5-video-player-fullscreen="false"
+              playsInline
               preload="auto"
               controls={false}
               disablePictureInPicture
               disableRemotePlayback
+              {...{
+                'webkit-playsinline': 'true',
+                'x5-playsinline': 'true',
+                'x5-video-player-type': 'h5-page',
+                'x5-video-player-fullscreen': 'false'
+              } as any}
               onLoadedMetadata={(e) => {
                 const video = e.target as HTMLVideoElement;
                 video.muted = true;
@@ -2743,6 +2746,15 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 setTimeout(() => {
                   if (video.paused) video.play().catch(() => {});
                 }, 100);
+              }}
+              onStalled={(e) => {
+                const video = e.target as HTMLVideoElement;
+                video.load();
+                video.play().catch(() => {});
+              }}
+              onWaiting={(e) => {
+                const video = e.target as HTMLVideoElement;
+                if (video.paused) video.play().catch(() => {});
               }}
               onClick={(e) => {
                 const video = e.target as HTMLVideoElement;
@@ -2765,19 +2777,22 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '50%', overflow: 'hidden' }}>
           {bottomVideo && (
             <video 
+              key={`bottom-video-${bottomVideo}`}
               src={bottomVideo} 
               autoPlay 
               loop 
               muted 
-              playsInline 
-              webkit-playsinline="true"
-              x5-playsinline="true"
-              x5-video-player-type="h5-page"
-              x5-video-player-fullscreen="false"
+              playsInline
               preload="auto"
               controls={false}
               disablePictureInPicture
               disableRemotePlayback
+              {...{
+                'webkit-playsinline': 'true',
+                'x5-playsinline': 'true',
+                'x5-video-player-type': 'h5-page',
+                'x5-video-player-fullscreen': 'false'
+              } as any}
               onLoadedMetadata={(e) => {
                 const video = e.target as HTMLVideoElement;
                 video.muted = true;
@@ -2802,6 +2817,15 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 setTimeout(() => {
                   if (video.paused) video.play().catch(() => {});
                 }, 100);
+              }}
+              onStalled={(e) => {
+                const video = e.target as HTMLVideoElement;
+                video.load();
+                video.play().catch(() => {});
+              }}
+              onWaiting={(e) => {
+                const video = e.target as HTMLVideoElement;
+                if (video.paused) video.play().catch(() => {});
               }}
               onClick={(e) => {
                 const video = e.target as HTMLVideoElement;

@@ -36,6 +36,7 @@ export interface GameInvitation {
   toDisplayName: string;
   gameMode: string;
   gameType: 'quick' | 'ranked';
+  gameSettings?: Record<string, any>; // Additional game settings (e.g., isRematch, previousMatchId)
   sessionId?: string;
   status: 'pending' | 'accepted' | 'declined' | 'expired' | 'cancelled';
   createdAt: Timestamp;
