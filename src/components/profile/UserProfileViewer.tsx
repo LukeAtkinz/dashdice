@@ -87,6 +87,8 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                 inventory: {
                   displayBackgroundEquipped: userData.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
                   matchBackgroundEquipped: userData.inventory?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+                  turnDeciderBackgroundEquipped: userData.inventory?.turnDeciderBackgroundEquipped || null,
+                  victoryBackgroundEquipped: userData.inventory?.victoryBackgroundEquipped || null,
                   ownedBackgrounds: userData.inventory?.ownedBackgrounds || userData.ownedBackgrounds || ['Relax']
                 },
                 stats: {
@@ -533,53 +535,62 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
             <div className="relative bg-black/60 backdrop-blur-sm border-x border-gray-700/50 p-6" style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}>
               <h3 className="text-white text-lg uppercase mb-3 text-center" style={{ fontFamily: 'Audiowide' }}>VICTORY</h3>
               <div className="relative rounded-xl overflow-hidden flex items-center justify-center border border-gray-700/50" style={{ height: '220px' }}>
-                <video
-                  key={(userProfile.inventory as any)?.victoryBackgroundEquipped?.id || 'victory-screen-video'}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  webkit-playsinline="true"
-                  x5-playsinline="true"
-                  x5-video-player-type="h5-page"
-                  x5-video-player-fullscreen="false"
-                  preload="auto"
-                  controls={false}
-                  disablePictureInPicture
-                  disableRemotePlayback
-                  onLoadedMetadata={(e) => {
-                    const video = e.target as HTMLVideoElement;
-                    video.muted = true;
-                    video.play().catch(() => {});
-                  }}
-                  onCanPlay={(e) => {
-                    const video = e.target as HTMLVideoElement;
-                    video.muted = true;
-                    if (video.paused) video.play().catch(() => {});
-                  }}
-                  onLoadedData={(e) => {
-                    const video = e.target as HTMLVideoElement;
-                    video.muted = true;
-                    if (video.paused) video.play().catch(() => {});
-                  }}
-                  onSuspend={(e) => {
-                    const video = e.target as HTMLVideoElement;
-                    if (video.paused) video.play().catch(() => {});
-                  }}
-                  onPause={(e) => {
-                    const video = e.target as HTMLVideoElement;
-                    setTimeout(() => {
-                      if (video.paused) video.play().catch(() => {});
-                    }, 100);
-                  }}
-                  onClick={(e) => {
-                    const video = e.target as HTMLVideoElement;
-                    video.muted = true;
-                    if (video.paused) video.play().catch(() => {});
-                  }}
-                  className="w-full h-full object-cover"
-                  src={(userProfile.inventory as any)?.victoryBackgroundEquipped?.id ? resolveBackgroundPath((userProfile.inventory as any).victoryBackgroundEquipped.id, 'waiting-room')?.path : '/Victory Screens/Wind Blade.mp4'}
-                />
+                {(() => {
+                  const victoryBg = (userProfile.inventory as any)?.victoryBackgroundEquipped;
+                  const victoryBgId = victoryBg?.id || victoryBg;
+                  const victoryPath = victoryBgId ? resolveBackgroundPath(victoryBgId, 'waiting-room')?.path : '/Victory Screens/Wind Blade.mp4';
+                  console.log('🎬 VICTORY - victoryBg:', victoryBg, 'victoryBgId:', victoryBgId, 'victoryPath:', victoryPath);
+                  return (
+                    <video
+                      key={victoryPath}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      webkit-playsinline="true"
+                      x5-playsinline="true"
+                      x5-video-player-type="h5-page"
+                      x5-video-player-fullscreen="false"
+                      preload="auto"
+                      controls={false}
+                      disablePictureInPicture
+                      disableRemotePlayback
+                      onLoadedMetadata={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.muted = true;
+                        video.play().catch(() => {});
+                      }}
+                      onCanPlay={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.muted = true;
+                        if (video.paused) video.play().catch(() => {});
+                      }}
+                      onLoadedData={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.muted = true;
+                        if (video.paused) video.play().catch(() => {});
+                      }}
+                      onSuspend={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        if (video.paused) video.play().catch(() => {});
+                      }}
+                      onPause={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        setTimeout(() => {
+                          if (video.paused) video.play().catch(() => {});
+                        }, 100);
+                      }}
+                      onClick={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.muted = true;
+                        if (video.paused) video.play().catch(() => {});
+                      }}
+                      onError={(e) => console.error('🎬 VICTORY VIDEO ERROR:', e, 'src:', victoryPath)}
+                      className="w-full h-full object-cover"
+                      src={victoryPath}
+                    />
+                  );
+                })()}
               </div>
             </div>
 
@@ -587,53 +598,62 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
             <div className="relative bg-black/60 backdrop-blur-sm border-x border-b border-gray-700/50 rounded-b-[20px] p-6" style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}>
               <h3 className="text-white text-lg uppercase mb-3 text-center" style={{ fontFamily: 'Audiowide' }}>TURN DECIDER</h3>
               <div className="relative rounded-xl overflow-hidden flex items-center justify-center border border-gray-700/50" style={{ height: '220px' }}>
-                <video
-                  key={(userProfile.inventory as any)?.turnDeciderBackgroundEquipped?.id || 'turn-decider-video'}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  webkit-playsinline="true"
-                  x5-playsinline="true"
-                  x5-video-player-type="h5-page"
-                  x5-video-player-fullscreen="false"
-                  preload="auto"
-                  controls={false}
-                  disablePictureInPicture
-                  disableRemotePlayback
-                  onLoadedMetadata={(e) => {
-                    const video = e.target as HTMLVideoElement;
-                    video.muted = true;
-                    video.play().catch(() => {});
-                  }}
-                  onCanPlay={(e) => {
-                    const video = e.target as HTMLVideoElement;
-                    video.muted = true;
-                    if (video.paused) video.play().catch(() => {});
-                  }}
-                  onLoadedData={(e) => {
-                    const video = e.target as HTMLVideoElement;
-                    video.muted = true;
-                    if (video.paused) video.play().catch(() => {});
-                  }}
-                  onSuspend={(e) => {
-                    const video = e.target as HTMLVideoElement;
-                    if (video.paused) video.play().catch(() => {});
-                  }}
-                  onPause={(e) => {
-                    const video = e.target as HTMLVideoElement;
-                    setTimeout(() => {
-                      if (video.paused) video.play().catch(() => {});
-                    }, 100);
-                  }}
-                  onClick={(e) => {
-                    const video = e.target as HTMLVideoElement;
-                    video.muted = true;
-                    if (video.paused) video.play().catch(() => {});
-                  }}
-                  className="w-full h-full object-cover"
-                  src={(userProfile.inventory as any)?.turnDeciderBackgroundEquipped?.id ? resolveBackgroundPath((userProfile.inventory as any).turnDeciderBackgroundEquipped.id, 'waiting-room')?.path : '/Game Backgrounds/Turn Decider/Videos/Best Quality/Crazy Cough.mp4'}
-                />
+                {(() => {
+                  const deciderBg = (userProfile.inventory as any)?.turnDeciderBackgroundEquipped;
+                  const deciderBgId = deciderBg?.id || deciderBg;
+                  const deciderPath = deciderBgId ? resolveBackgroundPath(deciderBgId, 'waiting-room')?.path : '/Game Backgrounds/Turn Decider/Videos/Best Quality/Crazy Cough.mp4';
+                  console.log('🎬 TURN DECIDER - deciderBg:', deciderBg, 'deciderBgId:', deciderBgId, 'deciderPath:', deciderPath);
+                  return (
+                    <video
+                      key={deciderPath}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      webkit-playsinline="true"
+                      x5-playsinline="true"
+                      x5-video-player-type="h5-page"
+                      x5-video-player-fullscreen="false"
+                      preload="auto"
+                      controls={false}
+                      disablePictureInPicture
+                      disableRemotePlayback
+                      onLoadedMetadata={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.muted = true;
+                        video.play().catch(() => {});
+                      }}
+                      onCanPlay={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.muted = true;
+                        if (video.paused) video.play().catch(() => {});
+                      }}
+                      onLoadedData={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.muted = true;
+                        if (video.paused) video.play().catch(() => {});
+                      }}
+                      onSuspend={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        if (video.paused) video.play().catch(() => {});
+                      }}
+                      onPause={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        setTimeout(() => {
+                          if (video.paused) video.play().catch(() => {});
+                        }, 100);
+                      }}
+                      onClick={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.muted = true;
+                        if (video.paused) video.play().catch(() => {});
+                      }}
+                      onError={(e) => console.error('🎬 TURN DECIDER VIDEO ERROR:', e, 'src:', deciderPath)}
+                      className="w-full h-full object-cover"
+                      src={deciderPath}
+                    />
+                  );
+                })()}
               </div>
             </div>
           </motion.div>

@@ -40,6 +40,8 @@ export interface UserProfile {
   inventory: {
     displayBackgroundEquipped: Background;
     matchBackgroundEquipped: Background;
+    turnDeciderBackgroundEquipped?: any;
+    victoryBackgroundEquipped?: any;
     ownedBackgrounds: string[];
   };
   powerLoadouts?: UserPowerLoadouts;
