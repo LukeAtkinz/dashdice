@@ -75,7 +75,7 @@ export class NewMatchmakingService {
         throw new Error('User profile not found');
       }
 
-      // Create session player data
+      // Create session player data with ALL backgrounds and abilities
       const hostData: SessionPlayerData = {
         playerId: userId,
         playerDisplayName: userProfile.displayName || 'Unknown Player',
@@ -95,9 +95,27 @@ export class NewMatchmakingService {
           file: '/backgrounds/Relax.png',
           type: 'image'
         },
+        turnDeciderBackgroundEquipped: (userProfile.inventory as any)?.turnDeciderBackgroundEquipped || {
+          id: 'crazy-cough',
+          name: 'Crazy Cough',
+          category: 'Videos',
+          rarity: 'COMMON'
+        },
+        victoryBackgroundEquipped: (userProfile.inventory as any)?.victoryBackgroundEquipped || {
+          id: 'wind-blade',
+          name: 'Wind Blade',
+          category: 'Videos',
+          rarity: 'LEGENDARY'
+        },
+        powerLoadout: userProfile.powerLoadouts?.[gameMode]?.abilities || {
+          attack: null,
+          defense: null,
+          tactical: null,
+          utility: null
+        },
         ready: false,
         joinedAt: new Date()
-      };
+      } as any;
 
       // Create matchmaking request
       const request: MatchmakingRequest = {
@@ -145,7 +163,11 @@ export class NewMatchmakingService {
         throw new Error('User profile not found');
       }
 
-      // Create player data
+      // Get session to determine game mode
+      const session = await GameSessionService.getSession(sessionId);
+      const gameMode = session?.gameMode || 'classic';
+
+      // Create player data with ALL backgrounds and abilities
       const playerData: SessionPlayerData = {
         playerId: userId,
         playerDisplayName: userProfile.displayName || 'Unknown Player',
@@ -165,9 +187,27 @@ export class NewMatchmakingService {
           file: '/backgrounds/Relax.png',
           type: 'image'
         },
+        turnDeciderBackgroundEquipped: (userProfile.inventory as any)?.turnDeciderBackgroundEquipped || {
+          id: 'crazy-cough',
+          name: 'Crazy Cough',
+          category: 'Videos',
+          rarity: 'COMMON'
+        },
+        victoryBackgroundEquipped: (userProfile.inventory as any)?.victoryBackgroundEquipped || {
+          id: 'wind-blade',
+          name: 'Wind Blade',
+          category: 'Videos',
+          rarity: 'LEGENDARY'
+        },
+        powerLoadout: userProfile.powerLoadouts?.[gameMode]?.abilities || {
+          attack: null,
+          defense: null,
+          tactical: null,
+          utility: null
+        },
         ready: false,
         joinedAt: new Date()
-      };
+      } as any;
 
       // Join the session
       const success = await GameSessionService.joinSession(sessionId, playerData);
@@ -803,7 +843,7 @@ export class NewMatchmakingService {
           category: 'Videos',
           rarity: 'LEGENDARY'
         },
-        powerLoadout: hostInventory?.equippedAbilities || {
+        powerLoadout: hostProfile.powerLoadouts?.[gameMode]?.abilities || {
           attack: null,
           defense: null,
           tactical: null,
@@ -866,7 +906,7 @@ export class NewMatchmakingService {
           category: 'Videos',
           rarity: 'LEGENDARY'
         },
-        powerLoadout: guestInventory?.equippedAbilities || {
+        powerLoadout: guestProfile.powerLoadouts?.[gameMode]?.abilities || {
           attack: null,
           defense: null,
           tactical: null,

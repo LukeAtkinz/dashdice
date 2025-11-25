@@ -7,7 +7,7 @@ import { useNavigation } from '@/context/NavigationContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { useAuth } from '@/context/AuthContext';
 import { MatchPreview } from '@/components/ui/MatchPreview';
-import { resolveBackgroundPath, getTurnDeciderBackgrounds, getVictoryBackgrounds } from '@/config/backgrounds';
+import { resolveBackgroundPath, getTurnDeciderBackgrounds, getVictoryBackgrounds, getVibinBackgrounds, getFlexinBackgrounds } from '@/config/backgrounds';
 import { FriendCardPreview } from '@/components/ui/FriendCardPreview';
 import PowerTab from '@/components/vault/PowerTab';
 
@@ -57,7 +57,8 @@ export const InventorySection: React.FC = () => {
   // Scrolling is now enabled for better user experience
 
   // Convert backgrounds to inventory format with Background System V2.0
-  const ownedDisplayBackgrounds = availableBackgrounds.map((bg) => {
+  // Use getVibinBackgrounds() to exclude Turn Decider and Victory backgrounds
+  const ownedDisplayBackgrounds = getVibinBackgrounds().map((bg) => {
     // Use inventory-preview context for medium quality static images
     const resolved = resolveBackgroundPath(bg.id, 'inventory-preview');
     return {
@@ -69,7 +70,17 @@ export const InventorySection: React.FC = () => {
     };
   });
 
-  const ownedMatchBackgrounds = ownedDisplayBackgrounds; // Same backgrounds for both tabs
+  // Use getFlexinBackgrounds() to exclude Turn Decider and Victory backgrounds
+  const ownedMatchBackgrounds = getFlexinBackgrounds().map((bg) => {
+    const resolved = resolveBackgroundPath(bg.id, 'inventory-preview');
+    return {
+      id: bg.id,
+      name: bg.name,
+      previewUrl: resolved?.path || '/backgrounds/placeholder.jpg',
+      rarity: bg.rarity || 'COMMON',
+      background: bg
+    };
+  });
 
   // Turn Decider backgrounds
   const ownedDeciderBackgrounds = getTurnDeciderBackgrounds().map((bg) => {

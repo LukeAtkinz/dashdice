@@ -245,9 +245,14 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                 forceVideoPlay(video);
               }
             }}
+            onClick={(e) => {
+              const video = e.target as HTMLVideoElement;
+              video.muted = true;
+              if (video.paused) forceVideoPlay(video);
+            }}
             className={`object-cover ${isMobile ? 'w-[85%] h-[75%]' : 'w-[95%] h-[90%]'} max-w-none`}
             style={{ 
-              pointerEvents: 'none' // Prevent any clicks that might show controls
+              pointerEvents: 'auto' // Allow clicks for fallback play
             }}
           >
             <source src={getSplashVideoSource()} type="video/mp4" />

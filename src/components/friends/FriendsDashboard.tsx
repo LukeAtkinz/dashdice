@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useFriends, useGameInvitationNotifications } from '@/context/FriendsContext';
 import { useBackground } from '@/context/BackgroundContext';
@@ -190,6 +190,51 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
     }
   }, [pendingRequests.length, activeTab]);
 
+  // Listen for tab changes from bottom navigation
+  useEffect(() => {
+    const handleTabChange = (event: Event) => {
+      const customEvent = event as CustomEvent<'friends' | 'manage'>;
+      const newTab = customEvent.detail;
+      setActiveTab(newTab);
+
+      // Update button styling
+      const buttons = document.querySelectorAll('.friends-tab-btn');
+      buttons.forEach(btn => {
+        const button = btn as HTMLButtonElement;
+        const tab = button.dataset.tab;
+        if (tab === newTab) {
+          button.style.opacity = '1';
+          button.style.textDecoration = 'underline';
+        } else {
+          button.style.opacity = '0.6';
+          button.style.textDecoration = 'none';
+        }
+      });
+    };
+
+    window.addEventListener('friendsTabChange', handleTabChange);
+
+    // Initialize button styling
+    setTimeout(() => {
+      const buttons = document.querySelectorAll('.friends-tab-btn');
+      buttons.forEach(btn => {
+        const button = btn as HTMLButtonElement;
+        const tab = button.dataset.tab;
+        if (tab === activeTab) {
+          button.style.opacity = '1';
+          button.style.textDecoration = 'underline';
+        } else {
+          button.style.opacity = '0.6';
+          button.style.textDecoration = 'none';
+        }
+      });
+    }, 100);
+
+    return () => {
+      window.removeEventListener('friendsTabChange', handleTabChange);
+    };
+  }, [activeTab]);
+
   return (
     <>
       <style jsx>{buttonStyles}</style>
@@ -208,62 +253,7 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
         </h1>
       </div>
 
-      {/* Navigation Tabs - Using Inventory Template */}
-      <div className="w-full max-w-[60rem] flex flex-row items-center justify-center gap-[1rem] mb-2 flex-shrink-0">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`
-              tab-button nav-button
-              flex flex-col items-center justify-center gap-2 p-4 rounded-[20px]
-              transition-all duration-300
-              h-12 md:h-16 px-4 md:px-6 min-w-[120px] md:min-w-[140px]
-              ${activeTab === tab.id ? 'active' : ''}
-              ${tab.id === 'friends' ? 'friends-tab' : ''}
-              ${tab.id === 'manage' ? 'manage-friends-tab' : ''}
-            `}
-            style={{
-              display: 'flex',
-              width: 'fit-content',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: '10px',
-              borderRadius: '18px',
-              border: activeTab === tab.id ? '2px solid #FFD700' : '2px solid transparent',
-              background: 'transparent',
-              cursor: 'pointer',
-            }}
-          >
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex items-center gap-2">
-                <span className="text-base md:text-lg font-audiowide uppercase" style={{ 
-                  color: activeTab === tab.id ? '#FFF' : '#FFF', 
-                  fontFamily: 'Audiowide', 
-                  fontWeight: 400, 
-                  textTransform: 'uppercase' 
-                }}>
-                  <span className="hidden md:inline">{tab.label}</span>
-                  <span className="md:hidden">{tab.mobileLabel || tab.label}</span>
-                </span>
-                {/* Count badge - don't show for friends tab */}
-                {tab.count > 0 && tab.id !== 'friends' && (
-                  <span className={`
-                    px-2 py-0.5 text-xs rounded-full min-w-[1.25rem] h-5 flex items-center justify-center font-audiowide
-                    ${tab.isActive 
-                      ? 'bg-red-500 text-white animate-pulse' 
-                      : 'bg-white/20 text-white'
-                    }
-                  `}>
-                    {tab.count}
-                  </span>
-                )}
-              </div>
-              
-            </div>
-          </button>
-        ))}
-      </div>
+      {/* Navigation tabs moved to bottom nav in SinglePageDashboard.tsx */}
 
       {/* Content */}
       <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4" style={{

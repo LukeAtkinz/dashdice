@@ -27,11 +27,9 @@ import { useBackground } from '@/context/BackgroundContext';
 interface MatchProps {
   gameMode?: string;
   roomId?: string;
-  topVideo?: string;
-  bottomVideo?: string;
 }
 
-export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottomVideo }) => {
+export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   // Remove performance-impacting debug logs
   // console.log('🎮 Match: Component rendered with props:', { gameMode, roomId });
   // console.log('🔍 DEBUG: Match component entry point:', {
@@ -716,6 +714,27 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
   const { backgroundPath: currentPlayerBgPath, isVideo: currentPlayerBgIsVideo } = useMatchBackground(currentPlayerBackground as any);
   const { backgroundPath: opponentBgPath, isVideo: opponentBgIsVideo } = useMatchBackground(opponentBackground as any);
 
+  // Get turn decider backgrounds from player data
+  const topVideo = useMemo(() => {
+    if (!matchData) return '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
+    const hostDeciderBg = matchData.hostData.turnDeciderBackgroundEquipped;
+    if (hostDeciderBg && typeof hostDeciderBg === 'object' && 'id' in hostDeciderBg) {
+      const resolved = resolveBackgroundPath(hostDeciderBg.id, 'dashboard-display');
+      return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
+    }
+    return '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
+  }, [matchData]);
+
+  const bottomVideo = useMemo(() => {
+    if (!matchData) return '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
+    const opponentDeciderBg = matchData.opponentData?.turnDeciderBackgroundEquipped;
+    if (opponentDeciderBg && typeof opponentDeciderBg === 'object' && 'id' in opponentDeciderBg) {
+      const resolved = resolveBackgroundPath(opponentDeciderBg.id, 'dashboard-display');
+      return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
+    }
+    return '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
+  }, [matchData]);
+
   // Subscribe to match updates
   useEffect(() => {
     console.log('🎮 Match: useEffect triggered with roomId:', roomId, 'user:', user?.uid);
@@ -1291,14 +1310,52 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
                     autoPlay 
                     loop 
                     muted 
-                    playsInline 
+                    playsInline
+                    webkit-playsinline="true"
+                    x5-playsinline="true"
+                    x5-video-player-type="h5-page"
+                    x5-video-player-fullscreen="false"
                     preload="auto"
+                    controls={false}
+                    disablePictureInPicture
+                    disableRemotePlayback
+                    onLoadedMetadata={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      video.muted = true;
+                      video.play().catch(() => {});
+                    }}
+                    onCanPlay={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      video.muted = true;
+                      if (video.paused) video.play().catch(() => {});
+                    }}
+                    onLoadedData={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      video.muted = true;
+                      if (video.paused) video.play().catch(() => {});
+                    }}
+                    onSuspend={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      if (video.paused) video.play().catch(() => {});
+                    }}
+                    onPause={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      setTimeout(() => {
+                        if (video.paused) video.play().catch(() => {});
+                      }, 100);
+                    }}
+                    onClick={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      video.muted = true;
+                      if (video.paused) video.play().catch(() => {});
+                    }}
                     style={{ 
                       position: 'absolute', 
                       inset: 0, 
                       width: '100%', 
                       height: '100%', 
-                      objectFit: 'cover' 
+                      objectFit: 'cover',
+                      pointerEvents: 'none'
                     }}
                   />
                 </div>
@@ -1316,14 +1373,52 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
                     autoPlay 
                     loop 
                     muted 
-                    playsInline 
+                    playsInline
+                    webkit-playsinline="true"
+                    x5-playsinline="true"
+                    x5-video-player-type="h5-page"
+                    x5-video-player-fullscreen="false"
                     preload="auto"
+                    controls={false}
+                    disablePictureInPicture
+                    disableRemotePlayback
+                    onLoadedMetadata={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      video.muted = true;
+                      video.play().catch(() => {});
+                    }}
+                    onCanPlay={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      video.muted = true;
+                      if (video.paused) video.play().catch(() => {});
+                    }}
+                    onLoadedData={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      video.muted = true;
+                      if (video.paused) video.play().catch(() => {});
+                    }}
+                    onSuspend={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      if (video.paused) video.play().catch(() => {});
+                    }}
+                    onPause={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      setTimeout(() => {
+                        if (video.paused) video.play().catch(() => {});
+                      }, 100);
+                    }}
+                    onClick={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      video.muted = true;
+                      if (video.paused) video.play().catch(() => {});
+                    }}
                     style={{ 
                       position: 'absolute', 
                       inset: 0, 
                       width: '100%', 
                       height: '100%', 
-                      objectFit: 'cover' 
+                      objectFit: 'cover',
+                      pointerEvents: 'none'
                     }}
                   />
                 </div>
@@ -1342,14 +1437,52 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
                     autoPlay 
                     loop 
                     muted 
-                    playsInline 
+                    playsInline
+                    webkit-playsinline="true"
+                    x5-playsinline="true"
+                    x5-video-player-type="h5-page"
+                    x5-video-player-fullscreen="false"
                     preload="auto"
+                    controls={false}
+                    disablePictureInPicture
+                    disableRemotePlayback
+                    onLoadedMetadata={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      video.muted = true;
+                      video.play().catch(() => {});
+                    }}
+                    onCanPlay={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      video.muted = true;
+                      if (video.paused) video.play().catch(() => {});
+                    }}
+                    onLoadedData={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      video.muted = true;
+                      if (video.paused) video.play().catch(() => {});
+                    }}
+                    onSuspend={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      if (video.paused) video.play().catch(() => {});
+                    }}
+                    onPause={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      setTimeout(() => {
+                        if (video.paused) video.play().catch(() => {});
+                      }, 100);
+                    }}
+                    onClick={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      video.muted = true;
+                      if (video.paused) video.play().catch(() => {});
+                    }}
                     style={{ 
                       position: 'absolute', 
                       inset: 0, 
                       width: '100%', 
                       height: '100%', 
-                      objectFit: 'cover' 
+                      objectFit: 'cover',
+                      pointerEvents: 'none'
                     }}
                   />
                 );
@@ -2113,10 +2246,42 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
                         playsInline
                         webkit-playsinline="true"
                         x5-playsinline="true"
+                        x5-video-player-type="h5-page"
+                        x5-video-player-fullscreen="false"
                         controls={false}
-                        preload="metadata"
+                        preload="auto"
                         disablePictureInPicture
                         disableRemotePlayback
+                        onLoadedMetadata={(e) => {
+                          const video = e.target as HTMLVideoElement;
+                          video.muted = true;
+                          video.play().catch(() => {});
+                        }}
+                        onCanPlay={(e) => {
+                          const video = e.target as HTMLVideoElement;
+                          video.muted = true;
+                          if (video.paused) video.play().catch(() => {});
+                        }}
+                        onLoadedData={(e) => {
+                          const video = e.target as HTMLVideoElement;
+                          video.muted = true;
+                          if (video.paused) video.play().catch(() => {});
+                        }}
+                        onSuspend={(e) => {
+                          const video = e.target as HTMLVideoElement;
+                          if (video.paused) video.play().catch(() => {});
+                        }}
+                        onPause={(e) => {
+                          const video = e.target as HTMLVideoElement;
+                          setTimeout(() => {
+                            if (video.paused) video.play().catch(() => {});
+                          }, 100);
+                        }}
+                        onClick={(e) => {
+                          const video = e.target as HTMLVideoElement;
+                          video.muted = true;
+                          if (video.paused) video.play().catch(() => {});
+                        }}
                         className="absolute inset-0 w-full h-full object-cover"
                         style={{ 
                           pointerEvents: 'none',

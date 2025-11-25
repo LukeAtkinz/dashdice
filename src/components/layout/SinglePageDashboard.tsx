@@ -666,8 +666,6 @@ const DashboardContent: React.FC = () => {
                     key={`match-${sectionParams.matchId || "dev-room-123"}`}
                     gameMode={sectionParams.gameMode}
                     roomId={sectionParams.matchId || "dev-room-123"}
-                    topVideo={sectionParams.topVideo}
-                    bottomVideo={sectionParams.bottomVideo}
                   />
                 )}
                 {currentSection === 'waiting-room' && (
@@ -771,60 +769,125 @@ const DashboardContent: React.FC = () => {
                   ? 'linear-gradient(0deg, #00518c 0%, transparent 100%)'
                   : 'rgba(0, 0, 0, 0.6)',
                 backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' || DisplayBackgroundEquip?.name === 'As They Fall' || DisplayBackgroundEquip?.name === 'End Of The Dragon' ? 'blur(8px)' : 'none',
-                borderTop: '1px solid rgba(255, 255, 255, 0.1)',
                 boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.3)'
               }}>
                 
                 {/* Profile/Settings Tabs - Only show when on profile section */}
-                {currentSection === 'profile' && (
-                  <div className="flex items-center justify-center gap-4 px-4 pt-3 pb-2 border-b border-white/10">
-                    <button
-                      onClick={() => {
-                        // This will be handled by ProfileSection's activeTab state
-                        const event = new CustomEvent('profileTabChange', { detail: 'profile' });
-                        window.dispatchEvent(event);
-                      }}
-                      className="profile-tab-btn flex items-center justify-center gap-2 px-6 py-2.5 rounded-[18px] transition-all duration-300"
-                      style={{
-                        border: '2px solid rgba(255, 255, 255, 0.1)',
-                        background: 'transparent',
-                      }}
-                      data-tab="profile"
+                <AnimatePresence>
+                  {currentSection === 'profile' && (
+                    <motion.div
+                      initial={{ y: 100, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: 100, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="flex items-center justify-center gap-4 px-4 pt-3 pb-2"
                     >
-                      <span style={{
-                        color: '#FFF',
-                        fontFamily: 'Audiowide', 
-                        fontSize: '14px', 
-                        fontWeight: 400, 
-                        textTransform: 'uppercase' 
-                      }}>
-                        Profile
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        const event = new CustomEvent('profileTabChange', { detail: 'settings' });
-                        window.dispatchEvent(event);
-                      }}
-                      className="profile-tab-btn flex items-center justify-center gap-2 px-6 py-2.5 rounded-[18px] transition-all duration-300"
-                      style={{
-                        border: '2px solid rgba(255, 255, 255, 0.1)',
-                        background: 'transparent',
-                      }}
-                      data-tab="settings"
+                      <button
+                        onClick={() => {
+                          // This will be handled by ProfileSection's activeTab state
+                          const event = new CustomEvent('profileTabChange', { detail: 'profile' });
+                          window.dispatchEvent(event);
+                        }}
+                        className="profile-tab-btn flex items-center justify-center gap-2 px-6 py-2.5 rounded-[18px] transition-all duration-300"
+                        style={{
+                          border: '2px solid rgba(255, 255, 255, 0.1)',
+                          background: 'transparent',
+                        }}
+                        data-tab="profile"
+                      >
+                        <span style={{
+                          color: '#FFF',
+                          fontFamily: 'Audiowide', 
+                          fontSize: '14px', 
+                          fontWeight: 400, 
+                          textTransform: 'uppercase' 
+                        }}>
+                          Profile
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          const event = new CustomEvent('profileTabChange', { detail: 'settings' });
+                          window.dispatchEvent(event);
+                        }}
+                        className="profile-tab-btn flex items-center justify-center gap-2 px-6 py-2.5 rounded-[18px] transition-all duration-300"
+                        style={{
+                          border: '2px solid rgba(255, 255, 255, 0.1)',
+                          background: 'transparent',
+                        }}
+                        data-tab="settings"
+                      >
+                        <span style={{
+                          color: '#FFF',
+                          fontFamily: 'Audiowide', 
+                          fontSize: '14px', 
+                          fontWeight: 400, 
+                          textTransform: 'uppercase' 
+                        }}>
+                          Settings
+                        </span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Friends/Manage Tabs - Only show when on friends section */}
+                <AnimatePresence>
+                  {currentSection === 'friends' && (
+                    <motion.div
+                      initial={{ y: 100, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: 100, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="flex items-center justify-center gap-4 px-4 pt-3 pb-2"
                     >
-                      <span style={{
-                        color: '#FFF',
-                        fontFamily: 'Audiowide', 
-                        fontSize: '14px', 
-                        fontWeight: 400, 
-                        textTransform: 'uppercase' 
-                      }}>
-                        Settings
-                      </span>
-                    </button>
-                  </div>
-                )}
+                      <button
+                        onClick={() => {
+                          const event = new CustomEvent('friendsTabChange', { detail: 'friends' });
+                          window.dispatchEvent(event);
+                        }}
+                        className="friends-tab-btn flex items-center justify-center gap-2 px-6 py-2.5 rounded-[18px] transition-all duration-300"
+                        style={{
+                          border: '2px solid rgba(255, 255, 255, 0.1)',
+                          background: 'transparent',
+                        }}
+                        data-tab="friends"
+                      >
+                        <span style={{
+                          color: '#FFF',
+                          fontFamily: 'Audiowide', 
+                          fontSize: '14px', 
+                          fontWeight: 400, 
+                          textTransform: 'uppercase' 
+                        }}>
+                          Friends
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          const event = new CustomEvent('friendsTabChange', { detail: 'manage' });
+                          window.dispatchEvent(event);
+                        }}
+                        className="friends-tab-btn flex items-center justify-center gap-2 px-6 py-2.5 rounded-[18px] transition-all duration-300"
+                        style={{
+                          border: '2px solid rgba(255, 255, 255, 0.1)',
+                          background: 'transparent',
+                        }}
+                        data-tab="manage"
+                      >
+                        <span style={{
+                          color: '#FFF',
+                          fontFamily: 'Audiowide', 
+                          fontSize: '14px', 
+                          fontWeight: 400, 
+                          textTransform: 'uppercase' 
+                        }}>
+                          Manage
+                        </span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* Main Navigation Row */}
                 <div className="flex flex-row items-center justify-between w-full px-[2vw] py-[15px]">

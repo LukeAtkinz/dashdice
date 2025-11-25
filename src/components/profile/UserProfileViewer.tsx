@@ -12,6 +12,7 @@ import { useBackground } from '@/context/BackgroundContext';
 import { MatchHistory } from '@/components/profile/MatchHistory';
 import { ProfilePicture } from '@/components/ui/ProfilePicture';
 import { usePlayerCardBackground } from '@/hooks/useOptimizedBackground';
+import { resolveBackgroundPath } from '@/config/backgrounds';
 
 interface UserProfileViewerProps {
   userId: string;
@@ -424,97 +425,202 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
       {/* Profile Content */}
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4">
         <div className="space-y-6">
-          {/* User Profile Card - Similar to current ProfileSection */}
-          <motion.div
-            className="relative overflow-hidden touch-manipulation"
-            style={{
-              borderRadius: '20px'
-            }}
+          {/* Profile Card Container - Matching ProfileSection Design */}
+          <motion.div 
+            className="relative w-full md:w-auto"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            {/* Video Background for current user or other users */}
-            {(() => {
-              // Use optimized background path from hook
-              if (profileBgIsVideo) {
-                return (
-                  <video
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    webkit-playsinline="true"
-                    x5-playsinline="true"
-                    controls={false}
-                    preload="metadata"
-                    disablePictureInPicture
-                    disableRemotePlayback
-                    className="absolute inset-0 w-full h-full object-cover"
-                    style={{ zIndex: 0, pointerEvents: 'none' }}
-                  >
-                    <source src={profileBgPath ?? undefined} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                );
-              }
-              
-              return null;
-            })()}
-
-            {/* Background Image or Gradient Fallback */}
-            <div
-              className="absolute inset-0 w-full h-full"
+            {/* Profile Header Section with Flexin (Match) Background */}
+            <div 
+              className="relative overflow-hidden touch-manipulation rounded-t-[20px]"
               style={{
-                zIndex: 0,
-                ...(() => {
-                  // Use optimized background path from hook for images
-                  if (!profileBgIsVideo && profileBgPath) {
-                    return {
-                      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("${profileBgPath}")`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      backgroundRepeat: 'no-repeat'
-                    };
-                  }
-                  
-                  // Fallback gradient
-                  return {
-                    background: 'linear-gradient(135deg, #667eea, #764ba2)'
-                  };
-                })()
+                background: !(userProfile.inventory as any)?.matchBackgroundEquipped?.id 
+                  ? 'linear-gradient(135deg, #667eea, #764ba2)'
+                  : 'transparent',
+                width: 'calc(100vw - 2rem)',
+                maxWidth: '100%'
               }}
-            ></div>
+            >
+              {/* Flexin Background Video or Image */}
+              {(userProfile.inventory as any)?.matchBackgroundEquipped?.id && (() => {
+                const resolved = resolveBackgroundPath((userProfile.inventory as any).matchBackgroundEquipped.id, 'dashboard-display');
+                if (resolved?.type === 'video') {
+                  return (
+                    <video
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      webkit-playsinline="true"
+                      x5-playsinline="true"
+                      x5-video-player-type="h5-page"
+                      x5-video-player-fullscreen="false"
+                      preload="auto"
+                      controls={false}
+                      disablePictureInPicture
+                      disableRemotePlayback
+                      onLoadedMetadata={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.muted = true;
+                        video.play().catch(() => {});
+                      }}
+                      onCanPlay={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.muted = true;
+                        if (video.paused) video.play().catch(() => {});
+                      }}
+                      onLoadedData={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.muted = true;
+                        if (video.paused) video.play().catch(() => {});
+                      }}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      style={{ zIndex: 0 }}
+                    >
+                      <source src={resolved.path} type="video/mp4" />
+                    </video>
+                  );
+                } else if (resolved?.type === 'image') {
+                  return (
+                    <img
+                      src={resolved.path}
+                      alt={resolved.name}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      style={{ zIndex: 0 }}
+                    />
+                  );
+                }
+                return null;
+              })()}
+              
+              {/* Dark overlay gradient for text readability */}
+              <div 
+                className="absolute inset-0"
+                style={{
+                  background: 'linear-gradient(to right, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.2) 100%)',
+                  zIndex: 1
+                }}
+              ></div>
 
-            <div className="relative z-10 p-6">
-              {/* Profile Header */}
-              <div className="flex items-center gap-4 mb-6">
-                <div className="relative">
-                  <ProfilePicture
-                    src={userProfile.profilePicture || userProfile.photoURL}
-                    alt={`${userProfile.displayName || 'Player'}'s profile picture`}
-                    size="lg"
-                    fallbackInitials={userProfile.displayName?.charAt(0)?.toUpperCase() || userProfile.userTag?.charAt(0)?.toUpperCase()}
-                  />
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-2 border-gray-800"></div>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-white text-2xl font-semibold font-audiowide truncate">
-                    {userProfile.displayName || 'Player'}
-                  </h2>
-                  <p className="text-white/80 text-lg font-montserrat">
-                    {userProfile.rankedStatus || 'Ranked - Active'}
-                  </p>
-                  <p className="text-white/60 text-sm font-montserrat">
-                    Member since {userProfile.createdAt?.toDate?.() ? userProfile.createdAt.toDate().toLocaleDateString() : 'Unknown'}
-                  </p>
+              <div className="relative z-10 p-6">
+                {/* Profile Header */}
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <ProfilePicture
+                      src={userProfile.profilePicture || userProfile.photoURL}
+                      alt={`${userProfile.displayName || 'Player'}'s profile picture`}
+                      size="lg"
+                      fallbackInitials={userProfile.displayName?.charAt(0)?.toUpperCase() || '?'}
+                    />
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-2 border-gray-800"></div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-white text-2xl font-semibold font-audiowide truncate">
+                      {userProfile.displayName || 'Player'}
+                    </h2>
+                    <p className="text-white/90 text-lg font-montserrat">Online</p>
+                    <p className="text-white/70 text-sm font-montserrat">
+                      Member since {userProfile.createdAt?.toDate?.() ? userProfile.createdAt.toDate().toLocaleDateString() : 'Unknown'}
+                    </p>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              {/* Statistics Grid */}
-              <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6">
-                <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Player Statistics</h3>
+            {/* Victory Screen Section */}
+            <div className="relative bg-black/60 backdrop-blur-sm border-x border-gray-700/50 p-6" style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}>
+              <h3 className="text-white text-lg uppercase mb-3 text-center" style={{ fontFamily: 'Audiowide' }}>VICTORY</h3>
+              <div className="relative rounded-xl overflow-hidden flex items-center justify-center border border-gray-700/50" style={{ height: '220px' }}>
+                <video
+                  key={(userProfile.inventory as any)?.victoryBackgroundEquipped?.id || 'victory-screen-video'}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  webkit-playsinline="true"
+                  x5-playsinline="true"
+                  x5-video-player-type="h5-page"
+                  x5-video-player-fullscreen="false"
+                  preload="auto"
+                  controls={false}
+                  disablePictureInPicture
+                  disableRemotePlayback
+                  onLoadedMetadata={(e) => {
+                    const video = e.target as HTMLVideoElement;
+                    video.muted = true;
+                    video.play().catch(() => {});
+                  }}
+                  onCanPlay={(e) => {
+                    const video = e.target as HTMLVideoElement;
+                    video.muted = true;
+                    if (video.paused) video.play().catch(() => {});
+                  }}
+                  onLoadedData={(e) => {
+                    const video = e.target as HTMLVideoElement;
+                    video.muted = true;
+                    if (video.paused) video.play().catch(() => {});
+                  }}
+                  className="w-full h-full object-cover"
+                  src={(userProfile.inventory as any)?.victoryBackgroundEquipped?.id ? resolveBackgroundPath((userProfile.inventory as any).victoryBackgroundEquipped.id, 'dashboard-display')?.path : '/Victory Screens/Wind Blade.mp4'}
+                />
+              </div>
+            </div>
+
+            {/* Turn Decider Section */}
+            <div className="relative bg-black/60 backdrop-blur-sm border-x border-b border-gray-700/50 rounded-b-[20px] p-6" style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}>
+              <h3 className="text-white text-lg uppercase mb-3 text-center" style={{ fontFamily: 'Audiowide' }}>TURN DECIDER</h3>
+              <div className="relative rounded-xl overflow-hidden flex items-center justify-center border border-gray-700/50" style={{ height: '220px' }}>
+                <video
+                  key={(userProfile.inventory as any)?.turnDeciderBackgroundEquipped?.id || 'turn-decider-video'}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  webkit-playsinline="true"
+                  x5-playsinline="true"
+                  x5-video-player-type="h5-page"
+                  x5-video-player-fullscreen="false"
+                  preload="auto"
+                  controls={false}
+                  disablePictureInPicture
+                  disableRemotePlayback
+                  onLoadedMetadata={(e) => {
+                    const video = e.target as HTMLVideoElement;
+                    video.muted = true;
+                    video.play().catch(() => {});
+                  }}
+                  onCanPlay={(e) => {
+                    const video = e.target as HTMLVideoElement;
+                    video.muted = true;
+                    if (video.paused) video.play().catch(() => {});
+                  }}
+                  onLoadedData={(e) => {
+                    const video = e.target as HTMLVideoElement;
+                    video.muted = true;
+                    if (video.paused) video.play().catch(() => {});
+                  }}
+                  className="w-full h-full object-cover"
+                  src={(userProfile.inventory as any)?.turnDeciderBackgroundEquipped?.id ? resolveBackgroundPath((userProfile.inventory as any).turnDeciderBackgroundEquipped.id, 'dashboard-display')?.path : '/Game Backgrounds/Turn Decider/Videos/Best Quality/Crazy Cough.mp4'}
+                />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Statistics Section - Now Separate Card */}
+          <motion.div 
+            className="relative overflow-hidden rounded-[20px] bg-black/40 backdrop-blur-sm border border-gray-700/50"
+            style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <div className="p-6">
+
+              {/* Statistics Grid - Friends Card Style */}
+              <div className="rounded-xl p-6 -mx-4 md:-mx-4">
+                <h3 className="text-white text-xl mb-4 uppercase text-center md:text-left" style={{ fontFamily: 'Audiowide' }}>STATISTICS</h3>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                   <motion.div
@@ -623,9 +729,9 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                 </div>
               </div>
 
-              {/* Ranked Statistics */}
-              <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
-                <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Ranked</h3>
+              {/* Ranked Statistics Section */}
+              <div className="bg-transparent rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
+                <h3 className="text-white text-xl mb-4 uppercase text-center md:text-left" style={{ fontFamily: 'Audiowide' }}>RANKED</h3>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <motion.div
@@ -690,9 +796,9 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                 </div>
               </div>
 
-              {/* Tournament Statistics */}
-              <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
-                <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Tournament</h3>
+              {/* Tournament Statistics Section */}
+              <div className="bg-transparent rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
+                <h3 className="text-white text-xl mb-4 uppercase text-center md:text-left" style={{ fontFamily: 'Audiowide' }}>TOURNAMENT</h3>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <motion.div
@@ -757,9 +863,9 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                 </div>
               </div>
 
-              {/* Cosmetic Statistics */}
-              <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
-                <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Cosmetic</h3>
+              {/* Cosmetic Statistics Section */}
+              <div className="bg-transparent rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
+                <h3 className="text-white text-xl mb-4 uppercase text-center md:text-left" style={{ fontFamily: 'Audiowide' }}>COSMETIC</h3>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                   <motion.div
@@ -827,9 +933,9 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                 </div>
               </div>
 
-              {/* Friends Statistics */}
-              <div className="bg-transparent backdrop-blur-[0.5px] rounded-xl p-6 mt-6">
-                <h3 className="text-white text-xl font-audiowide mb-4 uppercase">Friends</h3>
+              {/* Friends Statistics Section */}
+              <div className="bg-transparent rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
+                <h3 className="text-white text-xl mb-4 uppercase text-center md:text-left" style={{ fontFamily: 'Audiowide' }}>FRIENDS</h3>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                   <motion.div
