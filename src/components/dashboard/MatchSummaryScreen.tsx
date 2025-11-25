@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MatchData } from '@/types/match';
-import { RematchService, RematchRoom } from '@/services/rematchService';
+// Rematch system temporarily simplified - using game invitations instead
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { GameModeSelector } from '@/components/ui/GameModeSelector';
 import { useAuth } from '@/context/AuthContext';
@@ -106,7 +106,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
     }
   };
 
-  // Rematch handlers
+  // Rematch handlers - Simplified to use game invitations
   const handleRequestRematch = () => {
     if (!user || !opponentId || rematchState !== 'idle') return;
     setShowGameModeSelector(true);
@@ -119,15 +119,24 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
       setShowGameModeSelector(false);
       setRematchState('requesting');
       
-      const roomId = await RematchService.createRematchRoom(
+      // Use GameInvitationService instead of complex rematch system
+      const { GameInvitationService } = await import('@/services/gameInvitationService');
+      
+      const result = await GameInvitationService.sendGameInvitation(
         user.uid,
-        currentUser.playerDisplayName,
         opponentId,
-        opponentDisplayName,
-        matchData.id || '',
-        gameMode, // Use selected game mode
-        'Open Server' // Default game type
+        gameMode,
+        { isRematch: true, previousMatchId: matchData.id }
       );
+      
+      if (!result.success) {
+        console.error('❌ Failed to send rematch invitation:', result.error);
+        setRematchState('idle');
+        return;
+      }
+      
+      console.log('✅ Rematch invitation sent successfully');
+      setRematchState('waiting');
       setRematchRoomId(roomId);
       // Stay in 'requesting' state until opponent accepts
     } catch (error) {
@@ -250,7 +259,13 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   return (
     <>
       {/* Victory Video Background - Winner's selected background */}
-      <div className="fixed inset-0 w-full h-full bg-black" style={{ zIndex: 0 }}>
+      <div 
+        className="fixed top-0 left-0 right-0 bg-black md:bottom-0" 
+        style={{ 
+          zIndex: 0,
+          bottom: 'calc(130px + env(safe-area-inset-bottom))',
+        }}
+      >
         <video 
           key={victoryVideo}
           src={victoryVideo} 
@@ -402,72 +417,76 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
             animate={{ opacity: 1, y: 0, height: 'auto' }}
             exit={{ opacity: 0, y: 20, height: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="block p-4 md:p-6 bg-black/40 rounded-2xl border border-gray-600 backdrop-blur-md"
+            className="block p-6 md:p-6 bg-black/50 rounded-3xl border-2 border-yellow-500/30 backdrop-blur-lg shadow-2xl"
+            style={{
+              width: '90vw',
+              maxWidth: '800px',
+            }}
           >
-          <h3 className="text-base md:text-lg font-bold text-white mb-4 md:mb-6 text-center" style={{ fontFamily: "Audiowide" }}>
+          <h3 className="text-lg md:text-xl font-bold text-yellow-400 mb-6 text-center" style={{ fontFamily: "Audiowide", textShadow: "0 0 10px rgba(255, 215, 0, 0.5)" }}>
             MATCH STATISTICS
           </h3>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
           {/* Left Column - Host Stats */}
-          <div className="text-center space-y-4">
-            <h4 className="text-sm md:text-md font-bold text-yellow-400 mb-4" style={{ fontFamily: "Audiowide" }}>
+          <div className="text-center space-y-4 bg-gradient-to-b from-yellow-500/10 to-transparent p-4 rounded-xl">
+            <h4 className="text-base md:text-lg font-bold text-yellow-400 mb-4" style={{ fontFamily: "Audiowide" }}>
               {matchData.hostData.playerDisplayName}
             </h4>
             
-            <div className="space-y-3">
-              <div>
-                <p className="text-gray-300 text-sm">Banks</p>
-                <p className="text-white font-bold text-lg">{matchData.hostData.matchStats?.banks || 0}</p>
+            <div className="space-y-4">
+              <div className="bg-black/30 p-2 rounded-lg">
+                <p className="text-gray-400 text-xs uppercase tracking-wider">Banks</p>
+                <p className="text-white font-bold text-2xl">{matchData.hostData.matchStats?.banks || 0}</p>
               </div>
               
-              <div>
-                <p className="text-gray-300 text-sm">Doubles</p>
-                <p className="text-white font-bold text-lg">{matchData.hostData.matchStats?.doubles || 0}</p>
+              <div className="bg-black/30 p-2 rounded-lg">
+                <p className="text-gray-400 text-xs uppercase tracking-wider">Doubles</p>
+                <p className="text-white font-bold text-2xl">{matchData.hostData.matchStats?.doubles || 0}</p>
               </div>
               
-              <div>
-                <p className="text-gray-300 text-sm">Largest Score</p>
-                <p className="text-white font-bold text-lg">{matchData.hostData.matchStats?.biggestTurnScore || 0}</p>
+              <div className="bg-black/30 p-2 rounded-lg">
+                <p className="text-gray-400 text-xs uppercase tracking-wider">Largest Score</p>
+                <p className="text-white font-bold text-2xl">{matchData.hostData.matchStats?.biggestTurnScore || 0}</p>
               </div>
               
-              <div>
-                <p className="text-gray-300 text-sm">TOTAL AURA</p>
-                <p className="text-white font-bold text-lg">{matchData.hostData.matchStats?.totalAura || 0}</p>
+              <div className="bg-black/30 p-2 rounded-lg">
+                <p className="text-gray-400 text-xs uppercase tracking-wider">TOTAL AURA</p>
+                <p className="text-yellow-400 font-bold text-2xl">{matchData.hostData.matchStats?.totalAura || 0}</p>
               </div>
             </div>
           </div>
           
           {/* Center Column - Separator - Hidden on Mobile */}
           <div className="hidden md:flex items-center justify-center">
-            <div className="w-px h-48 bg-gradient-to-b from-transparent via-gray-400 to-transparent"></div>
+            <div className="w-px h-full bg-gradient-to-b from-transparent via-yellow-500/50 to-transparent"></div>
           </div>
           
           {/* Right Column - Opponent Stats */}
-          <div className="text-center space-y-4">
-            <h4 className="text-sm md:text-md font-bold text-yellow-400 mb-4" style={{ fontFamily: "Audiowide" }}>
+          <div className="text-center space-y-4 bg-gradient-to-b from-yellow-500/10 to-transparent p-4 rounded-xl">
+            <h4 className="text-base md:text-lg font-bold text-yellow-400 mb-4" style={{ fontFamily: "Audiowide" }}>
               {matchData.opponentData.playerDisplayName}
             </h4>
             
-            <div className="space-y-3">
-              <div>
-                <p className="text-gray-300 text-sm">Banks</p>
-                <p className="text-white font-bold text-lg">{matchData.opponentData.matchStats?.banks || 0}</p>
+            <div className="space-y-4">
+              <div className="bg-black/30 p-2 rounded-lg">
+                <p className="text-gray-400 text-xs uppercase tracking-wider">Banks</p>
+                <p className="text-white font-bold text-2xl">{matchData.opponentData.matchStats?.banks || 0}</p>
               </div>
               
-              <div>
-                <p className="text-gray-300 text-sm">Doubles</p>
-                <p className="text-white font-bold text-lg">{matchData.opponentData.matchStats?.doubles || 0}</p>
+              <div className="bg-black/30 p-2 rounded-lg">
+                <p className="text-gray-400 text-xs uppercase tracking-wider">Doubles</p>
+                <p className="text-white font-bold text-2xl">{matchData.opponentData.matchStats?.doubles || 0}</p>
               </div>
               
-              <div>
-                <p className="text-gray-300 text-sm">Largest Score</p>
-                <p className="text-white font-bold text-lg">{matchData.opponentData.matchStats?.biggestTurnScore || 0}</p>
+              <div className="bg-black/30 p-2 rounded-lg">
+                <p className="text-gray-400 text-xs uppercase tracking-wider">Largest Score</p>
+                <p className="text-white font-bold text-2xl">{matchData.opponentData.matchStats?.biggestTurnScore || 0}</p>
               </div>
               
-              <div>
-                <p className="text-gray-300 text-sm">TOTAL AURA</p>
-                <p className="text-white font-bold text-lg">{matchData.opponentData.matchStats?.totalAura || 0}</p>
+              <div className="bg-black/30 p-2 rounded-lg">
+                <p className="text-gray-400 text-xs uppercase tracking-wider">TOTAL AURA</p>
+                <p className="text-yellow-400 font-bold text-2xl">{matchData.opponentData.matchStats?.totalAura || 0}</p>
               </div>
             </div>
           </div>
