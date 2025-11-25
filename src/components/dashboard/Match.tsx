@@ -79,6 +79,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const [showHardHatUsedOpponent, setShowHardHatUsedOpponent] = useState(false);
   const previousHardHatStateRef = useRef<{current: boolean, opponent: boolean}>({current: false, opponent: false});
   
+  // Video playback management - keep videos mounted, control visibility
+  const [userInteracted, setUserInteracted] = useState(false);
+  const topVideoRef = useRef<HTMLVideoElement | null>(null);
+  const bottomVideoRef = useRef<HTMLVideoElement | null>(null);
+  
   // Initialize match start time when match data first loads
   useEffect(() => {
     if (matchData && !matchStartTime.current) {
@@ -134,6 +139,46 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     return () => {
       document.body.classList.remove('match-active');
     };
+  }, []);
+  
+  // Play videos when user interacts (grants autoplay permission)
+  useEffect(() => {
+    if (userInteracted && topVideoRef.current && bottomVideoRef.current) {
+      const playVideo = (video: HTMLVideoElement) => {
+        video.muted = true;
+        const playPromise = video.play();
+        if (playPromise) {
+          playPromise.catch((err) => {
+            console.warn('Video autoplay prevented:', err);
+          });
+        }
+      };
+      
+      playVideo(topVideoRef.current);
+      playVideo(bottomVideoRef.current);
+    }
+  }, [userInteracted]);
+  
+  // Register with global video playback manager
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    import('@/utils/videoPlaybackManager').then(({ videoPlaybackManager }) => {
+      const unregister = videoPlaybackManager.registerCallback(() => {
+        console.log('🎬 Match: Received playback trigger from manager');
+        setUserInteracted(true);
+        
+        // Also play videos immediately
+        if (topVideoRef.current) {
+          videoPlaybackManager.playVideo(topVideoRef.current);
+        }
+        if (bottomVideoRef.current) {
+          videoPlaybackManager.playVideo(bottomVideoRef.current);
+        }
+      });
+      
+      return unregister;
+    });
   }, []);
   
   // Add game over body class when showing game over screen
@@ -1015,6 +1060,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     // Remove performance-impacting logs
     // console.log('🎯 handleTurnDeciderChoice called with choice:', choice);
     
+    // ✅ USER INTERACTION: Grant autoplay permission for videos
+    setUserInteracted(true);
+    if (typeof window !== 'undefined') {
+      const { videoPlaybackManager } = await import('@/utils/videoPlaybackManager');
+      videoPlaybackManager.triggerPlayback();
+    }
+    
     if (!matchData) {
       // Remove performance-impacting logs
       // console.log('❌ No match data available');
@@ -1232,9 +1284,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         background: '#000000',
         zIndex: 0
       }}>
-        {(() => {
-          // Show world videos during Turn Decider phase
-          if (matchData.gameData.gamePhase === 'turnDecider') {
+        {/* PERSISTENT TURN DECIDER VIDEOS - Always mounted, visibility controlled by CSS */}
+        <div style={{ 
+          position: 'absolute',
+          inset: 0,
+          display: matchData.gameData.gamePhase === 'turnDecider' ? 'block' : 'none'
+        }}>
+          {(() => {
             return (
               <>
                 {/* Top half - host/top video */}
@@ -1247,6 +1303,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   overflow: 'hidden' 
                 }}>
                   <video 
+                    ref={topVideoRef}
                     key={`top-video-${topVideo}`}
                     src={topVideo}
                     autoPlay 
@@ -1323,6 +1380,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   overflow: 'hidden' 
                 }}>
                   <video 
+                    ref={bottomVideoRef}
                     key={`bottom-video-${bottomVideo}`}
                     src={bottomVideo}
                     autoPlay 
@@ -1391,10 +1449,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 </div>
               </>
             );
-          }
-          
+          })()}
+        </div>
+        
+        {/* GAMEPLAY BACKGROUND - Show after turn decider */}
+        {(() => {
           // After Turn Decider completes, show user's Display (Vibin) background for match arena
-          if (DisplayBackgroundEquip) {
+          if (matchData.gameData.gamePhase !== 'turnDecider' && DisplayBackgroundEquip) {
             const resolved = resolveBackgroundPath(DisplayBackgroundEquip.id, 'dashboard-display');
             if (resolved) {
               if (resolved.type === 'video') {
@@ -1405,14 +1466,16 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     loop 
                     muted 
                     playsInline
-                    webkit-playsinline="true"
-                    x5-playsinline="true"
-                    x5-video-player-type="h5-page"
-                    x5-video-player-fullscreen="false"
                     preload="auto"
                     controls={false}
                     disablePictureInPicture
                     disableRemotePlayback
+                    {...{
+                      'webkit-playsinline': 'true',
+                      'x5-playsinline': 'true',
+                      'x5-video-player-type': 'h5-page',
+                      'x5-video-player-fullscreen': 'false'
+                    } as any}
                     onLoadedMetadata={(e) => {
                       const video = e.target as HTMLVideoElement;
                       video.muted = true;
@@ -1437,6 +1500,15 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       setTimeout(() => {
                         if (video.paused) video.play().catch(() => {});
                       }, 100);
+                    }}
+                    onStalled={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      video.load();
+                      video.play().catch(() => {});
+                    }}
+                    onWaiting={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      if (video.paused) video.play().catch(() => {});
                     }}
                     onClick={(e) => {
                       const video = e.target as HTMLVideoElement;

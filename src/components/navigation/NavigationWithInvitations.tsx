@@ -42,6 +42,12 @@ export const NavigationWithInvitations: React.FC<NavigationWithInvitationsProps>
   const handleAcceptInvitation = async (invitationId: string) => {
     console.log('🎯 NavigationWithInvitations: Accept button clicked for invitation:', invitationId);
     
+    // ✅ USER INTERACTION: Grant autoplay permission for all videos
+    if (typeof window !== 'undefined') {
+      const { videoPlaybackManager } = await import('@/utils/videoPlaybackManager');
+      videoPlaybackManager.triggerPlayback();
+    }
+    
     // Find the invitation to get the game mode
     const invitation = validInvitations.find(inv => inv.id === invitationId);
     console.log('🎯 NavigationWithInvitations: Found invitation:', invitation);

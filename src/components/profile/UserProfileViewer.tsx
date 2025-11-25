@@ -29,6 +29,11 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
   const [sendingRequest, setSendingRequest] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [outgoingRequests, setOutgoingRequests] = useState<any[]>([]);
+  
+  // Video refs for autoplay control
+  const flexinVideoRef = React.useRef<HTMLVideoElement | null>(null);
+  const victoryVideoRef = React.useRef<HTMLVideoElement | null>(null);
+  const turnDeciderVideoRef = React.useRef<HTMLVideoElement | null>(null);
 
   // Get optimized background for profile card display
   const viewingOwnProfile = user?.uid === userId;
@@ -135,6 +140,31 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
     };
   }, [userId]);
 
+  // ✅ USER INTERACTION: Play videos when profile viewer opens
+  useEffect(() => {
+    // Small delay to ensure videos are mounted in DOM
+    const timer = setTimeout(() => {
+      const playVideo = (videoRef: React.RefObject<HTMLVideoElement>) => {
+        const video = videoRef.current;
+        if (video) {
+          video.muted = true;
+          const playPromise = video.play();
+          if (playPromise) {
+            playPromise.catch((err) => {
+              console.warn('UserProfile video autoplay prevented:', err);
+            });
+          }
+        }
+      };
+      
+      playVideo(flexinVideoRef);
+      playVideo(victoryVideoRef);
+      playVideo(turnDeciderVideoRef);
+    }, 200); // Slightly longer delay for profile viewer mount
+    
+    return () => clearTimeout(timer);
+  }, [userId]); // Re-trigger when viewing different user
+  
   // Subscribe to outgoing friend requests - only if user is authenticated
   useEffect(() => {
     if (!user?.uid) {
@@ -451,6 +481,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                 if (resolved?.type === 'video') {
                   return (
                     <video
+                      ref={flexinVideoRef}
                       autoPlay
                       loop
                       muted
@@ -542,6 +573,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                   console.log('🎬 VICTORY - victoryBg:', victoryBg, 'victoryBgId:', victoryBgId, 'victoryPath:', victoryPath);
                   return (
                     <video
+                      ref={victoryVideoRef}
                       key={victoryPath}
                       autoPlay
                       loop
@@ -605,6 +637,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                   console.log('🎬 TURN DECIDER - deciderBg:', deciderBg, 'deciderBgId:', deciderBgId, 'deciderPath:', deciderPath);
                   return (
                     <video
+                      ref={turnDeciderVideoRef}
                       key={deciderPath}
                       autoPlay
                       loop

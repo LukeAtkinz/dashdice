@@ -154,10 +154,16 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
 
   // User interaction fallback - play on ANY touch/click
   useEffect(() => {
-    const handleUserInteraction = () => {
+    const handleUserInteraction = async () => {
       const mainVideo = document.getElementById('main-splash-video') as HTMLVideoElement;
       if (mainVideo) {
         forceVideoPlay(mainVideo);
+      }
+      
+      // ✅ USER INTERACTION: Grant autoplay permission for all future videos
+      if (typeof window !== 'undefined') {
+        const { videoPlaybackManager } = await import('@/utils/videoPlaybackManager');
+        videoPlaybackManager.triggerPlayback();
       }
     };
 

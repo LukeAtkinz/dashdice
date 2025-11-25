@@ -249,6 +249,12 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
   const handleGameModeAction = async (gameMode: string, action: string) => {
     console.log(`${gameMode} - ${action} clicked`);
     
+    // ✅ USER INTERACTION: Grant autoplay permission for all videos
+    if (typeof window !== 'undefined') {
+      const { videoPlaybackManager } = await import('@/utils/videoPlaybackManager');
+      videoPlaybackManager.triggerPlayback();
+    }
+    
     // Handle guest users with bot matchmaking
     if (!user && onGuestGameModeAction) {
       console.log('🤖 Guest user detected - starting bot matchmaking');

@@ -138,6 +138,11 @@ const ProfileSection: React.FC = () => {
   const [friendStats, setFriendStats] = useState<FriendStats | null>(null);
   const [friendStatsLoading, setFriendStatsLoading] = useState(false);
   
+  // Video refs for autoplay control
+  const flexinVideoRef = React.useRef<HTMLVideoElement | null>(null);
+  const victoryVideoRef = React.useRef<HTMLVideoElement | null>(null);
+  const turnDeciderVideoRef = React.useRef<HTMLVideoElement | null>(null);
+  
   // Navigation tabs for profile/settings
   const tabs = [
     {
@@ -186,6 +191,31 @@ const ProfileSection: React.FC = () => {
       setActiveTab('settings');
     } else if (currentSection === 'profile') {
       setActiveTab('profile');
+    }
+  }, [currentSection]);
+  
+  // ✅ USER INTERACTION: Play videos when profile section is opened
+  useEffect(() => {
+    if (currentSection === 'profile' || currentSection === 'settings') {
+      const playVideo = (videoRef: React.RefObject<HTMLVideoElement>) => {
+        const video = videoRef.current;
+        if (video) {
+          video.muted = true;
+          const playPromise = video.play();
+          if (playPromise) {
+            playPromise.catch((err) => {
+              console.warn('Profile video autoplay prevented:', err);
+            });
+          }
+        }
+      };
+      
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        playVideo(flexinVideoRef);
+        playVideo(victoryVideoRef);
+        playVideo(turnDeciderVideoRef);
+      }, 100);
     }
   }, [currentSection]);
 
@@ -516,6 +546,7 @@ const ProfileSection: React.FC = () => {
                     if (resolved?.type === 'video') {
                       return (
                         <video
+                          ref={flexinVideoRef}
                           autoPlay
                           loop
                           muted
@@ -615,6 +646,7 @@ const ProfileSection: React.FC = () => {
                   <h3 className="text-white text-lg uppercase mb-3 text-center" style={{ fontFamily: 'Audiowide' }}>VICTORY</h3>
                   <div className="relative rounded-xl overflow-hidden flex items-center justify-center border border-gray-700/50" style={{ height: '220px' }}>
                     <video
+                      ref={victoryVideoRef}
                       key={VictoryBackgroundEquip?.id || 'victory-screen-video'}
                       autoPlay
                       loop
@@ -669,6 +701,7 @@ const ProfileSection: React.FC = () => {
                   <h3 className="text-white text-lg uppercase mb-3 text-center" style={{ fontFamily: 'Audiowide' }}>TURN DECIDER</h3>
                   <div className="relative rounded-xl overflow-hidden flex items-center justify-center border border-gray-700/50" style={{ height: '220px' }}>
                     <video
+                      ref={turnDeciderVideoRef}
                       key={TurnDeciderBackgroundEquip?.id || 'turn-decider-video'}
                       autoPlay
                       loop
