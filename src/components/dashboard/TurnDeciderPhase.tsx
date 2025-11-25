@@ -452,22 +452,21 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.3 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="fixed z-50"
           style={{
+            position: 'fixed',
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            pointerEvents: 'none'
-          }}
-        >
-          {/* Giant Vertical Reel Dice Container */}
-          <div style={{
             width: 'min(95vw, 1000px)',
             height: 'clamp(350px, 55vh, 600px)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
-          }}>
+            justifyContent: 'center',
+            zIndex: 50,
+            pointerEvents: 'none'
+          }}
+        >
+          {/* Giant Vertical Reel Dice Container */}
             <SlotMachineDice
               diceNumber={'turnDecider' as any}
               animationState={{
@@ -483,7 +482,6 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               isTurnDecider={true}
               matchData={matchData}
             />
-          </div>
         </motion.div>
       )}
 

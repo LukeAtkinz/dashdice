@@ -1,0 +1,180 @@
+{"frames": [
+
+{
+	"filename": "Initial00000.webp",
+	"frame": {"x":72,"y":2,"w":280,"h":288},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":114,"y":0,"w":280,"h":288},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00001.webp",
+	"frame": {"x":356,"y":2,"w":280,"h":288},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":114,"y":0,"w":280,"h":288},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00002.webp",
+	"frame": {"x":2,"y":294,"w":268,"h":288},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":118,"y":0,"w":268,"h":288},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00003.webp",
+	"frame": {"x":274,"y":294,"w":268,"h":288},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":118,"y":0,"w":268,"h":288},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00004.webp",
+	"frame": {"x":546,"y":294,"w":262,"h":288},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":118,"y":0,"w":262,"h":288},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00005.webp",
+	"frame": {"x":2,"y":586,"w":262,"h":288},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":118,"y":0,"w":262,"h":288},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00006.webp",
+	"frame": {"x":268,"y":586,"w":276,"h":288},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":110,"y":0,"w":276,"h":288},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00007.webp",
+	"frame": {"x":548,"y":586,"w":276,"h":288},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":110,"y":0,"w":276,"h":288},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00008.webp",
+	"frame": {"x":2,"y":878,"w":271,"h":288},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":110,"y":0,"w":271,"h":288},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00009.webp",
+	"frame": {"x":277,"y":878,"w":271,"h":288},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":110,"y":0,"w":271,"h":288},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00010.webp",
+	"frame": {"x":552,"y":878,"w":263,"h":288},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":112,"y":0,"w":263,"h":288},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00011.webp",
+	"frame": {"x":2,"y":2,"w":3,"h":3},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":3,"h":3},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00012.webp",
+	"frame": {"x":9,"y":2,"w":3,"h":3},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":3,"h":3},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00013.webp",
+	"frame": {"x":16,"y":2,"w":3,"h":3},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":3,"h":3},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00014.webp",
+	"frame": {"x":23,"y":2,"w":3,"h":3},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":3,"h":3},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00015.webp",
+	"frame": {"x":30,"y":2,"w":3,"h":3},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":3,"h":3},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00016.webp",
+	"frame": {"x":37,"y":2,"w":3,"h":3},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":3,"h":3},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00017.webp",
+	"frame": {"x":44,"y":2,"w":3,"h":3},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":3,"h":3},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00018.webp",
+	"frame": {"x":51,"y":2,"w":3,"h":3},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":3,"h":3},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00019.webp",
+	"frame": {"x":58,"y":2,"w":3,"h":3},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":3,"h":3},
+	"sourceSize": {"w":512,"h":288}
+},
+{
+	"filename": "Initial00020.webp",
+	"frame": {"x":65,"y":2,"w":3,"h":3},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":3,"h":3},
+	"sourceSize": {"w":512,"h":288}
+}],
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "Vital Rush Initial.webp",
+	"format": "RGBA8888",
+	"size": {"w":826,"h":1168},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:a6d3f58b98d0e44e168fc64c58faa0a5:b8559759fa20bf4869887514295147e7:2f7b100b7f9051159633bb6a06662a52$"
+}
+}

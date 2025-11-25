@@ -107,7 +107,7 @@ export class NewMatchmakingService {
           category: 'Videos',
           rarity: 'LEGENDARY'
         },
-        powerLoadout: userProfile.powerLoadouts?.[gameMode]?.abilities || {
+        powerLoadout: userProfile.powerLoadouts?.[gameMode] || {
           attack: null,
           defense: null,
           tactical: null,
@@ -199,7 +199,7 @@ export class NewMatchmakingService {
           category: 'Videos',
           rarity: 'LEGENDARY'
         },
-        powerLoadout: userProfile.powerLoadouts?.[gameMode]?.abilities || {
+        powerLoadout: userProfile.powerLoadouts?.[gameMode] || {
           attack: null,
           defense: null,
           tactical: null,
@@ -843,7 +843,7 @@ export class NewMatchmakingService {
           category: 'Videos',
           rarity: 'LEGENDARY'
         },
-        powerLoadout: hostProfile.powerLoadouts?.[gameMode]?.abilities || {
+        powerLoadout: hostProfile.powerLoadouts?.[gameMode] || {
           attack: null,
           defense: null,
           tactical: null,
@@ -906,7 +906,7 @@ export class NewMatchmakingService {
           category: 'Videos',
           rarity: 'LEGENDARY'
         },
-        powerLoadout: guestProfile.powerLoadouts?.[gameMode]?.abilities || {
+        powerLoadout: guestProfile.powerLoadouts?.[gameMode] || {
           attack: null,
           defense: null,
           tactical: null,
