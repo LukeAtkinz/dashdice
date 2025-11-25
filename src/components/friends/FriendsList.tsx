@@ -170,12 +170,13 @@ export default function FriendsList({
       <div 
         className="flex-1 overflow-y-auto"
         style={{
-          maxHeight: 'calc(100vh - 200px)',
+          height: '100%',
           touchAction: 'pan-y',
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'contain',
           scrollBehavior: 'smooth',
-          paddingTop: 0
+          paddingTop: 0,
+          paddingBottom: '140px'
         }}
       >
 

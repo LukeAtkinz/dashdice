@@ -572,7 +572,7 @@ export const InventorySection: React.FC = () => {
             overscrollBehavior: 'none'
           }}
         >
-          <div className="flex h-auto w-full md:w-auto pl-[0.5rem] md:pl-0" style={{ minHeight: '600px', height: 'auto', maxHeight: '80vh', maxWidth: '1600px', gap: '20px' }} data-mobile-height="410px" data-desktop-height="auto">
+          <div className="flex h-full w-full md:w-auto pl-[0.5rem] md:pl-0" style={{ maxWidth: '1600px', gap: '20px' }}>
             
             {/* Items List */}
             <div 
@@ -592,8 +592,8 @@ export const InventorySection: React.FC = () => {
                     msOverflowStyle: 'none',
                     transform: 'translateZ(0)', // Forces hardware acceleration
                     willChange: 'scroll-position', // Optimizes for scrolling
-                    paddingBottom: '120px', // Increased padding to ensure all cards are scrollable
-                    maxHeight: '60vh' // Limit height to ensure scrolling works properly
+                    paddingBottom: '140px', // Space for bottom nav
+                    height: '100%'
                   }}
                 >
                   <div className="space-y-2.5 pb-20 pt-4">
