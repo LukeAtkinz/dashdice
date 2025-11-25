@@ -1254,14 +1254,16 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     muted 
                     playsInline
                     onError={(e) => console.error('🎬 TOP VIDEO ERROR:', e, 'src:', topVideo)}
-                    webkit-playsinline="true"
-                    x5-playsinline="true"
-                    x5-video-player-type="h5-page"
-                    x5-video-player-fullscreen="false"
                     preload="auto"
                     controls={false}
                     disablePictureInPicture
                     disableRemotePlayback
+                    {...{
+                      'webkit-playsinline': 'true',
+                      'x5-playsinline': 'true',
+                      'x5-video-player-type': 'h5-page',
+                      'x5-video-player-fullscreen': 'false'
+                    } as any}
                     onLoadedMetadata={(e) => {
                       const video = e.target as HTMLVideoElement;
                       video.muted = true;
@@ -1286,6 +1288,15 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       setTimeout(() => {
                         if (video.paused) video.play().catch(() => {});
                       }, 100);
+                    }}
+                    onStalled={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      video.load();
+                      video.play().catch(() => {});
+                    }}
+                    onWaiting={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      if (video.paused) video.play().catch(() => {});
                     }}
                     onClick={(e) => {
                       const video = e.target as HTMLVideoElement;
@@ -1319,14 +1330,16 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     muted 
                     playsInline
                     onError={(e) => console.error('🎬 BOTTOM VIDEO ERROR:', e, 'src:', bottomVideo)}
-                    webkit-playsinline="true"
-                    x5-playsinline="true"
-                    x5-video-player-type="h5-page"
-                    x5-video-player-fullscreen="false"
                     preload="auto"
                     controls={false}
                     disablePictureInPicture
                     disableRemotePlayback
+                    {...{
+                      'webkit-playsinline': 'true',
+                      'x5-playsinline': 'true',
+                      'x5-video-player-type': 'h5-page',
+                      'x5-video-player-fullscreen': 'false'
+                    } as any}
                     onLoadedMetadata={(e) => {
                       const video = e.target as HTMLVideoElement;
                       video.muted = true;
@@ -1351,6 +1364,15 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       setTimeout(() => {
                         if (video.paused) video.play().catch(() => {});
                       }, 100);
+                    }}
+                    onStalled={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      video.load();
+                      video.play().catch(() => {});
+                    }}
+                    onWaiting={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      if (video.paused) video.play().catch(() => {});
                     }}
                     onClick={(e) => {
                       const video = e.target as HTMLVideoElement;
