@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import InlineAbilitiesDisplay from '@/components/match/InlineAbilitiesDisplay';
 import AuraCounter from '@/components/ui/AuraCounter';
 import { MultiplierAnimation } from '@/components/ui/MultiplierAnimation';
+import { SpriteSheetPlayer } from './SpriteSheetPlayer';
 
 interface GameplayPhaseProps {
   matchData: MatchData;
@@ -531,8 +532,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               isVitalRushActive={vitalRushActive} // Vital Rush ability state
             />
             
-            {/* Vital Rush Top Dice Animation Overlay */}
-            {showVitalRushTopDice && (
+            {/* Vital Rush Top Dice Animation Overlay - DISABLED FOR SPRITE SHEET TESTING */}
+            {/* {showVitalRushTopDice && (
               <video
                 key="vital-rush-top-dice"
                 src="/Abilities/Animations/Vital Rush/Vital Rush Top Dice Container.webm"
@@ -550,7 +551,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   zIndex: 10
                 }}
               />
-            )}
+            )} */}
           </motion.div>
           
           {/* Turn Score - Positioned absolutely between dice - Mobile bigger and more padding */}
@@ -948,8 +949,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               isVitalRushActive={vitalRushActive} // Vital Rush ability state
             />
             
-            {/* Vital Rush Bottom Dice Animation Overlay */}
-            {showVitalRushBottomDice && (
+            {/* Vital Rush Bottom Dice Animation Overlay - DISABLED FOR SPRITE SHEET TESTING */}
+            {/* {showVitalRushBottomDice && (
               <video
                 key="vital-rush-bottom-dice"
                 src="/Abilities/Animations/Vital Rush/Vital Rush Bottom Dice Container.webm"
@@ -967,11 +968,11 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   zIndex: 10
                 }}
               />
-            )}
+            )} */}
           </motion.div>
         </motion.div>
         
-        {/* Vital Rush Initial Animation - 90deg rotated, positioned next to top dice */}
+        {/* Vital Rush Initial Animation - SPRITE SHEET VERSION */}
         {showVitalRushInitial && (
           <div style={{
             position: 'absolute',
@@ -986,13 +987,12 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             pointerEvents: 'none',
             zIndex: 20
           }}>
-            <video
-              key="vital-rush-initial"
-              src="/Abilities/Animations/Vital Rush/Vital Rush Initial.webm"
-              autoPlay
-              muted
-              playsInline
-              onEnded={() => setShowVitalRushInitial(false)}
+            <SpriteSheetPlayer
+              jsonPath="/Abilities/Animations/Vital Rush/Initial/Vital Rush Initial.json"
+              imagePath="/Abilities/Animations/Vital Rush/Initial/Vital Rush Initial.webp"
+              frameRate={30}
+              loop={false}
+              onComplete={() => setShowVitalRushInitial(false)}
               style={{
                 width: '100%',
                 height: 'auto',
