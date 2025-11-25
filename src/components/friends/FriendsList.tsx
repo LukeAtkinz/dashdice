@@ -114,7 +114,7 @@ export default function FriendsList({
 
   return (
     <div 
-      className="mt-[7vh] md:mt-0 h-full flex flex-col"
+      className="mt-0 md:mt-0 h-full flex flex-col"
       style={{
         height: '100%',
         maxHeight: '100%',

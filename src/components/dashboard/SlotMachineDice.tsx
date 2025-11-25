@@ -540,18 +540,20 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
                 </span>
               </motion.div>
               
-              {/* Horizontal glow effect */}
-              <motion.div 
-                className="absolute inset-0 bg-gradient-to-t from-yellow-300/40 via-transparent to-yellow-300/40"
-                animate={{
-                  opacity: [0.3, 0.8, 0.3]
-                }}
-                transition={{
-                  duration: 0.2,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-              />
+              {/* Horizontal glow effect - Disabled for turn decider */}
+              {!isTurnDecider && (
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-t from-yellow-300/40 via-transparent to-yellow-300/40"
+                  animate={{
+                    opacity: [0.3, 0.8, 0.3]
+                  }}
+                  transition={{
+                    duration: 0.2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+              )}
             </>
           )}
 
