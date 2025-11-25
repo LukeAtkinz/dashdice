@@ -1162,10 +1162,6 @@ const ProfileSection: React.FC = () => {
                 transition={{ duration: 0.5 }}
               >
                 <div className="p-6">
-                  <h3 className="text-white text-xl font-audiowide uppercase mb-6">
-                    Profile Information
-                  </h3>
-                  
                   <div className="p-6">
                     <form onSubmit={handleUpdateProfile} className="space-y-6">
                       <div className="flex flex-col md:flex-row md:items-center md:space-x-6 space-y-4 md:space-y-0">

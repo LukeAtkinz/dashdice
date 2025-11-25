@@ -2711,13 +2711,51 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               loop 
               muted 
               playsInline 
+              webkit-playsinline="true"
+              x5-playsinline="true"
+              x5-video-player-type="h5-page"
+              x5-video-player-fullscreen="false"
               preload="auto"
+              controls={false}
+              disablePictureInPicture
+              disableRemotePlayback
+              onLoadedMetadata={(e) => {
+                const video = e.target as HTMLVideoElement;
+                video.muted = true;
+                video.play().catch(() => {});
+              }}
+              onCanPlay={(e) => {
+                const video = e.target as HTMLVideoElement;
+                video.muted = true;
+                if (video.paused) video.play().catch(() => {});
+              }}
+              onLoadedData={(e) => {
+                const video = e.target as HTMLVideoElement;
+                video.muted = true;
+                if (video.paused) video.play().catch(() => {});
+              }}
+              onSuspend={(e) => {
+                const video = e.target as HTMLVideoElement;
+                if (video.paused) video.play().catch(() => {});
+              }}
+              onPause={(e) => {
+                const video = e.target as HTMLVideoElement;
+                setTimeout(() => {
+                  if (video.paused) video.play().catch(() => {});
+                }, 100);
+              }}
+              onClick={(e) => {
+                const video = e.target as HTMLVideoElement;
+                video.muted = true;
+                if (video.paused) video.play().catch(() => {});
+              }}
               style={{ 
                 position: 'absolute', 
                 inset: 0, 
                 width: '100%', 
                 height: '100%', 
-                objectFit: 'cover' 
+                objectFit: 'cover',
+                pointerEvents: 'none'
               }}
             />
           )}
@@ -2732,13 +2770,51 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               loop 
               muted 
               playsInline 
+              webkit-playsinline="true"
+              x5-playsinline="true"
+              x5-video-player-type="h5-page"
+              x5-video-player-fullscreen="false"
               preload="auto"
+              controls={false}
+              disablePictureInPicture
+              disableRemotePlayback
+              onLoadedMetadata={(e) => {
+                const video = e.target as HTMLVideoElement;
+                video.muted = true;
+                video.play().catch(() => {});
+              }}
+              onCanPlay={(e) => {
+                const video = e.target as HTMLVideoElement;
+                video.muted = true;
+                if (video.paused) video.play().catch(() => {});
+              }}
+              onLoadedData={(e) => {
+                const video = e.target as HTMLVideoElement;
+                video.muted = true;
+                if (video.paused) video.play().catch(() => {});
+              }}
+              onSuspend={(e) => {
+                const video = e.target as HTMLVideoElement;
+                if (video.paused) video.play().catch(() => {});
+              }}
+              onPause={(e) => {
+                const video = e.target as HTMLVideoElement;
+                setTimeout(() => {
+                  if (video.paused) video.play().catch(() => {});
+                }, 100);
+              }}
+              onClick={(e) => {
+                const video = e.target as HTMLVideoElement;
+                video.muted = true;
+                if (video.paused) video.play().catch(() => {});
+              }}
               style={{ 
                 position: 'absolute', 
                 inset: 0, 
                 width: '100%', 
                 height: '100%', 
-                objectFit: 'cover' 
+                objectFit: 'cover',
+                pointerEvents: 'none'
               }}
             />
           )}

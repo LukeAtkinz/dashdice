@@ -249,6 +249,7 @@ const CONTEXT_QUALITY_MAP: Record<BackgroundContext, BackgroundQuality> = {
  * Contexts that should use static images even for video backgrounds
  */
 const USE_IMAGE_CONTEXTS: BackgroundContext[] = [
+  'match-player-card',    // Use Video Images instead of videos for better performance
   'friend-card',
   'leaderboard-card',
   'inventory-preview',
