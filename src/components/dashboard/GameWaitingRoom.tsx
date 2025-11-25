@@ -790,6 +790,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     playerStats: userProfile.stats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
                     displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped || getBackgroundById('relax'),
                     matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped || getBackgroundById('relax'),
+                    turnDeciderBackgroundEquipped: userProfile.inventory?.turnDeciderBackgroundEquipped || { id: 'crazy-cough', name: 'Crazy Cough', category: 'Videos', rarity: 'COMMON' },
+                    victoryBackgroundEquipped: userProfile.inventory?.victoryBackgroundEquipped || { id: 'wind-blade', name: 'Wind Blade', category: 'Videos', rarity: 'LEGENDARY' },
                     playerScore: startingScore, // Use proper starting score
                     turnActive: false, // Will be set by turn decider
                     powerLoadout: hostPowerLoadout // Add power loadout for abilities
@@ -801,6 +803,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     playerStats: goBackendOpponentData?.playerStats || opponentProfile?.stats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
                     displayBackgroundEquipped: goBackendOpponentData?.displayBackgroundEquipped || opponentProfile?.inventory?.displayBackgroundEquipped || getBackgroundById('relax'),
                     matchBackgroundEquipped: goBackendOpponentData?.matchBackgroundEquipped || opponentProfile?.inventory?.matchBackgroundEquipped || getBackgroundById('relax'),
+                    turnDeciderBackgroundEquipped: opponentProfile?.inventory?.turnDeciderBackgroundEquipped || { id: 'crazy-cough', name: 'Crazy Cough', category: 'Videos', rarity: 'COMMON' },
+                    victoryBackgroundEquipped: opponentProfile?.inventory?.victoryBackgroundEquipped || { id: 'wind-blade', name: 'Wind Blade', category: 'Videos', rarity: 'LEGENDARY' },
                     playerScore: startingScore, // Use proper starting score
                     turnActive: false, // Will be set by turn decider
                     powerLoadout: opponentPowerLoadout // Add power loadout for abilities
