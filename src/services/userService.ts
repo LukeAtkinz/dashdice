@@ -94,6 +94,8 @@ export class UserService {
             // Read from inventory object only - ensure background objects are passed through
             displayBackgroundEquipped: userData.inventory?.displayBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
             matchBackgroundEquipped: userData.inventory?.matchBackgroundEquipped || { name: 'Relax', file: '/backgrounds/Relax.png', type: 'image' },
+            turnDeciderBackgroundEquipped: userData.inventory?.turnDeciderBackgroundEquipped || { id: 'crazy-cough', name: 'Crazy Cough', rarity: 'COMMON' },
+            victoryBackgroundEquipped: userData.inventory?.victoryBackgroundEquipped || { id: 'wind-blade', name: 'Wind Blade', rarity: 'EPIC' },
             ownedBackgrounds: userData.inventory?.ownedBackgrounds || userData.ownedBackgrounds || ['Relax']
           },
           powerLoadouts: userData.powerLoadouts || {

@@ -48,9 +48,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!userSnap.exists()) {
       const { displayName, email, photoURL } = firebaseUser;
       const createdAt = new Date();
-      // Set "New Day" as the default display background and "Long Road Ahead" as match background for new users
+      // Set default backgrounds for new users
       const newDayBackground = AVAILABLE_BACKGROUNDS.find(bg => bg.id === 'new-day') || getDefaultBackground();
       const longRoadAheadBackground = AVAILABLE_BACKGROUNDS.find(bg => bg.id === 'long-road-ahead') || getDefaultBackground();
+      const crazyCoughBackground = AVAILABLE_BACKGROUNDS.find(bg => bg.id === 'crazy-cough') || getDefaultBackground();
+      const windBladeBackground = AVAILABLE_BACKGROUNDS.find(bg => bg.id === 'wind-blade') || getDefaultBackground();
 
       // Ensure displayName is never null - generate from email if needed
       const finalDisplayName = displayName || 
@@ -79,6 +81,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           inventory: {
             displayBackgroundEquipped: newDayBackground, // Now using Background type directly
             matchBackgroundEquipped: longRoadAheadBackground,
+            turnDeciderBackgroundEquipped: crazyCoughBackground, // Default turn decider
+            victoryBackgroundEquipped: windBladeBackground, // Default victory screen
             ownedBackgrounds: AVAILABLE_BACKGROUNDS.map(bg => bg.id) // Grant all backgrounds to new users
           },
           ownedBackgrounds: AVAILABLE_BACKGROUNDS.map(bg => bg.id), // Grant all backgrounds to new users (legacy support)

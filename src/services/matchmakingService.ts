@@ -47,25 +47,27 @@ export class MatchmakingService {
    */
   static async findOpenRoom(gameMode: string) {
     try {
-      console.log('🔍 MatchmakingService: Searching for open rooms in', gameMode);
+      console.log('🔍 MatchmakingService: Searching for open PUBLIC rooms in', gameMode);
       
       const q = query(
         collection(db, 'waitingroom'),
         where('gameMode', '==', gameMode),
         where('gameType', '==', 'Open Server'),
         where('playersRequired', '==', 1)
+        // Note: Cannot filter invitedFriendId in query (not indexed), will filter in code
       );
 
       const querySnapshot = await getDocs(q);
       const now = new Date();
       const staleThreshold = 2 * 60 * 1000; // 2 minutes for more aggressive cleanup
       
-      // First pass: clean up stale rooms
+      // First pass: clean up stale rooms and filter out friend invites
       const validRooms = [];
       for (const docSnapshot of querySnapshot.docs) {
         const data = docSnapshot.data();
         const createdAt = data.createdAt?.toDate() || new Date(0);
         const isStale = (now.getTime() - createdAt.getTime()) > staleThreshold;
+        const isFriendInvite = !!data.invitedFriendId; // Skip friend invite rooms
 
         if (isStale) {
           console.log(`🧹 MatchmakingService: Cleaning up stale room ${docSnapshot.id} (age: ${Math.round((now.getTime() - createdAt.getTime()) / 1000)}s)`);
@@ -74,6 +76,9 @@ export class MatchmakingService {
           } catch (error) {
             console.error('Error deleting stale room:', error);
           }
+        } else if (isFriendInvite) {
+          console.log(`🎯 MatchmakingService: Skipping friend invite room ${docSnapshot.id}`);
+          // Don't add to validRooms - friend invites are private
         } else {
           validRooms.push({ id: docSnapshot.id, data: data, createdAt: createdAt });
         }
@@ -97,8 +102,9 @@ export class MatchmakingService {
 
   /**
    * Enhanced findOrCreateRoom with unified system integration
+   * @param invitedFriendId - Optional: If provided, only this friend can join the room
    */
-  static async findOrCreateRoom(gameMode: string, hostData: any, gameType: 'quick' | 'ranked' = 'quick') {
+  static async findOrCreateRoom(gameMode: string, hostData: any, gameType: 'quick' | 'ranked' = 'quick', invitedFriendId?: string) {
     try {
       // Initialize the unified system
       initializeUnifiedSystem();
@@ -134,16 +140,17 @@ export class MatchmakingService {
     } catch (error) {
       console.error('❌ Error in findOrCreateRoom:', error);
       // Fallback to original implementation if needed
-      return this.findOrCreateRoomLegacy(gameMode, hostData, gameType);
+      return this.findOrCreateRoomLegacy(gameMode, hostData, gameType, invitedFriendId);
     }
   }
 
   /**
    * Legacy implementation with aggressive matching and cleanup
+   * @param invitedFriendId - Optional: If provided, only this friend can join the room
    */
-  private static async findOrCreateRoomLegacy(gameMode: string, hostData: any, gameType: 'quick' | 'ranked' = 'quick') {
+  private static async findOrCreateRoomLegacy(gameMode: string, hostData: any, gameType: 'quick' | 'ranked' = 'quick', invitedFriendId?: string) {
     try {
-      console.log('🎯 MatchmakingService (Legacy): Starting aggressive matchmaking for', gameMode);
+      console.log('🎯 MatchmakingService (Legacy): Starting aggressive matchmaking for', gameMode, invitedFriendId ? '(Friend Invite)' : '');
       
       // Validate hostData to prevent undefined values
       if (!hostData || !hostData.playerId) {
@@ -157,8 +164,8 @@ export class MatchmakingService {
         ...hostData
       };
 
-      // AGGRESSIVE: Try to find an existing room first (with cleanup built in)
-      const existingRoom = await this.findOpenRoom(gameMode);
+      // SKIP room finding if this is a friend invite - always create new room
+      const existingRoom = invitedFriendId ? null : await this.findOpenRoom(gameMode);
       
       if (existingRoom) {
         console.log('✅ MatchmakingService: Found existing room, attempting to join', existingRoom.id);
@@ -193,7 +200,7 @@ export class MatchmakingService {
       console.log('🆕 MatchmakingService: Creating new room (no suitable rooms found)');
       
       // Create new room if none found or joining failed
-      const roomData = {
+      const roomData: any = {
         gameMode: gameMode,
         gameType: 'Open Server',
         rankedGame: gameType === 'ranked', // Add ranked game flag
@@ -203,6 +210,9 @@ export class MatchmakingService {
           playerId: validatedHostData.playerId,
           displayBackgroundEquipped: hostData.displayBackgroundEquipped || 'Relax',
           matchBackgroundEquipped: hostData.matchBackgroundEquipped || 'Relax',
+          turnDeciderBackgroundEquipped: hostData.turnDeciderBackgroundEquipped || null,
+          victoryBackgroundEquipped: hostData.victoryBackgroundEquipped || null,
+          powerLoadout: hostData.powerLoadout || null,
           playerStats: hostData.playerStats || {
             bestStreak: 0,
             currentStreak: 0,
@@ -215,6 +225,12 @@ export class MatchmakingService {
         expiresAt: new Date(Date.now() + (3 * 60 * 1000)), // Expire in 3 minutes
         status: 'waiting'
       };
+      
+      // Add friend invite restriction if specified
+      if (invitedFriendId) {
+        roomData.invitedFriendId = invitedFriendId;
+        console.log('🎯 Friend invite room created for:', invitedFriendId);
+      }
 
       // Validate that no fields are undefined
       Object.entries(roomData).forEach(([key, value]) => {
@@ -236,6 +252,39 @@ export class MatchmakingService {
     } catch (error) {
       console.error('❌ Error in legacy findOrCreateRoom:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Check if a user can join a specific room (respects friend invites)
+   */
+  static async canUserJoinRoom(roomId: string, userId: string): Promise<{ canJoin: boolean; reason?: string }> {
+    try {
+      const roomRef = doc(db, 'waitingroom', roomId);
+      const roomDoc = await getDoc(roomRef);
+      
+      if (!roomDoc.exists()) {
+        return { canJoin: false, reason: 'Room not found' };
+      }
+      
+      const roomData = roomDoc.data();
+      
+      // Check if room has a friend invite restriction
+      if (roomData.invitedFriendId) {
+        if (roomData.invitedFriendId === userId) {
+          console.log('✅ User is the invited friend, can join');
+          return { canJoin: true };
+        } else {
+          console.log('❌ Room is a friend invite for someone else');
+          return { canJoin: false, reason: 'This is a private friend invite' };
+        }
+      }
+      
+      // No restriction, anyone can join
+      return { canJoin: true };
+    } catch (error) {
+      console.error('Error checking room access:', error);
+      return { canJoin: false, reason: 'Error checking room access' };
     }
   }
 

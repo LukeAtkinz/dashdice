@@ -716,29 +716,29 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
   // Get turn decider backgrounds from player data
   const topVideo = useMemo(() => {
-    if (!matchData) return '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
+    if (!matchData) return '/backgrounds/Game Backgrounds/Turn Decider/Videos/Best Quality/Crazy Cough.mp4';
     const hostDeciderBg = matchData.hostData.turnDeciderBackgroundEquipped;
     console.log('🎬 TOP VIDEO - hostDeciderBg:', hostDeciderBg);
     if (hostDeciderBg && typeof hostDeciderBg === 'object' && 'id' in hostDeciderBg) {
       const resolved = resolveBackgroundPath(hostDeciderBg.id, 'waiting-room');
       console.log('🎬 TOP VIDEO - Resolved:', resolved);
-      return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
+      return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Videos/Best Quality/Crazy Cough.mp4';
     }
     console.log('🎬 TOP VIDEO - Using fallback');
-    return '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
+    return '/backgrounds/Game Backgrounds/Turn Decider/Videos/Best Quality/Crazy Cough.mp4';
   }, [matchData]);
 
   const bottomVideo = useMemo(() => {
-    if (!matchData) return '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
+    if (!matchData) return '/backgrounds/Game Backgrounds/Turn Decider/Videos/Best Quality/Crazy Cough.mp4';
     const opponentDeciderBg = matchData.opponentData?.turnDeciderBackgroundEquipped;
     console.log('🎬 BOTTOM VIDEO - opponentDeciderBg:', opponentDeciderBg);
     if (opponentDeciderBg && typeof opponentDeciderBg === 'object' && 'id' in opponentDeciderBg) {
       const resolved = resolveBackgroundPath(opponentDeciderBg.id, 'waiting-room');
       console.log('🎬 BOTTOM VIDEO - Resolved:', resolved);
-      return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
+      return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Videos/Best Quality/Crazy Cough.mp4';
     }
     console.log('🎬 BOTTOM VIDEO - Using fallback');
-    return '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
+    return '/backgrounds/Game Backgrounds/Turn Decider/Videos/Best Quality/Crazy Cough.mp4';
   }, [matchData]);
 
   // Subscribe to match updates
