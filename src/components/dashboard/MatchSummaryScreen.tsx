@@ -430,9 +430,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
           <div className="text-center">
             <span className="text-white font-bold text-lg" style={{ fontFamily: "Audiowide" }}>
               REMATCH SENT TO {opponentDisplayName} ✓
-                </span>
-              </div>
-            )}
+            </span>
           </div>
         </motion.div>
       )}
