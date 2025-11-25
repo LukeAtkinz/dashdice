@@ -382,7 +382,7 @@ export function SoftRankedLeaderboard() {
                 winPercentage,
                 totalGames,
                 rank: 0, // Will be set after sorting
-                equippedBackground: userData.equippedBackground
+                equippedBackground: userData.inventory?.matchBackgroundEquipped?.id || userData.equippedBackground
               });
             }
           });

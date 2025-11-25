@@ -189,6 +189,57 @@ const ProfileSection: React.FC = () => {
     }
   }, [currentSection]);
 
+  // Listen for tab changes from bottom nav and update tab styling
+  useEffect(() => {
+    const handleTabChange = (event: CustomEvent) => {
+      const newTab = event.detail as 'profile' | 'settings';
+      setActiveTab(newTab);
+      
+      // Update bottom nav button styling
+      const buttons = document.querySelectorAll('.profile-tab-btn');
+      buttons.forEach((btn) => {
+        const button = btn as HTMLButtonElement;
+        const isActive = button.dataset.tab === newTab;
+        
+        button.style.border = isActive ? '2px solid #FFD700' : '2px solid rgba(255, 255, 255, 0.1)';
+        button.style.background = isActive ? 'rgba(255, 215, 0, 0.1)' : 'transparent';
+        button.style.boxShadow = isActive ? '0 0 15px rgba(255, 215, 0, 0.3)' : 'none';
+        
+        const span = button.querySelector('span');
+        if (span) {
+          span.style.color = isActive ? '#FFD700' : '#FFF';
+        }
+      });
+    };
+
+    window.addEventListener('profileTabChange', handleTabChange as EventListener);
+    
+    // Initialize styling on mount
+    const initButtons = () => {
+      const buttons = document.querySelectorAll('.profile-tab-btn');
+      buttons.forEach((btn) => {
+        const button = btn as HTMLButtonElement;
+        const isActive = button.dataset.tab === activeTab;
+        
+        button.style.border = isActive ? '2px solid #FFD700' : '2px solid rgba(255, 255, 255, 0.1)';
+        button.style.background = isActive ? 'rgba(255, 215, 0, 0.1)' : 'transparent';
+        button.style.boxShadow = isActive ? '0 0 15px rgba(255, 215, 0, 0.3)' : 'none';
+        
+        const span = button.querySelector('span');
+        if (span) {
+          span.style.color = isActive ? '#FFD700' : '#FFF';
+        }
+      });
+    };
+    
+    // Run after DOM updates
+    setTimeout(initButtons, 100);
+    
+    return () => {
+      window.removeEventListener('profileTabChange', handleTabChange as EventListener);
+    };
+  }, [activeTab]);
+
   // Fetch friend statistics
   useEffect(() => {
     const fetchFriendStats = async () => {
@@ -560,8 +611,8 @@ const ProfileSection: React.FC = () => {
 
                 {/* Victory Screen Section */}
                 <div className="relative bg-black/60 backdrop-blur-sm border-x border-gray-700/50 p-6" style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}>
-                  <h3 className="text-white text-lg uppercase mb-3 text-center" style={{ fontFamily: 'Audiowide' }}>Victory Screen</h3>
-                  <div className="relative rounded-xl overflow-hidden flex items-center justify-center border border-gray-700/50" style={{ height: '300px' }}>
+                  <h3 className="text-white text-lg uppercase mb-3 text-center" style={{ fontFamily: 'Audiowide' }}>VICTORY</h3>
+                  <div className="relative rounded-xl overflow-hidden flex items-center justify-center border border-gray-700/50" style={{ height: '220px' }}>
                     <video
                       key={VictoryBackgroundEquip?.id || 'victory-screen-video'}
                       autoPlay
@@ -606,7 +657,7 @@ const ProfileSection: React.FC = () => {
                         video.muted = true;
                         if (video.paused) video.play().catch(() => {});
                       }}
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-cover"
                       src={VictoryBackgroundEquip ? resolveBackgroundPath(VictoryBackgroundEquip.id, 'dashboard-display')?.path : '/Victory Screens/Wind Blade.mp4'}
                     />
                   </div>
@@ -614,8 +665,8 @@ const ProfileSection: React.FC = () => {
 
                 {/* Match Decider Section */}
                 <div className="relative bg-black/60 backdrop-blur-sm border-x border-b border-gray-700/50 rounded-b-[20px] p-6" style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}>
-                  <h3 className="text-white text-lg uppercase mb-3 text-center" style={{ fontFamily: 'Audiowide' }}>Turn Decider</h3>
-                  <div className="relative rounded-xl overflow-hidden flex items-center justify-center border border-gray-700/50" style={{ height: '300px' }}>
+                  <h3 className="text-white text-lg uppercase mb-3 text-center" style={{ fontFamily: 'Audiowide' }}>TURN DECIDER</h3>
+                  <div className="relative rounded-xl overflow-hidden flex items-center justify-center border border-gray-700/50" style={{ height: '220px' }}>
                     <video
                       key={TurnDeciderBackgroundEquip?.id || 'turn-decider-video'}
                       autoPlay
@@ -660,7 +711,7 @@ const ProfileSection: React.FC = () => {
                         video.muted = true;
                         if (video.paused) video.play().catch(() => {});
                       }}
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-cover"
                       src={TurnDeciderBackgroundEquip ? resolveBackgroundPath(TurnDeciderBackgroundEquip.id, 'dashboard-display')?.path : '/Game Backgrounds/Turn Decider/Videos/Best Quality/Crazy Cough.mp4'}
                     />
                   </div>
@@ -678,7 +729,7 @@ const ProfileSection: React.FC = () => {
                 <div className="p-6">
                   {/* Statistics Grid - Friends Card Style */}
                   <div className="rounded-xl p-6 -mx-4 md:-mx-4">
-                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase text-center md:text-left">Player Statistics</h3>
+                    <h3 className="text-white text-xl mb-4 uppercase text-center md:text-left" style={{ fontFamily: 'Audiowide' }}>STATISTICS</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                       <motion.div 
@@ -796,7 +847,7 @@ const ProfileSection: React.FC = () => {
                   
                   {/* Ranked Statistics Section */}
                   <div className="bg-transparent  rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
-                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase text-center md:text-left">Ranked</h3>
+                    <h3 className="text-white text-xl mb-4 uppercase text-center md:text-left" style={{ fontFamily: 'Audiowide' }}>RANKED</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <motion.div 
@@ -860,7 +911,7 @@ const ProfileSection: React.FC = () => {
                   
                   {/* Tournament Statistics Section */}
                   <div className="bg-transparent  rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
-                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase text-center md:text-left">Tournament</h3>
+                    <h3 className="text-white text-xl mb-4 uppercase text-center md:text-left" style={{ fontFamily: 'Audiowide' }}>TOURNAMENT</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <motion.div 
@@ -927,7 +978,7 @@ const ProfileSection: React.FC = () => {
                   
                   {/* Cosmetic Statistics Section */}
                   <div className="bg-transparent  rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
-                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase text-center md:text-left">Cosmetic</h3>
+                    <h3 className="text-white text-xl mb-4 uppercase text-center md:text-left" style={{ fontFamily: 'Audiowide' }}>COSMETIC</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <motion.div 
@@ -1025,7 +1076,7 @@ const ProfileSection: React.FC = () => {
                   
                   {/* Friends Statistics Section */}
                   <div className="bg-transparent  rounded-xl p-6 mt-6 -mx-4 md:-mx-4">
-                    <h3 className="text-white text-xl font-audiowide mb-4 uppercase text-center md:text-left">Friends</h3>
+                    <h3 className="text-white text-xl mb-4 uppercase text-center md:text-left" style={{ fontFamily: 'Audiowide' }}>FRIENDS</h3>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <motion.div 
@@ -1394,49 +1445,7 @@ const ProfileSection: React.FC = () => {
           )}
         </div>
 
-        {/* Mobile Tab Navigation - Fixed Above Bottom Nav */}
-        <div className="md:hidden fixed bottom-[70px] left-0 right-0 z-[60] px-4 py-3" style={{ 
-          background: DisplayBackgroundEquip?.name === 'On A Mission' 
-            ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)'
-            : (DisplayBackgroundEquip?.name === 'Long Road Ahead' || DisplayBackgroundEquip?.name === 'As They Fall' || DisplayBackgroundEquip?.name === 'End Of The Dragon')
-            ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.6) 0%, rgba(76, 29, 149, 0.4) 25%, rgba(30, 27, 75, 0.3) 50%, rgba(30, 58, 138, 0.4) 75%, rgba(59, 130, 246, 0.3) 100%)'
-            : DisplayBackgroundEquip?.name === 'New Day'
-            ? 'linear-gradient(0deg, #5a7579 0%, transparent 100%)'
-            : DisplayBackgroundEquip?.name === 'Relax'
-            ? 'linear-gradient(0deg, #407080 0%, transparent 100%)'
-            : DisplayBackgroundEquip?.name === 'Underwater'
-            ? 'linear-gradient(0deg, #00518c 0%, transparent 100%)'
-            : 'rgba(0, 0, 0, 0.95)',
-          backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' || DisplayBackgroundEquip?.name === 'As They Fall' || DisplayBackgroundEquip?.name === 'End Of The Dragon' ? 'blur(8px)' : 'blur(10px)',
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)' 
-        }}>
-          <div className="flex items-center justify-center gap-4">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`tab-button profile-section-tab flex items-center justify-center gap-2 px-6 py-2.5 rounded-[18px] transition-all duration-300 ${
-                  activeTab === tab.id ? 'active' : ''
-                }`}
-                style={{
-                  border: activeTab === tab.id ? '2px solid #FFD700' : '2px solid rgba(255, 255, 255, 0.1)',
-                  background: activeTab === tab.id ? 'rgba(255, 215, 0, 0.1)' : 'transparent',
-                  boxShadow: activeTab === tab.id ? '0 0 15px rgba(255, 215, 0, 0.3)' : 'none',
-                }}
-              >
-                <span style={{
-                  color: activeTab === tab.id ? '#FFD700' : '#FFF',
-                  fontFamily: 'Audiowide', 
-                  fontSize: '14px', 
-                  fontWeight: 400, 
-                  textTransform: 'uppercase' 
-                }}>
-                  {tab.label}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
+
       </div>
     </>
   );

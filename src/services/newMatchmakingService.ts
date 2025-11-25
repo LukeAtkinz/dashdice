@@ -770,7 +770,8 @@ export class NewMatchmakingService {
         };
       }
 
-      // Convert profiles to player data using the correct format
+      // Convert profiles to player data using the correct format with ALL backgrounds and abilities
+      const hostInventory = hostProfile.inventory as any;
       const hostData: SessionPlayerData = {
         playerId: hostUserId,
         playerDisplayName: hostProfile.displayName || 'Unknown Player',
@@ -780,19 +781,37 @@ export class NewMatchmakingService {
           gamesPlayed: hostProfile.stats?.gamesPlayed || 0,
           matchWins: hostProfile.stats?.matchWins || 0
         },
-        displayBackgroundEquipped: hostProfile.inventory?.displayBackgroundEquipped || {
+        displayBackgroundEquipped: hostInventory?.displayBackgroundEquipped || {
           name: 'Relax',
           file: '/backgrounds/Relax.png',
           type: 'image'
         },
-        matchBackgroundEquipped: hostProfile.inventory?.matchBackgroundEquipped || {
+        matchBackgroundEquipped: hostInventory?.matchBackgroundEquipped || {
           name: 'Relax',
           file: '/backgrounds/Relax.png',
           type: 'image'
+        },
+        turnDeciderBackgroundEquipped: hostInventory?.turnDeciderBackgroundEquipped || {
+          id: 'crazy-cough',
+          name: 'Crazy Cough',
+          category: 'Videos',
+          rarity: 'COMMON'
+        },
+        victoryBackgroundEquipped: hostInventory?.victoryBackgroundEquipped || {
+          id: 'wind-blade',
+          name: 'Wind Blade',
+          category: 'Videos',
+          rarity: 'LEGENDARY'
+        },
+        powerLoadout: hostInventory?.equippedAbilities || {
+          attack: null,
+          defense: null,
+          tactical: null,
+          utility: null
         },
         ready: true,
         joinedAt: new Date()
-      };
+      } as any;
 
       // Create session configuration for friend match
       const sessionConfig: SessionConfiguration = {
@@ -814,7 +833,8 @@ export class NewMatchmakingService {
       // Add a small delay to ensure session is fully created before joining
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // Now add the guest player to the session
+      // Now add the guest player to the session with ALL backgrounds and abilities
+      const guestInventory = guestProfile.inventory as any;
       const guestData: SessionPlayerData = {
         playerId: guestUserId,
         playerDisplayName: guestProfile.displayName || 'Unknown Player',
@@ -824,19 +844,37 @@ export class NewMatchmakingService {
           gamesPlayed: guestProfile.stats?.gamesPlayed || 0,
           matchWins: guestProfile.stats?.matchWins || 0
         },
-        displayBackgroundEquipped: guestProfile.inventory?.displayBackgroundEquipped || {
+        displayBackgroundEquipped: guestInventory?.displayBackgroundEquipped || {
           name: 'Relax',
           file: '/backgrounds/Relax.png',
           type: 'image'
         },
-        matchBackgroundEquipped: guestProfile.inventory?.matchBackgroundEquipped || {
+        matchBackgroundEquipped: guestInventory?.matchBackgroundEquipped || {
           name: 'Relax',
           file: '/backgrounds/Relax.png',
           type: 'image'
+        },
+        turnDeciderBackgroundEquipped: guestInventory?.turnDeciderBackgroundEquipped || {
+          id: 'crazy-cough',
+          name: 'Crazy Cough',
+          category: 'Videos',
+          rarity: 'COMMON'
+        },
+        victoryBackgroundEquipped: guestInventory?.victoryBackgroundEquipped || {
+          id: 'wind-blade',
+          name: 'Wind Blade',
+          category: 'Videos',
+          rarity: 'LEGENDARY'
+        },
+        powerLoadout: guestInventory?.equippedAbilities || {
+          attack: null,
+          defense: null,
+          tactical: null,
+          utility: null
         },
         ready: true,
         joinedAt: new Date()
-      };
+      } as any;
 
       console.log('🔄 Adding guest player to session...', { sessionId, guestUserId });
 

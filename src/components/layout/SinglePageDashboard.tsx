@@ -749,7 +749,7 @@ const DashboardContent: React.FC = () => {
         {/* Bottom Navigation for Mobile - Fixed at bottom - Hidden during match, waiting-room, and game over */}
         {(currentSection !== 'match' && currentSection !== 'waiting-room') && (
           <footer 
-            className="md:hidden fixed bottom-0 left-0 right-0 w-[100vw] flex flex-row items-center justify-center z-50"
+            className="md:hidden fixed bottom-0 left-0 right-0 w-[100vw] flex flex-col items-center justify-center z-50"
             style={{ paddingBottom: 'env(safe-area-inset-bottom)', padding: '0' }}
           >
             <NavigationWithInvitations
@@ -757,75 +757,131 @@ const DashboardContent: React.FC = () => {
               isGameOver={isGameOver}
               onSectionChange={handleSectionChange}
             >
-              {/* Regular Mobile Navigation */}
-              <div className="flex flex-row items-center justify-between w-full px-[2vw] py-[15px] shadow-lg" style={{
-              background: DisplayBackgroundEquip?.name === 'On A Mission' 
-                ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)'
-                : (DisplayBackgroundEquip?.name === 'Long Road Ahead' || DisplayBackgroundEquip?.name === 'As They Fall' || DisplayBackgroundEquip?.name === 'End Of The Dragon')
-                ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.6) 0%, rgba(76, 29, 149, 0.4) 25%, rgba(30, 27, 75, 0.3) 50%, rgba(30, 58, 138, 0.4) 75%, rgba(59, 130, 246, 0.3) 100%)'
-                : DisplayBackgroundEquip?.name === 'New Day'
-                ? 'linear-gradient(0deg, #5a7579 0%, transparent 100%)'
-                : DisplayBackgroundEquip?.name === 'Relax'
-                ? 'linear-gradient(0deg, #407080 0%, transparent 100%)'
-                : DisplayBackgroundEquip?.name === 'Underwater'
-                ? 'linear-gradient(0deg, #00518c 0%, transparent 100%)'
-                : 'rgba(0, 0, 0, 0.6)',
-              backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' || DisplayBackgroundEquip?.name === 'As They Fall' || DisplayBackgroundEquip?.name === 'End Of The Dragon' ? 'blur(8px)' : 'none',
-              borderRadius: '0'
-            }}>
-              <button
-                onClick={() => handleSectionChange('profile')}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
-                  currentSection === 'profile' ? 'bg-white/20' : 'hover:bg-white/10'
-                }`}
-              >
-                <img src="/Design Elements/Delivery Man.webp" alt="Profile" className="w-12 h-12" />
-                <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PROFILE</span>
-              </button>
-              <button
-                onClick={() => handleSectionChange('friends')}
-                className={`relative flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
-                  currentSection === 'friends' ? 'bg-white/20' : 'hover:bg-white/10'
-                }`}
-              >
-                <img src="/Design Elements/friends.webp" alt="Friends" className="w-12 h-12" />
-                <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
-                <NotificationBadge count={onlineFriendsCount} />
-              </button>
-              <button
-                onClick={() => handleSectionChange('dashboard')}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
-                  currentSection === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/10'
-                }`}
-              >
-                <img 
-                  src="/Design Elements/CrownLogo.webp" 
-                  alt="Play" 
-                  className="w-12 h-12 object-contain" 
-                  loading="lazy"
-                  decoding="async"
-                  style={{ maxWidth: '48px', maxHeight: '48px' }}
-                />
-                <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PLAY</span>
-              </button>
-              <button
-                onClick={() => handleSectionChange('ranked')}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
-                  currentSection === 'ranked' ? 'bg-white/20' : 'hover:bg-white/10'
-                }`}
-              >
-                <img src="/Design Elements/Player Profiles/Ranked.webp" alt="Ranked" className="w-12 h-12" />
-                <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>RANKED</span>
-              </button>
-              <button
-                onClick={() => handleSectionChange('inventory')}
-                className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
-                  currentSection === 'inventory' ? 'bg-white/20' : 'hover:bg-white/10'
-                }`}
-              >
-                <img src="/Design Elements/Player Profiles/Vault.webp" alt="Vault" className="w-12 h-12" />
-                <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>VAULT</span>
-              </button>
+              {/* Mobile Navigation Container */}
+              <div className="w-full" style={{
+                background: DisplayBackgroundEquip?.name === 'On A Mission' 
+                  ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(14, 165, 233, 0.3) 50%, rgba(14, 165, 233, 0.1) 100%)'
+                  : (DisplayBackgroundEquip?.name === 'Long Road Ahead' || DisplayBackgroundEquip?.name === 'As They Fall' || DisplayBackgroundEquip?.name === 'End Of The Dragon')
+                  ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.6) 0%, rgba(76, 29, 149, 0.4) 25%, rgba(30, 27, 75, 0.3) 50%, rgba(30, 58, 138, 0.4) 75%, rgba(59, 130, 246, 0.3) 100%)'
+                  : DisplayBackgroundEquip?.name === 'New Day'
+                  ? 'linear-gradient(0deg, #5a7579 0%, transparent 100%)'
+                  : DisplayBackgroundEquip?.name === 'Relax'
+                  ? 'linear-gradient(0deg, #407080 0%, transparent 100%)'
+                  : DisplayBackgroundEquip?.name === 'Underwater'
+                  ? 'linear-gradient(0deg, #00518c 0%, transparent 100%)'
+                  : 'rgba(0, 0, 0, 0.6)',
+                backdropFilter: DisplayBackgroundEquip?.name === 'On A Mission' || DisplayBackgroundEquip?.name === 'Long Road Ahead' || DisplayBackgroundEquip?.name === 'As They Fall' || DisplayBackgroundEquip?.name === 'End Of The Dragon' ? 'blur(8px)' : 'none',
+                borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.3)'
+              }}>
+                
+                {/* Profile/Settings Tabs - Only show when on profile section */}
+                {currentSection === 'profile' && (
+                  <div className="flex items-center justify-center gap-4 px-4 pt-3 pb-2 border-b border-white/10">
+                    <button
+                      onClick={() => {
+                        // This will be handled by ProfileSection's activeTab state
+                        const event = new CustomEvent('profileTabChange', { detail: 'profile' });
+                        window.dispatchEvent(event);
+                      }}
+                      className="profile-tab-btn flex items-center justify-center gap-2 px-6 py-2.5 rounded-[18px] transition-all duration-300"
+                      style={{
+                        border: '2px solid rgba(255, 255, 255, 0.1)',
+                        background: 'transparent',
+                      }}
+                      data-tab="profile"
+                    >
+                      <span style={{
+                        color: '#FFF',
+                        fontFamily: 'Audiowide', 
+                        fontSize: '14px', 
+                        fontWeight: 400, 
+                        textTransform: 'uppercase' 
+                      }}>
+                        Profile
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        const event = new CustomEvent('profileTabChange', { detail: 'settings' });
+                        window.dispatchEvent(event);
+                      }}
+                      className="profile-tab-btn flex items-center justify-center gap-2 px-6 py-2.5 rounded-[18px] transition-all duration-300"
+                      style={{
+                        border: '2px solid rgba(255, 255, 255, 0.1)',
+                        background: 'transparent',
+                      }}
+                      data-tab="settings"
+                    >
+                      <span style={{
+                        color: '#FFF',
+                        fontFamily: 'Audiowide', 
+                        fontSize: '14px', 
+                        fontWeight: 400, 
+                        textTransform: 'uppercase' 
+                      }}>
+                        Settings
+                      </span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Main Navigation Row */}
+                <div className="flex flex-row items-center justify-between w-full px-[2vw] py-[15px]">
+                  <button
+                    onClick={() => handleSectionChange('profile')}
+                    className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
+                      currentSection === 'profile' ? 'bg-white/20' : 'hover:bg-white/10'
+                    }`}
+                  >
+                    <img src="/Design Elements/Delivery Man.webp" alt="Profile" className="w-12 h-12" />
+                    <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PROFILE</span>
+                  </button>
+                  <button
+                    onClick={() => handleSectionChange('friends')}
+                    className={`relative flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
+                      currentSection === 'friends' ? 'bg-white/20' : 'hover:bg-white/10'
+                    }`}
+                  >
+                    <img src="/Design Elements/friends.webp" alt="Friends" className="w-12 h-12" />
+                    <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>FRIENDS</span>
+                    <NotificationBadge count={onlineFriendsCount} />
+                  </button>
+                  <button
+                    onClick={() => handleSectionChange('dashboard')}
+                    className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
+                      currentSection === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/10'
+                    }`}
+                  >
+                    <img 
+                      src="/Design Elements/CrownLogo.webp" 
+                      alt="Play" 
+                      className="w-12 h-12 object-contain" 
+                      loading="lazy"
+                      decoding="async"
+                      style={{ maxWidth: '48px', maxHeight: '48px' }}
+                    />
+                    <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>PLAY</span>
+                  </button>
+                  <button
+                    onClick={() => handleSectionChange('ranked')}
+                    className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
+                      currentSection === 'ranked' ? 'bg-white/20' : 'hover:bg-white/10'
+                    }`}
+                  >
+                    <img src="/Design Elements/Player Profiles/Ranked.webp" alt="Ranked" className="w-12 h-12" />
+                    <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>RANKED</span>
+                  </button>
+                  <button
+                    onClick={() => handleSectionChange('inventory')}
+                    className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-all flex-1 max-w-[18vw] ${
+                      currentSection === 'inventory' ? 'bg-white/20' : 'hover:bg-white/10'
+                    }`}
+                  >
+                    <img src="/Design Elements/Player Profiles/Vault.webp" alt="Vault" className="w-12 h-12" />
+                    <span className="hidden text-xs text-white font-semibold text-center" style={{ fontFamily: "Audiowide" }}>VAULT</span>
+                  </button>
+                </div>
               </div>
             </NavigationWithInvitations>
           </footer>

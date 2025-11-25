@@ -45,16 +45,10 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
     ? matchData.hostData 
     : matchData.opponentData;
   
-  // Get winner's victory background - use their equipped background or fallback
+  // Get winner's victory background - always use winner's victoryBackgroundEquipped from match data
   const victoryVideo = (() => {
-    // If current user won, use their VictoryBackgroundEquip from context
-    if (winnerIsCurrentUser && VictoryBackgroundEquip) {
-      const resolved = resolveBackgroundPath(VictoryBackgroundEquip.id, 'dashboard-display');
-      if (resolved?.path) return resolved.path;
-    }
-    
-    // If opponent won, use their victoryBackgroundEquipped from match data
-    if (!winnerIsCurrentUser && winnerData.victoryBackgroundEquipped) {
+    // Always use the winner's victoryBackgroundEquipped from match data
+    if (winnerData.victoryBackgroundEquipped) {
       const bgId = typeof winnerData.victoryBackgroundEquipped === 'string' 
         ? winnerData.victoryBackgroundEquipped 
         : winnerData.victoryBackgroundEquipped.id;
@@ -679,6 +673,25 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
           </div>
         </motion.div>
       )}
+
+      {/* Stats Button - Triangle layout above Dashboard/Rematch */}
+      <div className="md:hidden fixed bottom-[80px] left-0 right-0 w-full flex justify-center z-50">
+        <button
+          onClick={() => setShowStats(!showStats)}
+          className="text-white font-bold transition-all active:scale-95 px-8 py-3"
+          style={{
+            fontFamily: "Audiowide",
+            textTransform: "uppercase" as const,
+            fontSize: '16px',
+            background: 'transparent',
+            border: 'none',
+            textDecoration: showStats ? 'underline' : 'none',
+            textUnderlineOffset: '4px'
+          }}
+        >
+          STATS
+        </button>
+      </div>
 
       {/* Mobile Nav-Style Buttons - Fixed at bottom like Play/Save buttons */}
       <div
