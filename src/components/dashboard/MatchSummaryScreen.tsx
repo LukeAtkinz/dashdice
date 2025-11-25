@@ -47,16 +47,29 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   
   // Get winner's victory background - always use winner's victoryBackgroundEquipped from match data
   const victoryVideo = (() => {
+    console.log('🏆 Victory Screen - Winner Data:', {
+      winnerId: winner,
+      winnerData: winnerData,
+      victoryBackgroundEquipped: winnerData.victoryBackgroundEquipped,
+      hostData: matchData.hostData,
+      opponentData: matchData.opponentData
+    });
+    
     // Always use the winner's victoryBackgroundEquipped from match data
     if (winnerData.victoryBackgroundEquipped) {
       const bgId = typeof winnerData.victoryBackgroundEquipped === 'string' 
         ? winnerData.victoryBackgroundEquipped 
         : winnerData.victoryBackgroundEquipped.id;
+      
+      console.log('🏆 Victory Screen - Resolving background:', { bgId });
       const resolved = resolveBackgroundPath(bgId, 'dashboard-display');
+      console.log('🏆 Victory Screen - Resolved path:', resolved);
+      
       if (resolved?.path) return resolved.path;
     }
     
     // Fallback to default
+    console.log('🏆 Victory Screen - Using fallback (wind-blade)');
     const resolved = resolveBackgroundPath('wind-blade', 'dashboard-display');
     return resolved?.path || '/Victory Screens/Wind Blade.mp4';
   })();
