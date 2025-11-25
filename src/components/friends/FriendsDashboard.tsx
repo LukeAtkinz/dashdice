@@ -260,8 +260,9 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       {/* Navigation tabs moved to bottom nav in SinglePageDashboard.tsx */}
 
       {/* Content */}
-      <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4" style={{
-        touchAction: 'pan-y'
+      <div className="w-full max-w-[80rem] flex-1 overflow-y-auto px-4 md:max-h-screen" style={{
+        touchAction: 'pan-y',
+        maxHeight: 'calc(100vh - 150px)' // Mobile: reduce by bottom nav (60px tabs + 90px main nav)
       }}>
         {activeTab === 'friends' && (
           <div className="space-y-6">

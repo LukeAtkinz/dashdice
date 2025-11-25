@@ -480,11 +480,12 @@ const ProfileSection: React.FC = () => {
 
         {/* Content */}
         <div 
-          className="w-full max-w-[80rem] flex-1 overflow-y-auto scrollbar-hide" 
+          className="w-full max-w-[80rem] flex-1 overflow-y-auto scrollbar-hide md:max-h-screen" 
           style={{
             touchAction: 'pan-y',
             WebkitOverflowScrolling: 'touch',
-            overscrollBehavior: 'contain'
+            overscrollBehavior: 'contain',
+            maxHeight: 'calc(100vh - 150px)' // Mobile: reduce by bottom nav (60px tabs + 90px main nav)
           }}
         >
 
