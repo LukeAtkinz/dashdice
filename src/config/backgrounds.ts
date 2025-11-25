@@ -99,7 +99,7 @@ export const AVAILABLE_BACKGROUNDS: Background[] = [
   // ==================== TURN DECIDER BACKGROUNDS (7) ====================
   {
     id: 'arcade-assault',
-    name: 'Arcade Assault',
+    name: 'Arcade Assult',
     category: 'Videos',
     description: 'Intense arcade action for turn decider',
     tags: ['arcade', 'action', 'intense'],
@@ -263,7 +263,7 @@ export const buildBackgroundPath = (
 ): string => {
   const qualityFolder = 
     quality === 'best' ? 'Best Quality' :
-    quality === 'medium' ? 'Medium Quality' :
+    quality === 'medium' ? 'Medium Quailty' :  // Note: Actual folder is spelled 'Quailty'
     'Low Quality';
   
   // Determine which folder to use

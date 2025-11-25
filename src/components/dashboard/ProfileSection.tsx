@@ -451,16 +451,14 @@ const ProfileSection: React.FC = () => {
                 <div 
                   className="relative overflow-hidden touch-manipulation rounded-t-[20px]"
                   style={{
-                    background: MatchBackgroundEquip?.id 
-                      ? `url(${resolveBackgroundPath(MatchBackgroundEquip.id, 'profile-viewer')?.path})`
-                      : 'linear-gradient(135deg, #667eea, #764ba2)',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
+                    background: !MatchBackgroundEquip?.id 
+                      ? 'linear-gradient(135deg, #667eea, #764ba2)'
+                      : 'transparent',
                     width: 'calc(100vw - 2rem)',
                     maxWidth: '100%'
                   }}
                 >
-                  {/* Flexin Background Video if applicable */}
+                  {/* Flexin Background Video or Image */}
                   {MatchBackgroundEquip?.id && (() => {
                     const resolved = resolveBackgroundPath(MatchBackgroundEquip.id, 'dashboard-display');
                     if (resolved?.type === 'video') {
@@ -475,6 +473,15 @@ const ProfileSection: React.FC = () => {
                         >
                           <source src={resolved.path} type="video/mp4" />
                         </video>
+                      );
+                    } else if (resolved?.type === 'image') {
+                      return (
+                        <img
+                          src={resolved.path}
+                          alt={resolved.name}
+                          className="absolute inset-0 w-full h-full object-cover"
+                          style={{ zIndex: 0 }}
+                        />
                       );
                     }
                     return null;
@@ -514,32 +521,32 @@ const ProfileSection: React.FC = () => {
                 </div>
 
                 {/* Victory Screen Section */}
-                <div className="relative bg-black/40 backdrop-blur-sm border-x border-gray-700/50 p-6" style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}>
-                  <h3 className="text-white text-lg font-audiowide uppercase mb-3">Victory Screen</h3>
-                  <div className="relative rounded-lg overflow-hidden" style={{ height: '200px' }}>
+                <div className="relative bg-black/60 backdrop-blur-sm border-x border-gray-700/50 p-6" style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}>
+                  <h3 className="text-white text-lg uppercase mb-3" style={{ fontFamily: 'Audiowide' }}>Victory Screen</h3>
+                  <div className="relative rounded-lg overflow-hidden flex items-center justify-center" style={{ height: '200px' }}>
                     <video
                       key={VictoryBackgroundEquip?.id || 'victory-screen-video'}
                       autoPlay
                       loop
                       muted
                       playsInline
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                       src={VictoryBackgroundEquip ? resolveBackgroundPath(VictoryBackgroundEquip.id, 'dashboard-display')?.path : '/Victory Screens/Wind Blade.mp4'}
                     />
                   </div>
                 </div>
 
                 {/* Match Decider Section */}
-                <div className="relative bg-black/40 backdrop-blur-sm border-x border-b border-gray-700/50 rounded-b-[20px] p-6" style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}>
-                  <h3 className="text-white text-lg font-audiowide uppercase mb-3">Turn Decider</h3>
-                  <div className="relative rounded-lg overflow-hidden" style={{ height: '200px' }}>
+                <div className="relative bg-black/60 backdrop-blur-sm border-x border-b border-gray-700/50 rounded-b-[20px] p-6" style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}>
+                  <h3 className="text-white text-lg uppercase mb-3" style={{ fontFamily: 'Audiowide' }}>Turn Decider</h3>
+                  <div className="relative rounded-lg overflow-hidden flex items-center justify-center" style={{ height: '200px' }}>
                     <video
                       key={TurnDeciderBackgroundEquip?.id || 'turn-decider-video'}
                       autoPlay
                       loop
                       muted
                       playsInline
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                       src={TurnDeciderBackgroundEquip ? resolveBackgroundPath(TurnDeciderBackgroundEquip.id, 'dashboard-display')?.path : '/Game Backgrounds/Turn Decider/Videos/Best Quality/Crazy Cough.mp4'}
                     />
                   </div>
@@ -1274,7 +1281,7 @@ const ProfileSection: React.FC = () => {
         </div>
 
         {/* Mobile Tab Navigation - Fixed Above Bottom Nav */}
-        <div className="md:hidden fixed bottom-[70px] left-0 right-0 bg-black/90 backdrop-blur-lg border-t border-gray-700/50 z-[60] px-4 py-3">
+        <div className="md:hidden fixed bottom-[70px] left-0 right-0 z-[60] px-4 py-3" style={{ background: 'rgba(0, 0, 0, 0.95)', backdropFilter: 'blur(10px)', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
           <div className="flex items-center justify-center gap-4">
             {tabs.map((tab) => (
               <button

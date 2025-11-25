@@ -459,11 +459,15 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
         >
           {/* Giant Vertical Reel Dice Container */}
           <div style={{
-            width: 'min(95vw, 800px)',
-            height: 'clamp(250px, 45vh, 450px)',
+            width: 'min(95vw, 1000px)',
+            height: 'clamp(350px, 60vh, 600px)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)'
           }}>
             <SlotMachineDice
               diceNumber={'turnDecider' as any}
