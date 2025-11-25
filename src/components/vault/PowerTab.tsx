@@ -764,7 +764,7 @@ export default function PowerTab({
                     transition={{ duration: 0.3, delay: index * 0.1 }}
                   >
                     <div
-                      className="aspect-square rounded-lg p-2 border-2 backdrop-blur-sm transition-all duration-300 cursor-pointer overflow-hidden relative"
+                      className="aspect-square rounded-lg p-2 border-2 transition-all duration-300 cursor-pointer overflow-hidden relative flex items-center justify-center"
                       style={{
                         borderColor: isAssigned ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.3)',
                         borderStyle: 'solid',
@@ -862,7 +862,7 @@ export default function PowerTab({
       >
         <div className="relative z-10 h-full flex flex-col md:block">
           {/* Game Mode Header and Loadout - Sticky at top (flex-shrink-0) */}
-          <div className="md:static flex-shrink-0 z-30 backdrop-blur-md rounded-b-xl p-4 md:p-0 bg-transparent border-b border-white/20 md:border-none shadow-lg md:shadow-none">
+          <div className="md:static flex-shrink-0 z-30 rounded-b-xl p-4 md:p-0 bg-transparent shadow-lg md:shadow-none">
             {/* Navigation */}
             <div className="relative flex items-center justify-center mb-3 md:mb-6">
             {/* Left Arrow */}
@@ -967,7 +967,7 @@ export default function PowerTab({
                     }}
                   >
                     <div
-                      className="aspect-square rounded-lg p-2 border-2 backdrop-blur-sm transition-all duration-300 cursor-pointer overflow-hidden relative"
+                      className="aspect-square rounded-lg p-2 border-2 transition-all duration-300 cursor-pointer overflow-hidden relative flex items-center justify-center"
                       style={{
                         borderColor: isAssigned ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.3)',
                         borderStyle: 'solid',
@@ -975,7 +975,7 @@ export default function PowerTab({
                       }}
                     >
                       {isAssigned && assignedAbility ? (
-                        <div className="w-full h-full flex flex-col items-center justify-center text-center">
+                        <div className="w-full h-full absolute inset-0 flex items-center justify-center text-center">
                           <div className="w-12 h-12 md:w-16 md:h-16 relative">
                             {!iconError ? (
                               <img
@@ -1011,8 +1011,8 @@ export default function PowerTab({
                           </div>
                         </div>
                       ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center text-center">
-                          <div className="w-12 h-12 md:w-16 md:h-16 mb-1 md:mb-2 relative">
+                        <div className="w-full h-full absolute inset-0 flex items-center justify-center text-center">
+                          <div className="w-12 h-12 md:w-16 md:h-16 relative">
                             {!iconError ? (
                               <img
                                 key={categorySlot.icon}
@@ -1047,89 +1047,7 @@ export default function PowerTab({
               })}
             </motion.div>
           </AnimatePresence>
-          
-          {/* Mobile Navigation - Inside sticky container */}
-          {onTabChange && (
-            <div className="block md:hidden w-full flex flex-row items-center justify-center gap-[1rem] py-2 mt-2 border-t border-white/10">
-              <div className="flex items-center justify-center gap-2">
-                <button
-                  onClick={() => onTabChange('power')}
-                  className={`tab-button nav-button ${activeTab === 'power' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-3 rounded-[18px] transition-all duration-300 h-10 px-3 min-w-[100px]`}
-                  style={{
-                    display: 'flex',
-                    width: 'fit-content',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: '8px',
-                    border: activeTab === 'power' ? '2px solid #FFD700' : '2px solid transparent',
-                    borderRadius: '18px',
-                    background: 'transparent',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <span className="text-sm font-audiowide uppercase" style={{ 
-                    color: '#FFF', 
-                    fontFamily: 'Audiowide', 
-                    fontWeight: 400, 
-                    textTransform: 'uppercase' 
-                  }}>
-                    Power
-                  </span>
-                </button>
-                <button
-                  onClick={() => onTabChange('vibin')}
-                  className={`tab-button nav-button ${activeTab === 'vibin' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-3 rounded-[18px] transition-all duration-300 h-10 px-3 min-w-[100px]`}
-                  style={{
-                    display: 'flex',
-                    width: 'fit-content',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: '8px',
-                    border: activeTab === 'vibin' ? '2px solid #FFD700' : '2px solid transparent',
-                    borderRadius: '18px',
-                    background: 'transparent',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <span className="text-sm font-audiowide uppercase" style={{ 
-                    color: '#FFF', 
-                    fontFamily: 'Audiowide', 
-                    fontWeight: 400, 
-                    textTransform: 'uppercase' 
-                  }}>
-                    Vibin
-                  </span>
-                </button>
-                <button
-                  onClick={() => onTabChange('flexin')}
-                  className={`tab-button nav-button ${activeTab === 'flexin' ? 'active' : ''} flex flex-col items-center justify-center gap-2 p-3 rounded-[18px] transition-all duration-300 h-10 px-3 min-w-[100px]`}
-                  style={{
-                    display: 'flex',
-                    width: 'fit-content',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: '8px',
-                    border: activeTab === 'flexin' ? '2px solid #FFD700' : '2px solid transparent',
-                    borderRadius: '18px',
-                    background: 'transparent',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <span className="text-sm font-audiowide uppercase" style={{ 
-                    color: '#FFF', 
-                    fontFamily: 'Audiowide', 
-                    fontWeight: 400, 
-                    textTransform: 'uppercase' 
-                  }}>
-                    Flexin
-                  </span>
-                </button>
-              </div>
-            </div>
-          )}
-          </div>
-
-          {/* Available Abilities by Category - Scrollable with overflow hidden cutoff */}
+        </div>          {/* Available Abilities by Category - Scrollable with overflow hidden cutoff */}
           <div 
             className="flex-1 md:flex-none overflow-y-auto md:overflow-visible space-y-6 pt-6 md:pt-0 pb-6 md:pb-0 px-4 md:px-0" 
             style={{
@@ -1317,7 +1235,7 @@ export default function PowerTab({
                         }}
                       >
                         <div
-                          className="aspect-square rounded-lg p-3 border transition-all duration-300 backdrop-blur-sm overflow-hidden"
+                          className="aspect-square rounded-lg p-3 border transition-all duration-300 overflow-hidden"
                           style={{
                             background: isInCurrentLoadout 
                               ? `linear-gradient(135deg, ${currentGameMode.color}40 0%, transparent 100%)`
@@ -1377,7 +1295,7 @@ export default function PowerTab({
                         transition={{ duration: 0.3, delay: userCategoryAbilities.length * 0.1 }}
                       >
                         <div
-                          className="aspect-square rounded-lg p-3 border transition-all duration-300 backdrop-blur-sm overflow-hidden relative"
+                          className="aspect-square rounded-lg p-3 border transition-all duration-300 overflow-hidden relative"
                           style={{
                             background: 'linear-gradient(135deg, #374151 0%, transparent 100%)',
                             borderColor: 'rgba(255, 255, 255, 0.1)',
@@ -1418,7 +1336,7 @@ export default function PowerTab({
                         transition={{ duration: 0.3, delay: (userCategoryAbilities.length + 1) * 0.1 }}
                       >
                         <div
-                          className="aspect-square rounded-lg p-3 border transition-all duration-300 backdrop-blur-sm overflow-hidden relative"
+                          className="aspect-square rounded-lg p-3 border transition-all duration-300 overflow-hidden relative"
                           style={{
                             background: 'linear-gradient(135deg, #374151 0%, transparent 100%)',
                             borderColor: 'rgba(255, 255, 255, 0.1)',

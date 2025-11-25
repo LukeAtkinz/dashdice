@@ -47,6 +47,14 @@ export interface SessionPlayerData {
   };
   displayBackgroundEquipped: any;
   matchBackgroundEquipped: any;
+  turnDeciderBackgroundEquipped?: any; // ✅ Turn Decider background for match
+  victoryBackgroundEquipped?: any; // ✅ Victory screen background
+  powerLoadout?: { // ✅ Power loadout for this game mode
+    attack: string | null;
+    defense: string | null;
+    tactical: string | null;
+    utility: string | null;
+  };
   ready: boolean;
   joinedAt?: Date;
   
@@ -952,6 +960,21 @@ export class GameSessionService {
         return null;
       }
 
+      // 🎯 CRITICAL FIX: Fetch proper game mode configuration
+      const { GameModeService } = await import('./gameModeService');
+      const gameMode = await GameModeService.getGameMode(session.gameMode);
+      
+      if (!gameMode) {
+        console.error(`❌ Game mode "${session.gameMode}" not found`);
+        return null;
+      }
+      
+      console.log(`✅ Loaded game mode configuration for "${session.gameMode}":`, {
+        startingScore: gameMode.rules.startingScore,
+        targetScore: gameMode.rules.targetScore,
+        settings: gameMode.settings
+      });
+
       // Create match document in matches collection for compatibility
       const matchData = {
         gameMode: session.gameMode,
@@ -961,16 +984,16 @@ export class GameSessionService {
         originalRoomId: sessionId, // For compatibility with waiting room searches
         status: 'active',
         currentPlayer: 'host', // Default starting player
-        // Add required gameData field
+        // Add required gameData field with PROPER game mode settings
         gameData: {
           type: session.gameMode,
-          settings: {},
+          settings: gameMode.settings, // ✅ PROPER SETTINGS FROM GAME MODE
           turnDecider: 1, // 1 = host starts
           turnScore: 0,
           diceOne: 0,
           diceTwo: 0,
-          roundObjective: 10000, // Default objective
-          startingScore: 0,
+          roundObjective: gameMode.rules.targetScore, // ✅ PROPER TARGET SCORE
+          startingScore: gameMode.rules.startingScore, // ✅ PROPER STARTING SCORE
           status: 'active',
           startedAt: serverTimestamp(),
           
@@ -989,12 +1012,22 @@ export class GameSessionService {
           playerDisplayName: session.hostData.playerDisplayName,
           displayBackgroundEquipped: session.hostData.displayBackgroundEquipped,
           matchBackgroundEquipped: session.hostData.matchBackgroundEquipped,
+          turnDeciderBackgroundEquipped: session.hostData.turnDeciderBackgroundEquipped, // ✅ ADD TURN DECIDER
+          victoryBackgroundEquipped: session.hostData.victoryBackgroundEquipped, // ✅ ADD VICTORY
+          powerLoadout: session.hostData.powerLoadout || { // ✅ ADD POWER LOADOUT
+            attack: null,
+            defense: null,
+            tactical: null,
+            utility: null
+          },
           playerStats: session.hostData.playerStats,
           // Game-specific fields with defaults
           turnActive: true, // Host starts first
-          playerScore: 0,
+          playerScore: gameMode.rules.startingScore, // ✅ USE PROPER STARTING SCORE
           roundScore: 0,
           isConnected: true,
+          ready: true, // ✅ ADD READY FLAG
+          joinedAt: session.hostData.joinedAt || serverTimestamp(), // ✅ ADD JOINED TIME
           matchStats: {
             banks: 0,
             doubles: 0,
@@ -1008,12 +1041,22 @@ export class GameSessionService {
           playerDisplayName: session.opponentData.playerDisplayName,
           displayBackgroundEquipped: session.opponentData.displayBackgroundEquipped,
           matchBackgroundEquipped: session.opponentData.matchBackgroundEquipped,
+          turnDeciderBackgroundEquipped: session.opponentData.turnDeciderBackgroundEquipped, // ✅ ADD TURN DECIDER
+          victoryBackgroundEquipped: session.opponentData.victoryBackgroundEquipped, // ✅ ADD VICTORY
+          powerLoadout: session.opponentData.powerLoadout || { // ✅ ADD POWER LOADOUT
+            attack: null,
+            defense: null,
+            tactical: null,
+            utility: null
+          },
           playerStats: session.opponentData.playerStats,
           // Game-specific fields with defaults
           turnActive: false, // Opponent waits for host
-          playerScore: 0,
+          playerScore: gameMode.rules.startingScore, // ✅ USE PROPER STARTING SCORE
           roundScore: 0,
           isConnected: true,
+          ready: true, // ✅ ADD READY FLAG
+          joinedAt: session.opponentData.joinedAt || serverTimestamp(), // ✅ ADD JOINED TIME
           matchStats: {
             banks: 0,
             doubles: 0,
