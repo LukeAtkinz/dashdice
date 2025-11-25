@@ -174,19 +174,53 @@ const DashboardContent: React.FC = () => {
             controls={false}
             webkit-playsinline="true"
             x5-playsinline="true"
-            preload="none" // Lazy load to improve performance
+            x5-video-player-type="h5-page"
+            x5-video-player-fullscreen="false"
+            preload="auto"
+            disablePictureInPicture
+            disableRemotePlayback
             poster={isMobile ? undefined : "/backgrounds/placeholder.jpg"} // Remove poster on mobile for faster loading
             onLoadStart={(e) => handleVideoLoadStart(e.currentTarget)}
+            onLoadedMetadata={(e) => {
+              const video = e.currentTarget;
+              video.muted = true;
+              video.play().catch(err => console.log('LoadedMetadata autoplay failed:', err));
+            }}
             onCanPlay={(e) => {
-              // Additional attempt when video can play
-              if (isMobile) {
-                e.currentTarget.play().catch(err => console.log('CanPlay autoplay failed:', err));
+              const video = e.currentTarget;
+              video.muted = true;
+              if (video.paused) {
+                video.play().catch(err => console.log('CanPlay autoplay failed:', err));
               }
             }}
             onLoadedData={(e) => {
-              // Ensure video starts immediately when data is loaded on mobile
-              if (isMobile && e.currentTarget.paused) {
-                e.currentTarget.play().catch(err => console.log('LoadedData autoplay failed:', err));
+              const video = e.currentTarget;
+              video.muted = true;
+              if (video.paused) {
+                video.play().catch(err => console.log('LoadedData autoplay failed:', err));
+              }
+            }}
+            onSuspend={(e) => {
+              const video = e.currentTarget;
+              if (video.paused) {
+                video.play().catch(() => {});
+              }
+            }}
+            onPause={(e) => {
+              // If video pauses unexpectedly, try to resume
+              const video = e.currentTarget;
+              setTimeout(() => {
+                if (video.paused) {
+                  video.play().catch(() => {});
+                }
+              }, 100);
+            }}
+            onClick={(e) => {
+              // On user interaction, ensure video plays
+              const video = e.currentTarget;
+              video.muted = true;
+              if (video.paused) {
+                video.play().catch(() => {});
               }
             }}
             className={`absolute inset-0 w-full h-full object-cover z-0 scrollbar-hide ${positioning.className}`}

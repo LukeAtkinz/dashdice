@@ -65,12 +65,9 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
     }
   }, []);
 
-  // Get splash video sources - multiple formats for compatibility
-  const getVideoSources = useCallback(() => {
-    return {
-      mp4: '/splash.mp4',
-      webm: '/Splash Screens/Splash-Screen.webm'
-    };
+  // Get splash video source - always use .mp4
+  const getSplashVideoSource = useCallback(() => {
+    return '/Splash Screens/Splash Screen.mp4';
   }, []);
 
   // Handle video end - CHANGED: Freeze on last frame until app loads
@@ -253,8 +250,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
               pointerEvents: 'none' // Prevent any clicks that might show controls
             }}
           >
-            <source src={getVideoSources().mp4} type="video/mp4" />
-            <source src={getVideoSources().webm} type="video/webm" />
+            <source src={getSplashVideoSource()} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
 

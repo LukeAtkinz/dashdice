@@ -39,11 +39,15 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   
   // Determine winner's Victory background
   const winnerIsCurrentUser = winner === user?.uid;
-  const winnerData = winnerIsCurrentUser ? matchData.hostData : matchData.opponentData;
+  
+  // Get the actual winner's data based on winner ID
+  const winnerData = winner === matchData.hostData.playerId 
+    ? matchData.hostData 
+    : matchData.opponentData;
   
   // Get winner's victory background - use their equipped background or fallback
   const victoryVideo = (() => {
-    // If current user won, use their VictoryBackgroundEquip
+    // If current user won, use their VictoryBackgroundEquip from context
     if (winnerIsCurrentUser && VictoryBackgroundEquip) {
       const resolved = resolveBackgroundPath(VictoryBackgroundEquip.id, 'dashboard-display');
       if (resolved?.path) return resolved.path;

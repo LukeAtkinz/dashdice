@@ -626,6 +626,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
           loop
           muted
           playsInline
+          webkit-playsinline="true"
+          x5-playsinline="true"
+          x5-video-player-type="h5-page"
+          x5-video-player-fullscreen="false"
           controls={false}
           preload="auto"
           disablePictureInPicture
@@ -637,7 +641,32 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId, topVideo, bottom
             opacity: videoLoaded ? 1 : 0,
             transition: 'opacity 0.3s ease'
           }}
-          onLoadedData={() => setVideoLoaded(true)}
+          onLoadedMetadata={(e) => {
+            const video = e.target as HTMLVideoElement;
+            video.muted = true;
+            video.play().catch(() => {});
+          }}
+          onCanPlay={(e) => {
+            const video = e.target as HTMLVideoElement;
+            video.muted = true;
+            if (video.paused) video.play().catch(() => {});
+          }}
+          onLoadedData={(e) => {
+            const video = e.target as HTMLVideoElement;
+            video.muted = true;
+            if (video.paused) video.play().catch(() => {});
+            setVideoLoaded(true);
+          }}
+          onSuspend={(e) => {
+            const video = e.target as HTMLVideoElement;
+            if (video.paused) video.play().catch(() => {});
+          }}
+          onPause={(e) => {
+            const video = e.target as HTMLVideoElement;
+            setTimeout(() => {
+              if (video.paused) video.play().catch(() => {});
+            }, 100);
+          }}
           onError={(e) => {
             console.error('❌ Background video failed to load:', src, e);
             setVideoLoaded(true); // Show placeholder on error
