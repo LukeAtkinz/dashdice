@@ -715,31 +715,44 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const { backgroundPath: opponentBgPath, isVideo: opponentBgIsVideo } = useMatchBackground(opponentBackground as any);
 
   // Get turn decider backgrounds from player data
+  // TOP = Opponent's background, BOTTOM = Current user's background
   const topVideo = useMemo(() => {
-    if (!matchData) return '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
-    const hostDeciderBg = matchData.hostData.turnDeciderBackgroundEquipped;
-    console.log('🎬 TOP VIDEO - hostDeciderBg:', hostDeciderBg);
-    if (hostDeciderBg && typeof hostDeciderBg === 'object' && 'id' in hostDeciderBg) {
-      const resolved = resolveBackgroundPath(hostDeciderBg.id, 'waiting-room');
+    if (!matchData || !user) return '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
+    
+    // Get opponent's data (opposite of current user)
+    const isHost = matchData.hostData.playerId === user.uid;
+    const opponentDeciderBg = isHost 
+      ? matchData.opponentData?.turnDeciderBackgroundEquipped 
+      : matchData.hostData.turnDeciderBackgroundEquipped;
+    
+    console.log('🎬 TOP VIDEO (Opponent) - deciderBg:', opponentDeciderBg);
+    if (opponentDeciderBg && typeof opponentDeciderBg === 'object' && 'id' in opponentDeciderBg) {
+      const resolved = resolveBackgroundPath(opponentDeciderBg.id, 'waiting-room');
       console.log('🎬 TOP VIDEO - Resolved:', resolved);
       return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
     }
     console.log('🎬 TOP VIDEO - Using fallback');
     return '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
-  }, [matchData]);
+  }, [matchData, user]);
 
   const bottomVideo = useMemo(() => {
-    if (!matchData) return '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
-    const opponentDeciderBg = matchData.opponentData?.turnDeciderBackgroundEquipped;
-    console.log('🎬 BOTTOM VIDEO - opponentDeciderBg:', opponentDeciderBg);
-    if (opponentDeciderBg && typeof opponentDeciderBg === 'object' && 'id' in opponentDeciderBg) {
-      const resolved = resolveBackgroundPath(opponentDeciderBg.id, 'waiting-room');
+    if (!matchData || !user) return '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
+    
+    // Get current user's data
+    const isHost = matchData.hostData.playerId === user.uid;
+    const currentUserDeciderBg = isHost 
+      ? matchData.hostData.turnDeciderBackgroundEquipped 
+      : matchData.opponentData?.turnDeciderBackgroundEquipped;
+    
+    console.log('🎬 BOTTOM VIDEO (Current User) - deciderBg:', currentUserDeciderBg);
+    if (currentUserDeciderBg && typeof currentUserDeciderBg === 'object' && 'id' in currentUserDeciderBg) {
+      const resolved = resolveBackgroundPath(currentUserDeciderBg.id, 'waiting-room');
       console.log('🎬 BOTTOM VIDEO - Resolved:', resolved);
       return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
     }
     console.log('🎬 BOTTOM VIDEO - Using fallback');
     return '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
-  }, [matchData]);
+  }, [matchData, user]);
 
   // Subscribe to match updates
   useEffect(() => {

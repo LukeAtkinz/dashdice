@@ -362,29 +362,107 @@ export class GameInvitationService {
     try {
       console.log('🎮 Creating friend game session via Go services for invitation:', invitation);
       
-      // Get user data for both players
-      const [fromUser, toUser] = await Promise.all([
-        this.getUser(invitation.fromUserId),
-        this.getUser(invitation.toUserId)
+      // Get FULL user profiles with inventory data (backgrounds, abilities)
+      const { UserService } = await import('./userService');
+      const [fromProfile, toProfile] = await Promise.all([
+        UserService.getUserProfile(invitation.fromUserId),
+        UserService.getUserProfile(invitation.toUserId)
       ]);
 
-      if (!fromUser || !toUser) {
-        throw new Error('User data not found');
+      if (!fromProfile || !toProfile) {
+        throw new Error('User profiles not found');
       }
+
+      console.log('✅ Loaded full user profiles:', {
+        from: fromProfile.displayName,
+        fromInventory: !!fromProfile.inventory,
+        to: toProfile.displayName,
+        toInventory: !!toProfile.inventory
+      });
 
       // Use Go Backend Service to create friend invite waiting room
       const { GoBackendService } = await import('./goBackendService');
       
       const waitingRoomId = await GoBackendService.createFriendInviteWaitingRoom(
         invitation.fromUserId,
-        fromUser.displayName || 'Unknown Player',
+        fromProfile.displayName || 'Unknown Player',
         invitation.toUserId,
-        toUser.displayName || 'Unknown Player',
+        toProfile.displayName || 'Unknown Player',
         invitation.gameType,
         'Friend Invitation'
       );
 
       console.log('✅ GameInvitationService: Friend invite waiting room created via Go services:', waitingRoomId);
+      
+      // 🎯 CRITICAL FIX: Update waiting room with full user profiles including backgrounds and power loadouts
+      try {
+        const { doc, updateDoc, serverTimestamp } = await import('firebase/firestore');
+        const { db } = await import('./firebase');
+        const { GameModeService } = await import('./gameModeService');
+        
+        // Get game mode configuration
+        const gameMode = await GameModeService.getGameMode(invitation.gameType);
+        
+        // Default backgrounds for fallback
+        const defaultBackground = { id: 'relax', name: 'Relax', category: 'Images', rarity: 'COMMON' };
+        const defaultTurnDecider = { id: 'crazy-cough', name: 'Crazy Cough', category: 'Videos', rarity: 'COMMON' };
+        const defaultVictory = { id: 'wind-blade', name: 'Wind Blade', category: 'Videos', rarity: 'LEGENDARY' };
+        
+        // Load power loadouts for both players
+        let fromPowerLoadout = null;
+        let toPowerLoadout = null;
+        
+        try {
+          // Map game mode to loadout key
+          let gameModeKey: any = invitation.gameType;
+          if (invitation.gameType.toLowerCase() === 'quickfire' || invitation.gameType === 'quick') {
+            gameModeKey = 'quick-fire';
+          }
+          
+          [fromPowerLoadout, toPowerLoadout] = await Promise.all([
+            UserService.getPowerLoadoutForGameMode(invitation.fromUserId, gameModeKey),
+            UserService.getPowerLoadoutForGameMode(invitation.toUserId, gameModeKey)
+          ]);
+          
+          console.log('🔮 Loaded power loadouts:', {
+            from: fromPowerLoadout,
+            to: toPowerLoadout
+          });
+        } catch (error) {
+          console.error('❌ Error loading power loadouts:', error);
+        }
+        
+        // Update waiting room with complete data
+        const waitingRoomRef = doc(db, 'waitingroom', waitingRoomId);
+        await updateDoc(waitingRoomRef, {
+          'hostData.displayBackgroundEquipped': fromProfile.inventory?.displayBackgroundEquipped || defaultBackground,
+          'hostData.matchBackgroundEquipped': fromProfile.inventory?.matchBackgroundEquipped || defaultBackground,
+          'hostData.turnDeciderBackgroundEquipped': fromProfile.inventory?.turnDeciderBackgroundEquipped || defaultTurnDecider,
+          'hostData.victoryBackgroundEquipped': fromProfile.inventory?.victoryBackgroundEquipped || defaultVictory,
+          'hostData.powerLoadout': fromPowerLoadout || { attack: null, defense: null, tactical: null, utility: null },
+          'hostData.playerStats': fromProfile.stats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
+          
+          'opponentData.displayBackgroundEquipped': toProfile.inventory?.displayBackgroundEquipped || defaultBackground,
+          'opponentData.matchBackgroundEquipped': toProfile.inventory?.matchBackgroundEquipped || defaultBackground,
+          'opponentData.turnDeciderBackgroundEquipped': toProfile.inventory?.turnDeciderBackgroundEquipped || defaultTurnDecider,
+          'opponentData.victoryBackgroundEquipped': toProfile.inventory?.victoryBackgroundEquipped || defaultVictory,
+          'opponentData.powerLoadout': toPowerLoadout || { attack: null, defense: null, tactical: null, utility: null },
+          'opponentData.playerStats': toProfile.stats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
+          
+          // Update game settings from game mode configuration
+          'gameData.settings': gameMode?.settings || {},
+          'gameData.roundObjective': gameMode?.rules.targetScore || 100,
+          'gameData.startingScore': gameMode?.rules.startingScore || 0,
+          
+          updatedAt: serverTimestamp()
+        });
+        
+        console.log('✅ Updated waiting room with full user profiles and game mode settings');
+      } catch (updateError) {
+        console.error('❌ Failed to update waiting room with user profiles:', updateError);
+        // Don't fail the entire operation if update fails
+      }
+      
       return waitingRoomId;
       
     } catch (error) {

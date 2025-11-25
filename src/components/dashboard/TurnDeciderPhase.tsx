@@ -444,7 +444,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
         </div>
       )}
 
-      {/* FULL SCREEN Dice Animation - Independent of choice selection */}
+      {/* FULL SCREEN Dice Animation - DEAD CENTER OF VIEWPORT */}
       {(transitionPhase === 'transitioning' || transitionPhase === 'rolling' || diceAnimation.isSpinning || hasDice) && (
         <motion.div
           key="turn-decider-dice-fullscreen"
@@ -454,11 +454,10 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           transition={{ duration: 0.5, ease: "easeOut" }}
           style={{
             position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 'min(95vw, 1000px)',
-            height: 'clamp(350px, 55vh, 600px)',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -466,7 +465,15 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             pointerEvents: 'none'
           }}
         >
-          {/* Giant Vertical Reel Dice Container */}
+          <div style={{
+            width: 'min(95vw, 1000px)',
+            height: 'clamp(350px, 55vh, 600px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+            {/* Giant Vertical Reel Dice Container */}
             <SlotMachineDice
               diceNumber={'turnDecider' as any}
               animationState={{
@@ -482,6 +489,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
               isTurnDecider={true}
               matchData={matchData}
             />
+          </div>
         </motion.div>
       )}
 

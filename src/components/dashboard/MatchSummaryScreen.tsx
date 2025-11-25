@@ -62,7 +62,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         : winnerData.victoryBackgroundEquipped.id;
       
       console.log('🏆 Victory Screen - Resolving background:', { bgId });
-      const resolved = resolveBackgroundPath(bgId, 'dashboard-display');
+      const resolved = resolveBackgroundPath(bgId, 'victory-screen');
       console.log('🏆 Victory Screen - Resolved path:', resolved);
       
       if (resolved?.path) return resolved.path;
@@ -70,8 +70,8 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
     
     // Fallback to default
     console.log('🏆 Victory Screen - Using fallback (wind-blade)');
-    const resolved = resolveBackgroundPath('wind-blade', 'dashboard-display');
-    return resolved?.path || '/Victory Screens/Wind Blade.mp4';
+    const resolved = resolveBackgroundPath('wind-blade', 'victory-screen');
+    return resolved?.path || '/backgrounds/Game Backgrounds/Victory Screens/Best Quality/Wind Blade.mp4';
   })();
 
   // Get nav-style button styling
