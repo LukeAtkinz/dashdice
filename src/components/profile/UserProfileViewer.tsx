@@ -578,7 +578,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     if (video.paused) video.play().catch(() => {});
                   }}
                   className="w-full h-full object-cover"
-                  src={(userProfile.inventory as any)?.victoryBackgroundEquipped?.id ? resolveBackgroundPath((userProfile.inventory as any).victoryBackgroundEquipped.id, 'dashboard-display')?.path : '/Victory Screens/Wind Blade.mp4'}
+                  src={(userProfile.inventory as any)?.victoryBackgroundEquipped?.id ? resolveBackgroundPath((userProfile.inventory as any).victoryBackgroundEquipped.id, 'waiting-room')?.path : '/Victory Screens/Wind Blade.mp4'}
                 />
               </div>
             </div>
@@ -632,7 +632,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
                     if (video.paused) video.play().catch(() => {});
                   }}
                   className="w-full h-full object-cover"
-                  src={(userProfile.inventory as any)?.turnDeciderBackgroundEquipped?.id ? resolveBackgroundPath((userProfile.inventory as any).turnDeciderBackgroundEquipped.id, 'dashboard-display')?.path : '/Game Backgrounds/Turn Decider/Videos/Best Quality/Crazy Cough.mp4'}
+                  src={(userProfile.inventory as any)?.turnDeciderBackgroundEquipped?.id ? resolveBackgroundPath((userProfile.inventory as any).turnDeciderBackgroundEquipped.id, 'waiting-room')?.path : '/Game Backgrounds/Turn Decider/Videos/Best Quality/Crazy Cough.mp4'}
                 />
               </div>
             </div>
@@ -648,14 +648,14 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
           >
             <div className="p-6">
 
-              {/* Statistics Grid - Friends Card Style */}
+              {/* Statistics Grid - Individual Black Cards Like Profile */}
               <div className="rounded-xl p-6 -mx-4 md:-mx-4">
                 <h3 className="text-white text-xl mb-4 uppercase text-center md:text-left" style={{ fontFamily: 'Audiowide' }}>STATISTICS</h3>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                   <motion.div
                     key="games-played-stat"
-                    className="text-center"
+                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.1 }}
@@ -671,7 +671,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
 
                   <motion.div
                     key="games-won-stat"
-                    className="text-center"
+                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.2 }}
@@ -687,7 +687,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
 
                   <motion.div
                     key="items-collected-stat"
-                    className="text-center"
+                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.3 }}
@@ -709,7 +709,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
 
                   <motion.div
                     key="current-streak-stat"
-                    className="text-center"
+                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.4 }}
@@ -725,7 +725,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
 
                   <motion.div
                     key="best-streak-stat"
-                    className="text-center"
+                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.5 }}
@@ -741,7 +741,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
 
                   <motion.div
                     key="win-rate-stat"
-                    className="text-center"
+                    className="text-center p-3 rounded-lg bg-black/80 backdrop-blur-sm border border-gray-600/50"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.6 }}

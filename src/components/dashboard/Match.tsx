@@ -719,7 +719,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     if (!matchData) return '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
     const hostDeciderBg = matchData.hostData.turnDeciderBackgroundEquipped;
     if (hostDeciderBg && typeof hostDeciderBg === 'object' && 'id' in hostDeciderBg) {
-      const resolved = resolveBackgroundPath(hostDeciderBg.id, 'dashboard-display');
+      const resolved = resolveBackgroundPath(hostDeciderBg.id, 'waiting-room');
       return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
     }
     return '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
@@ -729,7 +729,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     if (!matchData) return '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
     const opponentDeciderBg = matchData.opponentData?.turnDeciderBackgroundEquipped;
     if (opponentDeciderBg && typeof opponentDeciderBg === 'object' && 'id' in opponentDeciderBg) {
-      const resolved = resolveBackgroundPath(opponentDeciderBg.id, 'dashboard-display');
+      const resolved = resolveBackgroundPath(opponentDeciderBg.id, 'waiting-room');
       return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
     }
     return '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';

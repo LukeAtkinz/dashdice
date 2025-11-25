@@ -947,7 +947,7 @@ const DashboardContent: React.FC = () => {
                       className="flex flex-col items-stretch justify-center gap-3 px-4 pt-3 pb-2 w-full"
                     >
                       {/* Top Row: Decider (left), Victory (right) */}
-                      <div className="flex items-center justify-between w-full px-8">
+                      <div className="flex items-center justify-center gap-4 w-full px-8">
                         <button
                           onClick={() => {
                             const event = new CustomEvent('vaultTabChange', { detail: 'decider' });
@@ -1058,7 +1058,7 @@ const DashboardContent: React.FC = () => {
                             fontWeight: 400, 
                             textTransform: 'uppercase' 
                           }}>
-                            Victory
+                            Power
                           </span>
                         </button>
                       </div>

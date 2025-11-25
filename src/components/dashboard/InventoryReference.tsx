@@ -385,9 +385,9 @@ export const InventorySection: React.FC = () => {
           Vault
         </h1>
         
-        {/* Mobile Title - Hidden when Power tab is active */}
+        {/* Mobile Title - Only shown when Power tab is active */}
         <h1 
-          className={`block md:hidden text-5xl font-bold text-white mb-4 mt-12 ${activeTab === 'power' ? 'hidden' : ''}`}
+          className={`block md:hidden text-5xl font-bold text-white mb-4 mt-12 ${activeTab === 'power' ? '' : 'hidden'}`}
           style={{
             fontFamily: "Audiowide",
             textTransform: "uppercase",
