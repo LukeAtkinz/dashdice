@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MatchData } from '@/types/match';
 import { RematchService, RematchRoom } from '@/services/rematchService';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
@@ -47,17 +47,26 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   
   // Get winner's victory background - always use winner's victoryBackgroundEquipped from match data
   const victoryVideo = (() => {
+    console.log('🎬 Victory Background Resolution:', {
+      winnerData,
+      victoryBackgroundEquipped: winnerData.victoryBackgroundEquipped,
+      winnerId: winner
+    });
+    
     // Always use the winner's victoryBackgroundEquipped from match data
     if (winnerData.victoryBackgroundEquipped) {
       const bgId = typeof winnerData.victoryBackgroundEquipped === 'string' 
         ? winnerData.victoryBackgroundEquipped 
         : winnerData.victoryBackgroundEquipped.id;
       
+      console.log('🎬 Resolving background ID:', bgId);
       const resolved = resolveBackgroundPath(bgId, 'victory-screen');
+      console.log('🎬 Resolved path:', resolved);
       
       if (resolved?.path) return resolved.path;
     }
     
+    console.log('🎬 Using fallback wind-blade');
     // Fallback to default
     const resolved = resolveBackgroundPath('wind-blade', 'victory-screen');
     return resolved?.path || '/backgrounds/Game Backgrounds/Victory Screens/Best Quality/Wind Blade.mp4';
@@ -386,14 +395,15 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
       </motion.div>
 
       {/* Match Statistics - Collapsible */}
-      {showStats && (
-        <motion.div
-          initial={{ opacity: 0, y: 20, height: 0 }}
-          animate={{ opacity: 1, y: 0, height: 'auto' }}
-          exit={{ opacity: 0, y: 20, height: 0 }}
-          transition={{ duration: 0.3 }}
-          className="block p-4 md:p-6 bg-black/40 rounded-2xl border border-gray-600 backdrop-blur-md"
-        >
+      <AnimatePresence>
+        {showStats && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: 20, height: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="block p-4 md:p-6 bg-black/40 rounded-2xl border border-gray-600 backdrop-blur-md"
+          >
           <h3 className="text-base md:text-lg font-bold text-white mb-4 md:mb-6 text-center" style={{ fontFamily: "Audiowide" }}>
             MATCH STATISTICS
           </h3>
@@ -462,8 +472,11 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
             </div>
           </div>
         </div>
-      </motion.div>
-      )}      {/* Incoming Rematch Request - Hidden on Mobile */}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Incoming Rematch Request - Hidden on Mobile */}
       {incomingRematch && (
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -651,65 +664,67 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         </motion.div>
       )}
 
-      {/* Mobile Nav-Style Buttons - Fixed at bottom with STATS */}
+      {/* Mobile Nav-Style Buttons - Fixed at bottom with 2-line layout */}
       <div
-        className="md:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-stretch z-50 backdrop-blur-sm"
+        className="md:hidden fixed bottom-0 left-0 right-0 w-full z-50 backdrop-blur-sm"
         style={{
-          height: 'max(70px, env(safe-area-inset-bottom) + 70px)',
-          
+          paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
-        {/* STATS Button */}
-        <button
-          onClick={() => setShowStats(!showStats)}
-          className="text-white text-xl font-bold transition-all active:scale-95 flex items-center justify-center"
-          style={{
-            width: rematchState === 'idle' ? '33.33%' : '50%',
-            height: '100%',
-            fontFamily: "Audiowide",
-            textTransform: "uppercase" as const,
-            border: 'none',
-            borderRadius: '0px',
-            backdropFilter: 'blur(2px)',
-          }}
-        >
-          <span className="text-center">{showStats ? 'CLOSE' : 'STATS'}</span>
-        </button>
-        
-        {/* DASHBOARD Button */}
-        <button
-          onClick={onLeaveMatch}
-          className="text-white text-xl font-bold transition-all active:scale-95 flex items-center justify-center"
-          style={{
-            width: rematchState === 'idle' ? '33.33%' : '50%',
-            height: '100%',
-            fontFamily: "Audiowide",
-            textTransform: "uppercase" as const,
-            border: 'none',
-            borderRadius: '0',          
-            backdropFilter: 'blur(2px)',
-          }}
-        >
-          <span className="text-center">DASHBOARD</span>
-        </button>
-        
-        {rematchState === 'idle' && (
+        {/* Top Row - STATS Button (centered, full width) */}
+        <div className="w-full flex items-center justify-center" style={{ height: '60px' }}>
           <button
-            onClick={handleRequestRematch}
+            onClick={() => setShowStats(!showStats)}
+            className="text-white text-xl font-bold transition-all active:scale-95 w-full h-full flex items-center justify-center"
+            style={{
+              fontFamily: "Audiowide",
+              textTransform: "uppercase" as const,
+              border: 'none',
+              borderRadius: '0px',
+              backdropFilter: 'blur(2px)',
+            }}
+          >
+            <span className="text-center">{showStats ? 'CLOSE' : 'STATS'}</span>
+          </button>
+        </div>
+
+        {/* Bottom Row - DASHBOARD and REMATCH Buttons */}
+        <div className="w-full flex flex-row items-stretch" style={{ height: '70px' }}>
+          {/* DASHBOARD Button */}
+          <button
+            onClick={onLeaveMatch}
             className="text-white text-xl font-bold transition-all active:scale-95 flex items-center justify-center"
             style={{
-              width: '33.33%',
+              width: rematchState === 'idle' ? '50%' : '100%',
               height: '100%',
               fontFamily: "Audiowide",
               textTransform: "uppercase" as const,
               border: 'none',
-              borderRadius: '0',
+              borderRadius: '0',          
               backdropFilter: 'blur(2px)',
             }}
           >
-            <span className="text-center">REMATCH</span>
+            <span className="text-center">DASHBOARD</span>
           </button>
-        )}
+          
+          {rematchState === 'idle' && (
+            <button
+              onClick={handleRequestRematch}
+              className="text-white text-xl font-bold transition-all active:scale-95 flex items-center justify-center"
+              style={{
+                width: '50%',
+                height: '100%',
+                fontFamily: "Audiowide",
+                textTransform: "uppercase" as const,
+                border: 'none',
+                borderRadius: '0',
+                backdropFilter: 'blur(2px)',
+              }}
+            >
+              <span className="text-center">REMATCH</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Game Mode Selector Modal */}

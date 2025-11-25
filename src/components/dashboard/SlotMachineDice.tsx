@@ -416,7 +416,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               <motion.div
                 className="absolute inset-0 flex flex-col items-center justify-center"
                 animate={{
-                  y: [-900, 0, -900],
+                  y: [-1400, 0, -1400],
                 }}
                 transition={{
                   duration: getAnimationSpeed(),
@@ -427,13 +427,14 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
                 {createReelNumbers().map((num, index) => (
                   <div
                     key={`reel-${index}`}
-                    className="w-full flex items-center justify-center opacity-30"
+                    className="w-full flex items-center justify-center"
                     style={{ 
                       minHeight: '100%',
-                      backgroundColor: index % 2 === 0 ? 'rgba(0,0,0,0.05)' : 'transparent',
+                      backgroundColor: index % 2 === 0 ? 'rgba(0,0,0,0.1)' : 'transparent',
                       color: '#FFD700',
                       fontFamily: 'Orbitron, monospace',
-                      fontSize: 'clamp(80px, 18vw, 200px)',
+                      fontSize: 'clamp(110px, 22vw, 260px)',
+                      opacity: 0.6,
                       fontStyle: 'normal',
                       fontWeight: 500,
                       lineHeight: '1',
@@ -452,7 +453,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
                 <span style={{
                   color: getDiceNumberColor(),
                   fontFamily: 'Orbitron, monospace',
-                  fontSize: 'clamp(120px, 18vw, 200px)',
+                  fontSize: 'clamp(160px, 24vw, 300px)',
                   fontStyle: 'normal',
                   fontWeight: 500,
                   lineHeight: '1',
