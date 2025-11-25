@@ -718,20 +718,26 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const topVideo = useMemo(() => {
     if (!matchData) return '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
     const hostDeciderBg = matchData.hostData.turnDeciderBackgroundEquipped;
+    console.log('🎬 TOP VIDEO - hostDeciderBg:', hostDeciderBg);
     if (hostDeciderBg && typeof hostDeciderBg === 'object' && 'id' in hostDeciderBg) {
       const resolved = resolveBackgroundPath(hostDeciderBg.id, 'waiting-room');
+      console.log('🎬 TOP VIDEO - Resolved:', resolved);
       return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
     }
+    console.log('🎬 TOP VIDEO - Using fallback');
     return '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
   }, [matchData]);
 
   const bottomVideo = useMemo(() => {
     if (!matchData) return '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
     const opponentDeciderBg = matchData.opponentData?.turnDeciderBackgroundEquipped;
+    console.log('🎬 BOTTOM VIDEO - opponentDeciderBg:', opponentDeciderBg);
     if (opponentDeciderBg && typeof opponentDeciderBg === 'object' && 'id' in opponentDeciderBg) {
       const resolved = resolveBackgroundPath(opponentDeciderBg.id, 'waiting-room');
+      console.log('🎬 BOTTOM VIDEO - Resolved:', resolved);
       return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
     }
+    console.log('🎬 BOTTOM VIDEO - Using fallback');
     return '/backgrounds/Game Backgrounds/Turn Decider/Medium Quailty/Crazy Cough.mp4';
   }, [matchData]);
 
@@ -1306,11 +1312,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   overflow: 'hidden' 
                 }}>
                   <video 
+                    key={`top-video-${topVideo}`}
                     src={topVideo}
                     autoPlay 
                     loop 
                     muted 
                     playsInline
+                    onError={(e) => console.error('🎬 TOP VIDEO ERROR:', e, 'src:', topVideo)}
                     webkit-playsinline="true"
                     x5-playsinline="true"
                     x5-video-player-type="h5-page"
@@ -1369,11 +1377,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   overflow: 'hidden' 
                 }}>
                   <video 
+                    key={`bottom-video-${bottomVideo}`}
                     src={bottomVideo}
                     autoPlay 
                     loop 
                     muted 
                     playsInline
+                    onError={(e) => console.error('🎬 BOTTOM VIDEO ERROR:', e, 'src:', bottomVideo)}
                     webkit-playsinline="true"
                     x5-playsinline="true"
                     x5-video-player-type="h5-page"

@@ -385,17 +385,7 @@ export const InventorySection: React.FC = () => {
           Vault
         </h1>
         
-        {/* Mobile Title - Only shown when Power tab is active */}
-        <h1 
-          className={`block md:hidden text-5xl font-bold text-white mb-4 mt-12 ${activeTab === 'power' ? '' : 'hidden'}`}
-          style={{
-            fontFamily: "Audiowide",
-            textTransform: "uppercase",
-            textShadow: "0 0 20px rgba(255, 215, 0, 0.5)"
-          }}
-        >
-          Vault
-        </h1>
+        {/* Mobile Title - Hidden on mobile */}
       </div>
       
       {/* Navigation - Hidden on mobile, visible on desktop */}
@@ -533,10 +523,10 @@ export const InventorySection: React.FC = () => {
 
       {/* Content */}
       {activeTab === 'power' ? (
-        <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4"
+        <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4 mt-4 md:mt-0"
           style={{
-            touchAction: 'none', // Disable parent scrolling
-            overscrollBehavior: 'none' // Prevent scroll chaining to parent
+            touchAction: 'none',
+            overscrollBehavior: 'none'
           }}
         >
           <div className="flex h-auto w-full md:w-auto pl-[0.5rem] md:pl-0" style={{ minHeight: '600px', height: 'auto', maxHeight: '95vh', maxWidth: '1600px', gap: '20px' }} data-mobile-height="410px" data-desktop-height="auto">
@@ -576,10 +566,10 @@ export const InventorySection: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4 pt-4 md:pt-0"
+        <div className="w-full max-w-[80rem] flex-1 overflow-hidden px-4 mt-4 md:mt-0"
           style={{
-            touchAction: 'none', // Disable parent scrolling
-            overscrollBehavior: 'none' // Prevent scroll chaining to parent
+            touchAction: 'none',
+            overscrollBehavior: 'none'
           }}
         >
           <div className="flex h-auto w-full md:w-auto pl-[0.5rem] md:pl-0" style={{ minHeight: '600px', height: 'auto', maxHeight: '80vh', maxWidth: '1600px', gap: '20px' }} data-mobile-height="410px" data-desktop-height="auto">
