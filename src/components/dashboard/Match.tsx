@@ -1886,14 +1886,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               
               {/* Background Rarity Display with AURA - Below Container, Left Aligned */}
               <div 
-                className="mt-4 text-left flex items-center justify-between gap-3"
+                className="mt-4 text-left flex items-center gap-3"
                 style={{
                   display: 'flex',
                   width: '100%',
                   maxWidth: '500px',
                   height: '45px',
                   flexDirection: 'row',
-                  justifyContent: 'space-between',
+                  justifyContent: 'flex-start',
                   alignItems: 'center'
                 }}
               >
@@ -1921,37 +1921,37 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   </span>
                 </div>
                 
-                {/* Aura Counter and Voice Button - Right aligned */}
-                <div className="hidden md:flex flex-col items-end gap-3">
-                  <AuraCounter 
-                    auraValue={matchData.gameData.playerAura?.[currentPlayer.playerId] || 0}
-                    size="extra-large"
-                    className="flex items-center"
-                  />
-                  
-                  {/* Desktop Voice Button - Below Aura Counter */}
-                  {(() => {
-                    const { sendMessage, muteState, session } = useMatchChat();
-                    const isBot = matchData.hostData.playerId.includes('bot_') || matchData.opponentData?.playerId?.includes('bot_');
-                    
-                    return !isBot && matchData.id && user && session ? (
-                      <MatchVoiceButton
-                        matchId={matchData.id}
-                        playerId={user.uid}
-                        language={session.player1Id === user.uid ? session.player1Language : session.player2Language}
-                        onTranscription={async (text: string, duration: number) => {
-                          try {
-                            await sendMessage(text, true, duration);
-                          } catch (error) {
-                            console.error('Failed to send voice message:', error);
-                          }
-                        }}
-                        isMuted={muteState.micMuted}
-                      />
-                    ) : null;
-                  })()}
-                </div>
+                {/* Aura Counter - Inline with Rarity */}
+                <AuraCounter 
+                  auraValue={matchData.gameData.playerAura?.[currentPlayer.playerId] || 0}
+                  size="extra-large"
+                  className="flex items-center"
+                />
               </div>
+              
+              {/* Desktop Voice Button - Right aligned below */}
+              {(() => {
+                const { sendMessage, muteState, session } = useMatchChat();
+                const isBot = matchData.hostData.playerId.includes('bot_') || matchData.opponentData?.playerId?.includes('bot_');
+                
+                return !isBot && matchData.id && user && session ? (
+                  <div className="hidden md:flex justify-end mt-3" style={{ width: '100%', maxWidth: '500px' }}>
+                    <MatchVoiceButton
+                      matchId={matchData.id}
+                      playerId={user.uid}
+                      language={session.player1Id === user.uid ? session.player1Language : session.player2Language}
+                      onTranscription={async (text: string, duration: number) => {
+                        try {
+                          await sendMessage(text, true, duration);
+                        } catch (error) {
+                          console.error('Failed to send voice message:', error);
+                        }
+                      }}
+                      isMuted={muteState.micMuted}
+                    />
+                  </div>
+                ) : null;
+              })()}
               
                 </div>
               )}
@@ -2260,9 +2260,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             <AnimatePresence>
               {(matchData.gameData.gamePhase as string) !== 'turnDecider' && !showTurnAnnouncement && (
                 <motion.div 
-                  className="fixed top-0 left-0 right-0 flex justify-between z-20" 
+                  className="fixed top-0 left-0 right-0 flex flex-col z-20" 
                   style={{ 
-                    gap: '0px', 
                     paddingTop: 'max(env(safe-area-inset-top, 0px), 60px)',
                     paddingLeft: '16px',
                     paddingRight: '16px'
@@ -2288,6 +2287,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     }
                   }}
                 >
+                  {/* Player Cards Row */}
+                  <div className="flex justify-between" style={{ gap: '0px' }}>
               {/* Current Player Profile - Left */}
               <motion.div 
                 style={{ width: '45vw', aspectRatio: '16/9' }} // 16:9 aspect ratio, 45vw width
@@ -2572,18 +2573,19 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 </motion.div>
                 
               </motion.div>
+                  </div>
                 
-                {/* Mobile Match Chat - Inside player cards container, relative positioning */}
-                {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8, duration: 0.5 }}
-                    className="relative px-4 mt-3 w-full"
-                  >
-                    <MatchChatFeed matchId={matchData.id} />
-                  </motion.div>
-                )}
+                  {/* Mobile Match Chat - Below player cards */}
+                  {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.8, duration: 0.5 }}
+                      className="mt-3 w-full"
+                    >
+                      <MatchChatFeed matchId={matchData.id} />
+                    </motion.div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

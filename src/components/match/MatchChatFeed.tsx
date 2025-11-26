@@ -311,14 +311,16 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
                     enterKeyHint="send"
                   />
 
-                  {/* Voice Button */}
-                  <VoiceRecorder
-                    matchId={matchId}
-                    playerId={user.uid}
-                    language={session.player1Id === user.uid ? session.player1Language : session.player2Language}
-                    onTranscription={handleVoiceTranscription}
-                    isMuted={muteState.micMuted}
-                  />
+                  {/* Voice Button - Mobile only */}
+                  <div className="md:hidden">
+                    <VoiceRecorder
+                      matchId={matchId}
+                      playerId={user.uid}
+                      language={session.player1Id === user.uid ? session.player1Language : session.player2Language}
+                      onTranscription={handleVoiceTranscription}
+                      isMuted={muteState.micMuted}
+                    />
+                  </div>
                 </div>
               </div>
             </motion.div>
