@@ -235,7 +235,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
     <div className="fixed inset-0">
       {/* Background Video Layers - Player Backgrounds */}
       {/* Top Half - Current Player Background */}
-      <div className="fixed top-0 left-0 right-0 w-full" style={{ height: '50vh', zIndex: 1, overflow: 'hidden' }}>
+      <div className="fixed top-0 left-0 right-0 w-full" style={{ height: '50vh', zIndex: -1, overflow: 'hidden' }}>
         <video
           key={`top-${topVideo}`}
           src={topVideo}
@@ -253,7 +253,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
       </div>
 
       {/* Bottom Half - Opponent Background */}
-      <div className="fixed bottom-0 left-0 right-0 w-full" style={{ height: '50vh', zIndex: 1, overflow: 'hidden' }}>
+      <div className="fixed bottom-0 left-0 right-0 w-full" style={{ height: '50vh', zIndex: -1, overflow: 'hidden' }}>
         <video
           key={`bottom-${bottomVideo}`}
           src={bottomVideo}
@@ -273,7 +273,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
       {/* Content Layer - No swipe animation, just content */}
       <div
         className="absolute inset-0"
-        style={{ zIndex: 1100 }}
+        style={{ zIndex: 10 }}
       >
         <div className="flex flex-col items-center justify-center h-full">
         {/* Old dice display removed to prevent layout switching */}
