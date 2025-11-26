@@ -91,6 +91,29 @@ export class RematchService {
         console.error('❌ RematchService: Document NOT found after creation!');
       }
       
+      // Send notification to opponent (same as friend invitations!)
+      console.log('📤 RematchService: Sending notification to opponent:', opponentUserId);
+      try {
+        await addDoc(collection(db, 'gameNotifications'), {
+          userId: opponentUserId,
+          type: 'rematch_request',
+          title: 'Rematch Request!',
+          message: `${requesterDisplayName} wants a rematch`,
+          fromUser: {
+            id: requesterUserId,
+            displayName: requesterDisplayName
+          },
+          gameMode,
+          rematchRoomId: rematchRoomId,
+          createdAt: serverTimestamp(),
+          read: false
+        });
+        console.log('✅ RematchService: Notification sent to opponent');
+      } catch (notifError) {
+        console.error('❌ RematchService: Failed to send notification:', notifError);
+        // Don't throw - rematch room is created, notification failure shouldn't block
+      }
+      
       return rematchRoomId;
     } catch (error) {
       console.error('❌ RematchService: Error creating rematch room:', error);

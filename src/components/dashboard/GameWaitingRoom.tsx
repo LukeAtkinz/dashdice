@@ -2704,10 +2704,15 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       }}>
         {/* Top Video Background - 50% height */}
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '50%', overflow: 'hidden' }}>
-          {topVideo && (
-            <video 
-              key={`top-video-${topVideo}`}
-              src={topVideo} 
+          <AnimatePresence mode="wait">
+            {topVideo && (
+              <motion.video
+                key={`top-video-${topVideo}`}
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ type: 'tween', duration: 0.5, ease: 'easeInOut' }}
+                src={topVideo} 
               autoPlay 
               loop 
               muted 
@@ -2770,7 +2775,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 pointerEvents: 'none'
               }}
             />
-          )}
+            )}
+          </AnimatePresence>
         </div>
         
         {/* Bottom Video Background - 50% height */}

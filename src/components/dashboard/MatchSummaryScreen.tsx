@@ -448,7 +448,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          className="md:hidden fixed bottom-20 left-4 right-4 z-40 p-4 bg-green-600/90 border-2 border-green-400 rounded-2xl backdrop-blur-sm"
+          className="md:hidden fixed bottom-32 left-4 right-4 z-40 p-4 bg-green-600/90 border-2 border-green-400 rounded-2xl backdrop-blur-sm"
         >
           <div className="text-center">
             <span className="text-white font-bold text-lg" style={{ fontFamily: "Audiowide" }}>

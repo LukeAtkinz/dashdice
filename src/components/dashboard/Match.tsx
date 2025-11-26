@@ -2560,7 +2560,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               )}
             </AnimatePresence>
 
-            {/* Mobile Match Chat - Fixed position, doesn't affect layout */}
+            {/* Mobile Match Chat - Between player cards and dice containers */}
             {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -2568,8 +2568,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 transition={{ delay: 0.8, duration: 0.5 }}
                 className="md:hidden fixed left-0 right-0 px-4"
                 style={{ 
-                  top: 'calc(50vh + 120px)',
-                  zIndex: 15
+                  top: 'calc(16vh)',
+                  zIndex: 25
                 }}
               >
                 <MatchChatFeed matchId={matchData.id} />
