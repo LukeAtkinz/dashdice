@@ -2725,18 +2725,25 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
       {/* Turn Decider Phase - Rendered outside match-container so it's visible */}
       {matchData.gameData.gamePhase === 'turnDecider' && (
-        <TurnDeciderPhase
-          key={`turnDecider-${topVideo}-${bottomVideo}`}
-          matchData={matchData}
-          currentPlayer={currentPlayer}
-          opponent={opponent}
-          isHost={isHost}
-          diceAnimation={turnDeciderDiceAnimation}
-          onChoiceSelect={handleTurnDeciderChoice}
-          onForceGameplay={handleForceGameplay}
-          topVideo={topVideo}
-          bottomVideo={bottomVideo}
-        />
+        <>
+          {console.log('🎯 Match.tsx: Rendering TurnDeciderPhase', {
+            gamePhase: matchData.gameData.gamePhase,
+            topVideo,
+            bottomVideo
+          })}
+          <TurnDeciderPhase
+            key={`turnDecider-${topVideo}-${bottomVideo}`}
+            matchData={matchData}
+            currentPlayer={currentPlayer}
+            opponent={opponent}
+            isHost={isHost}
+            diceAnimation={turnDeciderDiceAnimation}
+            onChoiceSelect={handleTurnDeciderChoice}
+            onForceGameplay={handleForceGameplay}
+            topVideo={topVideo}
+            bottomVideo={bottomVideo}
+          />
+        </>
       )}
     </div>
   );
