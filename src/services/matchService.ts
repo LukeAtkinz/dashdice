@@ -178,12 +178,16 @@ export class MatchService {
             id: snapshot.id,
             gameMode: sessionData.gameMode,
             gameType: sessionData.sessionType === 'ranked' ? 'Ranked' : 'Open Server',
-            gameData: sessionData.gameState || {
-              phase: opponentParticipant ? 'waiting' : 'waiting_for_opponent',
-              currentPlayer: hostParticipant.playerId,
-              turnNumber: 1,
-              playerTurns: {},
-              gameWinner: null
+            gameData: {
+              ...(sessionData.gameState || {
+                phase: opponentParticipant ? 'waiting' : 'waiting_for_opponent',
+                currentPlayer: hostParticipant.playerId,
+                turnNumber: 1,
+                playerTurns: {},
+                gameWinner: null
+              }),
+              // Ensure turnDecider is preserved from gameState
+              turnDecider: sessionData.gameState?.turnDecider || (Math.random() > 0.5 ? 1 : 2)
             },
             hostData: {
               playerId: hostParticipant.playerId,
