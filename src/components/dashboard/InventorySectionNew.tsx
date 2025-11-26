@@ -152,12 +152,12 @@ export const InventorySection: React.FC = () => {
         }
       `}</style>
       
-      <div className="inventory-container w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] min-h-full overflow-hidden">{/* Disable scrolling completely */}
+      <div className="inventory-container w-full flex flex-col items-center justify-start gap-[2rem] py-[2rem] md:pt-8 min-h-full overflow-hidden">{/* Disable scrolling completely */}
       {/* Header */}
       <div className="text-center mb-8 flex-shrink-0">
-        {/* Desktop Title */}
+        {/* Desktop Title - Hidden for Vault */}
         <h1 
-          className="hidden md:block text-5xl font-bold text-white mb-4"
+          className="hidden text-5xl font-bold text-white mb-4"
           style={{
             fontFamily: "Audiowide",
             textTransform: "uppercase",

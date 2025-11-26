@@ -62,9 +62,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
         relative bg-gradient-to-r ${colors.bg} 
         rounded-xl border ${colors.border} 
         shadow-lg ${colors.glow}
-        ${isCurrentUser ? 'ring-2 ring-blue-500/50' : ''} p-4
+        ${isCurrentUser ? 'ring-2 ring-2-blue-500/50' : ''} p-4 md:p-6
         ${player.rank <= 3 ? 'shadow-2xl' : ''}
-        group cursor-pointer overflow-hidden
+        group cursor-pointer overflow-hidden min-h-[120px] md:min-h-[160px]
       `}
     >
       {/* Player Background - Optimized */}
@@ -564,7 +564,7 @@ export function SoftRankedLeaderboard() {
 
   return (
     <div 
-      className="relative pt-8 md:pt-0 -mt-4 md:mt-0 h-full md:h-auto mt-[7vh] md:mt-0"
+      className="relative pt-8 md:pt-0 -mt-4 md:mt-0 h-full md:h-auto mt-[7vh] md:mt-0 md:max-w-[800px] md:mx-auto"
       style={{
         height: '100%',
         maxHeight: '100%',

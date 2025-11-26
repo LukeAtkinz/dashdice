@@ -1282,7 +1282,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         width: '100%', 
         height: '100vh', 
         background: '#000000',
-        zIndex: 0
+        zIndex: 1
       }}>
         {/* PERSISTENT TURN DECIDER VIDEOS - Always mounted, visibility controlled by CSS */}
         <div style={{ 

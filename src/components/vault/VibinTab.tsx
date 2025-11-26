@@ -69,7 +69,7 @@ export default function VibinTab() {
 
   return (
     <>
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div className="flex-1 overflow-y-auto px-4 py-6 md:max-h-[calc(100vh-200px)]">
         <div className="w-full max-w-[80rem] mx-auto flex flex-row items-start justify-center flex-wrap gap-[2rem]">
           {backgroundItems.map((item) => (
             <motion.div

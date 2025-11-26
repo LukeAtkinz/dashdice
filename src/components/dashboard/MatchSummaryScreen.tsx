@@ -148,10 +148,12 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
     <>
       {/* Victory Video Background - Winner's selected background */}
       <div 
-        className="fixed top-0 left-0 right-0 bg-black md:bottom-0" 
+        className="fixed top-0 left-0 right-0 bg-black" 
         style={{ 
           zIndex: 0,
           bottom: 'calc(130px + env(safe-area-inset-bottom))',
+          width: '100vw',
+          height: '100vh'
         }}
       >
         <video 
@@ -270,12 +272,12 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         )}
       </motion.div>
 
-      {/* Final Scores - Hidden on Mobile, Visible on Desktop */}
+      {/* Final Scores - Hidden on Mobile and Desktop */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1 }}
-        className="hidden md:grid grid-cols-2 gap-2 md:gap-8"
+        className="hidden"
       >
         {/* Host Score */}
         <div className="p-3 md:p-6 bg-white/10 rounded-2xl border border-gray-400 text-center">
@@ -404,6 +406,14 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
         transition={{ delay: 1.6 }}
         className="hidden md:flex flex-col md:flex-row justify-center gap-4"
       >
+        <button
+          onClick={() => setShowStats(!showStats)}
+          className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xl font-bold transition-all transform hover:scale-105"
+          style={{ fontFamily: "Audiowide" }}
+        >
+          {showStats ? 'CLOSE STATS' : 'STATS'}
+        </button>
+        
         <button
           onClick={onLeaveMatch}
           className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xl font-bold transition-all transform hover:scale-105"

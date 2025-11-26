@@ -846,7 +846,7 @@ export default function PowerTab({
 
   return (
     <div 
-      className="w-full space-y-1 md:space-y-8 mt-0 md:mt-0 h-full md:h-auto flex flex-col md:block"
+      className="w-full space-y-1 md:space-y-8 mt-0 md:mt-0 h-full md:h-auto flex flex-col md:flex-row md:gap-8"
       style={{
         height: '100%',
         maxHeight: '100%',
@@ -855,10 +855,14 @@ export default function PowerTab({
         overscrollBehavior: 'none'
       }}
     >
-      {/* Unified Game Mode and Abilities Card - Mobile & Desktop */}
+      {/* LEFT SIDE - Game Mode and Loadout Card (Desktop: fixed, max 45vw) */}
       <motion.div 
-        className="rounded-2xl p-0 md:p-8 overflow-hidden md:overflow-visible relative flex-1 md:flex-none flex flex-col md:block"
+        className="rounded-2xl p-0 md:p-8 overflow-hidden md:overflow-visible relative flex-1 md:flex-none flex flex-col md:block md:max-w-[45vw] md:sticky md:top-0"
         layout
+        style={{
+          height: '100%',
+          maxHeight: '100%'
+        }}
       >
         <div className="relative z-10 h-full flex flex-col md:block">
           {/* Game Mode Header and Loadout - Sticky at top (flex-shrink-0) */}
@@ -1047,17 +1051,21 @@ export default function PowerTab({
               })}
             </motion.div>
           </AnimatePresence>
-        </div>          {/* Available Abilities by Category - Scrollable with overflow hidden cutoff */}
-          <div 
-            className="flex-1 md:flex-none overflow-y-auto md:overflow-visible space-y-6 pt-6 md:pt-0 pb-6 md:pb-0 px-4 md:px-0" 
-            style={{
-              maxHeight: 'calc(100vh - 320px)',
-              touchAction: 'pan-y',
-              WebkitOverflowScrolling: 'touch',
-              overscrollBehavior: 'contain',
-              scrollBehavior: 'smooth'
-            }}
-          >
+        </div>
+        </div>
+      </motion.div>
+
+      {/* RIGHT SIDE - Available Abilities by Category (Desktop: scrollable, max 45vw) */}
+      <div 
+        className="flex-1 md:flex-none md:max-w-[45vw] overflow-y-auto space-y-6 pt-6 md:pt-0 pb-6 md:pb-0 px-4 md:px-0 md:max-h-[calc(100vh-150px)]" 
+        style={{
+          maxHeight: 'calc(100vh - 320px)',
+          touchAction: 'pan-y',
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
+          scrollBehavior: 'smooth'
+        }}
+      >
             <style jsx>{`
               div::-webkit-scrollbar {
                 display: none;
@@ -1178,8 +1186,6 @@ export default function PowerTab({
               })}
             </div>
           </div>
-        </div>
-      </motion.div>
 
       {/* Mobile Available Abilities by Category - DISABLED - Using unified section above */}
       <div className="hidden space-y-1 -mt-1">

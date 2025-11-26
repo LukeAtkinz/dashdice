@@ -257,10 +257,45 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
         </h1>
       </div>
 
-      {/* Navigation tabs moved to bottom nav in SinglePageDashboard.tsx */}
+      {/* Navigation tabs - Desktop Only */}
+      <div className="hidden md:flex flex-row gap-4 justify-center items-center mb-6 flex-shrink-0">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`friends-tab-btn ${tab.id === 'friends' ? 'friends-tab' : 'manage-friends-tab'}`}
+            data-tab={tab.id}
+            style={{
+              ...getNavButtonStyle(tab, activeTab === tab.id),
+              padding: '1rem 2rem',
+              borderRadius: '1.25rem',
+              transition: 'all 0.3s ease',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+            <span 
+              className="text-base font-bold uppercase tracking-wide relative z-10 flex items-center gap-2"
+              style={{
+                fontFamily: 'Audiowide',
+                color: activeTab === tab.id ? '#FFD700' : '#FFF'
+              }}
+            >
+              {tab.label}
+              {tab.count > 0 && (
+                <span className={`inline-flex items-center justify-center min-w-[1.5rem] h-6 px-2 rounded-full text-sm font-bold ${
+                  tab.isActive ? 'bg-red-500 animate-pulse' : 'bg-gray-600'
+                }`}>
+                  {tab.count}
+                </span>
+              )}
+            </span>
+          </button>
+        ))}
+      </div>
 
       {/* Content */}
-      <div className="w-full max-w-[80rem] flex-1 overflow-y-auto px-4 md:max-h-screen scrollbar-hide" style={{
+      <div className="w-full max-w-[80rem] md:max-w-[800px] flex-1 overflow-y-auto px-4 md:max-h-screen scrollbar-hide" style={{
         touchAction: 'pan-y',
         maxHeight: 'calc(100vh - 150px)' // Mobile: reduce by bottom nav (60px tabs + 90px main nav)
       }}>

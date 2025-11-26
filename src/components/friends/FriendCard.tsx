@@ -314,7 +314,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
   if (compact) {
     return (
       <div 
-        className="relative overflow-hidden transition-colors"
+        className="relative overflow-hidden transition-colors min-h-[80px] md:min-h-[100px]"
         style={{
           borderRadius: '20px',
           ...(!isVideo && backgroundPath ? {
@@ -383,7 +383,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
 
   return (
     <motion.div 
-      className="relative overflow-hidden touch-manipulation"
+      className="relative overflow-hidden touch-manipulation min-h-[120px] md:min-h-[160px]"
       style={{
         borderRadius: '20px',
         // Enhanced mobile support

@@ -565,7 +565,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
             {/* Victory Screen Section */}
             <div className="relative bg-black/60 backdrop-blur-sm border-x border-gray-700/50 p-6" style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}>
               <h3 className="text-white text-lg uppercase mb-3 text-center" style={{ fontFamily: 'Audiowide' }}>VICTORY</h3>
-              <div className="relative rounded-xl overflow-hidden flex items-center justify-center border border-gray-700/50" style={{ height: '220px' }}>
+              <div className="relative rounded-xl overflow-hidden flex items-center justify-center border border-gray-700/50 h-[220px] md:h-[400px]">
                 {(() => {
                   const victoryBg = (userProfile.inventory as any)?.victoryBackgroundEquipped;
                   const victoryBgId = victoryBg?.id || victoryBg;
@@ -629,7 +629,7 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
             {/* Turn Decider Section */}
             <div className="relative bg-black/60 backdrop-blur-sm border-x border-b border-gray-700/50 rounded-b-[20px] p-6" style={{ width: 'calc(100vw - 2rem)', maxWidth: '100%' }}>
               <h3 className="text-white text-lg uppercase mb-3 text-center" style={{ fontFamily: 'Audiowide' }}>TURN DECIDER</h3>
-              <div className="relative rounded-xl overflow-hidden flex items-center justify-center border border-gray-700/50" style={{ height: '220px' }}>
+              <div className="relative rounded-xl overflow-hidden flex items-center justify-center border border-gray-700/50 h-[220px] md:h-[400px]">
                 {(() => {
                   const deciderBg = (userProfile.inventory as any)?.turnDeciderBackgroundEquipped;
                   const deciderBgId = deciderBg?.id || deciderBg;

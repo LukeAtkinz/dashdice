@@ -353,9 +353,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   return (
     <React.Fragment>
       <div className="flex flex-col items-center justify-center">
-        {/* Game Status Box - Improved animations and turn display */}
+        {/* Game Status Box - Improved animations and turn display - HIDDEN ON DESKTOP */}
         <motion.div 
-          className="mb-8 hidden md:block"
+          className="mb-8 hidden"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
@@ -513,13 +513,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         >
           {/* Dice 1 - Enhanced Slot Machine */}
           <motion.div 
-            className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" 
+            className="w-full max-w-[600px] md:max-w-[600px] md:w-[600px]" 
             style={{ width: 'min(600px, 70vw)', position: 'relative', overflow: 'hidden', borderRadius: '20px' }}
-            whileHover={{ 
-              scale: 1.05,
-              rotateX: 2,
-              transition: { duration: 0.2 }
-            }}
           >
             <SlotMachineDice
               diceNumber={1}
@@ -609,7 +604,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 
                 return (
                   <motion.div 
-                    className="inline-block px-4 md:px-8 py-3 md:py-4 border-2 border-gray-500 rounded-2xl backdrop-blur-sm shadow-xl overflow-hidden"
+                    className="inline-block px-4 md:px-4 py-3 md:py-2 border-2 border-gray-500 rounded-2xl backdrop-blur-sm shadow-xl overflow-hidden"
                     style={{
                       background: hasMultiplier && bgColor.startsWith('linear') ? bgColor : undefined,
                       backgroundColor: !hasMultiplier || !bgColor.startsWith('linear') ? bgColor : undefined
@@ -629,7 +624,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   >
                     {/* Label */}
                     <p 
-                      className={`text-sm md:text-lg ${textColor} mb-1 md:mb-1 opacity-90`}
+                      className={`text-sm md:text-sm ${textColor} mb-1 md:mb-1 opacity-90`}
                       style={{ fontFamily: "Audiowide" }}
                     >
                       Turn Score
@@ -637,7 +632,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     
                     {/* Number - Show animated value during Aura Forge, otherwise real value */}
                     <p 
-                      className={`text-2xl md:text-4xl font-bold ${textColor}`}
+                      className={`text-2xl md:text-2xl font-bold ${textColor}`}
                       style={{ fontFamily: "Audiowide" }}
                     >
                       {showAuraForgeTurnScore ? turnScoreDisplay : matchData.gameData.turnScore}
@@ -734,13 +729,13 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       ease: isScoreShooting ? "easeInOut" : "backOut",
                       x: isScoreShooting ? { duration: 0.6, ease: "easeInOut" } : undefined
                     }}
-                    className="absolute left-[-85px] md:left-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-gray-500 rounded-xl backdrop-blur-sm shadow-xl overflow-hidden"
+                    className="absolute left-[-70px] md:left-[-70px] top-1/2 transform -translate-y-1/2 border-2 border-gray-500 rounded-xl backdrop-blur-sm shadow-xl overflow-hidden"
                     style={{
                       background: totalBgColor.startsWith('linear') ? totalBgColor : undefined,
                       backgroundColor: !totalBgColor.startsWith('linear') ? totalBgColor : undefined,
-                      padding: '8px 12px',
-                      minWidth: isThreeDigits ? 'auto' : '64px',
-                      minHeight: isThreeDigits ? 'auto' : '64px',
+                      padding: '6px 8px',
+                      minWidth: isThreeDigits ? 'auto' : '50px',
+                      minHeight: isThreeDigits ? 'auto' : '50px',
                       aspectRatio: isThreeDigits ? 'auto' : '1 / 1',
                       display: 'flex',
                       flexDirection: 'column',
@@ -750,7 +745,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   >
                     {/* Label */}
                     <p 
-                      className={`text-xs md:text-sm ${totalTextColor} mb-1 opacity-90`}
+                      className={`text-xs md:text-xs ${totalTextColor} mb-1 opacity-90`}
                       style={{ fontFamily: "Audiowide" }}
                     >
                       Total
@@ -758,7 +753,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     
                     {/* Number - Show animated value during Aura Forge, otherwise real value */}
                     <p 
-                      className={`text-lg md:text-xl font-bold ${totalTextColor}`}
+                      className={`text-lg md:text-base font-bold ${totalTextColor}`}
                       style={{ fontFamily: "Audiowide" }}
                     >
                       {showAuraForgeTurnScore ? totalScoreDisplay : totalScore}
@@ -775,12 +770,12 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut", delay: 0.2 }}
-                  className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-purple-500 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute right-[-70px] md:right-[-70px] top-1/2 transform -translate-y-1/2 border-2 border-purple-500 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
                     background: 'linear-gradient(to bottom right, rgba(155, 48, 255, 0.7), rgba(255, 51, 255, 0.7))',
-                    padding: '8px 12px',
-                    minWidth: '64px',
-                    minHeight: '64px',
+                    padding: '6px 8px',
+                    minWidth: '50px',
+                    minHeight: '50px',
                     aspectRatio: '1 / 1',
                     display: 'flex',
                     flexDirection: 'column',
@@ -792,7 +787,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     initial={{ scale: 1.3 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-xl font-bold text-white" 
+                    className="text-lg md:text-base font-bold text-white" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     {matchData.gameData.multiplierLevel || 2}X
@@ -807,12 +802,12 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut", delay: 0.2 }}
-                  className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-purple-500 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute right-[-70px] md:right-[-70px] top-1/2 transform -translate-y-1/2 border-2 border-purple-500 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
                     background: 'linear-gradient(to bottom right, rgba(155, 48, 255, 0.7), rgba(255, 51, 255, 0.7))',
-                    padding: '8px 12px',
-                    minWidth: '64px',
-                    minHeight: '64px',
+                    padding: '6px 8px',
+                    minWidth: '50px',
+                    minHeight: '50px',
                     aspectRatio: '1 / 1',
                     display: 'flex',
                     flexDirection: 'column',
@@ -824,7 +819,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     initial={{ scale: 1.3 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-xl font-bold text-white" 
+                    className="text-lg md:text-base font-bold text-white" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     2X
@@ -839,12 +834,12 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut", delay: 0.2 }}
-                  className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-red-500 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute right-[-70px] md:right-[-70px] top-1/2 transform -translate-y-1/2 border-2 border-red-500 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
                     background: 'linear-gradient(to bottom right, rgba(255, 0, 0, 0.7), rgba(255, 69, 0, 0.7))',
-                    padding: '8px 12px',
-                    minWidth: '64px',
-                    minHeight: '64px',
+                    padding: '6px 8px',
+                    minWidth: '50px',
+                    minHeight: '50px',
                     aspectRatio: '1 / 1',
                     display: 'flex',
                     flexDirection: 'column',
@@ -856,7 +851,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     initial={{ scale: 1.3 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-xl font-bold text-white" 
+                    className="text-lg md:text-base font-bold text-white" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     3X
@@ -871,12 +866,12 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut", delay: 0.2 }}
-                  className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-white rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute right-[-70px] md:right-[-70px] top-1/2 transform -translate-y-1/2 border-2 border-white rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
                     background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.7), rgba(174, 238, 238, 0.7))',
-                    padding: '8px 12px',
-                    minWidth: '64px',
-                    minHeight: '64px',
+                    padding: '6px 8px',
+                    minWidth: '50px',
+                    minHeight: '50px',
                     aspectRatio: '1 / 1',
                     display: 'flex',
                     flexDirection: 'column',
@@ -888,7 +883,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     initial={{ scale: 1.3 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-xl font-bold text-black" 
+                    className="text-lg md:text-base font-bold text-black" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     4X
@@ -902,11 +897,11 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut" }}
-                  className="absolute right-[-85px] md:right-[-90px] top-1/2 transform -translate-y-1/2 bg-orange-600/40 border-2 border-orange-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute right-[-70px] md:right-[-70px] top-1/2 transform -translate-y-1/2 bg-orange-600/40 border-2 border-orange-400 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
-                    padding: '8px 12px',
-                    minWidth: '64px',
-                    minHeight: '64px',
+                    padding: '6px 8px',
+                    minWidth: '50px',
+                    minHeight: '50px',
                     aspectRatio: '1 / 1',
                     display: 'flex',
                     flexDirection: 'column',
@@ -918,7 +913,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     initial={{ scale: 1.3, color: "#FB923C" }}
                     animate={{ scale: 1, color: "#FDBA74" }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-xl font-bold text-orange-300" 
+                    className="text-lg md:text-base font-bold text-orange-300" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     {matchData.gameData.trueGritMultiplier || 1}X
@@ -930,13 +925,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           
           {/* Dice 2 - Enhanced Slot Machine */}
           <motion.div 
-            className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" 
+            className="w-full max-w-[600px] md:max-w-[600px] md:w-[600px]" 
             style={{ width: 'min(600px, 70vw)', position: 'relative', overflow: 'hidden', borderRadius: '20px' }}
-            whileHover={{ 
-              scale: 1.05,
-              rotateX: -2,
-              transition: { duration: 0.2 }
-            }}
           >
             <SlotMachineDice
               diceNumber={2}
@@ -1019,7 +1009,6 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             <motion.div 
               className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" 
               style={{ width: 'min(600px, 70vw)' }}
-              whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
             >
               <InlineAbilitiesDisplay
@@ -1064,10 +1053,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     opacity: canRoll ? 1 : 0.6,
                     y: 0
                   }}
-                  whileHover={canRoll ? { 
-                    scale: 1.05, 
-                    boxShadow: "0 8px 25px rgba(59, 130, 246, 0.4)"
-                  } : {}}
+                  whileHover={{}}
                   whileTap={canRoll ? { 
                     scale: 0.95,
                     boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)"
@@ -1100,10 +1086,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       opacity: canBank ? 1 : 0.6,
                       y: 0 
                     }}
-                    whileHover={canBank ? { 
-                      scale: 1.05,
-                      boxShadow: "0 8px 25px rgba(34, 197, 94, 0.4)"
-                    } : {}}
+                    whileHover={{}}
                     whileTap={canBank ? { 
                       scale: 0.95,
                       boxShadow: "0 4px 15px rgba(34, 197, 94, 0.3)"
