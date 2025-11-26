@@ -419,15 +419,15 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           setGameplayContentReady(true);
         }, 1500);
         
-        // Once content is ready, animate exit after 2.5 seconds total
+        // Once content is ready, animate exit after longer delay for smoother transition
         setTimeout(() => {
           setShowWinnerAnnouncement(false); // Fade out text
           
           // After text fades, slide backgrounds away
           setTimeout(() => {
             setShowTurnDeciderTransition(false);
-          }, 500); // Additional 500ms for text fade
-        }, 2500);
+          }, 1000); // Additional 1000ms for text fade (increased from 500ms)
+        }, 4000); // Increased from 2500ms to 4000ms for longer transition delay
       }
     }
   }, [matchData?.gameData?.gamePhase, matchData?.gameData?.turnDeciderDice, 
@@ -1686,7 +1686,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         {/* Game Arena */}
         <div className="w-[90vw] mx-auto flex items-center justify-center" style={{ position: 'relative' }}>
           {/* Desktop Layout */}
-          <div className="hidden md:flex items-start justify-between gap-8 w-full" style={{ marginTop: '-10vh' }}>
+          <div className="hidden md:flex items-start justify-between gap-8 w-full" style={{ marginTop: '-3vh' }}>
             
             {/* Player 1 (Current User - Left Side) */}
             <AnimatePresence>
@@ -2556,25 +2556,21 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 </motion.div>
                 
               </motion.div>
+                
+                {/* Mobile Match Chat - Inside top container below player cards */}
+                {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8, duration: 0.5 }}
+                    className="px-4 mt-3"
+                  >
+                    <MatchChatFeed matchId={matchData.id} />
+                  </motion.div>
+                )}
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {/* Mobile Match Chat - Between player cards and dice containers */}
-            {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.5 }}
-                className="md:hidden fixed left-0 right-0 px-4"
-                style={{ 
-                  top: 'calc(16vh)',
-                  zIndex: 25
-                }}
-              >
-                <MatchChatFeed matchId={matchData.id} />
-              </motion.div>
-            )}
 
             {/* Voice Button - Positioned above 5th ability slot on mobile - Only show for non-bot matches */}
             {matchData.gameData.gamePhase === 'gameplay' && matchData.id && user && session && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
@@ -2606,7 +2602,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             )}
 
             {/* Center Dice Area - Middle */}
-            <div className="w-full flex flex-col items-center justify-center" style={{ paddingTop: 'calc(20vh + 20px)', paddingBottom: '20px', minHeight: '40vh', maxWidth: '100%', overflow: 'visible' }}>
+            <div className="w-full flex flex-col items-center justify-center" style={{ paddingTop: 'calc(18vh)', paddingBottom: '20px', minHeight: '40vh', maxWidth: '100%', overflow: 'visible' }}>
               {/* Phase-specific content with professional transitions */}
               <AnimatePresence mode="wait">
                 {matchData.gameData.gamePhase === 'turnDecider' && (

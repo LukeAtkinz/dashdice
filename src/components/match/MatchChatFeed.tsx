@@ -301,7 +301,12 @@ export const MatchChatFeed: React.FC<MatchChatFeedProps> = ({ matchId, className
                       }
                     }}
                     placeholder="Type a message..."
-                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 transition-colors"
+                    className="flex-1 border rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 transition-colors"
+                    style={{
+                      backgroundColor: textInput.trim() ? 'rgba(255, 255, 255, 0.05)' : 'transparent',
+                      borderColor: 'rgba(0, 0, 0, 1)',
+                      borderWidth: '1px'
+                    }}
                     disabled={muteState.chatMuted}
                     enterKeyHint="send"
                   />
