@@ -197,7 +197,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
       // Step 3: After winner announcement, transition to match (faster)
       const matchTimer = setTimeout(() => {
         setTransitionPhase('transitioning-to-match');
-      }, 3000); // Reduced from 6 seconds to 3 seconds total
+      }, 3500); // Extended by 0.5 seconds to give more time for winner announcement
       
       return () => {
         clearTimeout(winnerTimer);
