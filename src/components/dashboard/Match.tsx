@@ -1738,20 +1738,28 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   >
                     <video
                       src="/Abilities/Animations/Hard Hat/Hard Hat Initial.webm"
-                      onLoadStart={() => console.log('🧢 Video loading started')}
-                      onCanPlay={() => console.log('🧢 Video can play')}
-                      onPlay={() => console.log('🧢 Video started playing')}
-                      onError={(e) => console.error('🧢 Video error:', e)}
                       autoPlay
                       loop={false}
                       muted
                       playsInline
+                      preload="auto"
+                      disablePictureInPicture
+                      disableRemotePlayback
                       style={{
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
                         borderRadius: '24px',
                         opacity: 1
+                      }}
+                      onLoadedData={(e) => {
+                        const video = e.currentTarget;
+                        video.muted = true;
+                        video.play().catch(() => {});
+                      }}
+                      onCanPlay={(e) => {
+                        const video = e.currentTarget;
+                        if (video.paused) video.play().catch(() => {});
                       }}
                       onTimeUpdate={(e) => {
                         const video = e.target as HTMLVideoElement;
@@ -1762,6 +1770,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       }}
                       onEnded={() => {
                         setShowHardHatInitialCurrent(false);
+                      }}
+                      onError={(e) => {
+                        console.error('🧢 Hard Hat Initial video error:', e);
                       }}
                     />
                   </div>
@@ -1779,6 +1790,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       loop={false}
                       muted
                       playsInline
+                      preload="auto"
+                      disablePictureInPicture
+                      disableRemotePlayback
                       style={{
                         width: '100%',
                         height: '100%',
@@ -1786,9 +1800,21 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         borderRadius: '24px',
                         opacity: 1
                       }}
+                      onLoadedData={(e) => {
+                        const video = e.currentTarget;
+                        video.muted = true;
+                        video.play().catch(() => {});
+                      }}
+                      onCanPlay={(e) => {
+                        const video = e.currentTarget;
+                        if (video.paused) video.play().catch(() => {});
+                      }}
                       onEnded={() => {
                         setShowHardHatUsedCurrent(false);
                         setHardHatWhiteBorderCurrent(false);
+                      }}
+                      onError={(e) => {
+                        console.error('🧢 Hard Hat Used video error:', e);
                       }}
                     />
                   </div>
@@ -2128,6 +2154,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       loop={false}
                       muted
                       playsInline
+                      preload="auto"
+                      disablePictureInPicture
+                      disableRemotePlayback
                       style={{
                         width: '100%',
                         height: '100%',
@@ -2135,9 +2164,21 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         borderRadius: '24px',
                         opacity: 1
                       }}
+                      onLoadedData={(e) => {
+                        const video = e.currentTarget;
+                        video.muted = true;
+                        video.play().catch(() => {});
+                      }}
+                      onCanPlay={(e) => {
+                        const video = e.currentTarget;
+                        if (video.paused) video.play().catch(() => {});
+                      }}
                       onEnded={() => {
                         setShowHardHatUsedOpponent(false);
                         setHardHatWhiteBorderOpponent(false);
+                      }}
+                      onError={(e) => {
+                        console.error('🧢 Hard Hat Used (opponent) video error:', e);
                       }}
                     />
                   </div>

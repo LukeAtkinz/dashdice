@@ -716,6 +716,8 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             muted
             playsInline
             preload="auto"
+            disablePictureInPicture
+            disableRemotePlayback
             className="w-full h-full object-cover"
             style={{
               width: '100%',
@@ -729,9 +731,21 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden'
             }}
+            onLoadedData={(e) => {
+              const video = e.currentTarget;
+              video.muted = true;
+              video.play().catch(() => {});
+            }}
+            onCanPlay={(e) => {
+              const video = e.currentTarget;
+              if (video.paused) video.play().catch(() => {});
+            }}
             onEnded={() => {
               console.log('🍀 Luck Turner video playback ended');
               setLuckTurnerVideoEnded(true);
+            }}
+            onError={(e) => {
+              console.error('🍀 Luck Turner video error:', e);
             }}
           />
         </motion.div>
@@ -753,6 +767,8 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             muted
             playsInline
             preload="auto"
+            disablePictureInPicture
+            disableRemotePlayback
             className="w-full h-full"
             style={{
               width: '100%',
@@ -764,6 +780,15 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               willChange: 'transform',
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden'
+            }}
+            onLoadedData={(e) => {
+              const video = e.currentTarget;
+              video.muted = true;
+              video.play().catch(() => {});
+            }}
+            onCanPlay={(e) => {
+              const video = e.currentTarget;
+              if (video.paused) video.play().catch(() => {});
             }}
             onEnded={() => {
               console.log('🍳 Pan Slap video finished - starting dice pulse animation');

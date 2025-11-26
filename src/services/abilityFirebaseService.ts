@@ -530,6 +530,57 @@ async function applyAbilityEffects(
   const effectsApplied: any[] = [];
   
   try {
+    // 🧢 HARD HAT BLOCKING: Check if opponent has Hard Hat active for attack/offense abilities
+    if (ability.category === 'attack' || ['score_saw', 'pan_slap', 'aura_axe', 'score_siphon'].includes(ability.id)) {
+      const matchDoc = await getDoc(doc(db, 'matches', matchId));
+      if (matchDoc.exists()) {
+        const matchData = matchDoc.data();
+        
+        // Find the target player (opponent)
+        let targetPlayerId = targetPlayerIds[0];
+        if (!targetPlayerId) {
+          const playerIds = matchData.players || 
+                           [matchData.hostData?.playerId, matchData.opponentData?.playerId].filter(Boolean);
+          targetPlayerId = playerIds.find((id: string) => id !== playerId);
+        }
+        
+        if (targetPlayerId) {
+          // Check if target has Hard Hat active
+          const targetActiveEffects = matchData.gameData?.activeEffects?.[targetPlayerId] || [];
+          const hardHatEffect = targetActiveEffects.find((effect: any) => 
+            effect.abilityId === 'hard_hat' && effect.type === 'ability_block'
+          );
+          
+          if (hardHatEffect) {
+            console.log(`🧢 Hard Hat BLOCKED ${ability.name} from ${playerId}!`);
+            
+            // Remove the Hard Hat effect since it blocked an ability
+            const remainingEffects = targetActiveEffects.filter((effect: any) => 
+              !(effect.abilityId === 'hard_hat' && effect.type === 'ability_block')
+            );
+            
+            // Show Hard Hat Used animation for target player
+            await updateDoc(doc(db, 'matches', matchId), {
+              [`gameData.activeEffects.${targetPlayerId}`]: remainingEffects,
+              // Trigger Hard Hat Used animation
+              [`gameData.hardHatUsed.${targetPlayerId}`]: Timestamp.now()
+            });
+            
+            // Return empty effects - ability was blocked
+            effectsApplied.push({
+              effectId: `hard_hat_blocked_${ability.id}`,
+              appliedTo: targetPlayerId,
+              effectType: 'ability_blocked',
+              blockedAbility: ability.name,
+              message: `${ability.name} was blocked by Hard Hat!`
+            });
+            
+            return effectsApplied;
+          }
+        }
+      }
+    }
+    
     // Handle Score Saw specific effects
     if (ability.id === 'score_saw') {
       const matchDoc = await getDoc(doc(db, 'matches', matchId));
@@ -584,6 +635,57 @@ async function applyAbilityEffects(
         appliedAt: Timestamp.now()
       });
       
+    } else if (ability.id === 'score_siphon') {
+      // Score Siphon: Drain aura from opponent as they score (1 aura per 10 points)
+      const matchDoc = await getDoc(doc(db, 'matches', matchId));
+      if (!matchDoc.exists()) {
+        throw new Error(`Match ${matchId} not found for Score Siphon execution`);
+      }
+      
+      const matchData = matchDoc.data();
+      
+      // Auto-determine target (Score Siphon always targets opponent)
+      let targetPlayerId = targetPlayerIds[0];
+      if (!targetPlayerId) {
+        const playerIds = matchData.players || 
+                         [matchData.hostData?.playerId, matchData.opponentData?.playerId].filter(Boolean);
+        targetPlayerId = playerIds.find((id: string) => id !== playerId);
+        console.log(`🌀 Score Siphon: Auto-targeting opponent ${targetPlayerId}`);
+      }
+      
+      if (!targetPlayerId) {
+        console.error('❌ Score Siphon: No target found', { matchData, playerId });
+        throw new Error('Score Siphon requires a target player');
+      }
+      
+      // Score Siphon: Create an active effect that triggers on opponent's rolls
+      // Effect: For every 10 points opponent scores, caster steals 1 aura
+      const scoreSiphonEffect = {
+        abilityId: 'score_siphon',
+        type: 'aura_siphon',
+        conversionRate: 10, // 10 points = 1 aura
+        casterPlayerId: playerId,
+        targetPlayerId: targetPlayerId,
+        appliedAt: Timestamp.now(),
+        remainingTurns: 1  // Only lasts for opponent's next turn
+      };
+      
+      // Add the effect to the target player's active effects
+      await updateDoc(doc(db, 'matches', matchId), {
+        [`gameData.activeEffects.${targetPlayerId}`]: arrayUnion(scoreSiphonEffect)
+      });
+      
+      console.log(`🌀 Score Siphon: Active effect applied to ${targetPlayerId}. Will drain aura as they score (1 aura per 10 points)`);
+      
+      effectsApplied.push({
+        effectId: `score_siphon_active`,
+        appliedTo: targetPlayerId,
+        effectType: 'aura_siphon',
+        conversionRate: 10,
+        auraCost: ability.auraCost,
+        appliedAt: Timestamp.now()
+      });
+      
     } else if (ability.id === 'vital_rush') {
       // Vital Rush: ×3 multiplier with 50% increased double chance and flatline risk
       const vitalRushEffect = {
@@ -614,7 +716,7 @@ async function applyAbilityEffects(
       });
       
     } else if (ability.id === 'aura_axe') {
-      // Aura Axe: Drain 50% of opponent's aura and steal it for yourself
+      // Aura Axe: Cut opponent's aura in half (no transfer, just destroy)
       const matchDoc = await getDoc(doc(db, 'matches', matchId));
       if (!matchDoc.exists()) {
         throw new Error(`Match ${matchId} not found for Aura Axe execution`);
@@ -636,31 +738,28 @@ async function applyAbilityEffects(
         throw new Error('Aura Axe requires a target player');
       }
       
-      // Get current aura values
-      const playerAura = matchData.gameData?.playerAura?.[playerId] || 0;
+      // Get opponent's current aura
       const opponentAura = matchData.gameData?.playerAura?.[targetPlayerId] || 0;
       
-      // Calculate 50% drain
-      const auraDrained = Math.floor(opponentAura * 0.5);
+      // Calculate 50% cut (aura is destroyed, not transferred)
+      const auraCut = Math.floor(opponentAura * 0.5);
       
-      // Update both players' aura
-      const newPlayerAura = playerAura + auraDrained;
-      const newOpponentAura = opponentAura - auraDrained;
+      // Update only opponent's aura (cut in half)
+      const newOpponentAura = opponentAura - auraCut;
       
       await updateDoc(doc(db, 'matches', matchId), {
-        [`gameData.playerAura.${playerId}`]: newPlayerAura,
         [`gameData.playerAura.${targetPlayerId}`]: Math.max(0, newOpponentAura) // Can't go negative
       });
       
-      console.log(`🪓 Aura Axe: Drained ${auraDrained} aura from ${targetPlayerId}. Caster now has ${newPlayerAura}, opponent has ${newOpponentAura}`);
+      console.log(`🪓 Aura Axe: Cut ${auraCut} aura from ${targetPlayerId} (${opponentAura} → ${newOpponentAura}). Aura destroyed, not transferred.`);
       
       effectsApplied.push({
-        effectId: `aura_axe_drain`,
+        effectId: `aura_axe_cut`,
         appliedTo: targetPlayerId,
-        effectType: 'aura_drain',
-        auraDrained: auraDrained,
-        fromPlayer: targetPlayerId,
-        toPlayer: playerId
+        effectType: 'aura_cut',
+        auraCut: auraCut,
+        auraCost: ability.auraCost,
+        appliedAt: Timestamp.now()
       });
       
     } else if (ability.id === 'power_pull') {
@@ -838,6 +937,36 @@ async function applyAbilityEffects(
         magnitude: currentTurnScore, // Amount that was auto-banked
         dice: [1, 1],
         appliedAt: Timestamp.now()
+      });
+      
+    } else if (ability.id === 'hard_hat') {
+      // 🧢 Hard Hat: Block opponent's next ability, but halve your aura gain while active
+      const hardHatEffect = {
+        abilityId: 'hard_hat',
+        effectId: `hard_hat_${Date.now()}`,
+        type: 'ability_block',
+        effectType: 'immunity',
+        appliedBy: playerId,
+        appliedTo: playerId, // Applies to self
+        appliedAt: Timestamp.now(),
+        duration: -1, // Persists until opponent uses an ability
+        auraGainPenalty: 0.5 // 50% reduced aura gain while active
+      };
+      
+      await updateDoc(doc(db, 'matches', matchId), {
+        [`gameData.activeEffects.${playerId}`]: arrayUnion(hardHatEffect),
+        // Trigger Hard Hat Initial animation
+        [`gameData.hardHatInitial.${playerId}`]: Timestamp.now()
+      });
+      
+      console.log(`🧢 Hard Hat activated for ${playerId}. Will block opponent's next ability. Aura gain reduced by 50% until block is used.`);
+      
+      effectsApplied.push({
+        effectId: 'hard_hat_activated',
+        appliedTo: playerId,
+        effectType: 'ability_block',
+        message: 'Hard Hat active - will block opponent\'s next ability',
+        auraGainPenalty: 0.5
       });
       
     } else {

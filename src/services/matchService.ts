@@ -932,6 +932,18 @@ export class MatchService {
       
       // Update player AURA
       if (auraGainThisRoll > 0) {
+        // 🧢 Check if player has Hard Hat active (50% aura gain penalty)
+        const playerActiveEffects = matchData.gameData.activeEffects?.[playerId] || [];
+        const hasHardHat = playerActiveEffects.some((effect: any) => 
+          effect.abilityId === 'hard_hat' && effect.type === 'ability_block'
+        );
+        
+        // Apply Hard Hat penalty if active
+        if (hasHardHat) {
+          auraGainThisRoll = Math.floor(auraGainThisRoll * 0.5);
+          console.log(`🧢 Hard Hat penalty: Aura gain reduced by 50% (${auraGainThisRoll} aura)`);
+        }
+        
         const newPlayerAura = currentPlayerAura + auraGainThisRoll;
         
         // Initialize playerAura if it doesn't exist
@@ -940,6 +952,34 @@ export class MatchService {
         }
         
         updates[`gameData.playerAura.${playerId}`] = newPlayerAura;
+        
+        // 🌀 CHECK FOR SCORE SIPHON: Drain aura based on points scored
+        const scoreSiphonEffect: any = playerActiveEffects.find((effect: any) => 
+          effect.abilityId === 'score_siphon' && effect.type === 'aura_siphon'
+        );
+        
+        if (scoreSiphonEffect && !isSingleOne) {
+          const pointsScored = diceSum; // Points from this roll
+          const conversionRate = scoreSiphonEffect.conversionRate || 10;
+          const auraDrained = Math.floor(pointsScored / conversionRate);
+          
+          if (auraDrained > 0) {
+            const casterPlayerId = scoreSiphonEffect.casterPlayerId;
+            const casterCurrentAura = matchData.gameData.playerAura?.[casterPlayerId] || 0;
+            
+            // Drain aura from current player (victim)
+            const drainedAura = Math.min(auraDrained, newPlayerAura); // Can't drain more than they have
+            const victimNewAura = Math.max(0, newPlayerAura - drainedAura);
+            
+            // Transfer drained aura to caster
+            const casterNewAura = casterCurrentAura + drainedAura;
+            
+            updates[`gameData.playerAura.${playerId}`] = victimNewAura;
+            updates[`gameData.playerAura.${casterPlayerId}`] = casterNewAura;
+            
+            console.log(`🌀 Score Siphon: ${pointsScored} points scored, drained ${drainedAura} aura from ${playerId} to ${casterPlayerId}`);
+          }
+        }
         
         // Track total AURA collected in matchStats
         const currentTotalAura = currentStats.totalAura || 0;
@@ -1385,8 +1425,21 @@ export class MatchService {
       
       // ✨ AURA TRACKING: Award AURA for banking (only for successful banks)
       if (bankingSuccess) {
-        const auraGain = AbilitiesService.calculateAuraGain('BANK');
+        let auraGain = AbilitiesService.calculateAuraGain('BANK');
         const currentPlayerAura = matchData.gameData.playerAura?.[playerId] || 0;
+        
+        // 🧢 Check if player has Hard Hat active (50% aura gain penalty)
+        const playerActiveEffects = matchData.gameData.activeEffects?.[playerId] || [];
+        const hasHardHat = playerActiveEffects.some((effect: any) => 
+          effect.abilityId === 'hard_hat' && effect.type === 'ability_block'
+        );
+        
+        // Apply Hard Hat penalty if active
+        if (hasHardHat) {
+          auraGain = Math.floor(auraGain * 0.5);
+          console.log(`🧢 Hard Hat penalty on banking: Aura gain reduced by 50% (${auraGain} aura)`);
+        }
+        
         const newPlayerAura = currentPlayerAura + auraGain;
         
         // Initialize playerAura if it doesn't exist
@@ -1449,6 +1502,19 @@ export class MatchService {
           );
           updates[`gameData.activeEffects.${playerId}`] = remainingEffects;
           updates['gameData.hasTripleMultiplier'] = false;
+        }
+        
+        // 🌀 SCORE SIPHON: Remove effect when banking (one-time use per turn)
+        const scoreSiphonEffect = playerActiveEffects.find((effect: any) => 
+          effect.abilityId === 'score_siphon' && effect.type === 'aura_siphon'
+        );
+        
+        if (scoreSiphonEffect) {
+          console.log('🌀 Score Siphon effect removed after banking');
+          const remainingEffects = playerActiveEffects.filter((effect: any) => 
+            !(effect.abilityId === 'score_siphon' && effect.type === 'aura_siphon')
+          );
+          updates[`gameData.activeEffects.${playerId}`] = remainingEffects;
         }
         
         // ⚡ POWER PULL: Convert turn score to aura when banking (1 aura per 10 points)

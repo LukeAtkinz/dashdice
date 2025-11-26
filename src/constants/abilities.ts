@@ -239,12 +239,12 @@ export const AURA_AXE: DashDiceAbility = {
   category: AbilityCategory.ATTACK,
   type: AbilityType.ACTIVE,
   rarity: AbilityRarity.EPIC,
-  description: 'Risk–Reward Aura Surge: Drain 50% of opponent\'s aura and steal it for yourself.',
-  longDescription: 'Aura Axe channels a player\'s aura into a devastating strike aimed at the opponent\'s life force. The player commits accumulated energy to weaken their foe, draining half of their opponent\'s aura and transferring it directly to themselves. It\'s a precision–risk maneuver: powerful enough to shift momentum, but dangerous if poorly timed. Best used when opponent has high aura or is likely to commit to an attack.',
-  flavorText: '"A strike fueled by intent, sharpened by aura — one swing can cleave opportunity from your foe, or leave you open to their retaliation."',
+  description: 'Devastating Strike: Cut your opponent\'s aura in half. A brutal resource denial that costs 5 aura.',
+  longDescription: 'Aura Axe is a brutal attack that severs your opponent\'s aura reserves. For a cost of 5 aura, you deliver a devastating blow that cuts their current aura in half (rounded down). The severed aura is lost entirely, not transferred. This makes it a powerful denial tool when your opponent has accumulated significant aura, preventing them from activating their own abilities. Best used strategically when they\'re building resources for a counter-attack or combo.',
+  flavorText: '"One clean swing. Half their power, gone. The aura doesn\'t transfer—it simply ceases to exist."',
   iconUrl: '/Abilities/Catagories/Attack/Aura Axe.webp',
   cooldown: 0, // No cooldown, limited by once per match
-  auraCost: 4, // 4 AURA cost
+  auraCost: 5, // 5 AURA cost
   starCost: 4, // Power Rating: 4
   
   targeting: {
@@ -259,11 +259,11 @@ export const AURA_AXE: DashDiceAbility = {
   
   effects: [
     {
-      id: 'aura_axe_drain',
-      name: 'Aura Drain',
-      description: 'Drain 50% of opponent\'s aura and steal it for yourself',
+      id: 'aura_axe_cut',
+      name: 'Aura Cut',
+      description: 'Cut opponent\'s aura in half (rounded down), aura is destroyed not transferred',
       type: EffectType.STEAL_AURA,
-      magnitude: 'steal_50_percent',
+      magnitude: 'cut_50_percent',
       target: {
         type: 'opponent',
         property: 'aura'
@@ -504,12 +504,12 @@ export const SCORE_SIPHON: DashDiceAbility = {
   category: AbilityCategory.ATTACK,
   type: AbilityType.ACTIVE,
   rarity: AbilityRarity.EPIC,
-  description: 'Risk–Reward Turn Steal: Siphon points from opponent\'s current turn — but timing is critical. Strike during their first roll.',
-  longDescription: 'Score Siphon lets a player siphon points directly from their opponent\'s current turn score — but timing is critical. It must be played during the opponent\'s first roll or before their second throw. If the opponent busts or avoids rolling, the ability fails and is lost. This makes it a high-risk, high-reward tool that rewards careful observation and predictive skill.',
-  flavorText: '"Strike while they hesitate. Seize what could have been theirs, before it slips away."',
+  description: 'Drain opponent\'s aura as they score. For every 10 points they roll, siphon 1 aura directly to yourself.',
+  longDescription: 'Score Siphon creates a draining effect on your opponent for their next turn. As they accumulate points from rolling dice, you siphon their aura at a conversion rate of 10 points = 1 aura stolen. This ability rewards aggressive play when your opponent is on a hot streak, but becomes less effective if they bust early or bank quickly. The siphon persists for their entire turn, stealing aura from every successful roll.',
+  flavorText: '"Every point they score feeds your power. Watch them bleed aura with each roll."',
   iconUrl: '/Abilities/Catagories/Attack/Score Siphon.webp',
-  cooldown: 0, // No cooldown, limited by AURA cost and timing
-  auraCost: 2, // Minimum cost, scales up to 6
+  cooldown: 0, // No cooldown, limited by AURA cost
+  auraCost: 2, // Fixed cost
   starCost: 4, // Power Rating: 4
   
   targeting: {
@@ -525,81 +525,43 @@ export const SCORE_SIPHON: DashDiceAbility = {
   
   effects: [
     {
-      id: 'siphon_moderate',
-      name: 'Moderate Siphon (2 Aura)',
-      description: 'Steal 25% of opponent\'s current turn score - Moderate risk: low reward if opponent busts',
-      type: EffectType.STEAL_SCORE,
-      magnitude: 'steal_turn_score_25',
+      id: 'aura_siphon',
+      name: 'Aura Siphon',
+      description: 'Drain opponent\'s aura based on points scored: 1 aura stolen per 10 points rolled',
+      type: EffectType.STEAL_SCORE, // Reusing type, but stealing aura instead
+      magnitude: 'aura_siphon_conversion',
       target: {
         type: 'opponent',
-        property: 'currentTurnScore'
+        property: 'aura'
       },
-      duration: 0, // Instant effect
+      duration: 1, // Lasts for opponent's next turn
       probability: 1.0 // Always succeeds if conditions met
-    },
-    {
-      id: 'siphon_medium',
-      name: 'Medium Siphon (4 Aura)',
-      description: 'Steal 50% of opponent\'s current turn score - Medium risk: larger impact if opponent survives',
-      type: EffectType.STEAL_SCORE,
-      magnitude: 'steal_turn_score_50',
-      target: {
-        type: 'opponent',
-        property: 'currentTurnScore'
-      },
-      duration: 0,
-      probability: 1.0
-    },
-    {
-      id: 'siphon_full',
-      name: 'Full Siphon (6 Aura)',
-      description: 'Steal 100% of opponent\'s current turn score - High risk: full turn steal, but lost if opponent busts',
-      type: EffectType.STEAL_SCORE,
-      magnitude: 'steal_turn_score_100',
-      target: {
-        type: 'opponent',
-        property: 'currentTurnScore'
-      },
-      duration: 0,
-      probability: 1.0
     }
   ],
   
   conditions: [
     {
-      type: 'variable_aura_cost',
-      description: 'Costs 2/4/6 AURA for different steal percentages',
-      checkFunction: 'checkScoreSiphonAuraCost',
+      type: 'conversion_rate',
+      description: '10 points scored = 1 aura stolen',
+      checkFunction: 'applyAuraSiphonConversion',
       parameters: {
-        moderateSiphon: 2,
-        mediumSiphon: 4,
-        fullSiphon: 6
+        conversionRate: 10 // Points per aura stolen
       }
     },
     {
-      type: 'timing_restriction',
-      description: 'Can only be played after opponent\'s first roll but before second throw',
-      checkFunction: 'checkSiphonTiming',
+      type: 'opponent_turn_only',
+      description: 'Can only be used on opponent\'s turn',
+      checkFunction: 'checkOpponentTurnActive',
       parameters: {
-        allowedPhases: ['opponent_after_first_roll', 'opponent_before_second_roll'],
-        requiredState: 'opponent_has_rolled_once'
-      }
-    },
-    {
-      type: 'failure_on_bust',
-      description: 'Fails and ability is lost if opponent busts',
-      checkFunction: 'checkOpponentBustStatus',
-      parameters: {
-        onBust: 'ability_lost',
-        refundAura: false
+        requireOpponentTurn: true
       }
     },
     {
       type: 'no_stacking',
-      description: 'Cannot stack with other Tactical buffs on same opponent turn',
-      checkFunction: 'checkNoTacticalStackingSameTurn',
+      description: 'Cannot stack with other Attack abilities on same opponent turn',
+      checkFunction: 'checkNoAttackStackingSameTurn',
       parameters: {
-        conflictingCategories: ['tactical'],
+        conflictingCategories: ['attack'],
         scope: 'opponent_current_turn'
       }
     }
@@ -612,27 +574,27 @@ export const SCORE_SIPHON: DashDiceAbility = {
   // Synergies and counterplay
   interactions: {
     synergiesWith: [
-      'pulse_shield', // Protects your turn points if countered
-      'echo_veil',    // Hides activation cue to reduce counterplay
-      'adrenal_surge' // Adds bonus to your next turn after successful steal
+      'aura_axe',     // Combo with direct aura drain for devastating effect
+      'vital_rush',   // Use stolen aura to fuel high-risk multiplier
+      'score_saw'     // Layer with score cut for complete resource denial
     ],
     counters: [
-      'dicebreaker',  // Reduces opponent turn score potential
-      'null_pulse',   // Cancels tactical buffs for the turn
-      'mirror_veil'   // Reflects portion of stolen points back
+      'quick_bank',   // Opponent banks early to minimize aura stolen
+      'low_score',    // Less effective if opponent rolls poorly
+      'hard_hat'      // Blocks attack abilities including Score Siphon
     ],
     counteredBy: [
-      'opponent_bust', // Automatic failure if opponent busts
-      'early_bank'     // Opponent banks before siphon can activate
+      'hard_hat',     // Blocks the siphon from being applied
+      'early_bust'    // Opponent busts early, minimal aura stolen
     ],
-    blockedBy: []
+    blockedBy: ['hard_hat']
   },
   
   // Required balancing data
   balancing: {
-    powerLevel: 85, // High power level due to direct score manipulation
-    winRateImpact: 0.22, // 22% estimated win rate improvement with good timing
-    usageFrequency: 'medium', // Timing restriction prevents overuse
+    powerLevel: 75, // High power level due to aura economy manipulation
+    winRateImpact: 0.18, // 18% estimated win rate improvement with good timing
+    usageFrequency: 'medium', // Opportunistic use when opponent is hot
     lastBalanceUpdate: new Date() as any
   },
   
