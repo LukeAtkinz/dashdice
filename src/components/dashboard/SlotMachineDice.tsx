@@ -429,11 +429,10 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
                     key={`reel-${index}`}
                     className="w-full flex items-center justify-center"
                     style={{ 
-                      minHeight: '100%',
                       backgroundColor: index % 2 === 0 ? 'rgba(0,0,0,0.1)' : 'transparent',
                       color: '#FFD700',
                       fontFamily: 'Orbitron, monospace',
-                      fontSize: 'clamp(60px, 15vw, 140px)', // Smaller for match dice
+                      fontSize: isTurnDecider ? 'clamp(60px, 15vw, 140px)' : 'clamp(50px, 12vw, 100px)', // Even smaller for match dice on desktop
                       opacity: 0.6,
                       fontStyle: 'normal',
                       fontWeight: 500,
@@ -501,7 +500,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
                       backgroundColor: index % 2 === 0 ? 'rgba(0,0,0,0.05)' : 'transparent',
                       color: '#000',
                       fontFamily: 'Orbitron, monospace',
-                      fontSize: 'clamp(80px, 18vw, 200px)',
+                      fontSize: isTurnDecider ? 'clamp(80px, 18vw, 200px)' : 'clamp(60px, 14vw, 150px)',
                       fontStyle: 'normal',
                       fontWeight: 500,
                       lineHeight: '42px',

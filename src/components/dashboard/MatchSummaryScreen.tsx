@@ -259,13 +259,13 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
           )}
         </motion.h1>
 
-        {/* Game Over Reason */}
+        {/* Game Over Reason - Hidden on desktop */}
         {reason && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
-            className="hidden md:block"
+            className="hidden"
           >
             <p className="text-base md:text-xl text-gray-300">{reason}</p>
           </motion.div>
@@ -318,12 +318,11 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
             animate={{ opacity: 1, y: 0, height: 'auto' }}
             exit={{ opacity: 0, y: 20, height: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="block p-6 md:p-6 bg-black/50 rounded-3xl border-2 border-yellow-500/30 backdrop-blur-lg shadow-2xl"
+            className="block p-6 md:p-6 bg-black/50 rounded-3xl border-2 border-yellow-500/30 backdrop-blur-lg shadow-2xl w-[90vw] md:w-auto max-w-[800px] md:max-w-none"
             style={{
-              width: '90vw',
-              maxWidth: '800px',
               marginTop: '-40px' // Move up on y-axis
             }}
+          >
           >
           <h3 className="text-lg md:text-xl font-bold text-yellow-400 mb-6 text-center" style={{ fontFamily: "Audiowide", textShadow: "0 0 10px rgba(255, 215, 0, 0.5)" }}>
             MATCH STATISTICS
@@ -399,12 +398,12 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
 
 
 
-      {/* Action Buttons - Hidden on mobile, nav style buttons will replace these */}
+      {/* Action Buttons - Aligned to bottom on desktop */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.6 }}
-        className="hidden md:flex flex-col md:flex-row justify-center gap-4"
+        className="hidden md:flex flex-col md:flex-row justify-center gap-4 md:fixed md:bottom-8 md:left-1/2 md:-translate-x-1/2"
       >
         <button
           onClick={() => setShowStats(!showStats)}

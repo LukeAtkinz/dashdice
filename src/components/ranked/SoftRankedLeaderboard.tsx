@@ -62,9 +62,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
         relative bg-gradient-to-r ${colors.bg} 
         rounded-xl border ${colors.border} 
         shadow-lg ${colors.glow}
-        ${isCurrentUser ? 'ring-2 ring-2-blue-500/50' : ''} p-4 md:p-6
+        ${isCurrentUser ? 'ring-2 ring-2-blue-500/50' : ''} p-4 md:p-5
         ${player.rank <= 3 ? 'shadow-2xl' : ''}
-        group cursor-pointer overflow-hidden min-h-[120px] md:min-h-[140px]
+        group cursor-pointer overflow-hidden min-h-[100px] md:min-h-[110px]
       `}
     >
       {/* Player Background - Optimized */}
@@ -111,9 +111,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
       />
 
       {/* Rest of player card content */}
-      <div className="relative z-10 flex items-center justify-between">
+      <div className="relative z-10 flex items-center justify-between h-full">
         {/* Rank and Player Info */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3 md:space-x-4">
           {/* Rank Icon/Number */}
           <div 
             className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold ${

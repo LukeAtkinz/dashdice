@@ -374,9 +374,9 @@ export const InventorySection: React.FC = () => {
 
       {/* Header */}
       <div className="text-center mb-8 flex-shrink-0">
-        {/* Desktop Title */}
+        {/* Desktop Title - Hidden */}
         <h1 
-          className="hidden md:block text-5xl font-bold text-white mb-4"
+          className="hidden text-5xl font-bold text-white mb-4"
           style={{
             fontFamily: "Audiowide",
             textTransform: "uppercase",

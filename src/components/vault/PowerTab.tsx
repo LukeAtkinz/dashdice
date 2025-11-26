@@ -939,7 +939,7 @@ export default function PowerTab({
           <AnimatePresence mode="wait">
             <motion.div
               key={currentGameMode.id}
-              className="grid grid-cols-5 gap-2 md:gap-4 mb-2 mt-2 md:mb-8 md:mt-12"
+              className="grid grid-cols-5 gap-2 md:gap-2 mb-2 mt-2 md:mb-8 md:mt-12 md:max-w-md md:mx-auto"
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
@@ -1100,7 +1100,7 @@ export default function PowerTab({
                       </h4>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-6">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
                       {userCategoryAbilities.map(ability => {
                         const isInCurrentLoadout = Object.values(currentLoadout).includes(ability.id);
                         
@@ -1112,14 +1112,14 @@ export default function PowerTab({
                             whileTap={{ scale: 0.95 }}
                           >
                             <div
-                              className="p-3 transition-all duration-300 overflow-visible"
+                              className="p-3 md:p-4 transition-all duration-300 overflow-visible"
                               style={{
                                 opacity: isInCurrentLoadout ? 0.5 : 1
                               }}
                             >
                               <div className="w-full flex flex-col items-center justify-start text-center gap-3">
                                 <div 
-                                  className="w-24 h-24 md:w-28 md:h-28 relative flex-shrink-0 cursor-pointer"
+                                  className="w-24 h-24 md:w-36 md:h-36 relative flex-shrink-0 cursor-pointer"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     if (!isInCurrentLoadout) {
@@ -1154,7 +1154,7 @@ export default function PowerTab({
                                   />
                                 </div>
                                 <h5 
-                                  className="text-white text-sm font-medium w-full cursor-pointer hover:text-yellow-400 transition-colors" 
+                                  className="text-white text-sm md:text-base font-medium w-full cursor-pointer hover:text-yellow-400 transition-colors" 
                                   style={{ fontFamily: 'Audiowide', lineHeight: '1.2' }}
                                   onClick={(e) => {
                                     e.stopPropagation();

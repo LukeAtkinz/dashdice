@@ -67,7 +67,7 @@ export default function VictoryTab() {
 
   return (
     <>
-      <div className="flex-1 overflow-y-auto px-4 py-6 md:h-[calc(100vh-180px)] md:max-h-none">
+      <div className="flex-1 overflow-y-auto px-4 py-6 md:py-0 md:pt-6 md:h-[calc(100vh-180px)] md:max-h-none">
         <div className="w-full max-w-[80rem] mx-auto flex flex-row items-start justify-center flex-wrap gap-[2rem]">
           {backgroundItems.map((item) => (
             <motion.div

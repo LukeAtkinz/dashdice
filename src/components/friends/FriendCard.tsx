@@ -448,11 +448,11 @@ export default function FriendCard({ friend, compact = false, showActions = true
             className="space-y-2"
             layout
           >
-            {/* Desktop: Horizontal layout aligned with content */}
-            <div className="hidden sm:flex items-center gap-3">
-              {/* Profile section content for alignment */}
-              <div className="flex items-center gap-3 flex-1">
-                <div className="relative">
+            {/* Desktop: Horizontal layout - name/picture left, buttons right, vertically centered */}
+            <div className="hidden md:flex items-center justify-between gap-4 w-full">
+              {/* Profile section content on left */}
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="relative flex-shrink-0">
                   <ProfilePicture
                     src={friend.friendData?.profilePicture || friend.friendData?.photoURL}
                     alt={`${friend.friendData?.displayName || 'Friend'}'s profile picture`}
@@ -469,8 +469,8 @@ export default function FriendCard({ friend, compact = false, showActions = true
                 </div>
               </div>
               
-              {/* Action buttons aligned with content */}
-              <div className="flex gap-2">
+              {/* Action buttons on right, vertically centered */}
+              <div className="flex gap-2 flex-shrink-0">
                 <motion.button
                   onClick={() => setIsGameSelectorExpanded(!isGameSelectorExpanded)}
                   disabled={presenceStatus === 'offline' || isInviting}
@@ -550,7 +550,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
             </div>
 
             {/* Mobile: Show profile section separately */}
-            <div className="sm:hidden">
+            <div className="md:hidden">
               {/* Profile section - Mobile */}
               <div className="flex items-center gap-3 mb-3">
                 <div className="relative">
@@ -570,19 +570,19 @@ export default function FriendCard({ friend, compact = false, showActions = true
                 </div>
               </div>
               
-              {/* Mobile buttons */}
+              {/* Mobile buttons - full width */}
               <div className="flex flex-col gap-2 mt-2">
                 <motion.button
                   onClick={() => setIsGameSelectorExpanded(!isGameSelectorExpanded)}
                   disabled={presenceStatus === 'offline' || isInviting}
                   whileHover={presenceStatus !== 'offline' && !isInviting ? { scale: 1.05 } : {}}
                   whileTap={presenceStatus !== 'offline' && !isInviting ? { scale: 0.95 } : {}}
-                  className="w-full transition-all duration-300"
+                  className="transition-all duration-300"
                   style={{ 
                     display: 'flex', 
                     width: '100%', 
                     height: '48px', 
-                    padding: '4px 30px', 
+                    padding: '0 16px', 
                     justifyContent: 'center', 
                     alignItems: 'center', 
                     gap: '10px', 
@@ -599,15 +599,14 @@ export default function FriendCard({ friend, compact = false, showActions = true
                 >
                   {isGameSelectorExpanded ? 'SELECT GAME MODE' : 'INVITE TO GAME'}
                 </motion.button>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full">
                   <button
                     onClick={handleOpenChat}
                     className="flex-1 transition-all duration-300 hover:scale-105 touch-manipulation"
                     style={{ 
                       display: 'flex', 
-                      width: 'fit-content', 
                       height: '48px', 
-                      padding: '4px 20px', 
+                      padding: '0 16px', 
                       justifyContent: 'center', 
                       alignItems: 'center', 
                       gap: '10px', 
@@ -629,9 +628,8 @@ export default function FriendCard({ friend, compact = false, showActions = true
                     className="flex-1 transition-all duration-300 hover:scale-105 touch-manipulation"
                     style={{ 
                       display: 'flex', 
-                      width: 'fit-content', 
                       height: '48px', 
-                      padding: '4px 20px', 
+                      padding: '0 16px', 
                       justifyContent: 'center', 
                       alignItems: 'center', 
                       gap: '10px', 

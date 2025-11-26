@@ -23,6 +23,7 @@ import { MatchVoiceButton } from '@/components/match/MatchVoiceButton';
 import { useMatchChat } from '@/context/MatchChatContext';
 import { getBackgroundById, resolveBackgroundPath } from '@/config/backgrounds';
 import { useBackground } from '@/context/BackgroundContext';
+import AuraCounter from '@/components/ui/AuraCounter';
 
 interface MatchProps {
   gameMode?: string;
@@ -1773,32 +1774,41 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               
               {/* Background Rarity Display - Below Container, Left Aligned */}
               <div 
-                className="mt-4 text-left"
+                className="mt-4 text-left flex justify-between items-center gap-3"
                 style={{
                   display: 'flex',
                   width: '190px',
                   height: '45px',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'flex-start',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                   borderRadius: '10px',
                   background: 'rgba(255, 255, 255, 0.09)',
-                  backdropFilter: 'blur(5.5px)'
+                  backdropFilter: 'blur(5.5px)',
+                  padding: '0 12px'
                 }}
               >
                 <span style={{
-                  alignSelf: 'stretch',
                   color: '#FFF',
-                  textAlign: 'center',
+                  textAlign: 'left',
                   fontFamily: 'Orbitron',
                   fontSize: '20px',
                   fontStyle: 'normal',
                   fontWeight: 500,
                   lineHeight: '42px',
-                  textTransform: 'uppercase'
+                  textTransform: 'uppercase',
+                  flex: 1
                 }}>
                   {currentPlayerBackground?.rarity || 'COMMON'}
                 </span>
+                {/* Aura Counter - Right Aligned */}
+                <div className="flex items-center">
+                  <AuraCounter 
+                    auraValue={matchData.gameData.playerAura?.[currentPlayer.playerId] || 0}
+                    size="small"
+                    className="flex items-center"
+                  />
+                </div>
               </div>
                 </div>
               )}
@@ -2080,32 +2090,41 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               
               {/* Background Rarity Display - Below Container, Right Aligned */}
               <div 
-                className="mt-4 text-right ml-auto"
+                className="mt-4 text-right ml-auto flex justify-between items-center gap-3"
                 style={{
                   display: 'flex',
                   width: '190px',
                   height: '45px',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'flex-start',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                   borderRadius: '10px',
                   background: 'rgba(255, 255, 255, 0.09)',
-                  backdropFilter: 'blur(5.5px)'
+                  backdropFilter: 'blur(5.5px)',
+                  padding: '0 12px'
                 }}
               >
                 <span style={{
-                  alignSelf: 'stretch',
                   color: '#FFF',
-                  textAlign: 'center',
+                  textAlign: 'left',
                   fontFamily: 'Orbitron',
                   fontSize: '20px',
                   fontStyle: 'normal',
                   fontWeight: 500,
                   lineHeight: '42px',
-                  textTransform: 'uppercase'
+                  textTransform: 'uppercase',
+                  flex: 1
                 }}>
                   {opponentBackground?.rarity || 'COMMON'}
                 </span>
+                {/* Aura Counter - Right Aligned */}
+                <div className="flex items-center">
+                  <AuraCounter 
+                    auraValue={matchData.gameData.playerAura?.[opponent.playerId] || 0}
+                    size="small"
+                    className="flex items-center"
+                  />
+                </div>
               </div>
                 </div>
               )}

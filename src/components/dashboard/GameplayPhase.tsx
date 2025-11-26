@@ -604,7 +604,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 
                 return (
                   <motion.div 
-                    className="inline-block px-4 md:px-4 py-3 md:py-2 border-2 border-gray-500 rounded-2xl backdrop-blur-sm shadow-xl overflow-hidden"
+                    className="inline-block px-4 md:px-6 py-3 md:py-3 border-2 border-gray-500 rounded-2xl backdrop-blur-sm shadow-xl overflow-hidden"
                     style={{
                       background: hasMultiplier && bgColor.startsWith('linear') ? bgColor : undefined,
                       backgroundColor: !hasMultiplier || !bgColor.startsWith('linear') ? bgColor : undefined
@@ -802,12 +802,12 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut", delay: 0.2 }}
-                  className="absolute right-[-70px] md:right-[-70px] top-1/2 transform -translate-y-1/2 border-2 border-purple-500 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute right-[-70px] md:right-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-purple-500 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
                     background: 'linear-gradient(to bottom right, rgba(155, 48, 255, 0.7), rgba(255, 51, 255, 0.7))',
-                    padding: '6px 8px',
-                    minWidth: '50px',
-                    minHeight: '50px',
+                    padding: '8px 10px',
+                    minWidth: '60px',
+                    minHeight: '60px',
                     aspectRatio: '1 / 1',
                     display: 'flex',
                     flexDirection: 'column',
@@ -834,12 +834,12 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut", delay: 0.2 }}
-                  className="absolute right-[-70px] md:right-[-70px] top-1/2 transform -translate-y-1/2 border-2 border-red-500 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute right-[-70px] md:right-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-red-500 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
                     background: 'linear-gradient(to bottom right, rgba(255, 0, 0, 0.7), rgba(255, 69, 0, 0.7))',
-                    padding: '6px 8px',
-                    minWidth: '50px',
-                    minHeight: '50px',
+                    padding: '8px 10px',
+                    minWidth: '60px',
+                    minHeight: '60px',
                     aspectRatio: '1 / 1',
                     display: 'flex',
                     flexDirection: 'column',
@@ -866,12 +866,12 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut", delay: 0.2 }}
-                  className="absolute right-[-70px] md:right-[-70px] top-1/2 transform -translate-y-1/2 border-2 border-white rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute right-[-70px] md:right-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-white rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
                     background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.7), rgba(174, 238, 238, 0.7))',
-                    padding: '6px 8px',
-                    minWidth: '50px',
-                    minHeight: '50px',
+                    padding: '8px 10px',
+                    minWidth: '60px',
+                    minHeight: '60px',
                     aspectRatio: '1 / 1',
                     display: 'flex',
                     flexDirection: 'column',
@@ -897,7 +897,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut" }}
-                  className="absolute right-[-70px] md:right-[-70px] top-1/2 transform -translate-y-1/2 bg-orange-600/40 border-2 border-orange-400 rounded-xl backdrop-blur-sm shadow-xl"
+                  className="absolute right-[-70px] md:right-[-90px] top-1/2 transform -translate-y-1/2 bg-orange-600/40 border-2 border-orange-400 rounded-xl backdrop-blur-sm shadow-xl"
                   style={{
                     padding: '6px 8px',
                     minWidth: '50px',

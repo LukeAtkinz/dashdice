@@ -274,7 +274,8 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
             }}
           >
             <span 
-              className="text-sm font-audiowide uppercase text-white"
+              className="text-sm uppercase text-white"
+              style={{ fontFamily: 'Audiowide' }}
             >
               {tab.label}
             </span>
