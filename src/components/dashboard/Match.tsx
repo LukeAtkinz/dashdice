@@ -91,6 +91,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const [winnerAnnouncementText, setWinnerAnnouncementText] = useState('');
   const [gameplayContentReady, setGameplayContentReady] = useState(false);
   
+  // Player card video autoplay detection
+  const [currentPlayerVideoAutoplay, setCurrentPlayerVideoAutoplay] = useState(true);
+  const [opponentVideoAutoplay, setOpponentVideoAutoplay] = useState(true);
+  
   // Initialize match start time when match data first loads
   useEffect(() => {
     if (matchData && !matchStartTime.current) {
@@ -1311,7 +1315,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           position: 'absolute',
           inset: 0,
           display: (matchData.gameData.gamePhase === 'turnDecider' || showTurnDeciderTransition) ? 'block' : 'none',
-          zIndex: (matchData.gameData.gamePhase === 'turnDecider' || showTurnDeciderTransition) ? 50 : 1
+          zIndex: (matchData.gameData.gamePhase === 'turnDecider' || showTurnDeciderTransition) ? 1000 : 1
         }}>
           {(() => {
             return (
@@ -1319,7 +1323,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 {/* Top half - host/top video */}
                 <motion.div 
                   animate={{ 
-                    y: (!showTurnDeciderTransition && gameplayContentReady) ? '-100%' : 0 
+                    y: (showTurnDeciderTransition && gameplayContentReady) ? '-100%' : 0 
                   }}
                   transition={{ duration: 0.8, ease: "easeInOut" }}
                   style={{ 
@@ -1328,7 +1332,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     left: 0, 
                     width: '100%', 
                     height: '50%', 
-                    overflow: 'hidden' 
+                    overflow: 'hidden',
+                    willChange: 'transform'
                   }}
                 >
                   <video 
@@ -1402,16 +1407,17 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 {/* Bottom half - opponent/bottom video */}
                 <motion.div 
                   animate={{ 
-                    y: (!showTurnDeciderTransition && gameplayContentReady) ? '100%' : 0 
+                    y: (showTurnDeciderTransition && gameplayContentReady) ? '100%' : 0 
                   }}
                   transition={{ duration: 0.8, ease: "easeInOut" }}
-                  style={{ 
+                  style={{
                   position: 'absolute', 
                   bottom: 0, 
                   left: 0, 
                   width: '100%', 
                   height: '50%', 
-                  overflow: 'hidden' 
+                  overflow: 'hidden',
+                  willChange: 'transform'
                 }}>
                   <video 
                     ref={bottomVideoRef}
@@ -1497,7 +1503,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               style={{
                 position: 'fixed',
                 inset: 0,
-                zIndex: 60,
+                zIndex: 1000,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1675,7 +1681,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className={`w-full h-screen match-container ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-start md:justify-center px-2 pt-8 md:pt-12`}
-        style={{ position: 'relative', left: 0, top: 0, transform: 'none', zIndex: 10 }}
+        style={{ position: 'relative', left: 0, top: 0, transform: 'none', zIndex: 10, pointerEvents: 'auto' }}
       >
         {/* Game Arena */}
         <div className="w-[90vw] mx-auto flex items-center justify-center" style={{ position: 'relative' }}>
@@ -1790,14 +1796,47 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 
                 {/* Player Background */}
                 {currentPlayerBgPath ? (
-                  currentPlayerBgIsVideo ? (
-                    <VideoBackground 
-                      src={currentPlayerBgPath}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
+                  currentPlayerBgIsVideo && currentPlayerVideoAutoplay ? (
+                    <>
+                      <video
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        webkit-playsinline="true"
+                        x5-playsinline="true"
+                        controls={false}
+                        preload="auto"
+                        disablePictureInPicture
+                        disableRemotePlayback
+                        className="absolute inset-0 w-full h-full object-cover"
+                        style={{ pointerEvents: 'none' }}
+                        onLoadedMetadata={(e) => {
+                          const video = e.target as HTMLVideoElement;
+                          video.muted = true;
+                          video.play().catch(() => {
+                            setCurrentPlayerVideoAutoplay(false);
+                          });
+                        }}
+                        onCanPlay={(e) => {
+                          const video = e.target as HTMLVideoElement;
+                          video.muted = true;
+                          if (video.paused) {
+                            video.play().catch(() => {
+                              setCurrentPlayerVideoAutoplay(false);
+                            });
+                          }
+                        }}
+                        onError={() => {
+                          setCurrentPlayerVideoAutoplay(false);
+                        }}
+                      >
+                        <source src={currentPlayerBgPath} type="video/mp4" />
+                      </video>
+                    </>
                   ) : (
-                    <ImageBackground
-                      src={currentPlayerBgPath}
+                    <img
+                      src={currentPlayerBgIsVideo ? currentPlayerBgPath.replace('/Videos/', '/Video Images/').replace('.mp4', '.webp') : currentPlayerBgPath}
                       alt="Current Player Background"
                       className="absolute inset-0 w-full h-full object-cover"
                     />
@@ -2083,7 +2122,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 
                 {/* Player Background */}
                 {opponentBgPath ? (
-                  opponentBgIsVideo ? (
+                  opponentBgIsVideo && opponentVideoAutoplay ? (
                     <video
                       autoPlay
                       loop
@@ -2091,56 +2130,37 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       playsInline
                       webkit-playsinline="true"
                       x5-playsinline="true"
-                      x5-video-player-type="h5-page"
-                      x5-video-player-fullscreen="false"
                       controls={false}
                       preload="auto"
                       disablePictureInPicture
                       disableRemotePlayback
+                      className="absolute inset-0 w-full h-full object-cover"
+                      style={{ pointerEvents: 'none' }}
                       onLoadedMetadata={(e) => {
                         const video = e.target as HTMLVideoElement;
                         video.muted = true;
-                        video.play().catch(() => {});
+                        video.play().catch(() => {
+                          setOpponentVideoAutoplay(false);
+                        });
                       }}
                       onCanPlay={(e) => {
                         const video = e.target as HTMLVideoElement;
                         video.muted = true;
-                        if (video.paused) video.play().catch(() => {});
+                        if (video.paused) {
+                          video.play().catch(() => {
+                            setOpponentVideoAutoplay(false);
+                          });
+                        }
                       }}
-                      onLoadedData={(e) => {
-                        const video = e.target as HTMLVideoElement;
-                        video.muted = true;
-                        if (video.paused) video.play().catch(() => {});
-                      }}
-                      onSuspend={(e) => {
-                        const video = e.target as HTMLVideoElement;
-                        if (video.paused) video.play().catch(() => {});
-                      }}
-                      onPause={(e) => {
-                        const video = e.target as HTMLVideoElement;
-                        setTimeout(() => {
-                          if (video.paused) video.play().catch(() => {});
-                        }, 100);
-                      }}
-                      onClick={(e) => {
-                        const video = e.target as HTMLVideoElement;
-                        video.muted = true;
-                        if (video.paused) video.play().catch(() => {});
-                      }}
-                      className="absolute inset-0 w-full h-full object-cover"
-                      style={{ 
-                        pointerEvents: 'none'
-                      }}
-                      onError={(e) => {
-                        console.error('❌ Opponent background video failed to load:', opponentBgPath, e);
+                      onError={() => {
+                        setOpponentVideoAutoplay(false);
                       }}
                     >
                       <source src={opponentBgPath} type="video/mp4" />
-                      Your browser does not support the video tag.
                     </video>
                   ) : (
                     <img
-                      src={opponentBgPath}
+                      src={opponentBgIsVideo ? opponentBgPath.replace('/Videos/', '/Video Images/').replace('.mp4', '.webp') : opponentBgPath}
                       alt="Opponent Background"
                       className="absolute inset-0 w-full h-full object-cover"
                     />

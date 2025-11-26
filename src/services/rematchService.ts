@@ -48,7 +48,14 @@ export class RematchService {
     gameType: string
   ): Promise<string> {
     try {
-      console.log('🔄 RematchService: Creating rematch room');
+      console.log('🔄 RematchService: Creating rematch room with data:', {
+        requesterUserId,
+        requesterDisplayName,
+        opponentUserId,
+        opponentDisplayName,
+        gameMode,
+        gameType
+      });
       
       // Create rematch room document
       const rematchRoomData: Omit<RematchRoom, 'id'> = {
@@ -60,7 +67,7 @@ export class RematchService {
         gameMode,
         gameType,
         createdAt: serverTimestamp(),
-        expiresAt: new Date(Date.now() + this.REMATCH_TIMEOUT),
+        expiresAt: Timestamp.fromDate(new Date(Date.now() + this.REMATCH_TIMEOUT)),
         status: 'waiting'
       };
       
@@ -68,9 +75,11 @@ export class RematchService {
       const rematchRoomId = `rematch_${requesterUserId}_${opponentUserId}_${Date.now()}`;
       const rematchRef = doc(db, this.REMATCH_COLLECTION, rematchRoomId);
       
+      console.log('📝 RematchService: Writing to Firestore collection:', this.REMATCH_COLLECTION, 'ID:', rematchRoomId);
       await setDoc(rematchRef, rematchRoomData);
       
-      console.log('✅ RematchService: Rematch room created:', rematchRoomId);
+      console.log('✅ RematchService: Rematch room created successfully:', rematchRoomId);
+      console.log('👀 RematchService: Opponent should now see notification for userId:', opponentUserId);
       return rematchRoomId;
     } catch (error) {
       console.error('❌ RematchService: Error creating rematch room:', error);

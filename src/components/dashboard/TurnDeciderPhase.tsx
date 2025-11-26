@@ -273,7 +273,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
       {/* Content Layer - No swipe animation, just content */}
       <div
         className="absolute inset-0"
-        style={{ zIndex: 10 }}
+        style={{ zIndex: 1000 }}
       >
         <div className="flex flex-col items-center justify-center h-full">
         {/* Old dice display removed to prevent layout switching */}

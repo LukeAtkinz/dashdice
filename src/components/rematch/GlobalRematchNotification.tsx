@@ -89,12 +89,17 @@ export const GlobalRematchNotification: React.FC = () => {
     }
   };
 
+  // Add debug logging
+  useEffect(() => {
+    console.log('🔔 GlobalRematchNotification: Incoming rematches:', incomingRematches.length, incomingRematches);
+  }, [incomingRematches]);
+
   if (!shouldShowNotifications || incomingRematches.length === 0) {
     return null;
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-none">
       <AnimatePresence>
         {incomingRematches.map((rematch) => (
           <React.Fragment key={rematch.id}>
@@ -103,7 +108,7 @@ export const GlobalRematchNotification: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto"
               onClick={() => handleDecline(rematch.id)}
             />
             
@@ -119,7 +124,7 @@ export const GlobalRematchNotification: React.FC = () => {
                 duration: 0.5 
               }}
               className="relative z-10 bg-slate-800/95 border-2 border-slate-600/60 rounded-2xl p-6 shadow-2xl
-                       backdrop-blur-xl max-w-md w-full mx-4 overflow-hidden"
+                       backdrop-blur-xl max-w-md w-full mx-4 overflow-hidden pointer-events-auto"
               style={{
                 background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(51, 65, 85, 0.95) 100%)'
               }}
