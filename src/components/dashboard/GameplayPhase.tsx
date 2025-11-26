@@ -743,14 +743,6 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       alignItems: 'center'
                     }}
                   >
-                    {/* Label */}
-                    <p 
-                      className={`text-xs md:text-xs ${totalTextColor} mb-1 opacity-90`}
-                      style={{ fontFamily: "Audiowide" }}
-                    >
-                      Total
-                    </p>
-                    
                     {/* Number - Show animated value during Aura Forge, otherwise real value */}
                     <p 
                       className={`text-lg md:text-2xl font-bold ${totalTextColor}`}

@@ -38,8 +38,8 @@ export const GlobalRematchNotification: React.FC = () => {
     return modeNames[gameType.toLowerCase()] || gameType.charAt(0).toUpperCase() + gameType.slice(1);
   };
 
-  // Don't show notifications if user is already in a match
-  const shouldShowNotifications = currentSection !== 'match';
+  // Show notifications everywhere including match section (especially needed for game over phase)
+  const shouldShowNotifications = true;
 
   // Handle countdown timers for each rematch
   useEffect(() => {

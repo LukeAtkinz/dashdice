@@ -136,7 +136,7 @@ export const NavigationWithInvitations: React.FC<NavigationWithInvitationsProps>
       {/* Desktop Modal Invitation - centered popup */}
       <AnimatePresence>
         {shouldShowInvitations && (
-          <div className="hidden md:block fixed inset-0 z-[100] flex items-center justify-center">
+          <div className="hidden md:flex fixed inset-0 z-[100] items-center justify-center">
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
