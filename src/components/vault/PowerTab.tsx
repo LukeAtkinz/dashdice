@@ -1109,27 +1109,24 @@ export default function PowerTab({
                             whileTap={{ scale: 0.95 }}
                           >
                             <div
-                              className="p-3 md:p-4 transition-all duration-300 overflow-visible"
-                              style={{
-                                opacity: isInCurrentLoadout ? 0.5 : 1
+                              className="p-3 md:p-4 transition-all duration-300 overflow-visible cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (!isInCurrentLoadout) {
+                                  // Equip the ability to its category (replace any existing ability in that slot)
+                                  assignAbilityToCategory(ability.id, ability.category);
+                                } else {
+                                  // Deselect/unequip the ability from its current category
+                                  const currentCategory = Object.keys(currentLoadout).find(cat => currentLoadout[cat] === ability.id);
+                                  if (currentCategory) {
+                                    removeAbilityFromCategory(currentCategory);
+                                  }
+                                }
                               }}
                             >
                               <div className="w-full flex flex-col items-center justify-start text-center gap-3">
                                 <div 
-                                  className="w-24 h-24 md:w-36 md:h-36 relative flex-shrink-0 cursor-pointer"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (!isInCurrentLoadout) {
-                                      // Equip the ability to its category (replace any existing ability in that slot)
-                                      assignAbilityToCategory(ability.id, ability.category);
-                                    } else {
-                                      // Find and remove the ability from its current category
-                                      const currentCategory = Object.keys(currentLoadout).find(cat => currentLoadout[cat] === ability.id);
-                                      if (currentCategory) {
-                                        removeAbilityFromCategory(currentCategory);
-                                      }
-                                    }
-                                  }}
+                                  className="w-24 h-24 md:w-36 md:h-36 relative flex-shrink-0"
                                 >
                                   <img
                                     src={ability.iconUrl || '/Abilities/placeholder.webp'}
@@ -1161,17 +1158,20 @@ export default function PowerTab({
                                 >
                                   {ability.name}
                                 </h5>
+                                
+                                {/* Equipped Label */}
+                                {isInCurrentLoadout && (
+                                  <p 
+                                    className="text-yellow-400 text-xs mt-1" 
+                                    style={{ 
+                                      fontFamily: 'Audiowide',
+                                      textTransform: 'uppercase'
+                                    }}
+                                  >
+                                    Equipped
+                                  </p>
+                                )}
                               </div>
-                              
-                              {isInCurrentLoadout && (
-                                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                                  <div className="bg-green-500 rounded-full p-1">
-                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                  </div>
-                                </div>
-                              )}
                             </div>
                           </motion.div>
                         );

@@ -197,14 +197,33 @@ export default function FriendCard({ friend, compact = false, showActions = true
   const [isInviting, setIsInviting] = useState(false);
   const [isGameSelectorExpanded, setIsGameSelectorExpanded] = useState(false);
 
-  // Get optimized background for friend card (always uses preview variant)
+  // Get equipped background from friend's inventory (use actual videos, not preview images)
   const inventory = friend.friendData?.inventory;
   const friendBackground = inventory && typeof inventory === 'object' && !Array.isArray(inventory) 
     ? inventory.displayBackgroundEquipped 
     : undefined;
-  // Handle both object and string backgrounds
-  const bgForHook = typeof friendBackground === 'string' ? null : (friendBackground as any);
-  const { backgroundPath, isVideo } = usePlayerCardBackground(bgForHook);
+  
+  // Determine if it's a video and get the actual file path
+  const isVideo = friendBackground && typeof friendBackground === 'object' && friendBackground.type === 'video';
+  let backgroundPath = null;
+  
+  if (friendBackground && typeof friendBackground === 'object') {
+    if (friendBackground.type === 'video' && friendBackground.file) {
+      // Use actual video file
+      let videoPath = friendBackground.file;
+      if (!videoPath.startsWith('/') && !videoPath.startsWith('http')) {
+        videoPath = `/backgrounds/${videoPath}`;
+      }
+      backgroundPath = videoPath;
+    } else if (friendBackground.type === 'image' && friendBackground.file) {
+      // Use image file
+      let imagePath = friendBackground.file;
+      if (!imagePath.startsWith('/') && !imagePath.startsWith('http')) {
+        imagePath = `/backgrounds/${imagePath}`;
+      }
+      backgroundPath = imagePath;
+    }
+  }
 
   // Get presence from context with safety checks
   const presence = friendPresences?.[friend.friendId];

@@ -353,8 +353,8 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   const getDiceNumberColor = () => {
     // 🍀 Luck Turner white background shows BLACK dice
     if (luckTurnerWhiteBackground) return '#000000';
-    // 💨 Vital Rush turns dice WHITE
-    if (isVitalRushActive) return '#FFFFFF';
+    // 💨 Vital Rush turns dice BLACK (per user request)
+    if (isVitalRushActive) return '#000000';
     // 🍳 Pan Slap turns dice RED
     if (showRedDice) return '#FF0000'; // Bright red for Pan Slap
     if (hasQuadMultiplier) return '#000000'; // Black for x4

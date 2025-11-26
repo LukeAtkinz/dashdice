@@ -7,7 +7,7 @@ import { db } from '@/services/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
 import { BackgroundService } from '@/services/backgroundService';
-import { usePlayerCardBackground } from '@/hooks/useOptimizedBackground';
+import { resolveBackgroundPath } from '@/config/backgrounds';
 
 interface PlayerStats {
   uid: string;
@@ -34,11 +34,13 @@ interface PlayerCardProps {
 }
 
 const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurrentUser, userCardRef, handleViewProfile, isExpanded, onToggleExpand }) => {
-  // Get player's background and optimize it
-  const playerBackground = player.equippedBackground ? 
-    BackgroundService.getBackgroundSafely(player.equippedBackground) : 
+  // Get player's background using resolveBackgroundPath for videos
+  const resolved = player.equippedBackground ? 
+    resolveBackgroundPath(player.equippedBackground, 'leaderboard-card') : 
     null;
-  const { backgroundPath, isVideo } = usePlayerCardBackground(playerBackground);
+  
+  const backgroundPath = resolved?.path || null;
+  const isVideo = resolved?.type === 'video';
 
   return (
     <motion.div

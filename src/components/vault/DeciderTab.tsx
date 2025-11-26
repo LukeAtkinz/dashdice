@@ -20,18 +20,20 @@ export default function DeciderTab() {
   // Get Turn Decider backgrounds
   const turnDeciderBackgrounds = getTurnDeciderBackgrounds();
 
-  // Convert backgrounds to inventory format with rarity
+  // Convert backgrounds to inventory format with rarity (use videos)
   const backgroundItems = useMemo(() => {
     return turnDeciderBackgrounds.map((bg) => {
-      const resolved = resolveBackgroundPath(bg.id, 'inventory-preview');
-      const previewPath = resolved?.path;
+      const resolved = resolveBackgroundPath(bg.id, 'waiting-room');
+      const previewPath = resolved?.path || '/backgrounds/placeholder.jpg';
+      const isVideo = resolved?.type === 'video';
       
       return {
         id: bg.id,
         name: bg.name,
-        preview: previewPath || '/backgrounds/placeholder.jpg',
+        preview: previewPath,
         rarity: bg.rarity || 'COMMON',
-        background: bg
+        background: bg,
+        isVideo
       };
     });
   }, []);
@@ -68,7 +70,7 @@ export default function DeciderTab() {
   return (
     <>
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 md:py-0 md:pt-6" style={{ maxHeight: 'calc(100vh - 80px)' }}>
-        <div className="w-full max-w-[80rem] mx-auto flex flex-row items-start justify-center flex-wrap gap-[2rem] pb-8">
+        <div className="w-full max-w-[80rem] mx-auto grid grid-cols-1 md:grid-cols-3 gap-[2rem] pb-8">
           {backgroundItems.map((item) => (
             <motion.div
               key={item.id}

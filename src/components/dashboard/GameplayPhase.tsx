@@ -574,8 +574,12 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 let textColor = 'text-white'; // Default white text
                 let bgColor = 'rgba(125, 125, 125, 0.7)'; // Grey (<10)
                 
-                // Override all colors when multiplier is active with specific gradients
-                if (hasQuadMultiplier) {
+                // Override all colors when Vital Rush is active OR multiplier is active
+                if (vitalRushActive) {
+                  // Vital Rush - Light Blue with Black Text
+                  textColor = 'text-black';
+                  bgColor = 'rgba(173, 216, 230, 0.9)'; // Light blue
+                } else if (hasQuadMultiplier) {
                   // x4 Multiplier - White Themed
                   textColor = 'text-black';
                   bgColor = 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.7), rgba(174, 238, 238, 0.7))';
@@ -686,8 +690,12 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 let totalTextColor = 'text-white'; // Default white text
                 let totalBgColor = 'rgba(125, 125, 125, 0.7)'; // Grey (<10)
                 
-                // Override with multiplier colors first (same as turn score)
-                if (hasQuadMultiplier) {
+                // Override with Vital Rush or multiplier colors first
+                if (vitalRushActive) {
+                  // Vital Rush - Light Blue with Black Text
+                  totalTextColor = 'text-black';
+                  totalBgColor = 'rgba(173, 216, 230, 0.9)'; // Light blue
+                } else if (hasQuadMultiplier) {
                   // x4 Multiplier - White Themed
                   totalTextColor = 'text-black';
                   totalBgColor = 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.7), rgba(174, 238, 238, 0.7))';
@@ -956,8 +964,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           </motion.div>
         </motion.div>
         
-        {/* Vital Rush Initial Animation - SPRITE SHEET VERSION */}
-        {showVitalRushInitial && (
+        {/* Vital Rush Initial Animation - DISABLED PER USER REQUEST */}
+        {/* {showVitalRushInitial && (
           <div style={{
             position: 'absolute',
             left: '50%',
@@ -986,7 +994,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               }}
             />
           </div>
-        )}
+        )} */}
 
         {/* Desktop Abilities Display - Enhanced animations */}
         {user && onAbilityUsed && (
@@ -1351,7 +1359,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     disabled={!canBank}
                     className={`text-xl font-bold transition-all ${
                       canBank
-                        ? 'text-white active:scale-95'
+                        ? (vitalRushActive ? 'text-black active:scale-95' : 'text-white active:scale-95')
                         : 'cursor-not-allowed'
                     }`}
                     style={{ 
@@ -1364,7 +1372,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       textTransform: "uppercase" as const,
                       border: 'none',
                       borderRadius: '0',
-                      background: 'transparent',
+                      background: vitalRushActive && canBank ? 'rgba(173, 216, 230, 0.9)' : 'transparent',
                       backdropFilter: 'none',
                     }}
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -1394,7 +1402,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   disabled={!canRoll}
                   className={`text-xl font-bold transition-all ${
                     canRoll
-                      ? 'text-white active:scale-95'
+                      ? (vitalRushActive ? 'text-black active:scale-95' : 'text-white active:scale-95')
                       : 'cursor-not-allowed'
                   }`}
                   style={{ 
@@ -1407,7 +1415,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     textTransform: "uppercase" as const,
                     border: 'none',
                     borderRadius: '0',
-                    background: 'transparent',
+                    background: vitalRushActive && canRoll ? 'rgba(173, 216, 230, 0.9)' : 'transparent',
                     backdropFilter: 'none',
                   }}
                   initial={{ opacity: 0, x: 50, scale: 0.9 }}

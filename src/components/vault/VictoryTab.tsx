@@ -23,13 +23,15 @@ export default function VictoryTab() {
   // Convert backgrounds to inventory format with rarity
   const backgroundItems = useMemo(() => {
     return victoryBackgrounds.map((bg) => {
-      const resolved = resolveBackgroundPath(bg.id, 'inventory-preview');
+      const resolved = resolveBackgroundPath(bg.id, 'victory-screen');
       const previewPath = resolved?.path;
+      const isVideo = resolved?.type === 'video';
       
       return {
         id: bg.id,
         name: bg.name,
         preview: previewPath || '/backgrounds/placeholder.jpg',
+        isVideo,
         rarity: bg.rarity || 'COMMON',
         background: bg
       };
@@ -68,7 +70,7 @@ export default function VictoryTab() {
   return (
     <>
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 md:py-0 md:pt-6" style={{ maxHeight: 'calc(100vh - 80px)' }}>
-        <div className="w-full max-w-[80rem] mx-auto flex flex-row items-start justify-center flex-wrap gap-[2rem] pb-8">
+        <div className="w-full max-w-[80rem] mx-auto grid grid-cols-1 md:grid-cols-3 gap-[2rem] pb-8">
           {backgroundItems.map((item) => (
             <motion.div
               key={item.id}
@@ -94,11 +96,22 @@ export default function VictoryTab() {
                 }}
                 onClick={() => setPreviewBackground(item)}
               >
-                <img 
-                  className="w-full h-full object-cover rounded-[15px]"
-                  src={item.preview}
-                  alt={item.name}
-                />
+                {item.isVideo ? (
+                  <video
+                    className="w-full h-full object-cover rounded-[15px]"
+                    src={item.preview}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  />
+                ) : (
+                  <img 
+                    className="w-full h-full object-cover rounded-[15px]"
+                    src={item.preview}
+                    alt={item.name}
+                  />
+                )}
               </div>
 
               {/* Background Name */}

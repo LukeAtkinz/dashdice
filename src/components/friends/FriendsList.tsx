@@ -222,7 +222,7 @@ export default function FriendsList({
           )}
         </div>
       ) : (
-        <div className={compact ? 'space-y-2' : 'space-y-3'}>
+        <div className={compact ? 'space-y-2' : 'grid grid-cols-1 md:grid-cols-3 gap-4'}>
           {filteredAndSortedFriends.map((friend) => (
             <ErrorBoundary
               key={friend.id}
