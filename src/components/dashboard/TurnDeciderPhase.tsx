@@ -462,7 +462,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 50,
-            pointerEvents: 'none'
+            pointerEvents: 'none',
+            paddingTop: '10vh' // Move the entire container down
           }}
         >
           <div style={{

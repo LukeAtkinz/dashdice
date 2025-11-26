@@ -397,9 +397,9 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
     <div className={`relative rounded-[30px] overflow-hidden ${isTurnDecider ? '' : `border ${borderStyle}`}`}
          style={{
            display: 'flex',
-           height: 'clamp(150px, 35vw, 300px)', // Reduced from 50vw to 35vw for mobile
+           height: isTurnDecider ? 'clamp(150px, 35vw, 300px)' : 'clamp(120px, 25vw, 180px)', // Smaller for match dice on desktop
            width: '100%',
-           padding: '0 clamp(50px, 18vw, 110px)',
+           padding: isTurnDecider ? '0 clamp(50px, 18vw, 110px)' : '0 clamp(40px, 15vw, 80px)',
            flexDirection: 'row',
            justifyContent: 'space-between',
            alignItems: 'center',
@@ -433,7 +433,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
                       backgroundColor: index % 2 === 0 ? 'rgba(0,0,0,0.1)' : 'transparent',
                       color: '#FFD700',
                       fontFamily: 'Orbitron, monospace',
-                      fontSize: 'clamp(110px, 22vw, 260px)',
+                      fontSize: 'clamp(60px, 15vw, 140px)', // Smaller for match dice
                       opacity: 0.6,
                       fontStyle: 'normal',
                       fontWeight: 500,
@@ -614,7 +614,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               style={{
                 color: glowInfo.color,
                 fontFamily: 'Orbitron, monospace',
-                fontSize: 'clamp(120px, 18vw, 200px)', // Responsive font size for mobile
+                fontSize: isTurnDecider ? 'clamp(120px, 18vw, 200px)' : 'clamp(90px, 15vw, 150px)', // Smaller for match dice
                 fontStyle: 'normal',
                 fontWeight: 500,
                 lineHeight: '42px',
@@ -642,7 +642,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               style={{
                 color: getDiceNumberColor(),
                 fontFamily: 'Orbitron, monospace',
-                fontSize: 'clamp(120px, 18vw, 200px)', // Responsive font size for mobile
+                fontSize: isTurnDecider ? 'clamp(120px, 18vw, 200px)' : 'clamp(90px, 15vw, 150px)', // Smaller for match dice
                 fontStyle: 'normal',
                 fontWeight: 500,
                 lineHeight: '42px',

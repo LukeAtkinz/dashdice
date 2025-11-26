@@ -845,8 +845,9 @@ export default function PowerTab({
   }
 
   return (
+    <div className="w-full h-full md:flex md:justify-center">
     <div 
-      className="w-full space-y-1 md:space-y-8 mt-0 md:mt-0 h-full md:h-auto flex flex-col md:flex-row md:gap-8"
+      className="w-full md:max-w-[1400px] space-y-1 md:space-y-8 mt-0 md:mt-0 h-full md:h-auto flex flex-col md:flex-row md:gap-8"
       style={{
         height: '100%',
         maxHeight: '100%',
@@ -855,9 +856,9 @@ export default function PowerTab({
         overscrollBehavior: 'none'
       }}
     >
-      {/* LEFT SIDE - Game Mode and Loadout Card (Desktop: fixed, max 45vw) */}
+      {/* LEFT SIDE - Game Mode and Loadout Card (Desktop: fixed, 50% width) */}
       <motion.div 
-        className="rounded-2xl p-0 md:p-8 overflow-hidden md:overflow-visible relative flex-1 md:flex-none flex flex-col md:block md:max-w-[45vw] md:sticky md:top-0"
+        className="rounded-2xl p-0 md:p-8 overflow-hidden md:overflow-visible relative flex-1 md:flex-none flex flex-col md:block md:w-1/2 md:sticky md:top-0"
         layout
         style={{
           height: '100%',
@@ -1055,9 +1056,9 @@ export default function PowerTab({
         </div>
       </motion.div>
 
-      {/* RIGHT SIDE - Available Abilities by Category (Desktop: scrollable, max 45vw) */}
+      {/* RIGHT SIDE - Available Abilities by Category (Desktop: scrollable, 50% width) */}
       <div 
-        className="flex-1 md:flex-none md:max-w-[45vw] overflow-y-auto space-y-6 pt-6 md:pt-0 pb-6 md:pb-0 px-4 md:px-0 md:max-h-[calc(100vh-150px)]" 
+        className="flex-1 md:flex-none md:w-1/2 overflow-y-auto space-y-6 pt-6 md:pt-0 pb-6 md:pb-0 px-4 md:px-0 md:max-h-[calc(100vh-150px)]" 
         style={{
           maxHeight: 'calc(100vh - 320px)',
           touchAction: 'pan-y',
@@ -1394,6 +1395,7 @@ export default function PowerTab({
           }}
         />
       )}
+    </div>
     </div>
   );
 }

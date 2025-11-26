@@ -632,7 +632,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     
                     {/* Number - Show animated value during Aura Forge, otherwise real value */}
                     <p 
-                      className={`text-2xl md:text-2xl font-bold ${textColor}`}
+                      className={`text-2xl md:text-4xl font-bold ${textColor}`}
                       style={{ fontFamily: "Audiowide" }}
                     >
                       {showAuraForgeTurnScore ? turnScoreDisplay : matchData.gameData.turnScore}
@@ -753,7 +753,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     
                     {/* Number - Show animated value during Aura Forge, otherwise real value */}
                     <p 
-                      className={`text-lg md:text-base font-bold ${totalTextColor}`}
+                      className={`text-lg md:text-2xl font-bold ${totalTextColor}`}
                       style={{ fontFamily: "Audiowide" }}
                     >
                       {showAuraForgeTurnScore ? totalScoreDisplay : totalScore}
@@ -819,7 +819,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     initial={{ scale: 1.3 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-base font-bold text-white" 
+                    className="text-lg md:text-2xl font-bold text-white" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     2X
@@ -851,7 +851,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     initial={{ scale: 1.3 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-base font-bold text-white" 
+                    className="text-lg md:text-2xl font-bold text-white" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     3X
@@ -883,7 +883,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     initial={{ scale: 1.3 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-base font-bold text-black" 
+                    className="text-lg md:text-2xl font-bold text-black" 
                     style={{ fontFamily: "Audiowide" }}
                   >
                     4X

@@ -263,39 +263,27 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`friends-tab-btn ${tab.id === 'friends' ? 'friends-tab' : 'manage-friends-tab'}`}
+            className={`friends-tab-btn ${tab.id === 'friends' ? 'friends-tab' : 'manage-friends-tab'} flex items-center justify-center gap-2 px-6 py-2.5 rounded-[18px] transition-all duration-300 min-w-[120px]`}
             data-tab={tab.id}
             style={{
-              ...getNavButtonStyle(tab, activeTab === tab.id),
-              padding: '1rem 2rem',
-              borderRadius: '1.25rem',
-              transition: 'all 0.3s ease',
-              position: 'relative',
-              overflow: 'hidden'
+              border: activeTab === tab.id ? '2px solid #FFD700' : '2px solid rgba(255, 255, 255, 0.1)',
+              background: activeTab === tab.id 
+                ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(109, 40, 217, 0.2))' 
+                : 'transparent',
+              boxShadow: activeTab === tab.id ? '0 0 20px rgba(255, 215, 0, 0.3)' : 'none',
             }}
           >
             <span 
-              className="text-base font-bold uppercase tracking-wide relative z-10 flex items-center gap-2"
-              style={{
-                fontFamily: 'Audiowide',
-                color: activeTab === tab.id ? '#FFD700' : '#FFF'
-              }}
+              className="text-sm font-audiowide uppercase text-white"
             >
               {tab.label}
-              {tab.count > 0 && (
-                <span className={`inline-flex items-center justify-center min-w-[1.5rem] h-6 px-2 rounded-full text-sm font-bold ${
-                  tab.isActive ? 'bg-red-500 animate-pulse' : 'bg-gray-600'
-                }`}>
-                  {tab.count}
-                </span>
-              )}
             </span>
           </button>
         ))}
       </div>
 
       {/* Content */}
-      <div className="w-full max-w-[80rem] md:max-w-[800px] flex-1 overflow-y-auto px-4 md:max-h-screen scrollbar-hide" style={{
+      <div className="w-full max-w-[1200px] flex-1 overflow-y-auto px-4 md:max-h-screen scrollbar-hide" style={{
         touchAction: 'pan-y',
         maxHeight: 'calc(100vh - 150px)' // Mobile: reduce by bottom nav (60px tabs + 90px main nav)
       }}>

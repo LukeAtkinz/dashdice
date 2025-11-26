@@ -183,7 +183,7 @@ export const InventorySection: React.FC = () => {
         </div>
         
         <p 
-          className="text-xl text-white/80"
+          className="text-xl text-white/80 md:hidden"
           style={{
             fontFamily: "Montserrat",
           }}

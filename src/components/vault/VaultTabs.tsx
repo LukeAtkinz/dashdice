@@ -25,7 +25,7 @@ export default function VaultTabs({ initialTab = 'power', onTabChange }: VaultTa
   return (
     <div className="flex flex-col h-full">
       {/* Unified Tab Buttons - Responsive Layout */}
-      <div className="flex flex-wrap items-center justify-center gap-3 px-4 py-3 border-b border-white/10 bg-black/20 backdrop-blur-sm">
+      <div className="flex flex-wrap items-center justify-center gap-3 px-4 py-3 md:pt-8 md:pb-6 border-b border-white/10 bg-black/20 backdrop-blur-sm">
         {/* First Row: POWER, VIBIN, FLEXIN */}
         <div className="flex items-center justify-center gap-3 w-full md:w-auto">
           <button
