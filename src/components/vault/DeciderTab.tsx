@@ -67,7 +67,7 @@ export default function DeciderTab() {
 
   return (
     <>
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 md:py-0 md:pt-6 h-full">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 md:py-0 md:pt-6 h-full md:max-h-[calc(100vh-12rem)]">
         <div className="w-full max-w-[80rem] mx-auto flex flex-row items-start justify-center flex-wrap gap-[2rem] pb-8">
           {backgroundItems.map((item) => (
             <motion.div

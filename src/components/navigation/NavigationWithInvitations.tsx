@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { NavGameInvitationButton } from './NavGameInvitationButton';
 import { useFriends } from '@/context/FriendsContext';
 import { useNavigation } from '@/context/NavigationContext';
@@ -105,45 +105,65 @@ export const NavigationWithInvitations: React.FC<NavigationWithInvitationsProps>
   };
 
   return (
-    <div className="relative w-full">
-      {/* Desktop Navigation - replaces navigation when invitation is present */}
-      <div className="hidden md:flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px] w-full max-w-none">
-        <AnimatePresence mode="wait">
-          {shouldShowInvitations ? (
-            <NavGameInvitationButton
-              key="desktop-invitation"
-              invitation={activeInvitation}
-              onAccept={handleAcceptInvitation}
-              onDecline={handleDeclineInvitation}
-              isProcessing={processingInvitations.has(activeInvitation.id)}
-            />
-          ) : (
-            <div key="normal-nav" className="flex flex-row items-center justify-between w-full">
-              {children}
-            </div>
-          )}
-        </AnimatePresence>
+    <>
+      <div className="relative w-full">
+        {/* Desktop Navigation - always shows, invitation appears as modal */}
+        <div className="hidden md:flex flex-row items-center justify-between rounded-[30px] px-[20px] md:px-[30px] py-[15px] w-full max-w-none">
+          {children}
+        </div>
+
+        {/* Mobile Navigation - invitation replaces navigation entirely when present */}
+        <div className="md:hidden flex flex-row items-center justify-between w-full">
+          <AnimatePresence mode="wait">
+            {shouldShowInvitations ? (
+              <div key="mobile-invitation" className="w-full bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-purple-800/20 border border-purple-400/60 rounded-xl shadow-2xl backdrop-blur-lg">
+                <NavGameInvitationButton
+                  invitation={activeInvitation}
+                  onAccept={handleAcceptInvitation}
+                  onDecline={handleDeclineInvitation}
+                  isProcessing={processingInvitations.has(activeInvitation.id)}
+                />
+              </div>
+            ) : (
+              <div key="normal-mobile-nav" className="flex flex-row items-center justify-between w-full">
+                {children}
+              </div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
-      {/* Mobile Navigation - invitation replaces navigation entirely when present */}
-      <div className="md:hidden flex flex-row items-center justify-between w-full">
-        <AnimatePresence mode="wait">
-          {shouldShowInvitations ? (
-            <div key="mobile-invitation" className="w-full bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-purple-800/20 border border-purple-400/60 rounded-xl shadow-2xl backdrop-blur-lg">
+      {/* Desktop Modal Invitation - centered popup */}
+      <AnimatePresence>
+        {shouldShowInvitations && (
+          <div className="hidden md:block fixed inset-0 z-[100] flex items-center justify-center">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => handleDeclineInvitation(activeInvitation.id)}
+            />
+            
+            {/* Modal Content */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              className="relative z-10 bg-gradient-to-br from-purple-900/95 via-blue-900/95 to-purple-800/95 border-2 border-purple-400/60 rounded-2xl shadow-2xl backdrop-blur-xl p-8 max-w-md w-full mx-4"
+            >
               <NavGameInvitationButton
                 invitation={activeInvitation}
                 onAccept={handleAcceptInvitation}
                 onDecline={handleDeclineInvitation}
                 isProcessing={processingInvitations.has(activeInvitation.id)}
               />
-            </div>
-          ) : (
-            <div key="normal-mobile-nav" className="flex flex-row items-center justify-between w-full">
-              {children}
-            </div>
-          )}
-        </AnimatePresence>
-      </div>
-    </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };

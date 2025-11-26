@@ -47,12 +47,15 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   const victoryVideo = (() => {
     console.log('🎬 Victory Background Resolution:', {
       winnerData,
-      victoryBackgroundEquipped: winnerData.victoryBackgroundEquipped,
-      winnerId: winner
+      victoryBackgroundEquipped: winnerData?.victoryBackgroundEquipped,
+      winnerId: winner,
+      hostData: matchData.hostData,
+      opponentData: matchData.opponentData,
+      fullWinnerData: winnerData
     });
     
     // Always use the winner's victoryBackgroundEquipped from match data
-    if (winnerData.victoryBackgroundEquipped) {
+    if (winnerData?.victoryBackgroundEquipped) {
       const bgId = typeof winnerData.victoryBackgroundEquipped === 'string' 
         ? winnerData.victoryBackgroundEquipped 
         : winnerData.victoryBackgroundEquipped.id;
@@ -64,7 +67,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
       if (resolved?.path) return resolved.path;
     }
     
-    console.log('🎬 Using fallback wind-blade');
+    console.log('🎬 Using fallback wind-blade - victoryBackgroundEquipped was not found');
     // Fallback to default
     const resolved = resolveBackgroundPath('wind-blade', 'victory-screen');
     return resolved?.path || '/backgrounds/Game Backgrounds/Victory Screens/Best Quality/Wind Blade.mp4';
@@ -417,7 +420,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
           className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xl font-bold transition-all transform hover:scale-105"
           style={{ fontFamily: "Audiowide" }}
         >
-          BACK TO DASHBOARD
+          DASHBOARD
         </button>
         
         {/* Simple Rematch Button */}

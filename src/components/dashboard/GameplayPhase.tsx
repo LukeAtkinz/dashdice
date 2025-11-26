@@ -494,7 +494,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
 
         {/* Dice Container with Turn Score Between - Constrained to 60vh */}
         <motion.div 
-          className="relative flex flex-col gap-0 md:gap-3 mb-1 md:mb-3 justify-between px-4 md:px-0" 
+          className="relative flex flex-col gap-0 md:gap-8 mb-1 md:mb-3 justify-between px-4 md:px-0" 
           style={{
             height: '60vh', // Fixed height to fit in container
             maxHeight: '60vh',
@@ -513,8 +513,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         >
           {/* Dice 1 - Enhanced Slot Machine */}
           <motion.div 
-            className="w-full max-w-[600px] md:max-w-[600px] md:w-[600px]" 
-            style={{ width: 'min(600px, 70vw)', position: 'relative', overflow: 'hidden', borderRadius: '20px' }}
+            className="w-full max-w-[600px] md:max-w-[500px] md:w-[500px]" 
+            style={{ width: 'min(600px, 60vw)', position: 'relative', overflow: 'hidden', borderRadius: '20px' }}
           >
             <SlotMachineDice
               diceNumber={1}
@@ -925,8 +925,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           
           {/* Dice 2 - Enhanced Slot Machine */}
           <motion.div 
-            className="w-full max-w-[600px] md:max-w-[600px] md:w-[600px]" 
-            style={{ width: 'min(600px, 70vw)', position: 'relative', overflow: 'hidden', borderRadius: '20px' }}
+            className="w-full max-w-[600px] md:max-w-[500px] md:w-[500px]" 
+            style={{ width: 'min(600px, 60vw)', position: 'relative', overflow: 'hidden', borderRadius: '20px' }}
           >
             <SlotMachineDice
               diceNumber={2}
@@ -1007,8 +1007,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             }}
           >
             <motion.div 
-              className="w-full max-w-[600px] md:max-w-[900px] md:w-[900px]" 
-              style={{ width: 'min(600px, 70vw)' }}
+              className="w-full max-w-[500px] md:max-w-[700px] md:w-[700px]" 
+              style={{ width: 'min(500px, 60vw)' }}
               transition={{ duration: 0.2 }}
             >
               <InlineAbilitiesDisplay
