@@ -1058,13 +1058,10 @@ export default function PowerTab({
 
       {/* RIGHT SIDE - Available Abilities by Category (Desktop: scrollable, 50% width) */}
       <div 
-        className="flex-1 md:flex-none md:w-1/2 overflow-y-auto space-y-6 pt-6 md:pt-0 pb-6 md:pb-0 px-4 md:px-0 md:max-h-[calc(100vh-150px)]" 
+        className="flex-1 md:flex-none md:w-1/2 overflow-y-auto overflow-x-hidden space-y-6 pt-6 md:pt-0 pb-6 md:pb-0 px-4 md:px-0" 
         style={{
-          maxHeight: 'calc(100vh - 320px)',
-          touchAction: 'pan-y',
-          WebkitOverflowScrolling: 'touch',
-          overscrollBehavior: 'contain',
-          scrollBehavior: 'smooth'
+          maxHeight: 'calc(100vh - 80px)',
+          maxWidth: '1200px'
         }}
       >
             <style jsx>{`

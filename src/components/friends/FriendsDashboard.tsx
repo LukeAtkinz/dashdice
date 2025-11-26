@@ -284,9 +284,9 @@ export default function FriendsDashboard({ className = '' }: FriendsDashboardPro
       </div>
 
       {/* Content */}
-      <div className="w-full max-w-[1200px] flex-1 overflow-y-auto px-4 md:max-h-screen scrollbar-hide" style={{
+      <div className="w-full max-w-[1200px] flex-1 overflow-y-auto overflow-x-hidden px-4 md:max-h-screen scrollbar-hide" style={{
         touchAction: 'pan-y',
-        maxHeight: 'calc(100vh - 150px)' // Mobile: reduce by bottom nav (60px tabs + 90px main nav)
+        maxHeight: 'calc(100vh - 80px)'
       }}>
         {activeTab === 'friends' && (
           <div className="space-y-6">

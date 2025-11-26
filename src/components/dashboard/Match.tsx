@@ -1675,12 +1675,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         </motion.div>
       )}
 
-      {/* Normal Match UI - Hidden when game over */}
+      {/* Normal Match UI - Hidden when game over, turn decider, or during transition */}
       <motion.div 
         initial={{ opacity: 0, x: 100 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className={`w-full h-screen match-container ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-start md:justify-center px-2 pt-8 md:pt-12`}
+        className={`w-full h-screen match-container ${matchData.gameData.gamePhase === 'gameOver' || matchData.gameData.gamePhase === 'turnDecider' || showTurnDeciderTransition ? 'hidden' : 'flex'} flex-col items-center justify-start md:justify-center px-2 pt-8 md:pt-12`}
         style={{ position: 'relative', left: 0, top: 0, transform: 'none', zIndex: 10, pointerEvents: 'auto' }}
       >
         {/* Game Arena */}
@@ -1930,6 +1930,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   />
                 </div>
               </div>
+              
+              {/* Desktop Chat Box - Below Current Player Card */}
+              {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
+                <div className="hidden md:block mt-3" style={{ width: '100%', maxWidth: '500px' }}>
+                  <MatchChatFeed matchId={matchData.id} className="desktop-player-chat" />
+                </div>
+              )}
                 </div>
               )}
             </AnimatePresence>
@@ -2218,6 +2225,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   {opponentBackground?.rarity || 'COMMON'}
                 </span>
               </div>
+              
+              {/* Desktop Chat Box - Below Opponent Card */}
+              {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
+                <div className="hidden md:block mt-3 ml-auto" style={{ width: '100%', maxWidth: '500px' }}>
+                  <MatchChatFeed matchId={matchData.id} className="desktop-player-chat" />
+                </div>
+              )}
                 </div>
               )}
             </AnimatePresence>
@@ -2546,16 +2560,16 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               )}
             </AnimatePresence>
 
-            {/* Match Chat Feed - Between player cards and dice - Only show for non-bot matches */}
+            {/* Mobile Match Chat - Fixed position, doesn't affect layout */}
             {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8, duration: 0.5 }}
-                className="w-full px-4"
+                className="md:hidden fixed left-0 right-0 px-4"
                 style={{ 
-                  marginTop: 'calc(20vh - 10px)',
-                  marginBottom: '8px'
+                  top: 'calc(50vh + 120px)',
+                  zIndex: 15
                 }}
               >
                 <MatchChatFeed matchId={matchData.id} />

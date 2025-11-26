@@ -76,10 +76,21 @@ export class RematchService {
       const rematchRef = doc(db, this.REMATCH_COLLECTION, rematchRoomId);
       
       console.log('📝 RematchService: Writing to Firestore collection:', this.REMATCH_COLLECTION, 'ID:', rematchRoomId);
+      console.log('📝 RematchService: Document data:', JSON.stringify(rematchRoomData, null, 2));
       await setDoc(rematchRef, rematchRoomData);
       
       console.log('✅ RematchService: Rematch room created successfully:', rematchRoomId);
       console.log('👀 RematchService: Opponent should now see notification for userId:', opponentUserId);
+      console.log('🔍 RematchService: Query should match:', `opponentUserId == ${opponentUserId} AND status == waiting`);
+      
+      // Verify the document was written
+      const verifyDoc = await getDoc(rematchRef);
+      if (verifyDoc.exists()) {
+        console.log('✅ RematchService: Document verified in Firestore:', verifyDoc.data());
+      } else {
+        console.error('❌ RematchService: Document NOT found after creation!');
+      }
+      
       return rematchRoomId;
     } catch (error) {
       console.error('❌ RematchService: Error creating rematch room:', error);
@@ -249,6 +260,9 @@ export class RematchService {
     userId: string,
     callback: (rematches: RematchRoom[]) => void
   ): Unsubscribe {
+    console.log('🔔 RematchService: Setting up subscription for userId:', userId);
+    console.log('🔍 RematchService: Query filters - opponentUserId:', userId, 'status: waiting');
+    
     const rematchQuery = query(
       collection(db, this.REMATCH_COLLECTION),
       where('opponentUserId', '==', userId),
@@ -257,11 +271,18 @@ export class RematchService {
     
     return onSnapshot(rematchQuery, (snapshot) => {
       try {
-        const rematches = snapshot.docs.map(doc => ({
-          ...doc.data(),
-          id: doc.id
-        })) as RematchRoom[];
+        console.log('📨 RematchService: Snapshot received with', snapshot.docs.length, 'documents');
         
+        const rematches = snapshot.docs.map(doc => {
+          const data = doc.data();
+          console.log('📄 RematchService: Document:', doc.id, data);
+          return {
+            ...data,
+            id: doc.id
+          };
+        }) as RematchRoom[];
+        
+        console.log('✅ RematchService: Calling callback with', rematches.length, 'rematches');
         callback(rematches);
       } catch (error) {
         console.error('❌ RematchService: Error processing rematch updates:', error);

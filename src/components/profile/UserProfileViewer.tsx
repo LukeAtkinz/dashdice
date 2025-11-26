@@ -455,7 +455,9 @@ export const UserProfileViewer: React.FC<UserProfileViewerProps> = ({ userId, on
       </div>
 
       {/* Profile Content */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide px-4">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide px-4" style={{
+        maxHeight: 'calc(100vh - 80px)'
+      }}>
         <div className="space-y-6">
           {/* Profile Card Container - Matching ProfileSection Design */}
           <motion.div 
