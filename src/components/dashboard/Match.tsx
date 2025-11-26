@@ -85,6 +85,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const topVideoRef = useRef<HTMLVideoElement | null>(null);
   const bottomVideoRef = useRef<HTMLVideoElement | null>(null);
   
+  // Turn Decider Transition States
+  const [showTurnDeciderTransition, setShowTurnDeciderTransition] = useState(false);
+  const [showWinnerAnnouncement, setShowWinnerAnnouncement] = useState(false);
+  const [winnerAnnouncementText, setWinnerAnnouncementText] = useState('');
+  const [gameplayContentReady, setGameplayContentReady] = useState(false);
+  
   // Initialize match start time when match data first loads
   useEffect(() => {
     if (matchData && !matchStartTime.current) {
@@ -357,52 +363,67 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     }
   }, [matchData?.gameData?.gamePhase]);
   
-  // Turn announcement logic - detect when turn decider completes
+  // Smooth Turn Decider Transition - Keep backgrounds visible and show winner announcement
   useEffect(() => {
     const currentPhase = matchData?.gameData?.gamePhase;
     
-    // Track phase transitions and only show announcement when transitioning from turnDecider to gameplay
+    // Track phase transitions
     if (currentPhase && currentPhase !== previousGamePhase) {
       setPreviousGamePhase(currentPhase);
       
-      // Only trigger announcement when transitioning from turnDecider to gameplay
+      // When transitioning from turnDecider to gameplay
       if (previousGamePhase === 'turnDecider' && currentPhase === 'gameplay' && 
           matchData?.gameData?.turnDeciderDice && matchData?.gameData?.turnDeciderChoice &&
           !turnAnnouncementShown) {
         
-        // Determine who goes first based on turn decider result
+        // Determine who goes first
         const diceValue = matchData.gameData.turnDeciderDice;
         const choice = matchData.gameData.turnDeciderChoice;
         const isEven = diceValue % 2 === 0;
         const choiceMatches = (choice === 'even' && isEven) || (choice === 'odd' && !isEven);
         
-        // Find who made the choice and who goes first
         const playerNumber = matchData.gameData.turnDecider;
         const isHost = matchData.hostData.playerId === user?.uid;
         const currentPlayerNumber = isHost ? 1 : 2;
         
         let winner: string;
-        let isCurrentPlayerFirst: boolean;
         
         if (choiceMatches) {
-          // The player who made the choice goes first
           winner = playerNumber === 1 ? 
-            (matchData.hostData?.playerDisplayName || (matchData.hostData?.playerId?.includes('bot') ? 'AI Player' : 'Player 1')) : 
-            (matchData.opponentData?.playerDisplayName || (matchData.opponentData?.playerId?.includes('bot') ? 'AI Player' : 'Player 2'));
-          isCurrentPlayerFirst = playerNumber === currentPlayerNumber;
+            (matchData.hostData?.playerDisplayName || 'Player 1') : 
+            (matchData.opponentData?.playerDisplayName || 'Player 2');
         } else {
-          // The other player goes first
           const otherPlayerNumber = playerNumber === 1 ? 2 : 1;
           winner = otherPlayerNumber === 1 ? 
-            (matchData.hostData?.playerDisplayName || (matchData.hostData?.playerId?.includes('bot') ? 'AI Player' : 'Player 1')) : 
-            (matchData.opponentData?.playerDisplayName || (matchData.opponentData?.playerId?.includes('bot') ? 'AI Player' : 'Player 2'));
-          isCurrentPlayerFirst = otherPlayerNumber === currentPlayerNumber;
+            (matchData.hostData?.playerDisplayName || 'Player 1') : 
+            (matchData.opponentData?.playerDisplayName || 'Player 2');
         }
         
-        setTurnAnnouncementData({ winner, isCurrentPlayerFirst });
-        // Show turn announcement so users can see who goes first
-        setShowTurnAnnouncement(true);
-        setTurnAnnouncementShown(true); // Mark as shown so it doesn't repeat
+        // Start transition sequence
+        setTurnAnnouncementShown(true);
+        setShowTurnDeciderTransition(true); // Keep turn decider backgrounds visible
+        
+        // Show winner announcement after 500ms
+        setTimeout(() => {
+          setWinnerAnnouncementText(`${winner} goes first`);
+          setShowWinnerAnnouncement(true);
+          setGameplayContentReady(false); // Start loading gameplay content
+        }, 500);
+        
+        // Mark gameplay content as ready after 1 second (gives time for components to mount)
+        setTimeout(() => {
+          setGameplayContentReady(true);
+        }, 1500);
+        
+        // Once content is ready, animate exit after 2.5 seconds total
+        setTimeout(() => {
+          setShowWinnerAnnouncement(false); // Fade out text
+          
+          // After text fades, slide backgrounds away
+          setTimeout(() => {
+            setShowTurnDeciderTransition(false);
+          }, 500); // Additional 500ms for text fade
+        }, 2500);
       }
     }
   }, [matchData?.gameData?.gamePhase, matchData?.gameData?.turnDeciderDice, 
@@ -1289,20 +1310,27 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         <div style={{ 
           position: 'absolute',
           inset: 0,
-          display: matchData.gameData.gamePhase === 'turnDecider' ? 'block' : 'none'
+          display: (matchData.gameData.gamePhase === 'turnDecider' || showTurnDeciderTransition) ? 'block' : 'none',
+          zIndex: (matchData.gameData.gamePhase === 'turnDecider' || showTurnDeciderTransition) ? 50 : 1
         }}>
           {(() => {
             return (
               <>
                 {/* Top half - host/top video */}
-                <div style={{ 
-                  position: 'absolute', 
-                  top: 0, 
-                  left: 0, 
-                  width: '100%', 
-                  height: '50%', 
-                  overflow: 'hidden' 
-                }}>
+                <motion.div 
+                  animate={{ 
+                    y: (!showTurnDeciderTransition && gameplayContentReady) ? '-100%' : 0 
+                  }}
+                  transition={{ duration: 0.8, ease: "easeInOut" }}
+                  style={{ 
+                    position: 'absolute', 
+                    top: 0, 
+                    left: 0, 
+                    width: '100%', 
+                    height: '50%', 
+                    overflow: 'hidden' 
+                  }}
+                >
                   <video 
                     ref={topVideoRef}
                     key={`top-video-${topVideo}`}
@@ -1370,9 +1398,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       pointerEvents: 'none'
                     }}
                   />
-                </div>
+                </motion.div>
                 {/* Bottom half - opponent/bottom video */}
-                <div style={{ 
+                <motion.div 
+                  animate={{ 
+                    y: (!showTurnDeciderTransition && gameplayContentReady) ? '100%' : 0 
+                  }}
+                  transition={{ duration: 0.8, ease: "easeInOut" }}
+                  style={{ 
                   position: 'absolute', 
                   bottom: 0, 
                   left: 0, 
@@ -1447,11 +1480,51 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       pointerEvents: 'none'
                     }}
                   />
-                </div>
+                </motion.div>
               </>
             );
           })()}
         </div>
+        
+        {/* Winner Announcement Overlay - Shows during transition */}
+        <AnimatePresence>
+          {showWinnerAnnouncement && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 60,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                pointerEvents: 'none'
+              }}
+            >
+              <motion.h1
+                initial={{ scale: 0.8, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.8, y: -20 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                style={{
+                  fontFamily: 'Audiowide',
+                  fontSize: 'clamp(2rem, 8vw, 5rem)',
+                  fontWeight: 'bold',
+                  color: '#FFD700',
+                  textAlign: 'center',
+                  textShadow: '0 0 40px rgba(255, 215, 0, 0.8), 0 0 80px rgba(255, 215, 0, 0.4)',
+                  textTransform: 'uppercase',
+                  padding: '0 2rem'
+                }}
+              >
+                {winnerAnnouncementText}
+              </motion.h1>
+            </motion.div>
+          )}
+        </AnimatePresence>
         
         {/* GAMEPLAY BACKGROUND - Show after turn decider */}
         {(() => {
@@ -1607,7 +1680,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         {/* Game Arena */}
         <div className="w-[90vw] mx-auto flex items-center justify-center" style={{ position: 'relative' }}>
           {/* Desktop Layout */}
-          <div className="hidden md:flex items-center justify-between gap-8 w-full">
+          <div className="hidden md:flex items-start justify-between gap-8 w-full" style={{ marginTop: '-10vh' }}>
             
             {/* Player 1 (Current User - Left Side) */}
             <AnimatePresence>
