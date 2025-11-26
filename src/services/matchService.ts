@@ -106,6 +106,13 @@ export class MatchService {
           console.log('✅ MatchService: Found match document:', matchId);
           const data = { id: snapshot.id, ...snapshot.data() } as MatchData;
           
+          // Debug logging for turnDecider
+          console.log('🎯 MatchService gameData:', {
+            turnDecider: data.gameData?.turnDecider,
+            gamePhase: data.gameData?.gamePhase,
+            hasGameData: !!data.gameData
+          });
+          
           // Validate required fields before passing data
           if (data.gameData && data.hostData && data.opponentData) {
             callback(data);

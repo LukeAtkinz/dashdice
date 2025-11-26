@@ -96,7 +96,14 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
     gamePhase: matchData.gameData.gamePhase,
     turnDecider: matchData.gameData.turnDecider,
     isHost,
-    turnDeciderChoice: matchData.gameData.turnDeciderChoice
+    turnDeciderChoice: matchData.gameData.turnDeciderChoice,
+    calculationDetail: {
+      isHost,
+      turnDecider: matchData.gameData.turnDecider,
+      hostShouldDecide: isHost && matchData.gameData.turnDecider === 1,
+      opponentShouldDecide: !isHost && matchData.gameData.turnDecider === 2,
+      finalResult: (isHost && matchData.gameData.turnDecider === 1) || (!isHost && matchData.gameData.turnDecider === 2)
+    }
   });
   const [showDiceNumber, setShowDiceNumber] = useState(false);
   const [showResult, setShowResult] = useState(false);
@@ -245,7 +252,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
   };
 
   return (
-    <div className="fixed inset-0">
+    <div className="fixed inset-0" style={{ zIndex: 1 }}>
       {/* Background Video Layers - Player Backgrounds */}
       {/* Top Half - Current Player Background */}
       <div className="fixed top-0 left-0 right-0 w-full" style={{ height: '50vh', zIndex: -1, overflow: 'hidden' }}>
@@ -338,7 +345,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           >
             {/* Background Text Shadow */}
             <motion.div
-              className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 -translate-y-8"
+              className="absolute inset-0 flex items-center justify-center md:translate-y-0 -translate-y-8"
+              style={{ zIndex: 50, position: 'relative' }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.6 }}
               transition={{ delay: 0.3, duration: 0.5 }}
@@ -348,7 +356,9 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 style={{ 
                   fontFamily: 'Audiowide',
                   textShadow: '0 0 60px rgba(255, 215, 0, 0.8), 0 0 120px rgba(255, 215, 0, 0.5)',
-                  WebkitFontSmoothing: 'antialiased'
+                  WebkitFontSmoothing: 'antialiased',
+                  position: 'relative',
+                  zIndex: 50
                 }}
               >
                 ODD
@@ -456,7 +466,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           >
             {/* Background Text Shadow */}
             <motion.div
-              className="absolute inset-0 flex items-center justify-center z-5 md:translate-y-0 translate-y-8"
+              className="absolute inset-0 flex items-center justify-center md:translate-y-0 translate-y-8"
+              style={{ zIndex: 50, position: 'relative' }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.6 }}
               transition={{ delay: 0.3, duration: 0.5 }}
@@ -466,7 +477,9 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
                 style={{ 
                   fontFamily: 'Audiowide',
                   textShadow: '0 0 60px rgba(100, 149, 237, 0.8), 0 0 120px rgba(100, 149, 237, 0.5)',
-                  WebkitFontSmoothing: 'antialiased'
+                  WebkitFontSmoothing: 'antialiased',
+                  position: 'relative',
+                  zIndex: 50
                 }}
               >
                 EVEN
