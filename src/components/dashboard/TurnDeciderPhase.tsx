@@ -232,11 +232,12 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
   };
 
   return (
-    <>
+    <div className="absolute inset-0">
       {/* Background Video Layers - Player Backgrounds */}
       {/* Top Half - Current Player Background */}
       <div className="absolute top-0 left-0 right-0" style={{ height: '50%', zIndex: 1, overflow: 'hidden' }}>
         <video
+          key={`top-${topVideo}`}
           src={topVideo}
           autoPlay
           loop
@@ -254,6 +255,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
       {/* Bottom Half - Opponent Background */}
       <div className="absolute bottom-0 left-0 right-0" style={{ height: '50%', zIndex: 1, overflow: 'hidden' }}>
         <video
+          key={`bottom-${bottomVideo}`}
           src={bottomVideo}
           autoPlay
           loop
@@ -268,12 +270,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
         />
       </div>
 
-      {/* Animated Content Layer - Swipes over static backgrounds */}
-      <motion.div
-        initial={{ x: '100%' }}
-        animate={{ x: 0 }}
-        exit={{ x: '-100%' }}
-        transition={{ type: 'tween', duration: 0.5, ease: 'easeInOut' }}
+      {/* Content Layer - No swipe animation, just content */}
+      <div
         className="absolute inset-0"
         style={{ zIndex: 10 }}
       >
@@ -656,7 +654,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
         </div>
       )}
         </div>
-      </motion.div>
-    </>
+      </div>
+    </div>
   );
 };

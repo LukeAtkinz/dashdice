@@ -449,9 +449,9 @@ export default function FriendCard({ friend, compact = false, showActions = true
             layout
           >
             {/* Desktop: Horizontal layout - name/picture left, buttons right, vertically centered */}
-            <div className="hidden md:flex items-center justify-between gap-4 w-full">
+            <div className="hidden md:flex items-center justify-end gap-4 w-full">
               {/* Profile section content on left */}
-              <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="flex items-center gap-3 flex-1 min-w-0 mr-auto">
                 <div className="relative flex-shrink-0">
                   <ProfilePicture
                     src={friend.friendData?.profilePicture || friend.friendData?.photoURL}
@@ -571,13 +571,13 @@ export default function FriendCard({ friend, compact = false, showActions = true
               </div>
               
               {/* Mobile buttons - full width */}
-              <div className="flex flex-col gap-2 mt-2">
+              <div className="flex flex-col gap-2 mt-2 w-full">
                 <motion.button
                   onClick={() => setIsGameSelectorExpanded(!isGameSelectorExpanded)}
                   disabled={presenceStatus === 'offline' || isInviting}
                   whileHover={presenceStatus !== 'offline' && !isInviting ? { scale: 1.05 } : {}}
                   whileTap={presenceStatus !== 'offline' && !isInviting ? { scale: 0.95 } : {}}
-                  className="transition-all duration-300"
+                  className="transition-all duration-300 w-full"
                   style={{ 
                     display: 'flex', 
                     width: '100%', 
@@ -602,9 +602,10 @@ export default function FriendCard({ friend, compact = false, showActions = true
                 <div className="flex gap-2 w-full">
                   <button
                     onClick={handleOpenChat}
-                    className="flex-1 transition-all duration-300 hover:scale-105 touch-manipulation"
+                    className="flex-1 transition-all duration-300 hover:scale-105 touch-manipulation w-full"
                     style={{ 
                       display: 'flex', 
+                      width: '100%',
                       height: '48px', 
                       padding: '0 16px', 
                       justifyContent: 'center', 
@@ -625,9 +626,10 @@ export default function FriendCard({ friend, compact = false, showActions = true
                   </button>
                   <button
                     onClick={handleViewProfile}
-                    className="flex-1 transition-all duration-300 hover:scale-105 touch-manipulation"
+                    className="flex-1 transition-all duration-300 hover:scale-105 touch-manipulation w-full"
                     style={{ 
                       display: 'flex', 
+                      width: '100%',
                       height: '48px', 
                       padding: '0 16px', 
                       justifyContent: 'center', 

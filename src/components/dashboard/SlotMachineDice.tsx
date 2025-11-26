@@ -529,7 +529,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
                 <span style={{
                   color: getDiceNumberColor(),
                   fontFamily: 'Orbitron, monospace',
-                  fontSize: 'clamp(120px, 18vw, 200px)',
+                  fontSize: isTurnDecider ? 'clamp(120px, 18vw, 200px)' : 'clamp(90px, 15vw, 150px)',
                   fontStyle: 'normal',
                   fontWeight: 500,
                   lineHeight: '42px',

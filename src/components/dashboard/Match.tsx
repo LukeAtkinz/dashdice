@@ -1774,13 +1774,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               
               {/* Background Rarity Display - Below Container, Left Aligned */}
               <div 
-                className="mt-4 text-left flex justify-between items-center gap-3"
+                className="mt-4 text-left flex items-center gap-3"
                 style={{
                   display: 'flex',
                   width: '190px',
                   height: '45px',
                   flexDirection: 'row',
-                  justifyContent: 'space-between',
+                  justifyContent: 'flex-start',
                   alignItems: 'center',
                   borderRadius: '10px',
                   background: 'rgba(255, 255, 255, 0.09)',
@@ -1796,19 +1796,33 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   fontStyle: 'normal',
                   fontWeight: 500,
                   lineHeight: '42px',
-                  textTransform: 'uppercase',
-                  flex: 1
+                  textTransform: 'uppercase'
                 }}>
                   {currentPlayerBackground?.rarity || 'COMMON'}
                 </span>
-                {/* Aura Counter - Right Aligned */}
-                <div className="flex items-center">
-                  <AuraCounter 
-                    auraValue={matchData.gameData.playerAura?.[currentPlayer.playerId] || 0}
-                    size="small"
-                    className="flex items-center"
-                  />
-                </div>
+              </div>
+              
+              {/* Aura Counter - Separate Container Below Rarity */}
+              <div 
+                className="mt-2 text-left"
+                style={{
+                  display: 'flex',
+                  width: '190px',
+                  height: '60px',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderRadius: '10px',
+                  background: 'rgba(255, 255, 255, 0.09)',
+                  backdropFilter: 'blur(5.5px)',
+                  padding: '0 12px'
+                }}
+              >
+                <AuraCounter 
+                  auraValue={matchData.gameData.playerAura?.[currentPlayer.playerId] || 0}
+                  size="medium"
+                  className="flex items-center"
+                />
               </div>
                 </div>
               )}
@@ -1821,7 +1835,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 {matchData.gameData.gamePhase === 'turnDecider' && (
                   <>
                     <TurnDeciderPhase
-                      key="turnDecider"
+                      key={`turnDecider-${topVideo}-${bottomVideo}`}
                       matchData={matchData}
                       currentPlayer={currentPlayer}
                       opponent={opponent}
@@ -2090,13 +2104,13 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               
               {/* Background Rarity Display - Below Container, Right Aligned */}
               <div 
-                className="mt-4 text-right ml-auto flex justify-between items-center gap-3"
+                className="mt-4 text-right ml-auto flex items-center gap-3"
                 style={{
                   display: 'flex',
                   width: '190px',
                   height: '45px',
                   flexDirection: 'row',
-                  justifyContent: 'space-between',
+                  justifyContent: 'flex-start',
                   alignItems: 'center',
                   borderRadius: '10px',
                   background: 'rgba(255, 255, 255, 0.09)',
@@ -2112,19 +2126,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   fontStyle: 'normal',
                   fontWeight: 500,
                   lineHeight: '42px',
-                  textTransform: 'uppercase',
-                  flex: 1
+                  textTransform: 'uppercase'
                 }}>
                   {opponentBackground?.rarity || 'COMMON'}
                 </span>
-                {/* Aura Counter - Right Aligned */}
-                <div className="flex items-center">
-                  <AuraCounter 
-                    auraValue={matchData.gameData.playerAura?.[opponent.playerId] || 0}
-                    size="small"
-                    className="flex items-center"
-                  />
-                </div>
               </div>
                 </div>
               )}
@@ -2520,6 +2525,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     className="w-full"
                   >
                     <TurnDeciderPhase
+                      key={`turnDecider-mobile-${topVideo}-${bottomVideo}`}
                       matchData={matchData}
                       currentPlayer={currentPlayer}
                       opponent={opponent}
@@ -2527,6 +2533,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       diceAnimation={turnDeciderDiceAnimation}
                       onChoiceSelect={handleTurnDeciderChoice}
                       onForceGameplay={handleForceGameplay}
+                      topVideo={topVideo}
+                      bottomVideo={bottomVideo}
                     />
                   </motion.div>
                 )}

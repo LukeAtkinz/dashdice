@@ -471,14 +471,14 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
                 }, 5000);
               }
             }}
-            className="game-mode-card h-[12rem] md:h-[15.625rem] w-full rounded-[30px] overflow-hidden flex flex-row items-center justify-start relative text-right text-[2.5rem] md:text-[4rem] text-gainsboro font-audiowide cursor-pointer transition-all duration-300"
+            className="game-mode-card h-[12rem] md:h-[15.625rem] w-full rounded-[30px] overflow-hidden flex items-center justify-start relative text-right text-[2.5rem] md:text-[4rem] text-gainsboro font-audiowide cursor-pointer transition-all duration-300"
             style={{
               background: getGameModeSelectorBackground(),
               touchAction: 'manipulation' // Prevent double-tap zoom on mobile
             }}
           >
             {hoveredGameMode === mode ? (
-              <div className="w-full h-full flex flex-col justify-center items-center gap-[8px] md:gap-[10px] p-[15px] md:p-[20px] animate-fade-in">
+              <div className="w-full h-full flex flex-col justify-center items-center gap-[8px] md:gap-[10px] p-[15px] md:p-[20px] animate-fade-in" style={{ alignItems: 'center', justifyContent: 'center' }}>
                 {config.available ? (
                   <>
                     {/* Casual Game Button - Locked for guests */}
@@ -669,7 +669,7 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
               </div>
             ) : (
               <>
-                <div className="game-mode-text max-h-[100%] relative flex-1 flex flex-col items-end px-[1rem] md:px-[2.25rem] z-[2] transition-all duration-300">
+                <div className="game-mode-text max-h-[100%] relative flex-1 flex flex-col items-end justify-center px-[1rem] md:px-[2.25rem] z-[2] transition-all duration-300">
                   <h2
                     className="m-0 self-stretch relative text-white uppercase font-normal text-[40px] md:text-[72px] leading-[38px] md:leading-[68px]"
                     style={{

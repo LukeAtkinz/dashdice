@@ -233,18 +233,10 @@ export const InventorySection: React.FC = () => {
   }
 
   return (
-    <div className="w-full flex flex-col items-center justify-start gap-[0.5rem] md:gap-[2rem] pt-0 md:pt-[1rem] pb-[2rem] overflow-hidden md:h-screen"
+    <div className="w-full flex flex-col items-center justify-start gap-[0.5rem] md:gap-[2rem] pt-0 md:pt-[1rem] pb-[2rem] overflow-hidden md:h-auto"
       style={{
         touchAction: 'none', // Disable all touch scrolling on parent
         overscrollBehavior: 'none', // Prevent scroll chaining
-        minHeight: 'calc(100vh - 220px)', // Mobile: reduce by vault nav (130px two-row tabs + 90px main nav)
-        maxHeight: 'calc(100vh - 220px)',
-        height: 'calc(100vh - 220px)',
-        position: 'fixed', // Fix the container
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0
       }}
     >
       {/* Custom scrollbar styles and navigation animations */}

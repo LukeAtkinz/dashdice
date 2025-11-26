@@ -604,7 +604,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 
                 return (
                   <motion.div 
-                    className="inline-block px-4 md:px-6 py-3 md:py-3 border-2 border-gray-500 rounded-2xl backdrop-blur-sm shadow-xl overflow-hidden"
+                    className="inline-block px-4 md:px-8 py-3 md:py-4 border-2 border-gray-500 rounded-2xl backdrop-blur-sm shadow-xl overflow-hidden"
                     style={{
                       background: hasMultiplier && bgColor.startsWith('linear') ? bgColor : undefined,
                       backgroundColor: !hasMultiplier || !bgColor.startsWith('linear') ? bgColor : undefined
