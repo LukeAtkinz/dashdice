@@ -39,11 +39,13 @@ export const MatchVoiceButton: React.FC<MatchVoiceButtonProps> = ({
 
   const startRecording = async () => {
     if (disabled || isMuted) {
+      console.warn('🎙️ Recording disabled:', { disabled, isMuted });
       onError?.('Microphone is muted');
       return;
     }
 
     try {
+      console.log('🎙️ Requesting microphone access...');
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
@@ -51,6 +53,7 @@ export const MatchVoiceButton: React.FC<MatchVoiceButtonProps> = ({
           autoGainControl: true
         } 
       });
+      console.log('✅ Microphone access granted');
 
       streamRef.current = stream;
 
@@ -103,14 +106,20 @@ export const MatchVoiceButton: React.FC<MatchVoiceButtonProps> = ({
   const processRecording = async () => {
     if (audioChunksRef.current.length === 0) {
       console.log('❌ No audio data recorded');
+      onError?.('No audio data recorded');
       return;
     }
 
     setIsProcessing(true);
+    console.log('🔄 Processing recording...');
 
     try {
       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
       console.log('📦 Audio blob created:', audioBlob.size, 'bytes');
+
+      if (audioBlob.size === 0) {
+        throw new Error('Audio blob is empty');
+      }
 
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.webm');
@@ -118,6 +127,7 @@ export const MatchVoiceButton: React.FC<MatchVoiceButtonProps> = ({
       formData.append('matchId', matchId);
       formData.append('playerId', playerId);
 
+      console.log('📤 Sending audio to transcription API...');
       const response = await fetch('/api/transcribe', {
         method: 'POST',
         body: formData
@@ -125,14 +135,18 @@ export const MatchVoiceButton: React.FC<MatchVoiceButtonProps> = ({
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('❌ Transcription API error:', errorText);
         throw new Error(`Transcription failed: ${errorText}`);
       }
 
       const result: VoiceTranscriptionResponse = await response.json();
+      console.log('✅ Transcription result:', result);
 
       if (result.text && result.text.trim()) {
+        console.log('📝 Calling onTranscription with:', result.text);
         onTranscription(result.text, result.duration);
       } else {
+        console.warn('⚠️ No speech detected in transcription');
         onError?.('No speech detected');
       }
     } catch (error: any) {

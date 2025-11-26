@@ -40,11 +40,13 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 
   const startRecording = async () => {
     if (disabled || isMuted) {
+      console.warn('🎙️ Recording disabled:', { disabled, isMuted });
       onError?.('Microphone is muted');
       return;
     }
 
     try {
+      console.log('🎙️ Requesting microphone access...');
       // Request microphone permission
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
@@ -53,6 +55,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           autoGainControl: true
         } 
       });
+      console.log('✅ Microphone access granted');
 
       streamRef.current = stream;
 

@@ -47,137 +47,27 @@ export default function SwipeRightChat({ children }: SwipeRightChatProps) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Touch event handlers for swipe right gesture
+  // Touch event handlers for swipe right gesture - DISABLED
   const handleTouchStart = useCallback((e: TouchEvent) => {
-    if (!isMobile) return;
-    
-    const touch = e.touches[0];
-    const screenHeight = window.innerHeight;
-    const bottomNavHeight = 80; // Approximate bottom nav height
-    
-    // Only start tracking if touch is in bottom navigation area (bottom 15% of screen)
-    if (touch.clientY < screenHeight * 0.85) return;
-    
-    // Only start if touch is near the left edge (first 20% of screen width)
-    if (touch.clientX > window.innerWidth * 0.2) return;
-    
-    touchStartRef.current = {
-      x: touch.clientX,
-      y: touch.clientY,
-      time: Date.now()
-    };
-    lastTouchRef.current = {
-      x: touch.clientX,
-      y: touch.clientY
-    };
-    
-    setIsDragging(true);
-    
-    console.log('📱 Touch start for swipe right:', { 
-      x: touch.clientX, 
-      y: touch.clientY, 
-      bottomThreshold: screenHeight * 0.85,
-      leftEdgeThreshold: window.innerWidth * 0.2
-    });
-  }, [isMobile]);
+    // Swipe gesture disabled
+    return;
+  }, []);
 
   const handleTouchMove = useCallback((e: TouchEvent) => {
-    if (!isDragging || !touchStartRef.current || !isMobile) return;
-    
-    const touch = e.touches[0];
-    const startX = touchStartRef.current.x;
-    const currentX = touch.clientX;
-    const deltaX = currentX - startX; // Positive for rightward swipe
-    const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
-    
-    // If vertical movement is too much, cancel the gesture
-    if (deltaY > 50) {
-      setIsDragging(false);
-      touchStartRef.current = null;
-      lastTouchRef.current = null;
-      return;
-    }
-    
-    lastTouchRef.current = {
-      x: touch.clientX,
-      y: touch.clientY
-    };
-    
-    // Only process rightward swipes
-    if (deltaX <= 0) return;
-    
-    const screenWidth = window.innerWidth;
-    const maxSwipeDistance = screenWidth * 0.4; // 40% of screen width
-    const progress = Math.min(deltaX / maxSwipeDistance, 1);
-    
-    setDragProgress(progress);
-    
-    // Update chat position smoothly - slide in from left
-    chatControls.start({
-      x: `${-100 + (progress * 100)}%`, // Start from -100% (off-screen left) to 0%
-      opacity: Math.max(0.1, progress * 0.9),
-      transition: { type: "tween", duration: 0.01 }
-    });
-    
-    console.log('📱 Touch move (swipe right):', { deltaX, progress, maxSwipeDistance });
-  }, [isDragging, isMobile, chatControls]);
+    // Swipe gesture disabled
+    return;
+  }, []);
 
   const handleTouchEnd = useCallback((e: TouchEvent) => {
-    if (!isDragging || !touchStartRef.current || !isMobile) return;
-    
-    const endTime = Date.now();
-    const swipeTime = endTime - touchStartRef.current.time;
-    const screenWidth = window.innerWidth;
-    
-    let shouldOpen = false;
-    
-    if (lastTouchRef.current) {
-      const totalDeltaX = lastTouchRef.current.x - touchStartRef.current.x;
-      const velocity = totalDeltaX / swipeTime; // pixels per ms
-      
-      // Thresholds for opening chat
-      const distanceThreshold = screenWidth * 0.2; // 20% of screen width
-      const velocityThreshold = 0.5; // pixels per ms for quick swipes
-      
-      shouldOpen = totalDeltaX > distanceThreshold || velocity > velocityThreshold;
-      
-      console.log('📱 Touch end decision (swipe right):', {
-        totalDeltaX,
-        velocity,
-        swipeTime,
-        distanceThreshold,
-        velocityThreshold,
-        shouldOpen,
-        progress: dragProgress
-      });
-    }
-    
-    // Reset touch tracking
-    touchStartRef.current = null;
-    lastTouchRef.current = null;
-    setIsDragging(false);
-    
-    if (shouldOpen) {
-      openChatWindow();
-    } else {
-      closeChatWindow();
-    }
-  }, [isDragging, isMobile, dragProgress]);
+    // Swipe gesture disabled
+    return;
+  }, []);
 
-  // Register touch events on document for better mobile capture
+  // Register touch events on document - DISABLED
   useEffect(() => {
-    if (!isMobile) return;
-    
-    document.addEventListener('touchstart', handleTouchStart, { passive: false });
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', handleTouchEnd, { passive: false });
-    
-    return () => {
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [isMobile, handleTouchStart, handleTouchMove, handleTouchEnd]);
+    // Touch events disabled
+    return;
+  }, []);
 
   const openChatWindow = () => {
     setIsChatOpen(true);
@@ -218,8 +108,8 @@ export default function SwipeRightChat({ children }: SwipeRightChatProps) {
         {children}
       </div>
 
-      {/* Mobile Swipe Indicator - Show in bottom left corner */}
-      {isMobile && !isChatOpen && !isDragging && showIndicator && (
+      {/* Mobile Swipe Indicator - DISABLED */}
+      {false && isMobile && !isChatOpen && !isDragging && showIndicator && (
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}

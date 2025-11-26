@@ -21,6 +21,7 @@ import SwipeRightChat from '@/components/chat/SwipeRightChat';
 import { GlobalRematchNotification } from '@/components/rematch/GlobalRematchNotification';
 import InviteAcceptedNotification from '@/components/friends/InviteAcceptedNotification';
 import InviteDeclinedNotification from '@/components/friends/InviteDeclinedNotification';
+import RematchRequestNotification from '@/components/friends/RematchRequestNotification';
 
 import PersistentNotificationManager from '@/components/notifications/PersistentNotificationManager';
 import { GameType } from '@/types/ranked';
@@ -1135,6 +1136,9 @@ const DashboardContent: React.FC = () => {
         
         {/* Global Rematch Notifications */}
         <GlobalRematchNotification />
+        
+        {/* Rematch Request Notifications - Auto-navigate receiver to waiting room */}
+        <RematchRequestNotification />
         
         {/* Invite Accepted Notifications - Auto-navigate sender to match */}
         <InviteAcceptedNotification />

@@ -98,7 +98,7 @@ export async function sendMatchChatMessage(
       originalText: text,
       language,
       isVoice,
-      audioTranscriptionDuration,
+      ...(audioTranscriptionDuration !== undefined && { audioTranscriptionDuration }), // Only include if defined
       timestamp: Timestamp.now(),
       isModerated: false
     };

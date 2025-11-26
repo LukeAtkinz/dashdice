@@ -1678,10 +1678,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       {/* Normal Match UI - Hidden when game over, turn decider, or during transition */}
       <motion.div 
         initial={{ opacity: 0, x: 100 }}
-        animate={{ opacity: 1, x: 0 }}
+        animate={matchData.gameData.gamePhase === 'gameOver' || matchData.gameData.gamePhase === 'turnDecider' || showTurnDeciderTransition ? { opacity: 0, x: 100 } : { opacity: 1, x: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className={`w-full h-screen match-container ${matchData.gameData.gamePhase === 'gameOver' || matchData.gameData.gamePhase === 'turnDecider' || showTurnDeciderTransition ? 'hidden' : 'flex'} flex-col items-center justify-start md:justify-center px-2 pt-8 md:pt-12`}
-        style={{ position: 'relative', left: 0, top: 0, transform: 'none', zIndex: 10, pointerEvents: 'auto' }}
+        style={{ position: 'relative', left: 0, top: 0, transform: 'none', zIndex: 10, pointerEvents: 'auto', display: matchData.gameData.gamePhase === 'turnDecider' || showTurnDeciderTransition ? 'none' : undefined }}
       >
         {/* Game Arena */}
         <div className="w-[90vw] mx-auto flex items-center justify-center" style={{ position: 'relative' }}>
@@ -2556,21 +2556,21 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 </motion.div>
                 
               </motion.div>
-                
-                {/* Mobile Match Chat - Inside top container below player cards */}
-                {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8, duration: 0.5 }}
-                    className="px-4 mt-3"
-                  >
-                    <MatchChatFeed matchId={matchData.id} />
-                  </motion.div>
-                )}
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* Mobile Match Chat - Below player cards */}
+            {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.5 }}
+                className="px-4 mt-3 w-full"
+              >
+                <MatchChatFeed matchId={matchData.id} />
+              </motion.div>
+            )}
 
             {/* Voice Button - Positioned above 5th ability slot on mobile - Only show for non-bot matches */}
             {matchData.gameData.gamePhase === 'gameplay' && matchData.id && user && session && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
@@ -2602,7 +2602,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
             )}
 
             {/* Center Dice Area - Middle */}
-            <div className="w-full flex flex-col items-center justify-center" style={{ paddingTop: 'calc(18vh)', paddingBottom: '20px', minHeight: '40vh', maxWidth: '100%', overflow: 'visible' }}>
+            <div className="w-full flex flex-col items-center justify-center" style={{ paddingTop: 'calc(16vh)', paddingBottom: '20px', minHeight: '40vh', maxWidth: '100%', overflow: 'visible' }}>
               {/* Phase-specific content with professional transitions */}
               <AnimatePresence mode="wait">
                 {matchData.gameData.gamePhase === 'turnDecider' && (

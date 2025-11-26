@@ -22,6 +22,7 @@ import SwipeRightChat from '@/components/chat/SwipeRightChat';
 import { GlobalRematchNotification } from '@/components/rematch/GlobalRematchNotification';
 import { GameInvitationNotification } from '@/components/friends/GameInvitationNotification';
 import InviteAcceptedNotification from '@/components/friends/InviteAcceptedNotification';
+import RematchRequestNotification from '@/components/friends/RematchRequestNotification';
 import PersistentNotificationManager from '@/components/notifications/PersistentNotificationManager';
 import { GameType } from '@/types/ranked';
 import { RematchProvider } from '@/context/RematchContext';
@@ -403,6 +404,7 @@ const GuestDashboardContent: React.FC = () => {
       {/* Notifications */}
       <AchievementNotificationDisplay />
       <GlobalRematchNotification />
+      <RematchRequestNotification />
       <GameInvitationNotification />
       <InviteAcceptedNotification />
       <PersistentNotificationManager />

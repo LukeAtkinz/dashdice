@@ -8,6 +8,8 @@ import InlineAbilitiesDisplay from '@/components/match/InlineAbilitiesDisplay';
 import AuraCounter from '@/components/ui/AuraCounter';
 import { MultiplierAnimation } from '@/components/ui/MultiplierAnimation';
 import { SpriteSheetPlayer } from './SpriteSheetPlayer';
+import { MatchVoiceButton } from '@/components/match/MatchVoiceButton';
+import { useMatchChat } from '@/context/MatchChatContext';
 
 interface GameplayPhaseProps {
   matchData: MatchData;
@@ -1112,6 +1114,35 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               </motion.div>
             )}
         </motion.div>
+        
+        {/* Desktop Voice Button - Below play/save buttons */}
+        {(() => {
+          const { sendMessage, muteState, session } = useMatchChat();
+          const isBot = matchData.hostData.playerId.includes('bot_') || matchData.opponentData?.playerId?.includes('bot_');
+          
+          return !isBot && matchData.id && user && session ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, duration: 0.4 }}
+              className="hidden md:flex justify-center mt-6"
+            >
+              <MatchVoiceButton
+                matchId={matchData.id}
+                playerId={user.uid}
+                language={session.player1Id === user.uid ? session.player1Language : session.player2Language}
+                onTranscription={async (text: string, duration: number) => {
+                  try {
+                    await sendMessage(text, true, duration);
+                  } catch (error) {
+                    console.error('Failed to send voice message:', error);
+                  }
+                }}
+                isMuted={muteState.micMuted}
+              />
+            </motion.div>
+          ) : null;
+        })()}
       </div>
 
       {/* Mobile Combined Abilities and Buttons Container - Transparent background */}

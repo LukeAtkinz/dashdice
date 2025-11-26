@@ -38,7 +38,7 @@ export interface FriendGameInvitation {
 
 export interface InviteNotification {
   id: string;
-  type: 'friend_invite' | 'invite_accepted' | 'invite_declined' | 'session_ready';
+  type: 'friend_invite' | 'invite_accepted' | 'invite_declined' | 'session_ready' | 'rematch_request';
   title: string;
   message: string;
   fromUser: {
@@ -48,6 +48,7 @@ export interface InviteNotification {
   gameMode?: string;
   sessionId?: string;
   inviteId?: string;
+  rematchRoomId?: string;
   createdAt: Timestamp;
   read: boolean;
 }
