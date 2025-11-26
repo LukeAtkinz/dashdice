@@ -441,17 +441,17 @@ export default function FriendCard({ friend, compact = false, showActions = true
         }}
       ></div>
       
-      <div className="relative p-4 flex items-center" style={{ zIndex: 10 }}>
+      <div className="relative p-4 md:p-6 flex items-center w-full" style={{ zIndex: 10 }}>
         {/* Action buttons - Desktop: inline, Mobile: stacked below */}
         {showActions && (
           <motion.div 
-            className="space-y-2"
+            className="space-y-2 w-full"
             layout
           >
             {/* Desktop: Horizontal layout - name/picture left, buttons right, vertically centered */}
-            <div className="hidden md:flex items-center justify-end gap-4 w-full">
+            <div className="hidden md:flex items-center justify-between gap-4 w-full">
               {/* Profile section content on left */}
-              <div className="flex items-center gap-3 flex-1 min-w-0 mr-auto">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="relative flex-shrink-0">
                   <ProfilePicture
                     src={friend.friendData?.profilePicture || friend.friendData?.photoURL}

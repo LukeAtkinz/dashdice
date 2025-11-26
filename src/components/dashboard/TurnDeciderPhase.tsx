@@ -235,7 +235,7 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
     <div className="absolute inset-0">
       {/* Background Video Layers - Player Backgrounds */}
       {/* Top Half - Current Player Background */}
-      <div className="absolute top-0 left-0 right-0" style={{ height: '50%', zIndex: 1, overflow: 'hidden' }}>
+      <div className="absolute top-0 left-0 right-0 w-full" style={{ height: '50%', zIndex: 1, overflow: 'hidden' }}>
         <video
           key={`top-${topVideo}`}
           src={topVideo}
@@ -247,13 +247,13 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           preload="auto"
           disablePictureInPicture
           disableRemotePlayback
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ pointerEvents: 'none' }}
+          className="w-full h-full"
+          style={{ pointerEvents: 'none', objectFit: 'cover', display: 'block' }}
         />
       </div>
 
       {/* Bottom Half - Opponent Background */}
-      <div className="absolute bottom-0 left-0 right-0" style={{ height: '50%', zIndex: 1, overflow: 'hidden' }}>
+      <div className="absolute bottom-0 left-0 right-0 w-full" style={{ height: '50%', zIndex: 1, overflow: 'hidden' }}>
         <video
           key={`bottom-${bottomVideo}`}
           src={bottomVideo}
@@ -265,8 +265,8 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
           preload="auto"
           disablePictureInPicture
           disableRemotePlayback
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ pointerEvents: 'none' }}
+          className="w-full h-full"
+          style={{ pointerEvents: 'none', objectFit: 'cover', display: 'block' }}
         />
       </div>
 

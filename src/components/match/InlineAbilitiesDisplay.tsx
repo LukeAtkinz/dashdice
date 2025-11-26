@@ -421,8 +421,10 @@ export default function InlineAbilitiesDisplay({
     return { disabled: false, reason: '' };
   };
 
-  // Always show exactly 5 slots
-  const displaySlots = Array.from({ length: 5 }, (_, index) => {
+  // Show 4 slots on desktop, 5 on mobile
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const slotCount = isMobile ? 5 : 4;
+  const displaySlots = Array.from({ length: slotCount }, (_, index) => {
     const equippedAbility = equippedAbilities[index];
     return equippedAbility || null;
   });

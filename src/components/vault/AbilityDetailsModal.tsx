@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { Ability } from '@/types/abilities';
 
 interface AbilityDetailsModalProps {
@@ -17,7 +18,7 @@ export const AbilityDetailsModal: React.FC<AbilityDetailsModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <>
       {/* Backdrop */}
       <motion.div
@@ -181,4 +182,7 @@ export const AbilityDetailsModal: React.FC<AbilityDetailsModalProps> = ({
           </motion.div>
     </>
   );
+
+  // Render modal at document body level using portal
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : null;
 };

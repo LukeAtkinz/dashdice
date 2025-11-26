@@ -997,7 +997,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         {/* Desktop Abilities Display - Enhanced animations */}
         {user && onAbilityUsed && (
           <motion.div 
-            className="hidden md:block mb-6 mt-8 w-full flex justify-center"
+            className="hidden md:block mb-6 mt-1 w-full flex justify-center"
             initial={{ opacity: 0, y: 30, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ 

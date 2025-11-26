@@ -1601,7 +1601,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         initial={{ opacity: 0, x: 100 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className={`w-full h-screen match-container ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-start md:justify-center px-2`}
+        className={`w-full h-screen match-container ${matchData.gameData.gamePhase === 'gameOver' ? 'hidden' : 'flex'} flex-col items-center justify-start md:justify-center px-2 pt-8 md:pt-12`}
         style={{ position: 'relative', left: 0, top: 0, transform: 'none', zIndex: 10 }}
       >
         {/* Game Arena */}
@@ -1772,57 +1772,51 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 )}
               </motion.div>
               
-              {/* Background Rarity Display - Below Container, Left Aligned */}
+              {/* Background Rarity Display with AURA - Below Container, Left Aligned */}
               <div 
-                className="mt-4 text-left flex items-center gap-3"
+                className="mt-4 text-left flex items-center justify-between gap-3"
                 style={{
                   display: 'flex',
-                  width: '190px',
+                  width: '100%',
+                  maxWidth: '500px',
                   height: '45px',
                   flexDirection: 'row',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  borderRadius: '10px',
-                  background: 'rgba(255, 255, 255, 0.09)',
-                  backdropFilter: 'blur(5.5px)',
-                  padding: '0 12px'
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
                 }}
               >
-                <span style={{
-                  color: '#FFF',
-                  textAlign: 'left',
-                  fontFamily: 'Orbitron',
-                  fontSize: '20px',
-                  fontStyle: 'normal',
-                  fontWeight: 500,
-                  lineHeight: '42px',
-                  textTransform: 'uppercase'
-                }}>
-                  {currentPlayerBackground?.rarity || 'COMMON'}
-                </span>
-              </div>
-              
-              {/* Aura Counter - Separate Container Below Rarity */}
-              <div 
-                className="mt-2 text-left"
-                style={{
+                {/* Rarity with blurred background */}
+                <div style={{
                   display: 'flex',
-                  width: '190px',
-                  height: '60px',
-                  flexDirection: 'row',
-                  justifyContent: 'center',
+                  height: '45px',
+                  padding: '0 12px',
                   alignItems: 'center',
                   borderRadius: '10px',
                   background: 'rgba(255, 255, 255, 0.09)',
-                  backdropFilter: 'blur(5.5px)',
-                  padding: '0 12px'
-                }}
-              >
-                <AuraCounter 
-                  auraValue={matchData.gameData.playerAura?.[currentPlayer.playerId] || 0}
-                  size="medium"
-                  className="flex items-center"
-                />
+                  backdropFilter: 'blur(5.5px)'
+                }}>
+                  <span style={{
+                    color: '#FFF',
+                    textAlign: 'left',
+                    fontFamily: 'Orbitron',
+                    fontSize: '20px',
+                    fontStyle: 'normal',
+                    fontWeight: 500,
+                    lineHeight: '42px',
+                    textTransform: 'uppercase'
+                  }}>
+                    {currentPlayerBackground?.rarity || 'COMMON'}
+                  </span>
+                </div>
+                
+                {/* Aura Counter - Right aligned, no background, bigger */}
+                <div className="hidden md:flex">
+                  <AuraCounter 
+                    auraValue={matchData.gameData.playerAura?.[currentPlayer.playerId] || 0}
+                    size="large"
+                    className="flex items-center"
+                  />
+                </div>
               </div>
                 </div>
               )}
