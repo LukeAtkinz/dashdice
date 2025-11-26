@@ -323,7 +323,6 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
               marginTop: '-40px' // Move up on y-axis
             }}
           >
-          >
           <h3 className="text-lg md:text-xl font-bold text-yellow-400 mb-6 text-center" style={{ fontFamily: "Audiowide", textShadow: "0 0 10px rgba(255, 215, 0, 0.5)" }}>
             MATCH STATISTICS
           </h3>
