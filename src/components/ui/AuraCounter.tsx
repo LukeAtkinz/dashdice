@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 interface AuraCounterProps {
   auraValue: number;
   className?: string;
-  size?: 'small' | 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large' | 'extra-large';
   showIcon?: boolean;
 }
 
@@ -43,6 +43,11 @@ export default function AuraCounter({
       iconSize: 36,
       textSize: 'text-2xl',
       gap: 'gap-2'
+    },
+    'extra-large': {
+      iconSize: 48,
+      textSize: 'text-4xl',
+      gap: 'gap-3'
     }
   };
 

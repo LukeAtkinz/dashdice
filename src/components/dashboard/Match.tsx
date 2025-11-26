@@ -1921,22 +1921,38 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   </span>
                 </div>
                 
-                {/* Aura Counter - Right aligned, no background, bigger */}
-                <div className="hidden md:flex">
+                {/* Aura Counter and Voice Button - Right aligned */}
+                <div className="hidden md:flex flex-col items-end gap-3">
                   <AuraCounter 
                     auraValue={matchData.gameData.playerAura?.[currentPlayer.playerId] || 0}
-                    size="large"
+                    size="extra-large"
                     className="flex items-center"
                   />
+                  
+                  {/* Desktop Voice Button - Below Aura Counter */}
+                  {(() => {
+                    const { sendMessage, muteState, session } = useMatchChat();
+                    const isBot = matchData.hostData.playerId.includes('bot_') || matchData.opponentData?.playerId?.includes('bot_');
+                    
+                    return !isBot && matchData.id && user && session ? (
+                      <MatchVoiceButton
+                        matchId={matchData.id}
+                        playerId={user.uid}
+                        language={session.player1Id === user.uid ? session.player1Language : session.player2Language}
+                        onTranscription={async (text: string, duration: number) => {
+                          try {
+                            await sendMessage(text, true, duration);
+                          } catch (error) {
+                            console.error('Failed to send voice message:', error);
+                          }
+                        }}
+                        isMuted={muteState.micMuted}
+                      />
+                    ) : null;
+                  })()}
                 </div>
               </div>
               
-              {/* Desktop Chat Box - Below Current Player Card */}
-              {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
-                <div className="hidden md:block mt-3" style={{ width: '100%', maxWidth: '500px' }}>
-                  <MatchChatFeed matchId={matchData.id} className="desktop-player-chat" />
-                </div>
-              )}
                 </div>
               )}
             </AnimatePresence>
@@ -2556,21 +2572,21 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 </motion.div>
                 
               </motion.div>
+                
+                {/* Mobile Match Chat - Inside player cards container, relative positioning */}
+                {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8, duration: 0.5 }}
+                    className="relative px-4 mt-3 w-full"
+                  >
+                    <MatchChatFeed matchId={matchData.id} />
+                  </motion.div>
+                )}
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {/* Mobile Match Chat - Below player cards */}
-            {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.5 }}
-                className="px-4 mt-3 w-full"
-              >
-                <MatchChatFeed matchId={matchData.id} />
-              </motion.div>
-            )}
 
             {/* Voice Button - Positioned above 5th ability slot on mobile - Only show for non-bot matches */}
             {matchData.gameData.gamePhase === 'gameplay' && matchData.id && user && session && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (

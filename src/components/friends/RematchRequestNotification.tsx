@@ -31,20 +31,33 @@ export const RematchRequestNotification: React.FC = () => {
         if (rematchNotification) {
           console.log('🎮 Rematch request received! Notification:', rematchNotification);
           
-          // Mark notification as read
+          // Mark notification as read immediately
           EnhancedFriendInviteService.markNotificationAsRead(rematchNotification.id);
           
-          // Navigate to waiting room with rematch room ID
           const rematchRoomId = rematchNotification.rematchRoomId;
           const gameMode = rematchNotification.gameMode || 'classic';
           
           if (rematchRoomId) {
-            console.log('🎮 Navigating to rematch waiting room:', { rematchRoomId, gameMode });
-            setCurrentSection('waiting-room', {
-              gameMode: gameMode,
-              roomId: rematchRoomId,
-              actionType: 'live'
-            });
+            console.log('🎮 Accepting rematch directly:', { rematchRoomId, gameMode });
+            
+            // Accept the rematch directly - this will create the match
+            (async () => {
+              try {
+                const { RematchService } = await import('@/services/rematchService');
+                console.log('🎮 Calling RematchService.acceptRematch...');
+                const matchId = await RematchService.acceptRematch(rematchRoomId, user.uid);
+                console.log('✅ Rematch accepted! Match ID:', matchId);
+                
+                // Navigate directly to the match
+                setCurrentSection('match', {
+                  matchId: matchId,
+                  roomId: matchId,
+                  gameMode: gameMode
+                });
+              } catch (error) {
+                console.error('❌ Failed to accept rematch:', error);
+              }
+            })();
           } else {
             console.error('❌ No rematchRoomId in notification!');
           }

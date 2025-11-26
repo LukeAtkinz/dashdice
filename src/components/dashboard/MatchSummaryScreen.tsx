@@ -119,26 +119,25 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
     try {
       setShowGameModeSelector(false);
       
-      // Send game invitation with rematch flag
-      const { GameInvitationService } = await import('@/services/gameInvitationService');
+      // Use RematchService to create rematch room and send notification
+      const { RematchService } = await import('@/services/rematchService');
       
-      const result = await GameInvitationService.sendGameInvitation(
+      console.log('🔄 Sending rematch request via RematchService...');
+      const rematchRoomId = await RematchService.createRematchRoom(
         user.uid,
+        user.displayName || 'Unknown',
         opponentId,
+        opponentDisplayName || 'Opponent',
+        matchData.id || '',
         gameMode,
-        { isRematch: true, previousMatchId: matchData.id }
+        matchData.gameType || 'quick'
       );
       
-      if (!result.success) {
-        console.error('❌ Failed to send rematch invitation:', result.error);
-        setRematchState('idle');
-        return;
-      }
-      
-      console.log('✅ Rematch invitation sent - opponent will see it in their game invitations');
+      console.log('✅ Rematch request sent! Room ID:', rematchRoomId);
+      console.log('👀 Opponent should receive notification and be auto-navigated to waiting room');
       setRematchState('sent');
     } catch (error) {
-      console.error('Error sending rematch invitation:', error);
+      console.error('❌ Error sending rematch request:', error);
       setRematchState('idle');
     }
   };
