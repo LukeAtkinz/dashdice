@@ -69,7 +69,7 @@ export default function VibinTab() {
 
   return (
     <>
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 md:py-0 md:pt-6" style={{ maxHeight: 'calc(100vh - 80px)' }}>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 md:py-0 md:pt-6 md:max-h-[1216px]" style={{ maxHeight: 'calc(100vh - 80px)' }}>
         <div className="w-full max-w-[80rem] mx-auto flex flex-row items-start justify-center flex-wrap gap-[2rem] pb-8">
           {backgroundItems.map((item) => (
             <motion.div

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { UserService } from '@/services/userService';
@@ -3093,7 +3093,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           )}
         </div>
 
-        {/* Center - VS */}
+        {/* Center - Game Mode Title / VS */}
         <div style={{
           position: 'absolute',
           top: '50%',
@@ -3101,19 +3101,57 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           transform: 'translate(-50%, -50%)',
           zIndex: 100
         }}>
-          <motion.div
-            layoutId="vs-morph-text"
-            style={{
-              fontFamily: 'Audiowide',
-              fontSize: window.innerWidth < 768 ? '6rem' : '10rem',
-              color: '#FFF',
-              fontWeight: 'bold',
-              textShadow: '0 0 40px rgba(255,255,255,1), 0 0 80px rgba(255,255,255,0.9), 0 0 120px rgba(255,255,255,0.7), 0 0 160px rgba(255,255,255,0.5)',
-              WebkitFontSmoothing: 'antialiased'
-            }}
-          >
-            VS
-          </motion.div>
+          <AnimatePresence mode="wait">
+            {opponentData ? (
+              <motion.div
+                key="vs-text"
+                initial={{ scale: 0.5, opacity: 0, filter: 'blur(20px)' }}
+                animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
+                exit={{ scale: 0.5, opacity: 0, filter: 'blur(20px)' }}
+                transition={{ 
+                  duration: 0.6, 
+                  ease: [0.43, 0.13, 0.23, 0.96],
+                  scale: { type: "spring", stiffness: 200, damping: 20 }
+                }}
+                style={{
+                  fontFamily: 'Audiowide',
+                  fontSize: window.innerWidth < 768 ? '6rem' : '10rem',
+                  color: '#FFF',
+                  fontWeight: 'bold',
+                  textShadow: '0 0 40px rgba(255,255,255,1), 0 0 80px rgba(255,255,255,0.9), 0 0 120px rgba(255,255,255,0.7), 0 0 160px rgba(255,255,255,0.5)',
+                  WebkitFontSmoothing: 'antialiased',
+                  textTransform: 'uppercase',
+                  textAlign: 'center'
+                }}
+              >
+                VS
+              </motion.div>
+            ) : (
+              <motion.div
+                key="gamemode-text"
+                initial={{ scale: 1.2, opacity: 0, filter: 'blur(20px)' }}
+                animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
+                exit={{ scale: 1.2, opacity: 0, filter: 'blur(20px)' }}
+                transition={{ 
+                  duration: 0.6, 
+                  ease: [0.43, 0.13, 0.23, 0.96]
+                }}
+                style={{
+                  fontFamily: 'Audiowide',
+                  fontSize: window.innerWidth < 768 ? '3rem' : '5rem',
+                  color: '#FFF',
+                  fontWeight: 'bold',
+                  textShadow: '0 0 40px rgba(255,255,255,1), 0 0 80px rgba(255,255,255,0.9), 0 0 120px rgba(255,255,255,0.7), 0 0 160px rgba(255,255,255,0.5)',
+                  WebkitFontSmoothing: 'antialiased',
+                  textTransform: 'uppercase',
+                  textAlign: 'center',
+                  padding: '0 20px'
+                }}
+              >
+                {gameMode}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Bottom Section - Current User Overlay */}
