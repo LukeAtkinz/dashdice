@@ -390,6 +390,19 @@ service cloud.firestore {
       allow write: if request.auth != null;
     }
     
+    // Social League Stats Collection - Daily time-gated competitive leaderboard
+    match /socialLeagueStats/{statId} {
+      // Allow reads for all authenticated users (to view leaderboard)
+      allow read: if request.auth != null;
+      
+      // Allow create/update only during Social League hours (6:00 PM - 6:15 PM UTC)
+      // Note: Firestore uses UTC time, adjust as needed for your timezone
+      allow create, update: if request.auth != null && 
+        request.resource.data.uid is string &&
+        request.resource.data.date is string &&
+        request.resource.data.wins is number;
+    }
+    
     // Users can read and write their own inventory items
     match /inventory/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;

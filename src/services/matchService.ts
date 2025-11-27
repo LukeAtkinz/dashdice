@@ -49,6 +49,29 @@ export class MatchService {
       // Check if this is a friend match for additional friend stats tracking
       const isFriendMatch = await this.arePlayersFriends(hostId, opponentId);
       
+      // 🏆 Social League: Track win if match is during active window and between friends
+      if (isFriendMatch) {
+        try {
+          const { SocialLeagueService } = await import('./socialLeagueService');
+          const eligibility = await SocialLeagueService.canPlaySocialLeague(winnerId, hostId === winnerId ? opponentId : hostId);
+          
+          if (eligibility.eligible) {
+            const winnerData = hostId === winnerId ? matchData.hostData : matchData.opponentData;
+            const winnerBackground = (winnerData as any).inventory?.matchBackgroundEquipped?.id;
+            
+            await SocialLeagueService.recordWin(
+              winnerId,
+              winnerData.playerDisplayName,
+              winnerBackground
+            );
+            console.log('🏆 Social League win recorded for', winnerData.playerDisplayName);
+          }
+        } catch (error) {
+          console.error('❌ Failed to record Social League win:', error);
+          // Don't fail the entire match if Social League tracking fails
+        }
+      }
+      
       // Update win/loss stats
       if (winnerId === hostId) {
         // Host wins, opponent loses
