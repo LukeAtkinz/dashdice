@@ -70,7 +70,7 @@ export default function VictoryTab() {
   return (
     <>
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 md:py-0 md:pt-6" style={{ maxHeight: 'calc(100vh - 80px)' }}>
-        <div className="w-full max-w-[80rem] mx-auto grid grid-cols-1 md:grid-cols-3 gap-[2rem] pb-8">
+        <div className="w-full md:w-[80vw] max-w-[80rem] mx-auto grid grid-cols-1 md:grid-cols-3 gap-[2rem] pb-8">
           {backgroundItems.map((item) => (
             <motion.div
               key={item.id}

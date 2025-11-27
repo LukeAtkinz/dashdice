@@ -2045,15 +2045,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         className="text-4xl md:text-6xl font-bold mb-6"
                         style={{ 
                           fontFamily: "Audiowide",
-                          background: turnAnnouncementData.isCurrentPlayerFirst 
-                            ? "linear-gradient(45deg, #FFD700, #FFA500)" 
-                            : "linear-gradient(45deg, #FF6B6B, #FF8E8E)",
-                          WebkitBackgroundClip: "text",
-                          WebkitTextFillColor: "transparent",
-                          backgroundClip: "text",
-                          textShadow: turnAnnouncementData.isCurrentPlayerFirst 
-                            ? "0 0 20px rgba(255, 215, 0, 0.5)" 
-                            : "0 0 20px rgba(255, 107, 107, 0.5)"
+                          color: "#FFFFFF",
+                          textShadow: "0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.5)"
                         }}
                       >
                         {turnAnnouncementData.isCurrentPlayerFirst ? "YOU GO FIRST!" : `${turnAnnouncementData.winner.toUpperCase()} GOES FIRST!`}
@@ -2712,7 +2705,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                       className="text-2xl md:text-4xl font-bold mb-4"
                       style={{ 
                         fontFamily: "Audiowide",
-                        color: turnAnnouncementData.isCurrentPlayerFirst ? "#FFD700" : "#FF6B6B"
+                        color: "#FFFFFF",
+                        textShadow: "0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.5)"
                       }}
                     >
                       {turnAnnouncementData.isCurrentPlayerFirst ? "YOU GO FIRST!" : `${turnAnnouncementData.winner.toUpperCase()} GOES FIRST!`}

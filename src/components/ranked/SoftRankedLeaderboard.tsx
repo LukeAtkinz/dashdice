@@ -8,6 +8,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
 import { BackgroundService } from '@/services/backgroundService';
 import { resolveBackgroundPath } from '@/config/backgrounds';
+import { Globe, Users as UsersIcon } from 'lucide-react';
+import SocialLeagueLeaderboard from './SocialLeagueLeaderboard';
 
 interface PlayerStats {
   uid: string;
@@ -274,7 +276,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, index, colors, isCurren
   );
 };
 
-export function SoftRankedLeaderboard() {
+// Global Leaderboard Component (original)
+function GlobalLeaderboard() {
   const { user } = useAuth();
   const { setCurrentSection } = useNavigation();
   const [players, setPlayers] = useState<PlayerStats[]>([]);
@@ -720,6 +723,72 @@ export function SoftRankedLeaderboard() {
           -ms-overflow-style: none; /* IE and Edge */
         }
       `}</style>
+    </div>
+  );
+}
+
+// Main Leaderboard Component with Tabs
+export function SoftRankedLeaderboard() {
+  const [activeTab, setActiveTab] = useState<'global' | 'social'>('global');
+
+  const tabs = [
+    { id: 'global' as const, label: 'Global', icon: Globe },
+    { id: 'social' as const, label: 'Social League', icon: UsersIcon }
+  ];
+
+  return (
+    <div className="w-full h-full flex flex-col">
+      {/* Tab Navigation */}
+      <motion.div 
+        className="flex justify-center gap-2 mb-6 px-4"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          
+          return (
+            <motion.button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`
+                flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300
+                ${isActive 
+                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/50' 
+                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50 hover:text-white'
+                }
+              `}
+              style={{
+                fontFamily: 'Audiowide',
+                textTransform: 'uppercase',
+                border: isActive ? '2px solid rgba(168, 85, 247, 0.5)' : '2px solid rgba(107, 114, 128, 0.3)'
+              }}
+            >
+              <Icon className="w-5 h-5" />
+              <span>{tab.label}</span>
+            </motion.button>
+          );
+        })}
+      </motion.div>
+
+      {/* Tab Content */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3 }}
+          className="flex-1"
+        >
+          {activeTab === 'global' && <GlobalLeaderboard />}
+          {activeTab === 'social' && <SocialLeagueLeaderboard />}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
