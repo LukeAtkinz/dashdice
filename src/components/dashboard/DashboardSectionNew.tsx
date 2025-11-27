@@ -21,6 +21,7 @@ import { GameModeIcon } from '@/components/ui/OptimizedImage';
 import { getBackgroundById } from '@/config/backgrounds';
 import { db } from '@/services/firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
+import { SocialLeagueService } from '@/services/socialLeagueService';
 
 interface DashboardSectionProps {
   onGuestGameModeAction?: (gameMode: string, actionType: 'live' | 'ranked') => void;
@@ -98,6 +99,18 @@ const gameConfig = {
 export const DashboardSection: React.FC<DashboardSectionProps> = ({ 
   onGuestGameModeAction 
 }) => {
+  const [isSocialLeagueActive, setIsSocialLeagueActive] = useState(false);
+  
+  // Check Social League status every second
+  useEffect(() => {
+    const checkSocialLeague = () => {
+      setIsSocialLeagueActive(SocialLeagueService.isLeagueActive());
+    };
+    
+    checkSocialLeague();
+    const interval = setInterval(checkSocialLeague, 1000);
+    return () => clearInterval(interval);
+  }, []);
   const { user } = useAuth();
   const { setCurrentSection } = useNavigation();
   const { DisplayBackgroundEquip } = useBackground();
@@ -246,8 +259,8 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
     }
   };
 
-  const handleGameModeAction = async (gameMode: string, action: string) => {
-    console.log(`${gameMode} - ${action} clicked`);
+  const handleGameModeAction = async (gameMode: string, action: string, isSocialLeague: boolean = false) => {
+    console.log(`${gameMode} - ${action} clicked${isSocialLeague ? ' (SOCIAL LEAGUE)' : ''}`);
     
     // ✅ USER INTERACTION: Grant autoplay permission for all videos
     if (typeof window !== 'undefined') {
@@ -262,7 +275,7 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
       return;
     }
     
-    if ((action === 'live' || action === 'ranked') && user) {
+    if ((action === 'live' || action === 'ranked' || isSocialLeague) && user) {
       setIsExiting(true);
       
       try {
@@ -325,7 +338,8 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
             actionType: action as 'live' | 'custom',
             gameType: gameType as 'quick' | 'ranked', // Pass gameType to preserve ranked selection
             roomId: matchResult.roomId,
-            isOptimistic: false // This is a real Go backend room
+            isOptimistic: false, // This is a real Go backend room
+            isSocialLeague: isSocialLeague // Pass Social League flag
           });
           return;
         } else {
@@ -591,22 +605,30 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        // Placeholder - do nothing
+                        if (!user) return;
+                        
+                        // Social League matchmaking - uses same system as casual but marks as social league
+                        console.log('🏆 Starting Social League matchmaking...');
+                        handleGameModeAction(mode, 'live', true); // Pass true for isSocialLeague
                       }}
                       onTouchEnd={(e) => {
                         e.stopPropagation();
-                        e.preventDefault();
-                        // Placeholder - do nothing
                       }}
-                      className="w-full flex flex-col justify-center items-center transition-all duration-300 pointer-events-auto opacity-60 cursor-not-allowed"
+                      className={`w-full flex flex-col justify-center items-center transition-all duration-300 pointer-events-auto ${
+                        isSocialLeagueActive ? 'opacity-100 cursor-pointer hover:scale-[1.02]' : 'opacity-70 cursor-pointer hover:scale-[1.02]'
+                      }`}
                       style={{
                         borderRadius: '30px',
-                        background: 'linear-gradient(135deg, #6B7280 0%, #9CA3AF 50%, #6B7280 100%)',
+                        background: isSocialLeagueActive 
+                          ? 'linear-gradient(135deg, #3B82F6 0%, #2563EB 50%, #1D4ED8 100%)' // BLUE when active
+                          : 'linear-gradient(135deg, #DC2626 0%, #B91C1C 50%, #991B1B 100%)', // RED when inactive
                         height: '80px',
                         alignContent: 'center',
                         justifyContent: 'center',
                         border: 0,
-                        boxShadow: '0 4px 15px rgba(107, 114, 128, 0.3)',
+                        boxShadow: isSocialLeagueActive 
+                          ? '0 4px 15px rgba(59, 130, 246, 0.5)' 
+                          : '0 4px 15px rgba(220, 38, 38, 0.3)',
                         touchAction: 'manipulation',
                         zIndex: 10,
                         position: 'relative'
@@ -615,13 +637,14 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
                       <div className="flex items-center gap-2 pointer-events-none">
                         <img 
                           src="/Design Elements/Player Profiles/Ranked.webp" 
-                          alt="Coming Soon" 
-                          className="w-8 h-8 md:w-12 md:h-12 object-contain opacity-50"
+                          alt="Social League" 
+                          className="w-8 h-8 md:w-12 md:h-12 object-contain"
+                          style={{ opacity: isSocialLeagueActive ? 1 : 0.8 }}
                         />
                         <span
                           className="text-[18px] md:text-[24px] leading-[22px] md:leading-[28px]"
                           style={{
-                            color: '#E2E2E2',
+                            color: '#FFFFFF',
                             textAlign: 'center',
                             fontFamily: 'Audiowide',
                             fontStyle: 'normal',
@@ -629,9 +652,14 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
                             textTransform: 'uppercase',
                           }}
                         >
-                          COMING SOON!
+                          SOCIAL LEAGUE
                         </span>
                       </div>
+                      {isSocialLeagueActive && (
+                        <div className="absolute top-1 right-2 text-xs text-white font-bold animate-pulse" style={{ fontFamily: 'Audiowide' }}>
+                          ACTIVE
+                        </div>
+                      )}
                     </button>
                   </>
                 ) : (
