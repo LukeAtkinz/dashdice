@@ -45,9 +45,11 @@ const getFriendBackgroundStyle = (friend: FriendWithStatus) => {
 
     const friendData = friend.friendData as any;
     
-    // Check if friend has display background equipped in the new nested structure
-    if (friendData?.inventory?.displayBackgroundEquipped) {
-      const background = friendData.inventory.displayBackgroundEquipped;
+    // Check if friend has match background equipped first, then display background
+    const equippedBackground = friendData?.inventory?.matchBackgroundEquipped || friendData?.inventory?.displayBackgroundEquipped;
+    
+    if (equippedBackground) {
+      const background = equippedBackground;
       
       // Handle complete background objects with name, file, and type
       if (typeof background === 'object' && background.file && background.type) {
@@ -146,9 +148,11 @@ const getFriendVideoBackground = (friend: FriendWithStatus) => {
 
     const friendData = friend.friendData as any;
     
-    // Check for display background in new nested structure
-    if (friendData?.inventory?.displayBackgroundEquipped) {
-      const background = friendData.inventory.displayBackgroundEquipped;
+    // Check for match background first, then display background
+    const equippedBackground = friendData?.inventory?.matchBackgroundEquipped || friendData?.inventory?.displayBackgroundEquipped;
+    
+    if (equippedBackground) {
+      const background = equippedBackground;
       
       // Handle complete background objects with video type
       if (typeof background === 'object' && background.type === 'video' && background.file) {
@@ -200,7 +204,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
   // Get equipped background from friend's inventory (use actual videos, not preview images)
   const inventory = friend.friendData?.inventory;
   const friendBackground = inventory && typeof inventory === 'object' && !Array.isArray(inventory) 
-    ? inventory.displayBackgroundEquipped 
+    ? (inventory.matchBackgroundEquipped || inventory.displayBackgroundEquipped)
     : undefined;
   
   // Determine if it's a video and get the actual file path

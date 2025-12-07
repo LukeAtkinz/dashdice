@@ -18,6 +18,7 @@ interface SectionParams {
   vaultTab?: 'power' | 'vibin' | 'flexin' | 'decider' | 'victory'; // Add vault tab for power loadout navigation
   topVideo?: string; // Add top World video URL for TurnDecider continuity
   bottomVideo?: string; // Add bottom World video URL for TurnDecider continuity
+  isSocialLeague?: boolean; // Add flag for Social League matches
 }
 
 interface NavigationContextType {
