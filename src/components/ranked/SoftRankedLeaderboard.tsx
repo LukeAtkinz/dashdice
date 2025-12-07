@@ -741,6 +741,7 @@ export function SoftRankedLeaderboard() {
       {/* Tab Navigation */}
       <motion.div 
         className="flex justify-center gap-2 mb-6 px-4"
+        style={{ display: 'none' }}
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
