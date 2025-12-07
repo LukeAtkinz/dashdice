@@ -197,11 +197,9 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
       // Pan Slap just activated
       setIsPanSlapActive(true);
       
-      // Start red dice after 0.4s (400ms)
-      setTimeout(() => {
-        console.log('🍳 Showing RED dice numbers');
-        setShowRedDice(true);
-      }, 400);
+      // Start red dice INSTANTLY (0ms) and video plays immediately
+      console.log('🍳 Showing RED dice numbers INSTANTLY');
+      setShowRedDice(true);
     } else if (!panSlapFound && isPanSlapActive) {
       // Pan Slap deactivated - reset states
       setIsPanSlapActive(false);

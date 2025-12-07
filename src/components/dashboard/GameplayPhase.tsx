@@ -81,6 +81,11 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   const [showVitalRushTopDice, setShowVitalRushTopDice] = useState(false);
   const [showVitalRushBottomDice, setShowVitalRushBottomDice] = useState(false);
   
+  // Check for Score Saw pulse effect (turn_score_pulse)
+  const scoreSawPulseActive = user && matchData.gameData.activeEffects?.[user.uid]?.some(
+    (effect: any) => effect.abilityId === 'score_saw' && effect.effectType === 'turn_score_pulse'
+  );
+  
   // Wrapped ability handler to detect Aura Forge and Vital Rush activation
   const handleAbilityUsed = useCallback((effect: any) => {
     // Check if this is Aura Forge activation
@@ -615,14 +620,25 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       background: hasMultiplier && bgColor.startsWith('linear') ? bgColor : undefined,
                       backgroundColor: !hasMultiplier || !bgColor.startsWith('linear') ? bgColor : undefined
                     }}
-                    animate={areDoublesGold ? {
+                    animate={scoreSawPulseActive ? {
+                      boxShadow: [
+                        '0 0 15px rgba(255, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.6)',
+                        '0 0 25px rgba(255, 0, 0, 1), 0 0 50px rgba(255, 0, 0, 0.8)',
+                        '0 0 15px rgba(255, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.6)'
+                      ],
+                      scale: [1, 1.05, 1]
+                    } : areDoublesGold ? {
                       boxShadow: [
                         '0 0 10px rgba(255, 215, 0, 0.7), 0 0 20px rgba(255, 215, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3)',
                         '0 0 15px rgba(255, 215, 0, 0.9), 0 0 30px rgba(255, 215, 0, 0.7), 0 0 45px rgba(255, 215, 0, 0.5)',
                         '0 0 10px rgba(255, 215, 0, 0.7), 0 0 20px rgba(255, 215, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3)'
                       ]
                     } : {}}
-                    transition={areDoublesGold ? {
+                    transition={scoreSawPulseActive ? {
+                      duration: 0.5,
+                      repeat: 2,
+                      repeatType: "reverse"
+                    } : areDoublesGold ? {
                       duration: 0.6,
                       repeat: Infinity,
                       repeatType: "reverse"

@@ -1072,7 +1072,7 @@ export default function PowerTab({
             <div>
               {categoryGroups.map(({ category, categoryInfo, abilities }, categoryIndex) => {
                 const userCategoryAbilities = abilities.filter(ability => 
-                  playerAbilities.unlocked.includes(ability.id) && ability.id !== 'score_siphon'
+                  playerAbilities.unlocked.includes(ability.id) && ability.id !== 'score_siphon' && ability.id !== 'power_pull'
                 );
                 
                 return (
@@ -1190,7 +1190,7 @@ export default function PowerTab({
         <div>
           {categoryGroups.map(({ category, categoryInfo, abilities }, categoryIndex) => {
             const userCategoryAbilities = abilities.filter(ability => 
-              playerAbilities.unlocked.includes(ability.id) && ability.id !== 'score_siphon'
+              playerAbilities.unlocked.includes(ability.id) && ability.id !== 'score_siphon' && ability.id !== 'power_pull'
             );
             
             return (

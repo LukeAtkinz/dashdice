@@ -1712,17 +1712,18 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               </motion.h2>
               
               <motion.div
-                className="relative rounded-3xl overflow-hidden shadow-2xl z-20"
+                className="relative overflow-hidden shadow-2xl z-20"
                 style={{ 
-                  borderWidth: hardHatWhiteBorderCurrent ? '2px' : '4px',
+                  borderWidth: '2px',
                   borderStyle: 'solid',
-                  borderColor: '#ffffff',
+                  borderColor: hardHatWhiteBorderCurrent ? '#FFD700' : '#ffffff',
+                  borderRadius: '2px',
                   height: '500px'
                 }}
                 animate={{
-                  borderColor: '#ffffff',
+                  borderColor: hardHatWhiteBorderCurrent ? '#FFD700' : '#ffffff',
                   boxShadow: hardHatWhiteBorderCurrent 
-                    ? '0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.4)'
+                    ? '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4)'
                     : '0 0 15px rgba(255, 255, 255, 0.2)'
                 }}
                 transition={{ 
@@ -2119,16 +2120,19 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               </motion.h2>
               
               <motion.div
-                className="relative rounded-3xl overflow-hidden shadow-2xl z-20"
+                className="relative overflow-hidden shadow-2xl z-20"
                 style={{ 
-                  borderWidth: '4px',
+                  borderWidth: '2px',
                   borderStyle: 'solid',
-                  borderColor: '#ffffff',
+                  borderColor: hardHatWhiteBorderOpponent ? '#FFD700' : '#ffffff',
+                  borderRadius: '2px',
                   height: '500px'
                 }}
                 animate={{
-                  borderColor: '#ffffff',
-                  boxShadow: '0 0 15px rgba(255, 255, 255, 0.2)'
+                  borderColor: hardHatWhiteBorderOpponent ? '#FFD700' : '#ffffff',
+                  boxShadow: hardHatWhiteBorderOpponent 
+                    ? '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4)'
+                    : '0 0 15px rgba(255, 255, 255, 0.2)'
                 }}
                 transition={{ 
                   duration: 0.5,
@@ -2356,13 +2360,20 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 </h3>
                 
                 <motion.div
-                  className="relative rounded-xl overflow-hidden shadow-lg"
+                  className="relative overflow-hidden shadow-lg"
                   style={{ 
                     height: '100%',
-                    width: '100%'
+                    width: '100%',
+                    borderWidth: '2px',
+                    borderStyle: 'solid',
+                    borderColor: hardHatWhiteBorderCurrent ? '#FFD700' : 'transparent',
+                    borderRadius: '2px'
                   }}
                   animate={{
-                    boxShadow: '0 0 8px rgba(0, 0, 0, 0.3)'
+                    borderColor: hardHatWhiteBorderCurrent ? '#FFD700' : 'transparent',
+                    boxShadow: hardHatWhiteBorderCurrent 
+                      ? '0 0 12px rgba(255, 215, 0, 0.6), 0 0 24px rgba(255, 215, 0, 0.3)'
+                      : '0 0 8px rgba(0, 0, 0, 0.3)'
                   }}
                   transition={{ 
                     duration: 0.5,
@@ -2498,13 +2509,20 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 </h3>
                 
                 <motion.div
-                  className="relative rounded-xl overflow-hidden shadow-lg"
+                  className="relative overflow-hidden shadow-lg"
                   style={{ 
                     height: '100%',
-                    width: '100%'
+                    width: '100%',
+                    borderWidth: '2px',
+                    borderStyle: 'solid',
+                    borderColor: hardHatWhiteBorderOpponent ? '#FFD700' : 'transparent',
+                    borderRadius: '2px'
                   }}
                   animate={{
-                    boxShadow: '0 0 8px rgba(0, 0, 0, 0.3)'
+                    borderColor: hardHatWhiteBorderOpponent ? '#FFD700' : 'transparent',
+                    boxShadow: hardHatWhiteBorderOpponent 
+                      ? '0 0 12px rgba(255, 215, 0, 0.6), 0 0 24px rgba(255, 215, 0, 0.3)'
+                      : '0 0 8px rgba(0, 0, 0, 0.3)'
                   }}
                   transition={{ 
                     duration: 0.5,

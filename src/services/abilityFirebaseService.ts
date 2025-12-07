@@ -605,32 +605,59 @@ async function applyAbilityEffects(
         throw new Error('Score Saw requires a target player');
       }
       
-      // Score Saw: Create an active effect that triggers when opponent banks
-      // Effect: 50% of turn score will be cut, and caster steals 100% of that cut (50% total transfer)
+      // Get opponent's current turn score
+      const currentTurnScore = matchData.gameData?.turnScore || 0;
+      
+      // Calculate half of turn score
+      const halvedScore = Math.floor(currentTurnScore / 2);
+      
+      // 🪚 STEP 1: Add Score Saw pulse effect for animation
       const scoreSawEffect = {
         abilityId: 'score_saw',
-        type: 'on_bank_cut',
-        cutPercentage: 0.50,
-        stealPercentage: 1.00,
-        casterPlayerId: playerId,
-        targetPlayerId: targetPlayerId,
+        effectId: `score_saw_${Date.now()}`,
+        effectType: 'turn_score_pulse',
+        appliedBy: playerId,
+        appliedTo: targetPlayerId,
         appliedAt: Timestamp.now(),
-        remainingTurns: 1  // Only lasts for opponent's next bank
+        duration: 1000 // Pulse for 1 second
       };
       
-      // Add the effect to the target player's active effects
       await updateDoc(doc(db, 'matches', matchId), {
-        [`gameData.activeEffects.${targetPlayerId}`]: arrayUnion(scoreSawEffect)
+        [`gameData.activeEffects.${playerId}`]: arrayUnion(scoreSawEffect)
       });
       
-      console.log(`🪚 Score Saw: Active effect applied to ${targetPlayerId}. Will trigger on next bank (50% cut, caster steals all of it)`);
+      // 🪚 STEP 2: Immediately halve the turn score
+      await updateDoc(doc(db, 'matches', matchId), {
+        'gameData.turnScore': halvedScore
+      });
+      
+      console.log(`🪚 Score Saw: Halved turn score from ${currentTurnScore} to ${halvedScore}`);
+      
+      // 🪚 STEP 3: Remove pulse effect after animation
+      setTimeout(async () => {
+        try {
+          const currentMatchDoc = await getDoc(doc(db, 'matches', matchId));
+          if (currentMatchDoc.exists()) {
+            const currentData = currentMatchDoc.data();
+            const currentEffects = currentData.gameData?.activeEffects?.[playerId] || [];
+            const updatedEffects = currentEffects.filter((e: any) => e.effectId !== scoreSawEffect.effectId);
+            
+            await updateDoc(doc(db, 'matches', matchId), {
+              [`gameData.activeEffects.${playerId}`]: updatedEffects
+            });
+            console.log('🪚 Score Saw pulse effect removed');
+          }
+        } catch (error) {
+          console.error('Error removing Score Saw effect:', error);
+        }
+      }, 1000);
       
       effectsApplied.push({
-        effectId: `score_saw_active`,
+        effectId: `score_saw_halve`,
         appliedTo: targetPlayerId,
-        effectType: 'on_bank_cut',
-        cutPercentage: 0.50,
-        stealPercentage: 1.00,
+        effectType: 'turn_score_halve',
+        originalScore: currentTurnScore,
+        halvedScore: halvedScore,
         auraCost: ability.auraCost,
         appliedAt: Timestamp.now()
       });
@@ -744,7 +771,22 @@ async function applyAbilityEffects(
       // Calculate 50% cut (aura is destroyed, not transferred)
       const auraCut = Math.floor(opponentAura * 0.5);
       
-      // Update only opponent's aura (cut in half)
+      // 🪓 STEP 1: Add Aura Axe pulse effect for animation
+      const auraAxeEffect = {
+        abilityId: 'aura_axe',
+        effectId: `aura_axe_${Date.now()}`,
+        effectType: 'aura_pulse',
+        appliedBy: playerId,
+        appliedTo: targetPlayerId,
+        appliedAt: Timestamp.now(),
+        duration: 1000 // Pulse for 1 second
+      };
+      
+      await updateDoc(doc(db, 'matches', matchId), {
+        [`gameData.activeEffects.${playerId}`]: arrayUnion(auraAxeEffect)
+      });
+      
+      // 🪓 STEP 2: Update opponent's aura (cut in half)
       const newOpponentAura = opponentAura - auraCut;
       
       await updateDoc(doc(db, 'matches', matchId), {
@@ -752,6 +794,25 @@ async function applyAbilityEffects(
       });
       
       console.log(`🪓 Aura Axe: Cut ${auraCut} aura from ${targetPlayerId} (${opponentAura} → ${newOpponentAura}). Aura destroyed, not transferred.`);
+      
+      // 🪓 STEP 3: Remove pulse effect after animation
+      setTimeout(async () => {
+        try {
+          const currentMatchDoc = await getDoc(doc(db, 'matches', matchId));
+          if (currentMatchDoc.exists()) {
+            const currentData = currentMatchDoc.data();
+            const currentEffects = currentData.gameData?.activeEffects?.[playerId] || [];
+            const updatedEffects = currentEffects.filter((e: any) => e.effectId !== auraAxeEffect.effectId);
+            
+            await updateDoc(doc(db, 'matches', matchId), {
+              [`gameData.activeEffects.${playerId}`]: updatedEffects
+            });
+            console.log('🪓 Aura Axe pulse effect removed');
+          }
+        } catch (error) {
+          console.error('Error removing Aura Axe effect:', error);
+        }
+      }, 1000);
       
       effectsApplied.push({
         effectId: `aura_axe_cut`,
@@ -871,17 +932,17 @@ async function applyAbilityEffects(
       // 🍳 STEP 2: Wait a moment for the animation to start, then execute game logic
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Get opponent's current turn score (this will be AUTO-BANKED)
+      // Get opponent's current turn score (this will be given to opponent and reset)
       const currentTurnScore = matchData.gameData?.turnScore || 0;
       
-      // Get opponent's current banked score and add turn score to it
+      // Get opponent's (target's) current banked score and add turn score to it
       const isTargetHost = matchData.hostData?.playerId === targetPlayerId;
       const currentBankedScore = isTargetHost 
         ? (matchData.hostData?.playerScore || 0)
         : (matchData.opponentData?.playerScore || 0);
       const newBankedScore = currentBankedScore + currentTurnScore;
       
-      // Pan Slap: Instantly show RED 1's, auto-bank turn score, end turn, switch to caster
+      // Pan Slap: Instantly show RED 1's, give turn score to OPPONENT, reset turn score to 0, end turn
       const updates: any = {
         // INSTANTLY set both dice to 1 (stops any rolling animation)
         'gameData.diceOne': 1,
@@ -890,8 +951,8 @@ async function applyAbilityEffects(
         'gameData.rollPhase': deleteField(), // Clear roll phase
         'gameData.lastRollBusted': true, // Mark as busted for visual feedback
         'gameData.bustedDice': [1, 1],
-        // Auto-bank the turn score to opponent's banked score
-        'gameData.turnScore': 0, // Clear turn score (it's been banked)
+        // Reset turn score to 0 (it's been given to opponent)
+        'gameData.turnScore': 0,
         // Immediately switch turn to caster
         'gameData.currentPlayer': playerId,
         'gameData.turnPhase': 'rolling',
@@ -900,7 +961,7 @@ async function applyAbilityEffects(
         'opponentData.turnActive': isTargetHost
       };
       
-      // Add the banked turn score to opponent's total
+      // Add the turn score to OPPONENT's banked total
       if (isTargetHost) {
         updates['hostData.playerScore'] = newBankedScore;
       } else {
@@ -909,7 +970,7 @@ async function applyAbilityEffects(
       
       await updateDoc(doc(db, 'matches', matchId), updates);
       
-      console.log(`🍳 Pan Slap executed! ${targetPlayerId} auto-banks ${currentTurnScore} points (new total: ${newBankedScore}), turn ends, switches to ${playerId}`);
+      console.log(`🍳 Pan Slap executed! ${targetPlayerId} receives ${currentTurnScore} points (new total: ${newBankedScore}), turn score reset to 0, turn ends, switches to ${playerId}`);
       
       // 🍳 STEP 3: Remove Pan Slap effect after animation completes (2 seconds)
       setTimeout(async () => {
