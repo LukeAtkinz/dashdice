@@ -1140,33 +1140,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         </motion.div>
         
         {/* Desktop Voice Button - Below play/save buttons */}
-        {(() => {
-          const { sendMessage, muteState, session } = useMatchChat();
-          const isBot = matchData.hostData.playerId.includes('bot_') || matchData.opponentData?.playerId?.includes('bot_');
-          
-          return !isBot && matchData.id && user && session ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5, duration: 0.4 }}
-              className="hidden md:flex justify-center mt-6"
-            >
-              <MatchVoiceButton
-                matchId={matchData.id}
-                playerId={user.uid}
-                language={session.player1Id === user.uid ? session.player1Language : session.player2Language}
-                onTranscription={async (text: string, duration: number) => {
-                  try {
-                    await sendMessage(text, true, duration);
-                  } catch (error) {
-                    console.error('Failed to send voice message:', error);
-                  }
-                }}
-                isMuted={muteState.micMuted}
-              />
-            </motion.div>
-          ) : null;
-        })()}
+        {/* Match chat temporarily disabled */}
       </div>
 
       {/* Mobile Combined Abilities and Buttons Container - Transparent background */}
@@ -1316,60 +1290,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   </motion.div>
                 )}
                 
-                {/* AURA FORGE: Show 1,2,3,4 selection buttons when active */}
-                {isAuraForgeActive ? (
-                  <>
-                    {[1, 2, 3, 4].map((amount) => {
-                      const pointsCost = amount * 5;
-                      const canAfford = matchData.gameData.turnScore >= pointsCost;
-                      
-                      return (
-                        <motion.button
-                          key={amount}
-                          onClick={() => canAfford && handleAuraForgeSelect(amount)}
-                          disabled={!canAfford}
-                          className={`text-2xl font-bold transition-all ${
-                            canAfford
-                              ? 'text-white active:scale-95'
-                              : 'cursor-not-allowed opacity-40'
-                          }`}
-                          style={{ 
-                            width: '18%',
-                            height: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            fontFamily: "Audiowide",
-                            border: 'none',
-                            borderRadius: '0',
-                            background: 'transparent',
-                            backdropFilter: 'none',
-                          }}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ 
-                            opacity: canAfford ? 1 : 0.4,
-                            scale: 1
-                          }}
-                          whileTap={canAfford ? { 
-                            scale: 0.92,
-                            boxShadow: "0 4px 15px rgba(139, 92, 246, 0.5)"
-                          } : {}}
-                          transition={{ 
-                            duration: 0.3,
-                            delay: amount * 0.05
-                          }}
-                        >
-                          <span className="text-3xl">{amount}</span>
-                          <span className="text-xs text-gray-400 mt-1">-{pointsCost}pts</span>
-                        </motion.button>
-                      );
-                    })}
-                  </>
-                ) : (
-                  <>
                 {/* SAVE button for modes other than True Grit - MIDDLE */}
-                {matchData.gameMode !== 'true-grit' && (
+                {!isAuraForgeActive && matchData.gameMode !== 'true-grit' && (
                   <motion.button
                     onClick={handleBankScore}
                     disabled={!canBank}
@@ -1452,8 +1374,6 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 >
                   <span>PLAY</span>
                 </motion.button>
-                  </>
-                )}
               </>
             ) : (
               <>

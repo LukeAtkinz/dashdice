@@ -1957,28 +1957,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               </div>
               
               {/* Desktop Voice Button - Right aligned below */}
-              {(() => {
-                const { sendMessage, muteState, session } = useMatchChat();
-                const isBot = matchData.hostData.playerId.includes('bot_') || matchData.opponentData?.playerId?.includes('bot_');
-                
-                return !isBot && matchData.id && user && session ? (
-                  <div className="hidden md:flex justify-end mt-3" style={{ width: '100%', maxWidth: '500px' }}>
-                    <MatchVoiceButton
-                      matchId={matchData.id}
-                      playerId={user.uid}
-                      language={session.player1Id === user.uid ? session.player1Language : session.player2Language}
-                      onTranscription={async (text: string, duration: number) => {
-                        try {
-                          await sendMessage(text, true, duration);
-                        } catch (error) {
-                          console.error('Failed to send voice message:', error);
-                        }
-                      }}
-                      isMuted={muteState.micMuted}
-                    />
-                  </div>
-                ) : null;
-              })()}
+              {/* Match chat temporarily disabled */}
               
                 </div>
               )}
@@ -2642,34 +2621,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               )}
             </AnimatePresence>
 
-            {/* Voice Button - Positioned above 5th ability slot on mobile - Only show for non-bot matches */}
-            {matchData.gameData.gamePhase === 'gameplay' && matchData.id && user && session && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1, duration: 0.4 }}
-                className="md:hidden fixed"
-                style={{
-                  bottom: 'calc(80px + 20px + 70px)',
-                  right: '16px',
-                  zIndex: 20
-                }}
-              >
-                <MatchVoiceButton
-                  matchId={matchData.id}
-                  playerId={user.uid}
-                  language={session.player1Id === user.uid ? session.player1Language : session.player2Language}
-                  onTranscription={async (text: string, duration: number) => {
-                    try {
-                      await sendMessage(text, true, duration);
-                    } catch (error) {
-                      console.error('Failed to send voice message:', error);
-                    }
-                  }}
-                  isMuted={muteState.micMuted}
-                />
-              </motion.div>
-            )}
+            {/* Match chat temporarily disabled - mobile voice button */}
 
             {/* Center Dice Area - Middle */}
             <div className="w-full flex flex-col items-center justify-center" style={{ paddingTop: 'calc(16vh)', paddingBottom: '20px', minHeight: '40vh', maxWidth: '100%', overflow: 'visible' }}>

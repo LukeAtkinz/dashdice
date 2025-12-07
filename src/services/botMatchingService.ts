@@ -11,7 +11,7 @@ import { resolveBackgroundPath } from '../config/backgrounds';
  */
 export class BotMatchingService {
   private static readonly BOTS_COLLECTION = 'bots';
-  private static readonly BOT_FALLBACK_TIMEOUT = 7000; // 7 seconds
+  private static readonly BOT_FALLBACK_TIMEOUT = 120000; // 120 seconds (2 minutes)
   
   // Bot fallback timers for sessions
   private static botFallbackTimers = new Map<string, NodeJS.Timeout>();
