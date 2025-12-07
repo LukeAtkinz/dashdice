@@ -633,7 +633,7 @@ async function applyAbilityEffects(
       
       console.log(`🪚 Score Saw: Halved turn score from ${currentTurnScore} to ${halvedScore}`);
       
-      // 🪚 STEP 3: Remove pulse effect after animation
+      // 🪚 STEP 3: Remove pulse effect after animation and reset UI
       setTimeout(async () => {
         try {
           const currentMatchDoc = await getDoc(doc(db, 'matches', matchId));
@@ -645,7 +645,7 @@ async function applyAbilityEffects(
             await updateDoc(doc(db, 'matches', matchId), {
               [`gameData.activeEffects.${playerId}`]: updatedEffects
             });
-            console.log('🪚 Score Saw pulse effect removed');
+            console.log('🪚 Score Saw pulse effect removed and UI reset');
           }
         } catch (error) {
           console.error('Error removing Score Saw effect:', error);
@@ -715,6 +715,7 @@ async function applyAbilityEffects(
       
     } else if (ability.id === 'vital_rush') {
       // Vital Rush: ×3 multiplier with 50% increased double chance and flatline risk
+      // OVERRIDE any existing multipliers
       const vitalRushEffect = {
         abilityId: 'vital_rush',
         type: 'score_multiplier',
@@ -725,11 +726,13 @@ async function applyAbilityEffects(
         remainingTurns: 1 // Only lasts for this turn
       };
       
-      // Add the effect to the player's active effects
+      // Add the effect to the player's active effects and CLEAR other multipliers
       await updateDoc(doc(db, 'matches', matchId), {
         [`gameData.activeEffects.${playerId}`]: arrayUnion(vitalRushEffect),
-        // Also set a multiplier flag for easy checking
-        [`gameData.hasTripleMultiplier`]: true
+        // Clear other multiplier flags and set only triple
+        [`gameData.hasDoubleMultiplier`]: false,
+        [`gameData.hasTripleMultiplier`]: true,
+        [`gameData.hasQuadMultiplier`]: false
       });
       
       console.log(`💓 Vital Rush: ×3 multiplier activated for ${playerId}. High risk, high reward!`);
@@ -942,18 +945,29 @@ async function applyAbilityEffects(
         : (matchData.opponentData?.playerScore || 0);
       const newBankedScore = currentBankedScore + currentTurnScore;
       
-      // Pan Slap: Instantly show RED 1's, give turn score to OPPONENT, reset turn score to 0, end turn
-      const updates: any = {
+      // 🍳 Pan Slap: Step-by-step execution
+      // STEP 1: Bank the turn score to the ACTIVE PLAYER (target) first
+      const bankUpdates: any = {};
+      if (isTargetHost) {
+        bankUpdates['hostData.playerScore'] = newBankedScore;
+      } else {
+        bankUpdates['opponentData.playerScore'] = newBankedScore;
+      }
+      await updateDoc(doc(db, 'matches', matchId), bankUpdates);
+      console.log(`🍳 Pan Slap Step 1: Banked ${currentTurnScore} to ${targetPlayerId} (new total: ${newBankedScore})`);
+      
+      // STEP 2: End turn and reset everything
+      const endTurnUpdates: any = {
         // INSTANTLY set both dice to 1 (stops any rolling animation)
         'gameData.diceOne': 1,
         'gameData.diceTwo': 1,
-        'gameData.isRolling': false, // Stop any dice rolling animation
-        'gameData.rollPhase': deleteField(), // Clear roll phase
-        'gameData.lastRollBusted': true, // Mark as busted for visual feedback
+        'gameData.isRolling': false,
+        'gameData.rollPhase': deleteField(),
+        'gameData.lastRollBusted': true,
         'gameData.bustedDice': [1, 1],
-        // Reset turn score to 0 (it's been given to opponent)
+        // Reset turn score to 0 AFTER banking
         'gameData.turnScore': 0,
-        // Immediately switch turn to caster
+        // Switch turn to caster
         'gameData.currentPlayer': playerId,
         'gameData.turnPhase': 'rolling',
         // Update turn active flags
@@ -961,14 +975,8 @@ async function applyAbilityEffects(
         'opponentData.turnActive': isTargetHost
       };
       
-      // Add the turn score to OPPONENT's banked total
-      if (isTargetHost) {
-        updates['hostData.playerScore'] = newBankedScore;
-      } else {
-        updates['opponentData.playerScore'] = newBankedScore;
-      }
-      
-      await updateDoc(doc(db, 'matches', matchId), updates);
+      await updateDoc(doc(db, 'matches', matchId), endTurnUpdates);
+      console.log(`🍳 Pan Slap Step 2: Turn ended, score reset to 0, switched to ${playerId}`);
       
       console.log(`🍳 Pan Slap executed! ${targetPlayerId} receives ${currentTurnScore} points (new total: ${newBankedScore}), turn score reset to 0, turn ends, switches to ${playerId}`);
       

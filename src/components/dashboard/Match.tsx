@@ -1717,7 +1717,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   borderWidth: '2px',
                   borderStyle: 'solid',
                   borderColor: hardHatWhiteBorderCurrent ? '#FFD700' : '#ffffff',
-                  borderRadius: '2px',
+                  borderRadius: '16px',
                   height: '500px'
                 }}
                 animate={{
@@ -2104,7 +2104,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   borderWidth: '2px',
                   borderStyle: 'solid',
                   borderColor: hardHatWhiteBorderOpponent ? '#FFD700' : '#ffffff',
-                  borderRadius: '2px',
+                  borderRadius: '16px',
                   height: '500px'
                 }}
                 animate={{
@@ -2346,7 +2346,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     borderWidth: '2px',
                     borderStyle: 'solid',
                     borderColor: hardHatWhiteBorderCurrent ? '#FFD700' : 'transparent',
-                    borderRadius: '2px'
+                    borderRadius: '16px'
                   }}
                   animate={{
                     borderColor: hardHatWhiteBorderCurrent ? '#FFD700' : 'transparent',
@@ -2495,7 +2495,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     borderWidth: '2px',
                     borderStyle: 'solid',
                     borderColor: hardHatWhiteBorderOpponent ? '#FFD700' : 'transparent',
-                    borderRadius: '2px'
+                    borderRadius: '16px'
                   }}
                   animate={{
                     borderColor: hardHatWhiteBorderOpponent ? '#FFD700' : 'transparent',
