@@ -1,15 +1,12 @@
 // Next.js image optimization configuration
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     // Dangerously allow production builds to complete even if there are type errors
     ignoreBuildErrors: true,
   },
+  // Enable Turbopack for Next.js 16 (empty config to acknowledge and silence warning)
+  turbopack: {},
   images: {
     // Enable image optimization
     remotePatterns: [
@@ -38,44 +35,6 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     minimumCacheTTL: 31536000, // 1 year cache
-  },
-  // Optimize bundle size
-  webpack: (config, { dev, isServer }) => {
-    // Split chunks for better caching
-    if (!dev && !isServer) {
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        cacheGroups: {
-          default: false,
-          vendors: false,
-          // Vendor chunk
-          vendor: {
-            name: 'vendor',
-            chunks: 'all',
-            test: /node_modules/,
-            priority: 20
-          },
-          // Common chunk
-          common: {
-            name: 'common',
-            chunks: 'all',
-            minChunks: 2,
-            priority: 10,
-            reuseExistingChunk: true,
-            enforce: true
-          },
-          // Framer Motion separate chunk (lazy loaded)
-          framerMotion: {
-            name: 'framer-motion',
-            chunks: 'all',
-            test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
-            priority: 30,
-            reuseExistingChunk: true
-          }
-        }
-      }
-    }
-    return config
   },
   // Experimental features for performance
   experimental: {
