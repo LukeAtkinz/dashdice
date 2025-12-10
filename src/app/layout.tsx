@@ -55,16 +55,17 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/icons/android/mipmap-mdpi/appicons.png", sizes: "48x48", type: "image/png" },
-      { url: "/icons/android/mipmap-hdpi/appicons.png", sizes: "72x72", type: "image/png" },
-      { url: "/icons/android/mipmap-xhdpi/appicons.png", sizes: "96x96", type: "image/png" },
-      { url: "/icons/android/mipmap-xxhdpi/appicons.png", sizes: "144x144", type: "image/png" },
-      { url: "/icons/android/mipmap-xxxhdpi/appicons.png", sizes: "192x192", type: "image/png" }
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" }
     ],
     apple: [
-      { url: "/icons/appstore.png", sizes: "180x180", type: "image/png" }
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/apple-touch-icon-152x152.png", sizes: "152x152", type: "image/png" },
+      { url: "/apple-touch-icon-167x167.png", sizes: "167x167", type: "image/png" },
+      { url: "/apple-touch-icon-180x180.png", sizes: "180x180", type: "image/png" }
     ],
-    shortcut: "/icons/android/mipmap-xxxhdpi/appicons.png"
+    shortcut: "/apple-touch-icon.png"
   },
 };
 
