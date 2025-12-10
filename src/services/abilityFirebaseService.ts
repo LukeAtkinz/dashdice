@@ -893,7 +893,7 @@ async function applyAbilityEffects(
       });
       
     } else if (ability.id === 'pan_slap') {
-      // Pan Slap: Immediately stop opponent's turn, show RED 1's, auto-bank their turn score
+      // 🍳 Pan Slap: Sequential execution - stop everything, bank score, force red 1's, end turn
       const matchDoc = await getDoc(doc(db, 'matches', matchId));
       if (!matchDoc.exists()) {
         throw new Error(`Match ${matchId} not found for Pan Slap execution`);
@@ -915,7 +915,17 @@ async function applyAbilityEffects(
         throw new Error('Pan Slap requires a target player');
       }
       
-      // 🍳 STEP 1: Add Pan Slap to activeEffects FIRST so video and red dice trigger
+      // 🍳 CAPTURE current turn score IMMEDIATELY (before any dice finish rolling)
+      const currentTurnScore = matchData.gameData?.turnScore || 0;
+      const isTargetHost = matchData.hostData?.playerId === targetPlayerId;
+      const currentBankedScore = isTargetHost 
+        ? (matchData.hostData?.playerScore || 0)
+        : (matchData.opponentData?.playerScore || 0);
+      const newBankedScore = currentBankedScore + currentTurnScore;
+      
+      console.log(`🍳 Pan Slap: Captured turn score: ${currentTurnScore}, will bank to ${targetPlayerId}`);
+      
+      // 🍳 SEQUENTIAL FLOW - All in ONE atomic update to prevent race conditions
       const panSlapEffect = {
         abilityId: 'pan_slap',
         effectId: `pan_slap_${Date.now()}`,
@@ -923,64 +933,47 @@ async function applyAbilityEffects(
         appliedBy: playerId,
         appliedTo: targetPlayerId,
         appliedAt: Timestamp.now(),
-        duration: 2000 // Will be visible for 2 seconds (video duration)
+        duration: 2000
       };
       
-      await updateDoc(doc(db, 'matches', matchId), {
-        [`gameData.activeEffects.${playerId}`]: arrayUnion(panSlapEffect)
-      });
-      
-      console.log('🍳 Pan Slap effect added to activeEffects - video and red dice should now trigger');
-      
-      // 🍳 STEP 2: Wait a moment for the animation to start, then execute game logic
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Get opponent's current turn score (this will be given to opponent and reset)
-      const currentTurnScore = matchData.gameData?.turnScore || 0;
-      
-      // Get opponent's (target's) current banked score and add turn score to it
-      const isTargetHost = matchData.hostData?.playerId === targetPlayerId;
-      const currentBankedScore = isTargetHost 
-        ? (matchData.hostData?.playerScore || 0)
-        : (matchData.opponentData?.playerScore || 0);
-      const newBankedScore = currentBankedScore + currentTurnScore;
-      
-      // 🍳 Pan Slap: Step-by-step execution
-      // STEP 1: Bank the turn score to the ACTIVE PLAYER (target) first
-      const bankUpdates: any = {};
-      if (isTargetHost) {
-        bankUpdates['hostData.playerScore'] = newBankedScore;
-      } else {
-        bankUpdates['opponentData.playerScore'] = newBankedScore;
-      }
-      await updateDoc(doc(db, 'matches', matchId), bankUpdates);
-      console.log(`🍳 Pan Slap Step 1: Banked ${currentTurnScore} to ${targetPlayerId} (new total: ${newBankedScore})`);
-      
-      // STEP 2: End turn and reset everything
-      const endTurnUpdates: any = {
-        // INSTANTLY set both dice to 1 (stops any rolling animation)
+      const atomicUpdates: any = {
+        // STEP 1: Bank the current turn score (whatever it is right now)
+        ...(isTargetHost 
+          ? { 'hostData.playerScore': newBankedScore }
+          : { 'opponentData.playerScore': newBankedScore }
+        ),
+        
+        // STEP 2: Force both dice to 1 and stop all rolling (MUST happen even mid-roll)
         'gameData.diceOne': 1,
         'gameData.diceTwo': 1,
         'gameData.isRolling': false,
         'gameData.rollPhase': deleteField(),
         'gameData.lastRollBusted': true,
         'gameData.bustedDice': [1, 1],
-        // Reset turn score to 0 AFTER banking
+        
+        // STEP 3: Reset turn score to 0 (AFTER banking)
         'gameData.turnScore': 0,
-        // Switch turn to caster
+        
+        // STEP 4: End opponent's turn and switch to caster
         'gameData.currentPlayer': playerId,
         'gameData.turnPhase': 'rolling',
-        // Update turn active flags
         'hostData.turnActive': !isTargetHost,
-        'opponentData.turnActive': isTargetHost
+        'opponentData.turnActive': isTargetHost,
+        
+        // Add Pan Slap to activeEffects for animation
+        [`gameData.activeEffects.${playerId}`]: arrayUnion(panSlapEffect)
       };
       
-      await updateDoc(doc(db, 'matches', matchId), endTurnUpdates);
-      console.log(`🍳 Pan Slap Step 2: Turn ended, score reset to 0, switched to ${playerId}`);
+      // Execute all updates atomically
+      await updateDoc(doc(db, 'matches', matchId), atomicUpdates);
       
-      console.log(`🍳 Pan Slap executed! ${targetPlayerId} receives ${currentTurnScore} points (new total: ${newBankedScore}), turn score reset to 0, turn ends, switches to ${playerId}`);
+      console.log(`🍳 Pan Slap executed atomically!`);
+      console.log(`  - Banked: ${currentTurnScore} points to ${targetPlayerId} (new total: ${newBankedScore})`);
+      console.log(`  - Dice forced to: [1, 1] with red glow`);
+      console.log(`  - Turn score reset to: 0`);
+      console.log(`  - Turn switched to: ${playerId}`);
       
-      // 🍳 STEP 3: Remove Pan Slap effect after animation completes (2 seconds)
+      // 🍳 Remove Pan Slap effect after animation completes (2 seconds)
       setTimeout(async () => {
         try {
           const currentMatchDoc = await getDoc(doc(db, 'matches', matchId));
@@ -1003,7 +996,7 @@ async function applyAbilityEffects(
         effectId: 'pan_slap',
         effectType: 'auto_bank_turn_end',
         appliedTo: targetPlayerId,
-        magnitude: currentTurnScore, // Amount that was auto-banked
+        magnitude: currentTurnScore,
         dice: [1, 1],
         appliedAt: Timestamp.now()
       });

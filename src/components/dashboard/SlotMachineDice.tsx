@@ -215,6 +215,15 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
       return { shouldGlow: false, color: '', intensity: '' };
     }
     
+    // 🍳 Pan Slap override: ALWAYS show red glow on both dice when Pan Slap is active
+    if (isPanSlapActive || showRedDice) {
+      return { 
+        shouldGlow: true, 
+        color: '#FF0000', 
+        intensity: '0 0 15px rgba(255, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.6), 0 0 45px rgba(255, 0, 0, 0.4)' 
+      };
+    }
+    
     const dice1Value = matchData?.gameData.diceOne;
     const dice2Value = matchData?.gameData.diceTwo;
     const isRolling = matchData?.gameData.isRolling;
