@@ -542,6 +542,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 loop
                 muted
                 playsInline
+                preload="auto"
                 style={{
                   position: 'absolute',
                   inset: 0,
@@ -549,7 +550,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   height: '100%',
                   objectFit: 'cover',
                   pointerEvents: 'none',
-                  zIndex: 10
+                  zIndex: 5,
+                  willChange: 'transform',
+                  transform: 'translateZ(0)'
                 }}
                 onError={(e) => console.error('💓 Vital Rush top video error:', e)}
               />
@@ -558,7 +561,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           
           {/* Turn Score - Positioned absolutely between dice - Mobile bigger and more padding */}
           <div 
-            className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"
+            className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
@@ -633,7 +636,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                         '0 0 15px rgba(255, 215, 0, 0.9), 0 0 30px rgba(255, 215, 0, 0.7), 0 0 45px rgba(255, 215, 0, 0.5)',
                         '0 0 10px rgba(255, 215, 0, 0.7), 0 0 20px rgba(255, 215, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3)'
                       ]
-                    } : {}}
+                    } : {
+                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                    }}
                     transition={scoreSawPulseActive ? {
                       duration: 0.33,
                       repeat: 1,
@@ -642,7 +647,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       duration: 0.6,
                       repeat: Infinity,
                       repeatType: "reverse"
-                    } : {}}
+                    } : {
+                      duration: 0.3
+                    }}
                   >
                     {/* Label */}
                     <p 
@@ -845,16 +852,16 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 </motion.div>
               )}
               
-              {/* 3X Multiplier - Red Themed */}
+              {/* 3X Multiplier - Blue Themed during Vital Rush, Red otherwise */}
               {matchData.gameData.hasTripleMultiplier && (
                 <motion.div
                   id="multiplier-indicator"
                   initial={{ opacity: 0, scale: 0.5, x: -10 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.4, ease: "backOut", delay: 0.2 }}
-                  className="absolute right-[-70px] md:right-[-90px] top-1/2 transform -translate-y-1/2 border-2 border-red-500 rounded-xl backdrop-blur-sm shadow-xl"
+                  className={`absolute right-[-70px] md:right-[-90px] top-1/2 transform -translate-y-1/2 border-2 ${vitalRushActive ? 'border-blue-400' : 'border-red-500'} rounded-xl backdrop-blur-sm shadow-xl`}
                   style={{
-                    background: 'linear-gradient(to bottom right, rgba(255, 0, 0, 0.7), rgba(255, 69, 0, 0.7))',
+                    background: vitalRushActive ? 'rgba(173, 216, 230, 0.9)' : 'linear-gradient(to bottom right, rgba(255, 0, 0, 0.7), rgba(255, 69, 0, 0.7))',
                     padding: '8px 10px',
                     minWidth: '60px',
                     minHeight: '60px',
@@ -869,7 +876,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     initial={{ scale: 1.3 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="text-lg md:text-2xl font-bold text-white" 
+                    className={`text-lg md:text-2xl font-bold ${vitalRushActive ? 'text-black' : 'text-white'}`}
                     style={{ fontFamily: "Audiowide" }}
                   >
                     3X
@@ -966,6 +973,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 loop
                 muted
                 playsInline
+                preload="auto"
                 style={{
                   position: 'absolute',
                   inset: 0,
@@ -973,7 +981,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   height: '100%',
                   objectFit: 'cover',
                   pointerEvents: 'none',
-                  zIndex: 10
+                  zIndex: 5,
+                  willChange: 'transform',
+                  transform: 'translateZ(0)'
                 }}
                 onError={(e) => console.error('💓 Vital Rush bottom video error:', e)}
               />
@@ -1311,7 +1321,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       textTransform: "uppercase" as const,
                       border: 'none',
                       borderRadius: '0',
-                      background: vitalRushActive && canBank ? 'rgba(173, 216, 230, 0.9)' : 'transparent',
+                      background: 'transparent',
                       backdropFilter: 'none',
                     }}
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -1354,7 +1364,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     textTransform: "uppercase" as const,
                     border: 'none',
                     borderRadius: '0',
-                    background: vitalRushActive && canRoll ? 'rgba(173, 216, 230, 0.9)' : 'transparent',
+                    background: 'transparent',
                     backdropFilter: 'none',
                   }}
                   initial={{ opacity: 0, x: 50, scale: 0.9 }}

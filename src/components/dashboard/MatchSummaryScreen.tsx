@@ -6,6 +6,7 @@ import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { GameModeSelector } from '@/components/ui/GameModeSelector';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
+import { useToast } from '@/context/ToastContext';
 import { resolveBackgroundPath } from '@/config/backgrounds';
 
 interface MatchSummaryScreenProps {
@@ -21,6 +22,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
 }) => {
   const { user } = useAuth();
   const { DisplayBackgroundEquip, VictoryBackgroundEquip } = useBackground();
+  const { showToast } = useToast();
   const [rematchState, setRematchState] = useState<'idle' | 'sent'>('idle');
   const [showGameModeSelector, setShowGameModeSelector] = useState(false);
   const [showStats, setShowStats] = useState(false);
@@ -47,21 +49,37 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   // Fetch winner's victory background from Firebase
   useEffect(() => {
     const fetchWinnerVictoryBg = async () => {
-      if (!winner) return;
+      if (!winner) {
+        console.log('🎬 No winner ID provided');
+        return;
+      }
       
       try {
         const { doc, getDoc } = await import('firebase/firestore');
         const { db } = await import('@/services/firebase');
         
+        console.log('🎬 Fetching victory background for winner:', winner);
         const userDoc = await getDoc(doc(db, 'users', winner));
+        
         if (userDoc.exists()) {
           const userData = userDoc.data();
+          console.log('🎬 Winner user data:', userData);
+          console.log('🎬 Winner inventory:', userData.inventory);
+          
           const victoryBg = userData.inventory?.victoryBackgroundEquipped;
           console.log('🎬 Fetched winner victory background from Firebase:', victoryBg);
-          setWinnerVictoryBg(victoryBg);
+          console.log('🎬 Type of victoryBg:', typeof victoryBg);
+          
+          if (victoryBg) {
+            setWinnerVictoryBg(victoryBg);
+          } else {
+            console.log('🎬 No victoryBackgroundEquipped found in user inventory');
+          }
+        } else {
+          console.log('🎬 Winner user document does not exist');
         }
       } catch (error) {
-        console.error('Error fetching winner victory background:', error);
+        console.error('🎬 Error fetching winner victory background:', error);
       }
     };
     
@@ -70,7 +88,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   
   // Get winner's victory background - use Firebase data first, then match data
   const victoryVideo = (() => {
-    console.log('🎬 Victory Background Resolution:', {
+    console.log('🎬 Victory Background Resolution START:', {
       winnerVictoryBg,
       winnerData,
       victoryBackgroundEquipped: winnerData?.victoryBackgroundEquipped,
@@ -80,19 +98,28 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
     // Priority 1: Use fetched Firebase data
     const bgSource = winnerVictoryBg || winnerData?.victoryBackgroundEquipped;
     
+    console.log('🎬 bgSource:', bgSource);
+    
     if (bgSource) {
+      // Handle both string ID and object with id property
       const bgId = typeof bgSource === 'string' 
         ? bgSource 
-        : bgSource.id;
+        : (bgSource.id || bgSource.backgroundId || bgSource.name);
       
-      console.log('🎬 Resolving background ID:', bgId);
-      const resolved = resolveBackgroundPath(bgId, 'victory-screen');
-      console.log('🎬 Resolved path:', resolved);
+      console.log('🎬 Extracted background ID:', bgId);
       
-      if (resolved?.path) return resolved.path;
+      if (bgId) {
+        const resolved = resolveBackgroundPath(bgId, 'victory-screen');
+        console.log('🎬 Resolved background:', resolved);
+        
+        if (resolved?.path) {
+          console.log('🎬 ✅ Using winner\'s victory background:', resolved.path);
+          return resolved.path;
+        }
+      }
     }
     
-    console.log('🎬 Using fallback wind-blade - victoryBackgroundEquipped was not found');
+    console.log('🎬 ⚠️ Using fallback wind-blade - victoryBackgroundEquipped was not found or could not be resolved');
     // Fallback to default
     const resolved = resolveBackgroundPath('wind-blade', 'victory-screen');
     return resolved?.path || '/backgrounds/Game Backgrounds/Victory Screens/Best Quality/Wind Blade.mp4';
@@ -139,32 +166,10 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   };
 
   const handleGameModeSelect = async (gameMode: string) => {
-    if (!user || !opponentId) return;
+    setShowGameModeSelector(false);
     
-    try {
-      setShowGameModeSelector(false);
-      
-      // Use RematchService to create rematch room and send notification
-      const { RematchService } = await import('@/services/rematchService');
-      
-      console.log('🔄 Sending rematch request via RematchService...');
-      const rematchRoomId = await RematchService.createRematchRoom(
-        user.uid,
-        user.displayName || 'Unknown',
-        opponentId,
-        opponentDisplayName || 'Opponent',
-        matchData.id || '',
-        gameMode,
-        matchData.gameType || 'quick'
-      );
-      
-      console.log('✅ Rematch request sent! Room ID:', rematchRoomId);
-      console.log('👀 Opponent should receive notification and be auto-navigated to waiting room');
-      setRematchState('sent');
-    } catch (error) {
-      console.error('❌ Error sending rematch request:', error);
-      setRematchState('idle');
-    }
+    // Show \"Disabled for playtesting\" toast
+    showToast('Disabled for playtesting', 'info', 3000);
   };
 
   const handleGameModeCancel = () => {
@@ -364,7 +369,10 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
             <div className="space-y-4">
               <div className="bg-black/30 p-2 rounded-lg">
                 <p className="text-gray-400 text-xs uppercase tracking-wider">Banks</p>
-                <p className="text-white font-bold text-2xl">{matchData.hostData.matchStats?.banks || 0}</p>
+                <p className="text-white font-bold text-2xl">{(() => {
+                  console.log('📊 Host matchStats:', matchData.hostData.matchStats);
+                  return matchData.hostData.matchStats?.banks || 0;
+                })()}</p>
               </div>
               
               <div className="bg-black/30 p-2 rounded-lg">
@@ -398,7 +406,10 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
             <div className="space-y-4">
               <div className="bg-black/30 p-2 rounded-lg">
                 <p className="text-gray-400 text-xs uppercase tracking-wider">Banks</p>
-                <p className="text-white font-bold text-2xl">{matchData.opponentData.matchStats?.banks || 0}</p>
+                <p className="text-white font-bold text-2xl">{(() => {
+                  console.log('📊 Opponent matchStats:', matchData.opponentData.matchStats);
+                  return matchData.opponentData.matchStats?.banks || 0;
+                })()}</p>
               </div>
               
               <div className="bg-black/30 p-2 rounded-lg">
