@@ -15,7 +15,7 @@
  * - Static display when not animating
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MatchData } from '@/types/match';
 
@@ -171,6 +171,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   const [isPanSlapActive, setIsPanSlapActive] = useState(false);
   const [showRedDice, setShowRedDice] = useState(false);
   const [panSlapPulsing, setPanSlapPulsing] = useState(false);
+  const panSlapVideoRef = useRef<HTMLVideoElement>(null);
   
   useEffect(() => {
     if (!matchData?.gameData?.activeEffects) {
@@ -187,24 +188,35 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
         );
         if (hasPanSlap) {
           panSlapFound = true;
-          console.log('🍳 PAN SLAP IS ACTIVE! Starting video and red dice sequence');
+          console.log('🍳 PAN SLAP IS ACTIVE! Triggering video playback');
           break;
         }
       }
     }
     
     if (panSlapFound && !isPanSlapActive) {
-      // Pan Slap just activated
+      // Pan Slap just activated - immediately play video
       setIsPanSlapActive(true);
-      
-      // Start red dice INSTANTLY (0ms) and video plays immediately
-      console.log('🍳 Showing RED dice numbers INSTANTLY');
       setShowRedDice(true);
+      
+      // Trigger video playback when activated
+      if (panSlapVideoRef.current) {
+        console.log('🍳 Playing Pan Slap video via ref');
+        panSlapVideoRef.current.currentTime = 0;
+        panSlapVideoRef.current.muted = true;
+        panSlapVideoRef.current.play().catch((err) => {
+          console.error('🍳 Pan Slap video play failed:', err);
+        });
+      }
     } else if (!panSlapFound && isPanSlapActive) {
       // Pan Slap deactivated - reset states
       setIsPanSlapActive(false);
       setShowRedDice(false);
       setPanSlapPulsing(false);
+      if (panSlapVideoRef.current) {
+        panSlapVideoRef.current.pause();
+        panSlapVideoRef.current.currentTime = 0;
+      }
     }
   }, [matchData?.gameData?.activeEffects, isPanSlapActive]);
 
@@ -768,8 +780,8 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
           transition={{ duration: 0.3 }}
         >
           <video
-            src="/Abilities/Animations/Pan Slap.webm"
-            autoPlay
+            ref={panSlapVideoRef}
+            src="/Abilities/Animations/Pan Slap/Pan Slap.webm"
             loop={false}
             muted
             playsInline
@@ -787,15 +799,6 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               willChange: 'transform',
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden'
-            }}
-            onLoadedData={(e) => {
-              const video = e.currentTarget;
-              video.muted = true;
-              video.play().catch(() => {});
-            }}
-            onCanPlay={(e) => {
-              const video = e.currentTarget;
-              if (video.paused) video.play().catch(() => {});
             }}
             onEnded={() => {
               console.log('🍳 Pan Slap video finished - starting dice pulse animation');
