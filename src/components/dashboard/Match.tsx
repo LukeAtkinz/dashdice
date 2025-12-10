@@ -24,6 +24,7 @@ import { useMatchChat } from '@/context/MatchChatContext';
 import { getBackgroundById, resolveBackgroundPath } from '@/config/backgrounds';
 import { useBackground } from '@/context/BackgroundContext';
 import AuraCounter from '@/components/ui/AuraCounter';
+import { AbilityToast } from '@/components/abilities/AbilityToast';
 
 interface MatchProps {
   gameMode?: string;
@@ -79,6 +80,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const [showHardHatUsedCurrent, setShowHardHatUsedCurrent] = useState(false);
   const [showHardHatUsedOpponent, setShowHardHatUsedOpponent] = useState(false);
   const previousHardHatStateRef = useRef<{current: boolean, opponent: boolean}>({current: false, opponent: false});
+  
+  // Ability toast notification state
+  const [activeAbilityToast, setActiveAbilityToast] = useState<string | null>(null);
   
   // Video playback management - keep videos mounted, control visibility
   const [userInteracted, setUserInteracted] = useState(false);
@@ -548,6 +552,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     if (!matchData || !user) return;
     
     try {
+      // Show ability toast notification for all abilities
+      if (effect.abilityId) {
+        setActiveAbilityToast(effect.abilityId);
+      }
+      
       // Handle Luck Turner ability - Add to activeEffects
       if (effect.abilityId === 'luck_turner') {
         
@@ -2764,6 +2773,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           />
         </>
       )}
+
+      {/* Ability Toast Notification */}
+      <AbilityToast 
+        abilityName={activeAbilityToast} 
+        onComplete={() => setActiveAbilityToast(null)} 
+      />
     </div>
   );
 };

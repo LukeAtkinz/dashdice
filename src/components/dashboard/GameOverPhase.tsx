@@ -5,6 +5,7 @@ import { MatchService } from '@/services/matchService';
 import { RematchService, RematchRoom } from '@/services/rematchService';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
 
 interface GameOverPhaseProps {
   matchData: MatchData;
@@ -18,6 +19,7 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
   onRematch
 }) => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [rematchState, setRematchState] = useState<'idle' | 'selecting' | 'requesting' | 'waiting' | 'accepted' | 'expired' | 'opponent_left'>('idle');
   const [rematchRoomId, setRematchRoomId] = useState<string | null>(null);
   const [incomingRematch, setIncomingRematch] = useState<RematchRoom | null>(null);
@@ -52,8 +54,9 @@ export const GameOverPhase: React.FC<GameOverPhaseProps> = ({
   };
 
   const handleSelectGameMode = (gameMode: string) => {
-    setSelectedGameMode(gameMode);
-    handleRequestRematchWithMode(gameMode);
+    // Disabled for playtesting
+    showToast('Disabled for playtesting', 'info', 3000);
+    setRematchState('idle'); // Reset back to idle state
   };
 
   const handleRequestRematchWithMode = async (gameMode: string) => {

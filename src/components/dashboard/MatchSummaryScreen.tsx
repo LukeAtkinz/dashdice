@@ -24,6 +24,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   const [rematchState, setRematchState] = useState<'idle' | 'sent'>('idle');
   const [showGameModeSelector, setShowGameModeSelector] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [winnerVictoryBg, setWinnerVictoryBg] = useState<any>(null);
   
   const winner = matchData.gameData.winner;
   const reason = matchData.gameData.gameOverReason;
@@ -43,22 +44,46 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
     ? matchData.hostData 
     : matchData.opponentData;
   
-  // Get winner's victory background - always use winner's victoryBackgroundEquipped from match data
+  // Fetch winner's victory background from Firebase
+  useEffect(() => {
+    const fetchWinnerVictoryBg = async () => {
+      if (!winner) return;
+      
+      try {
+        const { doc, getDoc } = await import('firebase/firestore');
+        const { db } = await import('@/services/firebase');
+        
+        const userDoc = await getDoc(doc(db, 'users', winner));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const victoryBg = userData.inventory?.victoryBackgroundEquipped;
+          console.log('🎬 Fetched winner victory background from Firebase:', victoryBg);
+          setWinnerVictoryBg(victoryBg);
+        }
+      } catch (error) {
+        console.error('Error fetching winner victory background:', error);
+      }
+    };
+    
+    fetchWinnerVictoryBg();
+  }, [winner]);
+  
+  // Get winner's victory background - use Firebase data first, then match data
   const victoryVideo = (() => {
     console.log('🎬 Victory Background Resolution:', {
+      winnerVictoryBg,
       winnerData,
       victoryBackgroundEquipped: winnerData?.victoryBackgroundEquipped,
-      winnerId: winner,
-      hostData: matchData.hostData,
-      opponentData: matchData.opponentData,
-      fullWinnerData: winnerData
+      winnerId: winner
     });
     
-    // Always use the winner's victoryBackgroundEquipped from match data
-    if (winnerData?.victoryBackgroundEquipped) {
-      const bgId = typeof winnerData.victoryBackgroundEquipped === 'string' 
-        ? winnerData.victoryBackgroundEquipped 
-        : winnerData.victoryBackgroundEquipped.id;
+    // Priority 1: Use fetched Firebase data
+    const bgSource = winnerVictoryBg || winnerData?.victoryBackgroundEquipped;
+    
+    if (bgSource) {
+      const bgId = typeof bgSource === 'string' 
+        ? bgSource 
+        : bgSource.id;
       
       console.log('🎬 Resolving background ID:', bgId);
       const resolved = resolveBackgroundPath(bgId, 'victory-screen');
