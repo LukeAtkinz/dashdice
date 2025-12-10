@@ -344,7 +344,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
 
   return (
     <motion.div 
-      className="relative overflow-hidden touch-manipulation min-h-[120px] md:min-h-[210px]"
+      className={`relative touch-manipulation min-h-[120px] md:min-h-[210px] ${isGameSelectorExpanded ? '' : 'overflow-hidden'}`}
       style={{
         borderRadius: '20px',
         // Enhanced mobile support
@@ -623,8 +623,8 @@ export default function FriendCard({ friend, compact = false, showActions = true
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                   className="overflow-hidden"
                 >
-                  <div className="bg-transparent backdrop-blur-[0.5px] border border-gray-700/50 rounded-xl p-4 md:pl-8">
-                    <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div className="bg-transparent backdrop-blur-[0.5px] border border-gray-700/50 rounded-xl p-4 md:p-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                       {gameModes.map((mode, index) => (
                         <motion.button
                           key={mode.id}
@@ -634,21 +634,21 @@ export default function FriendCard({ friend, compact = false, showActions = true
                           onClick={() => handleGameInvite(mode.id)}
                           whileHover={{ scale: 1.05, y: -2 }}
                           whileTap={{ scale: 0.95 }}
-                          className="flex flex-col md:flex-row items-center justify-center md:justify-start p-4 md:p-5 rounded-lg
+                          className="flex flex-col items-center justify-center p-4 md:p-3 rounded-lg
                                    bg-gray-800/30 hover:bg-gray-700/40 border border-gray-600/50
-                                   hover:border-blue-400/70 transition-all duration-200 min-h-[100px] md:min-h-[120px] md:gap-4"
+                                   hover:border-blue-400/70 transition-all duration-200 min-h-[100px] md:min-h-[100px] md:gap-2"
                         >
                           <img 
                             src={mode.icon} 
                             alt={mode.name}
-                            className="w-12 h-12 md:w-20 md:h-20 object-contain mb-3 md:mb-0 opacity-60 md:flex-shrink-0"
+                            className="w-12 h-12 md:w-16 md:h-16 object-contain mb-2 md:mb-2 opacity-60 md:flex-shrink-0"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
                               target.src = '/Design Elements/Crown Mode.webp'; // Fallback icon
                             }}
                           />
-                          <span className="text-sm md:text-xl text-white font-medium text-center md:text-left leading-tight
-                                         drop-shadow-lg md:flex-1 font-audiowide tracking-wide" 
+                          <span className="text-sm md:text-base text-white font-medium text-center leading-tight
+                                         drop-shadow-lg font-audiowide tracking-wide" 
                                 style={{ 
                                   textShadow: '0 0 8px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.1)' 
                                 }}>

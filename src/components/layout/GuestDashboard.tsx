@@ -364,6 +364,9 @@ const GuestDashboardContent: React.FC = () => {
           overflow: 'hidden',
         }}
       >
+      {/* Background */}
+      {renderBackground()}
+      
       {/* Notifications */}
       <AchievementNotificationDisplay />
       <GlobalRematchNotification />
