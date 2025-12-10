@@ -20,34 +20,8 @@ export default function AddFriend({ onClose, onSuccess }: AddFriendProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!friendCode.trim()) {
-      setError('Please enter a friend code');
-      return;
-    }
-
-    setIsLoading(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      const result = await sendFriendRequest(friendCode.trim().toUpperCase(), message.trim());
-      
-      if (result.success) {
-        setSuccess('Friend request sent successfully!');
-        setFriendCode('');
-        setMessage('');
-        setTimeout(() => {
-          onSuccess?.();
-          onClose?.();
-        }, 2000);
-      } else {
-        setError(result.error || 'Failed to send friend request');
-      }
-    } catch (err) {
-      setError('An unexpected error occurred');
-    } finally {
-      setIsLoading(false);
-    }
+    // 🚫 Disabled for playtesting
+    setError('Disabled for playtesting');
   };
 
   const formatFriendCode = (value: string) => {

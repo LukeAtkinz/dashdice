@@ -201,33 +201,28 @@ export default function FriendCard({ friend, compact = false, showActions = true
   const [isInviting, setIsInviting] = useState(false);
   const [isGameSelectorExpanded, setIsGameSelectorExpanded] = useState(false);
 
-  // Get equipped background from friend's inventory (use actual videos, not preview images)
+  // Get friend's background using resolveBackgroundPath (same as leaderboard)
   const inventory = friend.friendData?.inventory;
-  const friendBackground = inventory && typeof inventory === 'object' && !Array.isArray(inventory) 
+  const equippedBackground = inventory && typeof inventory === 'object' && !Array.isArray(inventory) 
     ? (inventory.matchBackgroundEquipped || inventory.displayBackgroundEquipped)
     : undefined;
   
-  // Determine if it's a video and get the actual file path
-  const isVideo = friendBackground && typeof friendBackground === 'object' && friendBackground.type === 'video';
-  let backgroundPath = null;
-  
-  if (friendBackground && typeof friendBackground === 'object') {
-    if (friendBackground.type === 'video' && friendBackground.file) {
-      // Use actual video file
-      let videoPath = friendBackground.file;
-      if (!videoPath.startsWith('/') && !videoPath.startsWith('http')) {
-        videoPath = `/backgrounds/${videoPath}`;
-      }
-      backgroundPath = videoPath;
-    } else if (friendBackground.type === 'image' && friendBackground.file) {
-      // Use image file
-      let imagePath = friendBackground.file;
-      if (!imagePath.startsWith('/') && !imagePath.startsWith('http')) {
-        imagePath = `/backgrounds/${imagePath}`;
-      }
-      backgroundPath = imagePath;
+  // Convert to background ID string
+  let backgroundId: string | null = null;
+  if (equippedBackground) {
+    if (typeof equippedBackground === 'string') {
+      backgroundId = equippedBackground;
+    } else if (typeof equippedBackground === 'object' && 'id' in equippedBackground) {
+      backgroundId = equippedBackground.id as string;
+    } else if (typeof equippedBackground === 'object' && 'name' in equippedBackground) {
+      backgroundId = migrateLegacyBackground(equippedBackground.name as string);
     }
   }
+  
+  // Resolve background path using resolveBackgroundPath (same as leaderboard)
+  const resolved = backgroundId ? resolveBackgroundPath(backgroundId, 'friend-card') : null;
+  const backgroundPath = resolved?.path || null;
+  const isVideo = resolved?.type === 'video';
 
   // Get presence from context with safety checks
   const presence = friendPresences?.[friend.friendId];
@@ -241,71 +236,14 @@ export default function FriendCard({ friend, compact = false, showActions = true
   };
 
   const handleGameInvite = async (gameMode: string) => {
-    setIsInviting(true);
-    setIsGameSelectorExpanded(false); // Close the selector after selection
-    try {
-      if (!friend?.friendId || typeof friend.friendId !== 'string') {
-        console.error('Invalid friend ID:', friend?.friendId);
-        showToast('Unable to send invitation - invalid friend data', 'error');
-        return;
-      }
-      
-      if (!gameMode || typeof gameMode !== 'string') {
-        console.error('Invalid game mode:', gameMode);
-        showToast('Please select a valid game mode', 'error');
-        return;
-      }
-      
-      const result = await sendGameInvitation(friend.friendId, gameMode);
-      if (result?.success) {
-        console.log('✅ Game invitation sent successfully');
-        
-        // Enhanced toast with game mode info and icon
-        const getGameModeDisplayName = (gameType: string): string => {
-          const modeNames: Record<string, string> = {
-            'classic': 'Classic Mode',
-            'quickfire': 'Quick Fire',
-            'zero-hour': 'Zero Hour',
-            'last-line': 'Last Line',
-            'true-grit': 'True Grit',
-            'tag-team': 'Tag Team'
-          };
-          return modeNames[gameType.toLowerCase()] || gameType.charAt(0).toUpperCase() + gameType.slice(1);
-        };
-        
-        const gameModeName = getGameModeDisplayName(gameMode);
-        const gameModeIcon = getGameModeIcon(gameMode);
-        showToast(
-          `${gameModeName} invite sent to ${friend.friendData?.displayName || 'friend'}!`, 
-          'success',
-          3000,
-          gameModeIcon
-        );
-      } else {
-        console.error('❌ Failed to send game invitation:', result?.error);
-        showToast(result?.error || 'Failed to send game invitation', 'error');
-      }
-    } catch (error) {
-      console.error('❌ Error sending game invitation:', error);
-      showToast('An error occurred while sending the invitation', 'error');
-    } finally {
-      setIsInviting(false);
-    }
+    // 🚫 Disabled for playtesting
+    setIsGameSelectorExpanded(false);
+    showToast('Disabled for playtesting', 'info', 3000);
   };
 
   const handleOpenChat = async () => {
-    try {
-      if (!friend?.friendId) {
-        console.error('Invalid friend ID for chat');
-        return;
-      }
-
-      // Open the friend's chat tab directly - the SwipeRightChat system will handle opening
-      const friendName = friend.friendData?.displayName || 'Unknown Player';
-      openFriendChatInUnified(friend.friendId, friendName);
-    } catch (error) {
-      console.error('Error opening chat:', error);
-    }
+    // 🚫 Disabled for playtesting
+    showToast('Disabled for playtesting', 'info', 3000);
   };
 
   // Game mode options for inline selector
