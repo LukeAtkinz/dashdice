@@ -753,8 +753,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       isHost,
       opponentDeciderBg,
       opponentData: matchData.opponentData,
-      hostData: matchData.hostData
+      hostData: matchData.hostData,
+      fullMatchData: matchData
     });
+    console.log('🎬 TOP - opponentData keys:', Object.keys(matchData.opponentData || {}));
+    console.log('🎬 TOP - hostData keys:', Object.keys(matchData.hostData || {}));
     
     if (opponentDeciderBg && typeof opponentDeciderBg === 'object' && 'id' in opponentDeciderBg) {
       const resolved = resolveBackgroundPath(opponentDeciderBg.id, 'waiting-room');
@@ -777,8 +780,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       isHost,
       currentUserDeciderBg,
       hostTurnDecider: matchData.hostData.turnDeciderBackgroundEquipped,
-      opponentTurnDecider: matchData.opponentData?.turnDeciderBackgroundEquipped
+      opponentTurnDecider: matchData.opponentData?.turnDeciderBackgroundEquipped,
+      hostDataFull: matchData.hostData,
+      opponentDataFull: matchData.opponentData
     });
+    console.log('🎬 BOTTOM - Current user data keys:', Object.keys(isHost ? matchData.hostData : (matchData.opponentData || {})));
     
     if (currentUserDeciderBg && typeof currentUserDeciderBg === 'object' && 'id' in currentUserDeciderBg) {
       const resolved = resolveBackgroundPath(currentUserDeciderBg.id, 'waiting-room');

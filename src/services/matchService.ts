@@ -707,6 +707,15 @@ export class MatchService {
         'gameData.turnScore': 0, // Will be updated based on game mode logic
       };
       
+      // 📊 TRACK DOUBLES STATISTICS
+      const doublesStatsPath = isHost ? 'hostData.matchStats' : 'opponentData.matchStats';
+      const doublesCurrentStats = currentPlayer.matchStats || { banks: 0, doubles: 0, biggestTurnScore: 0, lastDiceSum: 0, totalAura: 0 };
+      
+      if (isDouble) {
+        updates[`${doublesStatsPath}.doubles`] = (doublesCurrentStats.doubles || 0) + 1;
+        console.log(`📊 Tracking double for ${currentPlayer.playerDisplayName}: ${(doublesCurrentStats.doubles || 0) + 1}`);
+      }
+      
       // Process roll using game mode service for special elimination rules
       if (isSingleOne && gameMode.rules.eliminationRules.singleOne) {
         eliminatePlayer = true;

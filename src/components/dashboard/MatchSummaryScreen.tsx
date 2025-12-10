@@ -92,8 +92,14 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
       winnerVictoryBg,
       winnerData,
       victoryBackgroundEquipped: winnerData?.victoryBackgroundEquipped,
-      winnerId: winner
+      winnerId: winner,
+      fullMatchData: matchData,
+      hostData: matchData.hostData,
+      opponentData: matchData.opponentData
     });
+    console.log('🎬 Winner data keys:', Object.keys(winnerData || {}));
+    console.log('🎬 Host data keys:', Object.keys(matchData.hostData || {}));
+    console.log('🎬 Opponent data keys:', Object.keys(matchData.opponentData || {}));
     
     // Priority 1: Use fetched Firebase data
     const bgSource = winnerVictoryBg || winnerData?.victoryBackgroundEquipped;
