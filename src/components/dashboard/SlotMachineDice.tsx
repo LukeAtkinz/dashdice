@@ -199,23 +199,33 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
       setIsPanSlapActive(true);
       setShowRedDice(true);
       
-      // Trigger video playback when activated
-      if (panSlapVideoRef.current) {
-        console.log('🍳 Playing Pan Slap video via ref');
-        panSlapVideoRef.current.currentTime = 0;
-        panSlapVideoRef.current.muted = true;
-        panSlapVideoRef.current.play().catch((err) => {
-          console.error('🍳 Pan Slap video play failed:', err);
-        });
-      }
+      // Trigger video playback when activated (with mobile safeguards)
+      setTimeout(() => {
+        if (panSlapVideoRef.current && panSlapVideoRef.current.readyState >= 2) {
+          console.log('🍳 Playing Pan Slap video via ref');
+          panSlapVideoRef.current.currentTime = 0;
+          panSlapVideoRef.current.muted = true;
+          panSlapVideoRef.current.play().catch((err) => {
+            console.error('🍳 Pan Slap video play failed:', err);
+            // Fallback: just show red dice without video
+            setIsPanSlapActive(false);
+            setShowRedDice(true);
+            setPanSlapPulsing(true);
+          });
+        }
+      }, 100);
     } else if (!panSlapFound && isPanSlapActive) {
       // Pan Slap deactivated - reset states
       setIsPanSlapActive(false);
       setShowRedDice(false);
       setPanSlapPulsing(false);
       if (panSlapVideoRef.current) {
-        panSlapVideoRef.current.pause();
-        panSlapVideoRef.current.currentTime = 0;
+        try {
+          panSlapVideoRef.current.pause();
+          panSlapVideoRef.current.currentTime = 0;
+        } catch (err) {
+          console.error('🍳 Pan Slap video cleanup error:', err);
+        }
       }
     }
   }, [matchData?.gameData?.activeEffects, isPanSlapActive]);
@@ -734,7 +744,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             loop={false}
             muted
             playsInline
-            preload="auto"
+            preload="metadata"
             disablePictureInPicture
             disableRemotePlayback
             className="w-full h-full object-cover"
@@ -742,22 +752,20 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               width: '100%',
               height: '100%',
               objectFit: 'cover',
-              transform: isTopDice ? 'none' : 'scaleY(-1)', // Flip vertically for bottom dice
+              transform: isTopDice ? 'none' : 'scaleY(-1)',
               borderRadius: '30px',
               overflow: 'hidden',
-              // Hardware acceleration for better performance
-              willChange: 'transform',
-              backfaceVisibility: 'hidden',
-              WebkitBackfaceVisibility: 'hidden'
+              willChange: 'auto'
             }}
-            onLoadedData={(e) => {
+            onLoadedMetadata={(e) => {
               const video = e.currentTarget;
               video.muted = true;
-              video.play().catch(() => {});
-            }}
-            onCanPlay={(e) => {
-              const video = e.currentTarget;
-              if (video.paused) video.play().catch(() => {});
+              if (video.paused && video.readyState >= 2) {
+                video.play().catch((err) => {
+                  console.error('🍀 Luck Turner autoplay failed:', err);
+                  setLuckTurnerVideoEnded(true);
+                });
+              }
             }}
             onEnded={() => {
               console.log('🍀 Luck Turner video playback ended');
@@ -765,6 +773,8 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             }}
             onError={(e) => {
               console.error('🍀 Luck Turner video error:', e);
+              // Fallback: skip to freeze frame immediately
+              setLuckTurnerVideoEnded(true);
             }}
           />
         </motion.div>
@@ -785,7 +795,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             loop={false}
             muted
             playsInline
-            preload="auto"
+            preload="metadata"
             disablePictureInPicture
             disableRemotePlayback
             className="w-full h-full"
@@ -795,17 +805,23 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               objectFit: 'cover',
               borderRadius: '30px',
               overflow: 'hidden',
-              // Hardware acceleration for better performance
-              willChange: 'transform',
-              backfaceVisibility: 'hidden',
-              WebkitBackfaceVisibility: 'hidden'
+              willChange: 'auto'
+            }}
+            onLoadedMetadata={(e) => {
+              const video = e.currentTarget;
+              video.muted = true;
             }}
             onEnded={() => {
               console.log('🍳 Pan Slap video finished - starting dice pulse animation');
+              setIsPanSlapActive(false);
               setPanSlapPulsing(true);
             }}
             onError={(e) => {
               console.error('🍳 Pan Slap video failed to load:', e);
+              // Fallback: skip video, go straight to red dice
+              setIsPanSlapActive(false);
+              setShowRedDice(true);
+              setPanSlapPulsing(true);
             }}
           />
         </motion.div>
