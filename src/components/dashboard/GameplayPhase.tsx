@@ -1306,7 +1306,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               <>
                 {/* AURA Counter - LEFT SIDE */}
                 <motion.div
-                  className="flex items-center justify-center text-white"
+                  className="hidden md:flex items-center justify-center text-white"
                   style={{ 
                     width: '28%',
                     height: '100%',
@@ -1314,8 +1314,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     justifyContent: 'center',
                     alignItems: 'center',
                     border: 'none',
-                    borderRadius: '0',
-                    background: 'transparent',
+                    borderRadius: '8px',
+                    background: 'rgba(0, 0, 0, 0.7)',
                     backdropFilter: 'none',
                   }}
                   initial={{ opacity: 0, x: -50, scale: 0.9 }}
@@ -1532,7 +1532,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               <>
                 {/* AURA Counter - LEFT SIDE (always visible) */}
                 <motion.div
-                  className="flex items-center justify-center text-white"
+                  className="hidden md:flex items-center justify-center text-white"
                   style={{ 
                     width: '28%',
                     height: '100%',
@@ -1540,8 +1540,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     justifyContent: 'center',
                     alignItems: 'center',
                     border: 'none',
-                    borderRadius: '0',
-                    background: 'transparent',
+                    borderRadius: '8px',
+                    background: 'rgba(0, 0, 0, 0.7)',
                     backdropFilter: 'none',
                   }}
                   initial={{ opacity: 0 }}

@@ -257,7 +257,17 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
     
     // 🌟 UNIVERSAL GOLD GLOW FOR ALL DOUBLES 🌟
     // Check for any double (1-1, 2-2, 3-3, 4-4, 5-5, 6-6) and make them all gold
+    // EXCEPT double 6s in quickfire/classic which should glow red
     if (dice1Value && dice2Value && dice1Value === dice2Value && !isRolling) {
+      // Double 6s in quickfire/classic = RED glow (you're out!)
+      if (dice1Value === 6 && (gameMode === 'quickfire' || gameMode === 'classic')) {
+        return { 
+          shouldGlow: true, 
+          color: '#FF0000', 
+          intensity: '0 0 12px rgba(255, 0, 0, 0.8), 0 0 24px rgba(255, 0, 0, 0.6), 0 0 36px rgba(255, 0, 0, 0.4)' 
+        };
+      }
+      // All other doubles = GOLD glow
       return { 
         shouldGlow: true, 
         color: '#FFD700', 
@@ -286,11 +296,8 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
           if (dice2Value === 1) {
             // Snake eyes handled above in doubles section
             return { shouldGlow: false, color: '', intensity: '' };
-          } else if (isSpecialMode) {
-            // Zero Hour/True Grit: Single 1s don't glow in special modes
-            return { shouldGlow: false, color: '', intensity: '' };
           } else {
-            // Other modes: Second dice is not 1 - both glow red
+            // ALL MODES: Single 1 means you're out - both dice glow red
             return { 
               shouldGlow: true, 
               color: '#FF0000', 
@@ -338,11 +345,8 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
         if (dice2Value === 1) {
           // Snake eyes handled above in doubles section
           return { shouldGlow: false, color: '', intensity: '' };
-        } else if (isSpecialMode) {
-          // Zero Hour/True Grit: Single 1s don't glow in special modes
-          return { shouldGlow: false, color: '', intensity: '' };
         } else {
-          // Other modes: Second dice is not 1 - both glow red
+          // ALL MODES: Single 1 means you're out - both dice glow red
           return { 
             shouldGlow: true, 
             color: '#FF0000', 
