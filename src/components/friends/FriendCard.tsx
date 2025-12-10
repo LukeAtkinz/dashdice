@@ -344,7 +344,7 @@ export default function FriendCard({ friend, compact = false, showActions = true
 
   return (
     <motion.div 
-      className="relative overflow-hidden touch-manipulation min-h-[120px] md:min-h-[140px]"
+      className="relative overflow-hidden touch-manipulation min-h-[120px] md:min-h-[210px]"
       style={{
         borderRadius: '20px',
         // Enhanced mobile support
@@ -409,9 +409,9 @@ export default function FriendCard({ friend, compact = false, showActions = true
             className="space-y-2 w-full"
             layout
           >
-            {/* Desktop: Horizontal layout - name/picture left, buttons right, vertically centered */}
-            <div className="hidden md:flex items-center justify-between gap-4 w-full">
-              {/* Profile section content on left */}
+            {/* Desktop: Vertical layout - name/picture on top, buttons below */}
+            <div className="hidden md:flex flex-col gap-4 w-full">
+              {/* Profile section content on top */}
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="relative flex-shrink-0">
                   <ProfilePicture
@@ -430,8 +430,8 @@ export default function FriendCard({ friend, compact = false, showActions = true
                 </div>
               </div>
               
-              {/* Action buttons on right, vertically centered */}
-              <div className="flex gap-2 flex-shrink-0">
+              {/* Action buttons below, full width */}
+              <div className="flex gap-2 w-full">
                 <motion.button
                   onClick={() => setIsGameSelectorExpanded(!isGameSelectorExpanded)}
                   disabled={presenceStatus === 'offline' || isInviting}

@@ -22,6 +22,7 @@ import { getBackgroundById } from '@/config/backgrounds';
 import { db } from '@/services/firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { SocialLeagueService } from '@/services/socialLeagueService';
+import { useToast } from '@/context/ToastContext';
 
 interface DashboardSectionProps {
   onGuestGameModeAction?: (gameMode: string, actionType: 'live' | 'ranked') => void;
@@ -114,6 +115,7 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
   const { user } = useAuth();
   const { setCurrentSection } = useNavigation();
   const { DisplayBackgroundEquip } = useBackground();
+  const { showToast } = useToast();
   const [hoveredGameMode, setHoveredGameMode] = useState<string | null>(null);
   const [tappedGameMode, setTappedGameMode] = useState<string | null>(null);
   const [isExiting, setIsExiting] = useState(false);
@@ -607,9 +609,9 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
                         e.preventDefault();
                         if (!user) return;
                         
-                        // Social League matchmaking - uses same system as casual but marks as social league
-                        console.log('🏆 Starting Social League matchmaking...');
-                        handleGameModeAction(mode, 'live', true); // Pass true for isSocialLeague
+                        // Social League disabled for playtesting
+                        console.log('🔒 Social League disabled for playtesting');
+                        showToast('Disabled for playtesting', 'info', 3000);
                       }}
                       onTouchEnd={(e) => {
                         e.stopPropagation();

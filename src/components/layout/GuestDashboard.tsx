@@ -122,6 +122,12 @@ const GuestDashboardContent: React.FC = () => {
   const [waitingGameMode, setWaitingGameMode] = useState<string>();
   const [guestMatchRoomId, setGuestMatchRoomId] = useState<string>();
 
+  // Set theme for guest dashboard (Long Road Ahead)
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', 'long-road-ahead');
+    console.log('🎨 Guest dashboard theme set to: long-road-ahead');
+  }, []);
+
   // Create button gradient style based on user's display background
   const getButtonGradientStyle = (baseColor: string) => {
     return {
@@ -236,67 +242,24 @@ const GuestDashboardContent: React.FC = () => {
     }
   };
 
-  // Render background - default to NewDay.mp4 for guests
+  // Render background - default to Long Road Ahead.png for guests
   const renderBackground = () => {
-    // For guests, always use NewDay.mp4 as default display background
+    // For guests, always use Long Road Ahead.png as default display background
     if (!user) {
-      return (
-        <video
-          key="/backgrounds/New Day.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          webkit-playsinline="true"
-          x5-playsinline="true"
-          x5-video-player-type="h5-page"
-          x5-video-player-fullscreen="false"
-          controls={false}
-          preload="auto"
-          disablePictureInPicture
-          disableRemotePlayback
-          onLoadedMetadata={(e) => {
-            const video = e.target as HTMLVideoElement;
-            video.muted = true;
-            video.play().catch(() => {});
-            handleVideoLoad(video);
-          }}
-          onCanPlay={(e) => {
-            const video = e.target as HTMLVideoElement;
-            video.muted = true;
-            if (video.paused) video.play().catch(() => {});
-          }}
-          onLoadedData={(e) => {
-            const video = e.target as HTMLVideoElement;
-            video.muted = true;
-            if (video.paused) video.play().catch(() => {});
-            handleVideoLoad(video);
-          }}
-          onSuspend={(e) => {
-            const video = e.target as HTMLVideoElement;
-            if (video.paused) video.play().catch(() => {});
-          }}
-          onPause={(e) => {
-            const video = e.target as HTMLVideoElement;
-            setTimeout(() => {
-              if (video.paused) video.play().catch(() => {});
-            }, 100);
-          }}
-          onClick={(e) => {
-            const video = e.target as HTMLVideoElement;
-            video.muted = true;
-            if (video.paused) video.play().catch(() => {});
-          }}
-          className="fixed inset-0 w-full h-full object-cover z-0"
-          style={{
-            objectFit: 'cover',
-            objectPosition: 'center center'
-          }}
-        >
-          <source src="/backgrounds/New Day.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      );
+      const resolved = resolveBackgroundPath('long-road-ahead', 'dashboard-display');
+      if (resolved) {
+        return (
+          <img
+            src={resolved.path}
+            alt="Long Road Ahead"
+            className="fixed inset-0 w-full h-full object-cover z-0"
+            style={{
+              objectFit: 'cover',
+              objectPosition: 'center center'
+            }}
+          />
+        );
+      }
     }
 
     // For authenticated users, render their equipped background
