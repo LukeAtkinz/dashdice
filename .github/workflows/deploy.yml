@@ -117,7 +117,11 @@ jobs:
       - name: Setup test environment
         run: |
           # Create test environment files
-          cp .env.example .env.test
+          if [ -f .env.example ]; then
+            cp .env.example .env.test
+          else
+            touch .env.test
+          fi
           echo "ENVIRONMENT=test" >> .env.test
           echo "REDIS_URL=redis://localhost:6379" >> .env.test
           echo "POSTGRES_URL=postgres://test:test@localhost:5432/test" >> .env.test
