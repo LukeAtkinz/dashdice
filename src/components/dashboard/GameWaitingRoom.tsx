@@ -2239,6 +2239,19 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           }
           return {
             ...opponentData,
+            // Explicitly preserve background fields with fallbacks to prevent undefined errors
+            turnDeciderBackgroundEquipped: opponentData.turnDeciderBackgroundEquipped || { 
+              id: 'crazy-cough', 
+              name: 'Crazy Cough', 
+              category: 'Turn Deciders', 
+              rarity: 'Common' 
+            },
+            victoryBackgroundEquipped: opponentData.victoryBackgroundEquipped || { 
+              id: 'wind-blade', 
+              name: 'Wind Blade', 
+              category: 'Victory Screens', 
+              rarity: 'Common' 
+            },
             turnActive: false, // Will be set by turn decider
             playerScore: getStartingScore(roomData.gameMode),
             roundScore: 0,
@@ -2417,6 +2430,19 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           },
           opponentData: waitingRoomEntry?.opponentData ? {
             ...waitingRoomEntry.opponentData,
+            // Explicitly preserve background fields with fallbacks to prevent undefined errors
+            turnDeciderBackgroundEquipped: (waitingRoomEntry.opponentData as any).turnDeciderBackgroundEquipped || { 
+              id: 'crazy-cough', 
+              name: 'Crazy Cough', 
+              category: 'Turn Deciders', 
+              rarity: 'Common' 
+            },
+            victoryBackgroundEquipped: (waitingRoomEntry.opponentData as any).victoryBackgroundEquipped || { 
+              id: 'wind-blade', 
+              name: 'Wind Blade', 
+              category: 'Victory Screens', 
+              rarity: 'Common' 
+            },
             playerScore: 0
           } : undefined,
           gameData: {
