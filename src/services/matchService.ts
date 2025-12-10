@@ -503,6 +503,16 @@ export class MatchService {
       
       const matchData = matchSnapshot.data() as MatchData;
       
+      // 🍳 CRITICAL: Abort if Pan Slap is active - it has priority over dice rolling
+      const allActiveEffects = matchData.gameData?.activeEffects || {};
+      const hasPanSlapActive = Object.values(allActiveEffects).some((effects: any) => 
+        Array.isArray(effects) && effects.some((e: any) => e.abilityId === 'pan_slap' || e.effectId?.includes('pan_slap'))
+      );
+      if (hasPanSlapActive) {
+        console.log('🍳 Pan Slap is active - aborting dice roll');
+        return; // Don't roll if Pan Slap just activated
+      }
+      
       // Validate it's the player's turn and game is in correct phase
       const isHost = matchData.hostData.playerId === playerId;
       const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
@@ -590,6 +600,20 @@ export class MatchService {
       
       // 🎰 Wait for Dice 1 animation (1200ms) then reveal Dice 2
       setTimeout(async () => {
+        // 🍳 Check if Pan Slap activated during dice1 animation
+        const currentSnapshot = await getDoc(matchRef);
+        if (currentSnapshot.exists()) {
+          const currentData = currentSnapshot.data() as MatchData;
+          const allEffects = currentData.gameData?.activeEffects || {};
+          const panSlapActive = Object.values(allEffects).some((effects: any) => 
+            Array.isArray(effects) && effects.some((e: any) => e.abilityId === 'pan_slap' || e.effectId?.includes('pan_slap'))
+          );
+          if (panSlapActive) {
+            console.log('🍳 Pan Slap activated during dice1 - aborting roll sequence');
+            return;
+          }
+        }
+        
         await updateDoc(matchRef, {
           'gameData.rollPhase': 'dice2',
           'gameData.diceTwo': dice2 // Provide dice2 value for animation
@@ -597,6 +621,19 @@ export class MatchService {
         
         // 🎰 Wait for Dice 2 animation (1200ms) then process game rules
         setTimeout(async () => {
+          // 🍳 Final check before processing game rules
+          const finalSnapshot = await getDoc(matchRef);
+          if (finalSnapshot.exists()) {
+            const finalData = finalSnapshot.data() as MatchData;
+            const allEffects = finalData.gameData?.activeEffects || {};
+            const panSlapActive = Object.values(allEffects).some((effects: any) => 
+              Array.isArray(effects) && effects.some((e: any) => e.abilityId === 'pan_slap' || e.effectId?.includes('pan_slap'))
+            );
+            if (panSlapActive) {
+              console.log('🍳 Pan Slap activated during dice2 - aborting rule processing');
+              return;
+            }
+          }
           await this.processGameRules(matchId, dice1, dice2, isHost);
         }, 1200); // Wait for dice2 animation to complete (1200ms)
         
@@ -619,6 +656,17 @@ export class MatchService {
       if (!matchSnapshot.exists()) return;
       
       const matchData = matchSnapshot.data() as MatchData;
+      
+      // 🍳 CRITICAL: Check if Pan Slap activated - if so, abort game rule processing
+      const allActiveEffects = matchData.gameData?.activeEffects || {};
+      const hasPanSlapActive = Object.values(allActiveEffects).some((effects: any) => 
+        Array.isArray(effects) && effects.some((e: any) => e.abilityId === 'pan_slap' || e.effectId?.includes('pan_slap'))
+      );
+      if (hasPanSlapActive) {
+        console.log('🍳 Pan Slap is active - aborting game rule processing (Pan Slap takes priority)');
+        return;
+      }
+      
       const currentTurnScore = matchData.gameData.turnScore || 0;
       const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
       const currentPlayerScore = currentPlayer.playerScore || 0;
