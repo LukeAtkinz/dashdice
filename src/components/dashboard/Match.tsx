@@ -81,6 +81,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const [showHardHatUsedOpponent, setShowHardHatUsedOpponent] = useState(false);
   const previousHardHatStateRef = useRef<{current: boolean, opponent: boolean}>({current: false, opponent: false});
   
+  // 🪓 Aura Axe animation state
+  const [auraAxeRedPulseOpponent, setAuraAxeRedPulseOpponent] = useState(false);
+  
   // Ability toast notification state
   const [activeAbilityToast, setActiveAbilityToast] = useState<string | null>(null);
   
@@ -595,6 +598,19 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       // Handle Hard Hat ability - trigger initial animation immediately from callback
       if (effect.abilityId === 'hard_hat') {
         setShowHardHatInitialCurrent(true);
+        return;
+      }
+      
+      // Handle Aura Axe ability - trigger red pulse on opponent card (visible to activating player only)
+      if (effect.abilityId === 'aura_axe') {
+        console.log('🪓 Aura Axe activated - triggering red pulse on opponent card');
+        setAuraAxeRedPulseOpponent(true);
+        
+        // Stop pulse after 2 complete cycles (2 pulses x 0.8s each = 1.6s)
+        setTimeout(() => {
+          setAuraAxeRedPulseOpponent(false);
+        }, 1600);
+        
         return;
       }
       
@@ -1747,19 +1763,25 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 style={{ 
                   borderWidth: '2px',
                   borderStyle: 'solid',
-                  borderColor: hardHatWhiteBorderCurrent ? '#FFD700' : '#ffffff',
+                  borderColor: hardHatWhiteBorderCurrent ? '#FFFFFF' : '#ffffff',
                   borderRadius: '16px',
                   height: '500px'
                 }}
                 animate={{
-                  borderColor: hardHatWhiteBorderCurrent ? '#FFD700' : '#ffffff',
+                  borderColor: hardHatWhiteBorderCurrent ? '#FFFFFF' : '#ffffff',
                   boxShadow: hardHatWhiteBorderCurrent 
-                    ? '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4)'
+                    ? [
+                        '0 0 15px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4)',
+                        '0 0 25px rgba(255, 255, 255, 0.9), 0 0 50px rgba(255, 255, 255, 0.6)',
+                        '0 0 15px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4)'
+                      ]
                     : '0 0 15px rgba(255, 255, 255, 0.2)'
                 }}
                 transition={{ 
-                  duration: 0.5,
-                  ease: "easeInOut"
+                  duration: hardHatWhiteBorderCurrent ? 1.5 : 0.5,
+                  ease: "easeInOut",
+                  repeat: hardHatWhiteBorderCurrent ? Infinity : 0,
+                  repeatType: "loop"
                 }}
               >
                 {/* 🧢 HARD HAT INITIAL ANIMATION - Only visible to activating player */}
@@ -2134,19 +2156,31 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 style={{ 
                   borderWidth: '2px',
                   borderStyle: 'solid',
-                  borderColor: hardHatWhiteBorderOpponent ? '#FFD700' : '#ffffff',
+                  borderColor: hardHatWhiteBorderOpponent ? '#FFFFFF' : '#ffffff',
                   borderRadius: '16px',
                   height: '500px'
                 }}
                 animate={{
-                  borderColor: hardHatWhiteBorderOpponent ? '#FFD700' : '#ffffff',
-                  boxShadow: hardHatWhiteBorderOpponent 
-                    ? '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4)'
+                  borderColor: auraAxeRedPulseOpponent ? '#FF0000' : (hardHatWhiteBorderOpponent ? '#FFFFFF' : '#ffffff'),
+                  boxShadow: auraAxeRedPulseOpponent
+                    ? [
+                        '0 0 20px rgba(255, 0, 0, 0.7), 0 0 40px rgba(255, 0, 0, 0.5)',
+                        '0 0 35px rgba(255, 0, 0, 1), 0 0 70px rgba(255, 0, 0, 0.8)',
+                        '0 0 20px rgba(255, 0, 0, 0.7), 0 0 40px rgba(255, 0, 0, 0.5)'
+                      ]
+                    : hardHatWhiteBorderOpponent 
+                    ? [
+                        '0 0 15px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4)',
+                        '0 0 25px rgba(255, 255, 255, 0.9), 0 0 50px rgba(255, 255, 255, 0.6)',
+                        '0 0 15px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4)'
+                      ]
                     : '0 0 15px rgba(255, 255, 255, 0.2)'
                 }}
                 transition={{ 
-                  duration: 0.5,
-                  ease: "easeInOut"
+                  duration: auraAxeRedPulseOpponent ? 0.8 : (hardHatWhiteBorderOpponent ? 1.5 : 0.5),
+                  ease: "easeInOut",
+                  repeat: auraAxeRedPulseOpponent ? 1 : (hardHatWhiteBorderOpponent ? Infinity : 0),
+                  repeatType: "loop"
                 }}
               >
                 {/* 🧢 HARD HAT USED ANIMATION - Visible to both players when opponent's Hard Hat triggers */}
@@ -2376,18 +2410,24 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     width: '100%',
                     borderWidth: '2px',
                     borderStyle: 'solid',
-                    borderColor: hardHatWhiteBorderCurrent ? '#FFD700' : 'transparent',
+                    borderColor: hardHatWhiteBorderCurrent ? '#FFFFFF' : 'transparent',
                     borderRadius: '16px'
                   }}
                   animate={{
-                    borderColor: hardHatWhiteBorderCurrent ? '#FFD700' : 'transparent',
+                    borderColor: hardHatWhiteBorderCurrent ? '#FFFFFF' : 'transparent',
                     boxShadow: hardHatWhiteBorderCurrent 
-                      ? '0 0 12px rgba(255, 215, 0, 0.6), 0 0 24px rgba(255, 215, 0, 0.3)'
+                      ? [
+                          '0 0 12px rgba(255, 255, 255, 0.6), 0 0 24px rgba(255, 255, 255, 0.3)',
+                          '0 0 20px rgba(255, 255, 255, 0.9), 0 0 40px rgba(255, 255, 255, 0.5)',
+                          '0 0 12px rgba(255, 255, 255, 0.6), 0 0 24px rgba(255, 255, 255, 0.3)'
+                        ]
                       : '0 0 8px rgba(0, 0, 0, 0.3)'
                   }}
                   transition={{ 
-                    duration: 0.5,
-                    ease: "easeInOut"
+                    duration: hardHatWhiteBorderCurrent ? 1.5 : 0.5,
+                    ease: "easeInOut",
+                    repeat: hardHatWhiteBorderCurrent ? Infinity : 0,
+                    repeatType: "loop"
                   }}
                 >
                   {/* Player Background */}
@@ -2525,18 +2565,30 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     width: '100%',
                     borderWidth: '2px',
                     borderStyle: 'solid',
-                    borderColor: hardHatWhiteBorderOpponent ? '#FFD700' : 'transparent',
+                    borderColor: hardHatWhiteBorderOpponent ? '#FFFFFF' : 'transparent',
                     borderRadius: '16px'
                   }}
                   animate={{
-                    borderColor: hardHatWhiteBorderOpponent ? '#FFD700' : 'transparent',
-                    boxShadow: hardHatWhiteBorderOpponent 
-                      ? '0 0 12px rgba(255, 215, 0, 0.6), 0 0 24px rgba(255, 215, 0, 0.3)'
+                    borderColor: auraAxeRedPulseOpponent ? '#FF0000' : (hardHatWhiteBorderOpponent ? '#FFFFFF' : 'transparent'),
+                    boxShadow: auraAxeRedPulseOpponent
+                      ? [
+                          '0 0 15px rgba(255, 0, 0, 0.7), 0 0 30px rgba(255, 0, 0, 0.5)',
+                          '0 0 25px rgba(255, 0, 0, 1), 0 0 50px rgba(255, 0, 0, 0.8)',
+                          '0 0 15px rgba(255, 0, 0, 0.7), 0 0 30px rgba(255, 0, 0, 0.5)'
+                        ]
+                      : hardHatWhiteBorderOpponent 
+                      ? [
+                          '0 0 12px rgba(255, 255, 255, 0.6), 0 0 24px rgba(255, 255, 255, 0.3)',
+                          '0 0 20px rgba(255, 255, 255, 0.9), 0 0 40px rgba(255, 255, 255, 0.5)',
+                          '0 0 12px rgba(255, 255, 255, 0.6), 0 0 24px rgba(255, 255, 255, 0.3)'
+                        ]
                       : '0 0 8px rgba(0, 0, 0, 0.3)'
                   }}
                   transition={{ 
-                    duration: 0.5,
-                    ease: "easeInOut"
+                    duration: auraAxeRedPulseOpponent ? 0.8 : (hardHatWhiteBorderOpponent ? 1.5 : 0.5),
+                    ease: "easeInOut",
+                    repeat: auraAxeRedPulseOpponent ? 1 : (hardHatWhiteBorderOpponent ? Infinity : 0),
+                    repeatType: "loop"
                   }}
                 >
                   {/* Player Background */}

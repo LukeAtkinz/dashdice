@@ -1063,70 +1063,119 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         >
             {isMyTurn ? (
               <>
-                <motion.button
-                  onClick={onRollDice}
-                  disabled={!canRoll}
-                  className={`px-12 py-6 rounded-xl text-2xl font-bold transition-all transform ${
-                    canRoll
-                      ? 'text-white hover:scale-105'
-                      : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
-                  }`}
-                  style={{ 
-                    fontFamily: "Audiowide",
-                    ...(canRoll ? getButtonGradientStyle('rgba(59, 130, 246, 0.8)') : {})
-                  }}
-                  initial={{ scale: 0.8, opacity: 0, y: 20 }}
-                  animate={{ 
-                    scale: canRoll ? 1 : 0.95, 
-                    opacity: canRoll ? 1 : 0.6,
-                    y: 0
-                  }}
-                  whileHover={{}}
-                  whileTap={canRoll ? { 
-                    scale: 0.95,
-                    boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)"
-                  } : {}}
-                  transition={{ 
-                    duration: 0.3,
-                    ease: [0.4, 0, 0.2, 1]
-                  }}
-                >
-                  PLAY
-                </motion.button>
-                
-                {/* Only show bank button for modes other than True Grit on desktop */}
-                {matchData.gameMode !== 'true-grit' && (
-                  <motion.button
-                    onClick={handleBankScore}
-                    disabled={!canBank}
-                    className={`px-12 py-6 rounded-xl text-2xl font-bold transition-all transform ${
-                      canBank
-                        ? 'text-white hover:scale-105'
-                        : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
-                    }`}
-                    style={{ 
-                      fontFamily: "Audiowide",
-                      ...(canBank ? getButtonGradientStyle('rgba(34, 197, 94, 0.8)') : {})
-                    }}
-                    initial={{ scale: 0.8, opacity: 0, y: 20 }}
-                    animate={{ 
-                      scale: canBank ? 1 : 0.95, 
-                      opacity: canBank ? 1 : 0.6,
-                      y: 0 
-                    }}
-                    whileHover={{}}
-                    whileTap={canBank ? { 
-                      scale: 0.95,
-                      boxShadow: "0 4px 15px rgba(34, 197, 94, 0.3)"
-                    } : {}}
-                    transition={{ 
-                      duration: 0.3,
-                      ease: [0.4, 0, 0.2, 1],
-                      delay: 0.1 // Slight stagger after play button
-                    }}
-                  >
-                    {matchData.gameMode === 'last-line' ? 'ATTACK' : 'SAVE'}
-                  </motion.button>
+                {/* 🔨 AURA FORGE NUMBER SELECTORS - Desktop */}
+                {isAuraForgeActive ? (
+                  <>
+                    {[1, 2, 3, 4].map((amount) => (
+                      <motion.button
+                        key={amount}
+                        onClick={() => handleAuraForgeSelect(amount)}
+                        disabled={matchData.gameData.turnScore < (amount * 5)}
+                        className="px-10 py-6 rounded-xl text-3xl font-bold transition-all transform text-white"
+                        style={{ 
+                          fontFamily: "Audiowide",
+                          border: '3px solid rgba(255, 255, 255, 0.3)',
+                          background: matchData.gameData.turnScore >= (amount * 5)
+                            ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(168, 85, 247, 0.4))'
+                            : 'rgba(100, 100, 100, 0.3)',
+                          backdropFilter: 'blur(10px)',
+                          opacity: matchData.gameData.turnScore >= (amount * 5) ? 1 : 0.5,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                        initial={{ scale: 0.8, opacity: 0, y: 20 }}
+                        animate={{ 
+                          scale: 1,
+                          opacity: 1,
+                          y: 0
+                        }}
+                        whileHover={matchData.gameData.turnScore >= (amount * 5) ? { 
+                          scale: 1.05,
+                          boxShadow: "0 8px 25px rgba(139, 92, 246, 0.5)"
+                        } : {}}
+                        whileTap={matchData.gameData.turnScore >= (amount * 5) ? { 
+                          scale: 0.95
+                        } : {}}
+                        transition={{ 
+                          duration: 0.3,
+                          delay: amount * 0.05
+                        }}
+                      >
+                        <span>{amount}</span>
+                        <span style={{ fontSize: '14px', opacity: 0.8 }}>-{amount * 5} pts</span>
+                      </motion.button>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    <motion.button
+                      onClick={onRollDice}
+                      disabled={!canRoll}
+                      className={`px-12 py-6 rounded-xl text-2xl font-bold transition-all transform ${
+                        canRoll
+                          ? 'text-white hover:scale-105'
+                          : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
+                      }`}
+                      style={{ 
+                        fontFamily: "Audiowide",
+                        ...(canRoll ? getButtonGradientStyle('rgba(59, 130, 246, 0.8)') : {})
+                      }}
+                      initial={{ scale: 0.8, opacity: 0, y: 20 }}
+                      animate={{ 
+                        scale: canRoll ? 1 : 0.95, 
+                        opacity: canRoll ? 1 : 0.6,
+                        y: 0
+                      }}
+                      whileHover={{}}
+                      whileTap={canRoll ? { 
+                        scale: 0.95,
+                        boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)"
+                      } : {}}
+                      transition={{ 
+                        duration: 0.3,
+                        ease: [0.4, 0, 0.2, 1]
+                      }}
+                    >
+                      PLAY
+                    </motion.button>
+                    
+                    {/* Only show bank button for modes other than True Grit on desktop */}
+                    {matchData.gameMode !== 'true-grit' && (
+                      <motion.button
+                        onClick={handleBankScore}
+                        disabled={!canBank}
+                        className={`px-12 py-6 rounded-xl text-2xl font-bold transition-all transform ${
+                          canBank
+                            ? 'text-white hover:scale-105'
+                            : 'bg-gray-600 text-gray-300 cursor-not-allowed border-2 border-gray-500'
+                        }`}
+                        style={{ 
+                          fontFamily: "Audiowide",
+                          ...(canBank ? getButtonGradientStyle('rgba(34, 197, 94, 0.8)') : {})
+                        }}
+                        initial={{ scale: 0.8, opacity: 0, y: 20 }}
+                        animate={{ 
+                          scale: canBank ? 1 : 0.95, 
+                          opacity: canBank ? 1 : 0.6,
+                          y: 0 
+                        }}
+                        whileHover={{}}
+                        whileTap={canBank ? { 
+                          scale: 0.95,
+                          boxShadow: "0 4px 15px rgba(34, 197, 94, 0.3)"
+                        } : {}}
+                        transition={{ 
+                          duration: 0.3,
+                          ease: [0.4, 0, 0.2, 1],
+                          delay: 0.1 // Slight stagger after play button
+                        }}
+                      >
+                        {matchData.gameMode === 'last-line' ? 'ATTACK' : 'SAVE'}
+                      </motion.button>
+                    )}
+                  </>
                 )}
               </>
             ) : (
@@ -1151,6 +1200,28 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
         
         {/* Desktop Voice Button - Below play/save buttons */}
         {/* Match chat temporarily disabled */}
+
+        {/* Aura Forge Bottom Animation - Desktop */}
+        {showAuraForgeBottom && (
+          <div className="hidden md:block absolute inset-0 pointer-events-none z-40">
+            <video
+              src="/Abilities/Animations/Aura Forge/Aura Forge Bottom.webm"
+              autoPlay
+              loop={false}
+              muted
+              playsInline
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
+              onEnded={() => {
+                console.log('🔥 Aura Forge Bottom animation ended (desktop) - hiding video');
+                setShowAuraForgeBottom(false);
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Mobile Combined Abilities and Buttons Container - Transparent background */}
@@ -1345,45 +1416,90 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 )}
 
                 {/* PLAY button - RIGHT SIDE */}
-                <motion.button
-                  onClick={onRollDice}
-                  disabled={!canRoll}
-                  className={`text-xl font-bold transition-all ${
-                    canRoll
-                      ? (vitalRushActive ? 'text-black active:scale-95' : 'text-white active:scale-95')
-                      : 'cursor-not-allowed'
-                  }`}
-                  style={{ 
-                    width: (matchData.gameMode === 'true-grit') ? '72%' : '36%',
-                    height: '100%',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    fontFamily: "Audiowide",
-                    textTransform: "uppercase" as const,
-                    border: 'none',
-                    borderRadius: '0',
-                    background: 'transparent',
-                    backdropFilter: 'none',
-                  }}
-                  initial={{ opacity: 0, x: 50, scale: 0.9 }}
-                  animate={{ 
-                    opacity: canRoll ? 1 : 0.5,
-                    x: 0,
-                    scale: 1
-                  }}
-                  whileTap={canRoll ? { 
-                    scale: 0.95,
-                    boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)"
-                  } : {}}
-                  transition={{ 
-                    duration: 0.4, 
-                    ease: [0.4, 0, 0.2, 1],
-                    delay: 0.2 // Slight delay after save button
-                  }}
-                >
-                  <span>PLAY</span>
-                </motion.button>
+                {!isAuraForgeActive && (
+                  <motion.button
+                    onClick={onRollDice}
+                    disabled={!canRoll}
+                    className={`text-xl font-bold transition-all ${
+                      canRoll
+                        ? (vitalRushActive ? 'text-black active:scale-95' : 'text-white active:scale-95')
+                        : 'cursor-not-allowed'
+                    }`}
+                    style={{ 
+                      width: (matchData.gameMode === 'true-grit') ? '72%' : '36%',
+                      height: '100%',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      fontFamily: "Audiowide",
+                      textTransform: "uppercase" as const,
+                      border: 'none',
+                      borderRadius: '0',
+                      background: 'transparent',
+                      backdropFilter: 'none',
+                    }}
+                    initial={{ opacity: 0, x: 50, scale: 0.9 }}
+                    animate={{ 
+                      opacity: canRoll ? 1 : 0.5,
+                      x: 0,
+                      scale: 1
+                    }}
+                    whileTap={canRoll ? { 
+                      scale: 0.95,
+                      boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)"
+                    } : {}}
+                    transition={{ 
+                      duration: 0.4, 
+                      ease: [0.4, 0, 0.2, 1],
+                      delay: 0.2 // Slight delay after save button
+                    }}
+                  >
+                    <span>PLAY</span>
+                  </motion.button>
+                )}
+
+                {/* 🔨 AURA FORGE NUMBER SELECTORS - Replace PLAY/SAVE when active */}
+                {isAuraForgeActive && (
+                  <>
+                    {[1, 2, 3, 4].map((amount) => (
+                      <motion.button
+                        key={amount}
+                        onClick={() => handleAuraForgeSelect(amount)}
+                        disabled={matchData.gameData.turnScore < (amount * 5)}
+                        className="text-2xl font-bold transition-all text-white active:scale-95"
+                        style={{ 
+                          width: '23%',
+                          height: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          fontFamily: "Audiowide",
+                          border: '2px solid rgba(255, 255, 255, 0.3)',
+                          borderRadius: '12px',
+                          background: matchData.gameData.turnScore >= (amount * 5)
+                            ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(168, 85, 247, 0.3))'
+                            : 'rgba(100, 100, 100, 0.3)',
+                          backdropFilter: 'blur(8px)',
+                          opacity: matchData.gameData.turnScore >= (amount * 5) ? 1 : 0.5,
+                        }}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        whileTap={matchData.gameData.turnScore >= (amount * 5) ? { 
+                          scale: 0.9,
+                          boxShadow: "0 4px 20px rgba(139, 92, 246, 0.5)"
+                        } : {}}
+                        transition={{ 
+                          duration: 0.3,
+                          delay: amount * 0.05
+                        }}
+                      >
+                        <span style={{ fontSize: '28px', marginBottom: '2px' }}>{amount}</span>
+                        <span style={{ fontSize: '10px', opacity: 0.8 }}>-{amount * 5}pts</span>
+                      </motion.button>
+                    ))}
+                  </>
+                )}
               </>
             ) : (
               <>
