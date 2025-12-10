@@ -76,17 +76,56 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   const [auraDisplay, setAuraDisplay] = useState(0); // Animated aura value
   
   // State for Vital Rush animation
-  const [vitalRushActive, setVitalRushActive] = useState(false);
-  const [showVitalRushInitial, setShowVitalRushInitial] = useState(false);
   const [showVitalRushTopDice, setShowVitalRushTopDice] = useState(false);
   const [showVitalRushBottomDice, setShowVitalRushBottomDice] = useState(false);
+  const vitalRushTopVideoRef = useRef<HTMLVideoElement>(null);
+  const vitalRushBottomVideoRef = useRef<HTMLVideoElement>(null);
+  
+  // Check if Vital Rush is active in Firebase activeEffects
+  const vitalRushActive = user && matchData.gameData.activeEffects?.[user.uid]?.some(
+    (effect: any) => effect.abilityId === 'vital_rush'
+  );
   
   // Check for Score Saw pulse effect (turn_score_pulse)
   const scoreSawPulseActive = user && matchData.gameData.activeEffects?.[user.uid]?.some(
     (effect: any) => effect.abilityId === 'score_saw' && effect.effectType === 'turn_score_pulse'
   );
   
-  // Wrapped ability handler to detect Aura Forge and Vital Rush activation
+  // Monitor Vital Rush activation from activeEffects and start videos
+  useEffect(() => {
+    if (vitalRushActive && !showVitalRushTopDice && !showVitalRushBottomDice) {
+      console.log('💓 Vital Rush detected in activeEffects - starting video animations');
+      
+      // Show and play top dice container video
+      setShowVitalRushTopDice(true);
+      if (vitalRushTopVideoRef.current) {
+        vitalRushTopVideoRef.current.currentTime = 0;
+        vitalRushTopVideoRef.current.play().catch(err => console.error('Top video play failed:', err));
+      }
+      
+      // Show and play bottom dice container video
+      setShowVitalRushBottomDice(true);
+      if (vitalRushBottomVideoRef.current) {
+        vitalRushBottomVideoRef.current.currentTime = 0;
+        vitalRushBottomVideoRef.current.play().catch(err => console.error('Bottom video play failed:', err));
+      }
+    } else if (!vitalRushActive && (showVitalRushTopDice || showVitalRushBottomDice)) {
+      // Vital Rush ended - stop and hide videos
+      console.log('💓 Vital Rush ended - stopping video animations');
+      setShowVitalRushTopDice(false);
+      setShowVitalRushBottomDice(false);
+      if (vitalRushTopVideoRef.current) {
+        vitalRushTopVideoRef.current.pause();
+        vitalRushTopVideoRef.current.currentTime = 0;
+      }
+      if (vitalRushBottomVideoRef.current) {
+        vitalRushBottomVideoRef.current.pause();
+        vitalRushBottomVideoRef.current.currentTime = 0;
+      }
+    }
+  }, [vitalRushActive, showVitalRushTopDice, showVitalRushBottomDice]);
+  
+  // Wrapped ability handler to detect Aura Forge activation
   const handleAbilityUsed = useCallback((effect: any) => {
     // Check if this is Aura Forge activation
     if (effect?.abilityId === 'aura_forge' || effect?.type === 'aura_forge_pending') {
@@ -99,24 +138,6 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
       if (effect.callback) {
         setAuraForgeCallback(() => effect.callback);
       }
-    } 
-    // Check if this is Vital Rush activation
-    else if (effect?.abilityId === 'vital_rush' || effect?.ability?.id === 'vital_rush') {
-      console.log('🎬 Vital Rush activated - starting animation sequence');
-      setVitalRushActive(true);
-      
-      // Start initial animation immediately
-      setShowVitalRushInitial(true);
-      
-      // Start top dice animation after 0.5s
-      setTimeout(() => {
-        setShowVitalRushTopDice(true);
-      }, 500);
-      
-      // Start bottom dice animation after 0.8s
-      setTimeout(() => {
-        setShowVitalRushBottomDice(true);
-      }, 800);
     }
     else {
       // Pass through to parent handler (including Hard Hat which is handled in Match.tsx)
@@ -209,30 +230,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
     
   }, [auraForgeCallback, currentPlayer, opponent, matchData.gameData.turnScore, matchData.gameMode, currentUserAura]);
 
-  // Cleanup Vital Rush animations when turn ends
-  useEffect(() => {
-    // Clear animations when turn score resets or turn changes
-    if (matchData.gameData.turnScore === 0 || !isMyTurn) {
-      if (vitalRushActive) {
-        console.log('🎬 Clearing Vital Rush animations - turn ended');
-        setVitalRushActive(false);
-        setShowVitalRushInitial(false);
-        setShowVitalRushTopDice(false);
-        setShowVitalRushBottomDice(false);
-      }
-    }
-  }, [matchData.gameData.turnScore, isMyTurn, vitalRushActive]);
-
   // Handle bank/save with animation
   const handleBankScore = () => {
-    // Clear Vital Rush animations immediately when banking
-    if (vitalRushActive) {
-      console.log('🎬 Clearing Vital Rush animations - player banked');
-      setVitalRushActive(false);
-      setShowVitalRushInitial(false);
-      setShowVitalRushTopDice(false);
-      setShowVitalRushBottomDice(false);
-    }
     if (!canBank) return;
     
     // Trigger shooting animation
@@ -534,12 +533,12 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               isVitalRushActive={vitalRushActive} // Vital Rush ability state
             />
             
-            {/* Vital Rush Top Dice Animation Overlay - DISABLED FOR SPRITE SHEET TESTING */}
-            {/* {showVitalRushTopDice && (
+            {/* Vital Rush Top Dice Animation Overlay */}
+            {showVitalRushTopDice && (
               <video
+                ref={vitalRushTopVideoRef}
                 key="vital-rush-top-dice"
                 src="/Abilities/Animations/Vital Rush/Vital Rush Top Dice Container.webm"
-                autoPlay
                 loop
                 muted
                 playsInline
@@ -552,8 +551,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   pointerEvents: 'none',
                   zIndex: 10
                 }}
+                onError={(e) => console.error('💓 Vital Rush top video error:', e)}
               />
-            )} */}
+            )}
           </motion.div>
           
           {/* Turn Score - Positioned absolutely between dice - Mobile bigger and more padding */}
@@ -635,8 +635,8 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                       ]
                     } : {}}
                     transition={scoreSawPulseActive ? {
-                      duration: 0.5,
-                      repeat: 2,
+                      duration: 0.33,
+                      repeat: 1,
                       repeatType: "reverse"
                     } : areDoublesGold ? {
                       duration: 0.6,
@@ -957,12 +957,12 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               isVitalRushActive={vitalRushActive} // Vital Rush ability state
             />
             
-            {/* Vital Rush Bottom Dice Animation Overlay - DISABLED FOR SPRITE SHEET TESTING */}
-            {/* {showVitalRushBottomDice && (
+            {/* Vital Rush Bottom Dice Animation Overlay */}
+            {showVitalRushBottomDice && (
               <video
+                ref={vitalRushBottomVideoRef}
                 key="vital-rush-bottom-dice"
                 src="/Abilities/Animations/Vital Rush/Vital Rush Bottom Dice Container.webm"
-                autoPlay
                 loop
                 muted
                 playsInline
@@ -975,8 +975,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   pointerEvents: 'none',
                   zIndex: 10
                 }}
+                onError={(e) => console.error('💓 Vital Rush bottom video error:', e)}
               />
-            )} */}
+            )}
           </motion.div>
         </motion.div>
         
