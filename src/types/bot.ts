@@ -107,6 +107,8 @@ export interface BotProfile {
   inventory?: {
     displayBackgroundEquipped?: any;
     matchBackgroundEquipped?: any;
+    turnDeciderBackgroundEquipped?: any;
+    victoryBackgroundEquipped?: any;
     items?: string[];
   };
   

@@ -173,15 +173,19 @@ export class BotMatchingService {
           return;
         }
         
-        // Add random match background to bot
-        const randomBackground = this.getRandomMatchBackground();
+        // Add random backgrounds to bot
+        const randomMatchBg = this.getRandomMatchBackground();
+        const randomTurnDeciderBg = this.getRandomTurnDeciderBackground();
+        const randomVictoryBg = this.getRandomVictoryBackground();
         
         bots.push({ 
           ...botData, 
           uid: doc.id,
           inventory: {
             ...botData.inventory,
-            matchBackgroundEquipped: randomBackground
+            matchBackgroundEquipped: randomMatchBg,
+            turnDeciderBackgroundEquipped: randomTurnDeciderBg,
+            victoryBackgroundEquipped: randomVictoryBg
           }
         });
       });
@@ -220,6 +224,35 @@ export class BotMatchingService {
     }
     
     return { name: resolved.name, file: resolved.path, type: resolved.type };
+  }
+
+  /**
+   * 🎬 Get random turn decider background for bots
+   */
+  private static getRandomTurnDeciderBackground() {
+    const turnDeciderBgIds = [
+      'crazy-cough',
+      'lead-the-way',
+      'awaken'
+    ];
+    
+    const randomId = turnDeciderBgIds[Math.floor(Math.random() * turnDeciderBgIds.length)];
+    return { id: randomId, name: randomId };
+  }
+
+  /**
+   * 🏆 Get random victory background for bots
+   */
+  private static getRandomVictoryBackground() {
+    const victoryBgIds = [
+      'warrior-victory',
+      'on-track',
+      'relax',
+      'long-road-ahead'
+    ];
+    
+    const randomId = victoryBgIds[Math.floor(Math.random() * victoryBgIds.length)];
+    return { id: randomId, name: randomId };
   }
   
   /**
@@ -738,6 +771,8 @@ export class BotMatchingService {
             playerId: bot.uid,
             displayBackgroundEquipped: bot.inventory?.displayBackgroundEquipped || null,
             matchBackgroundEquipped: bot.inventory?.matchBackgroundEquipped || null,
+            turnDeciderBackgroundEquipped: bot.inventory?.turnDeciderBackgroundEquipped || null,
+            victoryBackgroundEquipped: bot.inventory?.victoryBackgroundEquipped || null,
             playerStats: {
               bestStreak: bot.stats.bestStreak,
               currentStreak: bot.stats.currentStreak,
@@ -766,6 +801,8 @@ export class BotMatchingService {
         },
         displayBackgroundEquipped: bot.inventory?.displayBackgroundEquipped || null,
         matchBackgroundEquipped: bot.inventory?.matchBackgroundEquipped || null,
+        turnDeciderBackgroundEquipped: bot.inventory?.turnDeciderBackgroundEquipped || null,
+        victoryBackgroundEquipped: bot.inventory?.victoryBackgroundEquipped || null,
         ready: true,
         joinedAt: new Date(),
         isConnected: true,
