@@ -20,7 +20,6 @@ import { MatchLifecycleService } from '@/services/matchLifecycleService';
 import { analyticsService } from '@/services/analyticsService';
 import { useWaitingRoomBackground } from '@/hooks/useOptimizedBackground';
 import { getBackgroundById } from '@/config/backgrounds';
-import { GameSessionService } from '@/services/gameSessionService';
 
 interface GameWaitingRoomProps {
   gameMode: string;
@@ -244,38 +243,6 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
   // Waiting room cleanup functionality
   const { leaveWaitingRoom } = useWaitingRoomCleanup(waitingRoomEntry?.id || roomId);
-
-  // 💓 Keep session heartbeat alive while in waiting room to prevent stale session matching
-  useEffect(() => {
-    const activeRoomId = waitingRoomEntry?.id || waitingRoomEntry?.sessionProxy || roomId;
-    if (!activeRoomId || !user?.uid || opponentJoined) {
-      return; // Only send heartbeats while waiting for opponent
-    }
-
-    console.log(`💓 Starting session heartbeat for room ${activeRoomId}`);
-    
-    // Send initial heartbeat
-    GameSessionService.updatePlayerHeartbeat(activeRoomId, user.uid).catch(err => {
-      console.warn('⚠️ Initial session heartbeat failed:', err);
-    });
-
-    // Send heartbeat every 10 seconds
-    const heartbeatInterval = setInterval(async () => {
-      try {
-        const success = await GameSessionService.updatePlayerHeartbeat(activeRoomId, user.uid);
-        if (!success) {
-          console.warn('⚠️ Session heartbeat update failed - session may not exist');
-        }
-      } catch (error) {
-        console.error('❌ Session heartbeat error:', error);
-      }
-    }, 10000); // 10 seconds - more frequent than the 30s threshold
-
-    return () => {
-      console.log(`💓 Stopping session heartbeat for room ${activeRoomId}`);
-      clearInterval(heartbeatInterval);
-    };
-  }, [waitingRoomEntry?.id, waitingRoomEntry?.sessionProxy, roomId, user?.uid, opponentJoined]);
 
   // Mobile scroll detection for button animation
   useEffect(() => {
@@ -621,18 +588,29 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         // Import DashDiceAPI to check match status
         const { default: DashDiceAPI } = await import('@/services/apiClientNew');
         
-        // Get specific match details
-        const response = await DashDiceAPI.listMatches({ 
-          status: 'ready',
-          limit: 10 
-        });
+        // Get ALL matches (waiting, ready, in_progress) to find our specific match
+        // Don't filter by status - we want to find our match regardless of its current state
+        const [waitingResponse, readyResponse, activeResponse] = await Promise.all([
+          DashDiceAPI.listMatches({ status: 'waiting', limit: 20 }),
+          DashDiceAPI.listMatches({ status: 'ready', limit: 20 }),
+          DashDiceAPI.listMatches({ status: 'in_progress', limit: 20 })
+        ]);
 
-        if (response.success && response.data?.matches) {
-          // Look for our match by ID - Go backend returns different format than TypeScript Match interface
-          const ourMatch = response.data.matches.find((match: any) => match.matchId === roomId) as any;
+        // Combine all matches from different statuses
+        const allMatches = [
+          ...(waitingResponse.data?.matches || []),
+          ...(readyResponse.data?.matches || []),
+          ...(activeResponse.data?.matches || [])
+        ];
+
+        // Look for our match by ID across all statuses
+        const ourMatch = allMatches.find((match: any) => match.matchId === roomId) as any;
+        
+        if (ourMatch) {
+          console.log(`🔍 GameWaitingRoom: Found our match with status: ${ourMatch.status}`, ourMatch);
           
-          // Handle Go backend's "ready" status (not in TypeScript Match interface)
-          if (ourMatch && ourMatch.status === 'ready' && ourMatch.players?.length >= 2) {
+          // Check if match is ready (has 2 players) OR already in progress
+          if ((ourMatch.status === 'ready' || ourMatch.status === 'in_progress') && ourMatch.players?.length >= 2) {
             console.log('🎉 GameWaitingRoom: Go backend match is ready!', ourMatch);
             
             // 🤖 Cancel bot countdown since match is already ready
@@ -926,7 +904,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             startVsCountdownWhenReady();
             
             return;
+          } else if (ourMatch && ourMatch.status === 'waiting') {
+            // Match still waiting for second player
+            console.log(`⏳ GameWaitingRoom: Match still waiting for opponent (${ourMatch.players?.length || 0}/2 players)`);
           }
+        } else {
+          // Match not found in any status - might have been deleted/abandoned
+          console.warn(`⚠️ GameWaitingRoom: Match ${roomId} not found in Go backend`);
         }
       } catch (error) {
         console.warn('⚠️ GameWaitingRoom: Go backend polling error:', error);
