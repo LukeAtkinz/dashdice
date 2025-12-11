@@ -124,7 +124,7 @@ export const GameplayPhase = React.memo<GameplayPhaseProps>(({
   // 🚀 PERFORMANCE: Monitor Vital Rush activation with proper cleanup
   useEffect(() => {
     if (vitalRushActive && !showVitalRushTopDice && !showVitalRushBottomDice) {
-      console.log('💓 Vital Rush ACTIVATED');
+      console.log('💓 Vital Rush ACTIVATED - IMMEDIATE PLAYBACK');
       setShowVitalRushTopDice(true);
       setShowVitalRushBottomDice(true);
       
@@ -133,17 +133,21 @@ export const GameplayPhase = React.memo<GameplayPhaseProps>(({
         clearTimeout(vitalRushTimeoutRef.current);
       }
       
+      // IMMEDIATE video playback - minimal delay
       vitalRushTimeoutRef.current = setTimeout(() => {
+        // Top video
         try {
           if (vitalRushTopVideoRef.current) {
             const topVideo = vitalRushTopVideoRef.current;
             topVideo.muted = true;
             topVideo.playsInline = true;
+            topVideo.currentTime = 0;
             
-            if (topVideo.readyState >= 2) {
-              topVideo.currentTime = 0;
-              topVideo.play().catch(err => {
-                console.warn('💓 Top video play failed:', err);
+            const topPlayPromise = topVideo.play();
+            if (topPlayPromise !== undefined) {
+              topPlayPromise.catch(err => {
+                console.warn('💓 Top video play failed, retrying:', err);
+                setTimeout(() => topVideo.play().catch(() => {}), 100);
               });
             }
           }
@@ -151,23 +155,26 @@ export const GameplayPhase = React.memo<GameplayPhaseProps>(({
           console.error('💓 Top video error:', err);
         }
         
+        // Bottom video
         try {
           if (vitalRushBottomVideoRef.current) {
             const bottomVideo = vitalRushBottomVideoRef.current;
             bottomVideo.muted = true;
             bottomVideo.playsInline = true;
+            bottomVideo.currentTime = 0;
             
-            if (bottomVideo.readyState >= 2) {
-              bottomVideo.currentTime = 0;
-              bottomVideo.play().catch(err => {
-                console.warn('💓 Bottom video play failed:', err);
+            const bottomPlayPromise = bottomVideo.play();
+            if (bottomPlayPromise !== undefined) {
+              bottomPlayPromise.catch(err => {
+                console.warn('💓 Bottom video play failed, retrying:', err);
+                setTimeout(() => bottomVideo.play().catch(() => {}), 100);
               });
             }
           }
         } catch (err) {
           console.error('💓 Bottom video error:', err);
         }
-      }, 50);
+      }, 10); // Minimal delay for DOM update
       
     } else if (!vitalRushActive && (showVitalRushTopDice || showVitalRushBottomDice)) {
       console.log('💓 Vital Rush DEACTIVATED');
@@ -619,40 +626,40 @@ export const GameplayPhase = React.memo<GameplayPhaseProps>(({
               isVitalRushActive={vitalRushActive} // Vital Rush ability state
             />
             
-            {/* Vital Rush Top Dice Animation Overlay */}
-            {showVitalRushTopDice && (
-              <video
-                ref={vitalRushTopVideoRef}
-                key="vital-rush-top-dice"
-                src="/Abilities/Animations/Vital Rush/Vital Rush Top Dice Container.webm"
-                loop
-                muted
-                playsInline
-                preload="none"
-                autoPlay
-                disablePictureInPicture
-                disableRemotePlayback
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  pointerEvents: 'none',
-                  zIndex: 5,
-                  transform: 'translateZ(0)',
-                  backfaceVisibility: 'hidden'
-                }}
-                onLoadedMetadata={(e) => {
-                  e.currentTarget.muted = true;
-                  e.currentTarget.playsInline = true;
-                }}
-                onError={() => {
-                  console.warn('💓 Vital Rush top video failed, hiding');
-                  setShowVitalRushTopDice(false);
-                }}
-              />
-            )}
+            {/* Vital Rush Top Dice Animation Overlay - PERFORMANCE OPTIMIZED */}
+            <video
+              ref={vitalRushTopVideoRef}
+              key="vital-rush-top-dice"
+              src="/Abilities/Animations/Vital Rush/Vital Rush Top Dice Container.webm"
+              loop
+              muted
+              playsInline
+              preload="auto"
+              disablePictureInPicture
+              disableRemotePlayback
+              style={{
+                display: showVitalRushTopDice ? 'block' : 'none',
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                pointerEvents: 'none',
+                zIndex: 5,
+                transform: 'translate3d(0, 0, 0)',
+                backfaceVisibility: 'hidden',
+                WebkitBackfaceVisibility: 'hidden',
+                willChange: 'transform, opacity',
+                isolation: 'isolate'
+              }}
+              onLoadedMetadata={(e) => {
+                e.currentTarget.muted = true;
+                e.currentTarget.playsInline = true;
+              }}
+              onError={() => {
+                console.warn('💓 Vital Rush top video failed');
+              }}
+            />
           </motion.div>
           
           {/* Turn Score - Positioned absolutely between dice - Mobile bigger and more padding */}
@@ -1060,40 +1067,40 @@ export const GameplayPhase = React.memo<GameplayPhaseProps>(({
               isVitalRushActive={vitalRushActive} // Vital Rush ability state
             />
             
-            {/* Vital Rush Bottom Dice Animation Overlay */}
-            {showVitalRushBottomDice && (
-              <video
-                ref={vitalRushBottomVideoRef}
-                key="vital-rush-bottom-dice"
-                src="/Abilities/Animations/Vital Rush/Vital Rush Bottom Dice Container.webm"
-                loop
-                muted
-                playsInline
-                preload="none"
-                autoPlay
-                disablePictureInPicture
-                disableRemotePlayback
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  pointerEvents: 'none',
-                  zIndex: 5,
-                  transform: 'translateZ(0)',
-                  backfaceVisibility: 'hidden'
-                }}
-                onLoadedMetadata={(e) => {
-                  e.currentTarget.muted = true;
-                  e.currentTarget.playsInline = true;
-                }}
-                onError={() => {
-                  console.warn('💓 Vital Rush bottom video failed, hiding');
-                  setShowVitalRushBottomDice(false);
-                }}
-              />
-            )}
+            {/* Vital Rush Bottom Dice Animation Overlay - PERFORMANCE OPTIMIZED */}
+            <video
+              ref={vitalRushBottomVideoRef}
+              key="vital-rush-bottom-dice"
+              src="/Abilities/Animations/Vital Rush/Vital Rush Bottom Dice Container.webm"
+              loop
+              muted
+              playsInline
+              preload="auto"
+              disablePictureInPicture
+              disableRemotePlayback
+              style={{
+                display: showVitalRushBottomDice ? 'block' : 'none',
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                pointerEvents: 'none',
+                zIndex: 5,
+                transform: 'translate3d(0, 0, 0)',
+                backfaceVisibility: 'hidden',
+                WebkitBackfaceVisibility: 'hidden',
+                willChange: 'transform, opacity',
+                isolation: 'isolate'
+              }}
+              onLoadedMetadata={(e) => {
+                e.currentTarget.muted = true;
+                e.currentTarget.playsInline = true;
+              }}
+              onError={() => {
+                console.warn('💓 Vital Rush bottom video failed');
+              }}
+            />
           </motion.div>
         </motion.div>
         

@@ -240,7 +240,7 @@ export const SlotMachineDice = React.memo<SlotMachineDiceProps>(({
   useEffect(() => {
     if (panSlapFound && !isPanSlapActive) {
       // Pan Slap just activated
-      console.log('🍳 PAN SLAP ACTIVATED');
+      console.log('🍳 PAN SLAP ACTIVATED - IMMEDIATE PLAYBACK');
       setIsPanSlapActive(true);
       setShowRedDice(true);
       
@@ -249,37 +249,36 @@ export const SlotMachineDice = React.memo<SlotMachineDiceProps>(({
         clearTimeout(panSlapTimeoutRef.current);
       }
       
-      // Delay video playback slightly to prevent frame drops
+      // IMMEDIATE video playback - no delay
       panSlapTimeoutRef.current = setTimeout(() => {
         try {
           if (panSlapVideoRef.current) {
             const video = panSlapVideoRef.current;
             video.muted = true;
             video.playsInline = true;
+            video.currentTime = 0;
             
-            if (video.readyState >= 2) {
-              video.currentTime = 0;
-              video.play().catch((err) => {
-                console.warn('🍳 Pan Slap video play failed, using fallback:', err);
-                setIsPanSlapActive(false);
-                setPanSlapPulsing(true);
+            // Force play immediately, regardless of ready state
+            const playPromise = video.play();
+            
+            if (playPromise !== undefined) {
+              playPromise.catch((err) => {
+                console.warn('🍳 Pan Slap video play failed:', err);
+                // Retry once
+                setTimeout(() => {
+                  video.play().catch(() => {
+                    console.warn('🍳 Pan Slap retry failed, showing pulsing fallback');
+                    setPanSlapPulsing(true);
+                  });
+                }, 100);
               });
-            } else {
-              // Fallback: skip video
-              setIsPanSlapActive(false);
-              setPanSlapPulsing(true);
             }
-          } else {
-            // No video ref, use fallback
-            setIsPanSlapActive(false);
-            setPanSlapPulsing(true);
           }
         } catch (err) {
           console.error('🍳 Pan Slap video error:', err);
-          setIsPanSlapActive(false);
           setPanSlapPulsing(true);
         }
-      }, 50); // Reduced from 100ms
+      }, 10); // Minimal delay for DOM update
       
     } else if (!panSlapFound && (isPanSlapActive || showRedDice || panSlapPulsing)) {
       // Pan Slap deactivated - cleanup
@@ -857,49 +856,54 @@ export const SlotMachineDice = React.memo<SlotMachineDiceProps>(({
         </motion.div>
       )}
       
-      {/* 🍳 PAN SLAP ABILITY ANIMATION 🍳 */}
-      {isPanSlapActive && (
-        <motion.div
-          className="absolute inset-0 pointer-events-none z-50"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          <video
-            ref={panSlapVideoRef}
-            src="/Abilities/Animations/Pan Slap/Pan Slap.webm"
-            loop={false}
-            muted
-            playsInline
-            preload="none"
-            disablePictureInPicture
-            disableRemotePlayback
-            className="w-full h-full"
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              borderRadius: '30px',
-              overflow: 'hidden',
-              transform: 'translateZ(0)',
-              backfaceVisibility: 'hidden'
-            }}
-            onLoadedMetadata={(e) => {
-              e.currentTarget.muted = true;
-            }}
-            onError={() => {
-              console.warn('🍳 Pan Slap video failed, using fallback');
-              setIsPanSlapActive(false);
-              setPanSlapPulsing(true);
-            }}
-            onEnded={() => {
-              setIsPanSlapActive(false);
-              setPanSlapPulsing(true);
-            }}
-          />
-        </motion.div>
-      )}
+      {/* 🍳 PAN SLAP ABILITY ANIMATION 🍳 - PERFORMANCE OPTIMIZED */}
+      <div
+        className="absolute inset-0 pointer-events-none z-50"
+        style={{
+          display: isPanSlapActive ? 'block' : 'none',
+          opacity: isPanSlapActive ? 1 : 0,
+          transition: 'opacity 0.2s ease',
+          willChange: isPanSlapActive ? 'opacity' : 'auto'
+        }}
+      >
+        <video
+          ref={panSlapVideoRef}
+          src="/Abilities/Animations/Pan Slap/Pan Slap.webm"
+          loop={false}
+          muted
+          playsInline
+          autoPlay
+          preload="auto"
+          disablePictureInPicture
+          disableRemotePlayback
+          className="w-full h-full"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: '30px',
+            overflow: 'hidden',
+            transform: 'translate3d(0, 0, 0)',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            willChange: 'transform',
+            isolation: 'isolate'
+          }}
+          onLoadedMetadata={(e) => {
+            e.currentTarget.muted = true;
+            e.currentTarget.playsInline = true;
+          }}
+          onError={() => {
+            console.warn('🍳 Pan Slap video failed, using fallback');
+            setIsPanSlapActive(false);
+            setPanSlapPulsing(true);
+          }}
+          onEnded={() => {
+            setIsPanSlapActive(false);
+            setPanSlapPulsing(true);
+          }}
+        />
+      </div>
     </div>
   );
 }, (prevProps, nextProps) => {
