@@ -37,7 +37,8 @@ interface SlotMachineDiceProps {
   isVitalRushActive?: boolean; // NEW: Vital Rush ability active state
 }
 
-export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({ 
+// 🚀 PERFORMANCE: Memoize SlotMachineDice to prevent unnecessary re-renders
+export const SlotMachineDice = React.memo<SlotMachineDiceProps>(({ 
   diceNumber, 
   animationState, 
   matchRollPhase, 
@@ -901,4 +902,15 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
       )}
     </div>
   );
-};
+}, (prevProps, nextProps) => {
+  // 🚀 PERFORMANCE: Custom comparison - only re-render if critical props change
+  return (
+    prevProps.animationState.isSpinning === nextProps.animationState.isSpinning &&
+    prevProps.animationState.currentNumber === nextProps.animationState.currentNumber &&
+    prevProps.animationState.finalNumber === nextProps.animationState.finalNumber &&
+    prevProps.actualValue === nextProps.actualValue &&
+    prevProps.isGameRolling === nextProps.isGameRolling &&
+    prevProps.matchRollPhase === nextProps.matchRollPhase &&
+    prevProps.isVitalRushActive === nextProps.isVitalRushActive
+  );
+});

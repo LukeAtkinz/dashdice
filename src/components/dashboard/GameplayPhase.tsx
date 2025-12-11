@@ -32,7 +32,8 @@ interface GameplayPhaseProps {
   onAbilityUsed?: (effect: any) => void;
 }
 
-export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
+// 🚀 PERFORMANCE: Memoize GameplayPhase to prevent unnecessary re-renders
+export const GameplayPhase = React.memo<GameplayPhaseProps>(({
   matchData,
   currentPlayer,
   opponent,
@@ -45,9 +46,14 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
 }) => {
   const { DisplayBackgroundEquip } = useBackground();
   const { user } = useAuth();
-  const isMyTurn = currentPlayer.turnActive;
-  const canRoll = isMyTurn && !matchData.gameData.isRolling;
-  const canBank = isMyTurn && !matchData.gameData.isRolling && matchData.gameData.turnScore > 0;
+  
+  // 🚀 PERFORMANCE: Memoize frequently accessed values
+  const isMyTurn = useMemo(() => currentPlayer.turnActive, [currentPlayer.turnActive]);
+  const isRolling = useMemo(() => matchData.gameData.isRolling, [matchData.gameData.isRolling]);
+  const turnScore = useMemo(() => matchData.gameData.turnScore, [matchData.gameData.turnScore]);
+  
+  const canRoll = useMemo(() => isMyTurn && !isRolling, [isMyTurn, isRolling]);
+  const canBank = useMemo(() => isMyTurn && !isRolling && turnScore > 0, [isMyTurn, isRolling, turnScore]);
   
   // Get current user's AURA from match data
   const currentUserAura = user ? (matchData.gameData.playerAura?.[user.uid] || 0) : 0;
@@ -1719,4 +1725,20 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
       </div>
     </React.Fragment>
   );
-};
+}, (prevProps, nextProps) => {
+  // 🚀 PERFORMANCE: Custom comparison - only re-render if critical props change
+  // Returns true if props are equal (prevent re-render), false if different (re-render)
+  return (
+    prevProps.matchData.gameData.turnScore === nextProps.matchData.gameData.turnScore &&
+    prevProps.matchData.gameData.isRolling === nextProps.matchData.gameData.isRolling &&
+    prevProps.matchData.gameData.diceOne === nextProps.matchData.gameData.diceOne &&
+    prevProps.matchData.gameData.diceTwo === nextProps.matchData.gameData.diceTwo &&
+    prevProps.matchData.hostData.playerScore === nextProps.matchData.hostData.playerScore &&
+    prevProps.matchData.hostData.turnActive === nextProps.matchData.hostData.turnActive &&
+    prevProps.matchData.opponentData?.playerScore === nextProps.matchData.opponentData?.playerScore &&
+    prevProps.matchData.opponentData?.turnActive === nextProps.matchData.opponentData?.turnActive &&
+    prevProps.dice1Animation.isSpinning === nextProps.dice1Animation.isSpinning &&
+    prevProps.dice2Animation.isSpinning === nextProps.dice2Animation.isSpinning &&
+    prevProps.isHost === nextProps.isHost
+  );
+});

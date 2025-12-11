@@ -1,8 +1,9 @@
 ﻿'use client';
 
-// CACHE BUST: v2.0.0 - React Error #310 FIX DEPLOYED
+// CACHE BUST: v2.1.0 - Performance Optimizations Applied
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { debounce } from '@/utils/performance';
 import { useAuth } from '@/context/AuthContext';
 import { MatchService } from '@/services/matchService';
 import { BotAutomationService } from '@/services/botAutomationService';
@@ -46,6 +47,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const { showToast } = useToast();
   const { DisplayBackgroundEquip } = useBackground(); // Get user's Vibin background
   const { initializeChat, endChat, clearChat, sendMessage, muteState, session } = useMatchChat();
+  
   // Legacy achievement system - temporarily disabled to prevent concurrent updates
   // const { recordGameCompletion } = useGameAchievements();
   
@@ -71,6 +73,17 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showGameOverScreen, setShowGameOverScreen] = useState(false);
+  
+  // 🚀 PERFORMANCE: Memoize frequently accessed match data properties
+  const gamePhase = useMemo(() => matchData?.gameData?.gamePhase, [matchData?.gameData?.gamePhase]);
+  const memoizedIsRolling = useMemo(() => matchData?.gameData?.isRolling ?? false, [matchData?.gameData?.isRolling]);
+  const memoizedTurnScore = useMemo(() => matchData?.gameData?.turnScore ?? 0, [matchData?.gameData?.turnScore]);
+  const winner = useMemo(() => matchData?.gameData?.winner, [matchData?.gameData?.winner]);
+  
+  // 🚀 PERFORMANCE: Memoize player identity to avoid recalculation
+  const memoizedIsHost = useMemo(() => {
+    return matchData?.hostData?.playerId === user?.uid;
+  }, [matchData?.hostData?.playerId, user?.uid]);
   
   // 🧢 Hard Hat animation states
   const [showHardHatInitialCurrent, setShowHardHatInitialCurrent] = useState(false);
@@ -357,13 +370,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   // Set game over state for navbar visibility
   useEffect(() => {
     if (matchData?.gameData) {
-      const isGameOverNow = matchData.gameData.gamePhase === 'gameOver';
+      const isGameOverNow = gamePhase === 'gameOver';
       setIsGameOver(isGameOverNow);
       
       // Track achievement when game ends
-      if (isGameOverNow && matchData.gameData.winner && user?.uid) {
-        const isHost = matchData.hostData.playerId === user.uid;
-        const playerWon = matchData.gameData.winner === (isHost ? 'host' : 'opponent');
+      if (isGameOverNow && winner && user?.uid) {
+        const playerWon = winner === (memoizedIsHost ? 'host' : 'opponent');
         
         // Flush all batched achievements to database (single write)
         const matchDuration = matchStartTime.current ? Date.now() - matchStartTime.current : 0;
@@ -385,7 +397,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
   // Handle game over delay
   useEffect(() => {
-    if (matchData?.gameData?.gamePhase === 'gameOver') {
+    if (gamePhase === 'gameOver') {
       const timer = setTimeout(() => {
         setShowGameOverScreen(true);
       }, 1000); // 1 second delay
@@ -394,11 +406,11 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     } else {
       setShowGameOverScreen(false);
     }
-  }, [matchData?.gameData?.gamePhase]);
+  }, [gamePhase]);
   
   // Smooth Turn Decider Transition - Keep backgrounds visible and show winner announcement
   useEffect(() => {
-    const currentPhase = matchData?.gameData?.gamePhase;
+    const currentPhase = gamePhase;
     
     // Track phase transitions
     if (currentPhase && currentPhase !== previousGamePhase) {
@@ -868,6 +880,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     }
   }, [matchData?.gameData?.gamePhase]);
 
+  // 🚀 PERFORMANCE: Debounced match data setter to reduce re-renders
+  const debouncedSetMatchData = useMemo(
+    () => debounce((data: MatchData) => {
+      setMatchData(data);
+    }, 50), // 50ms debounce - balances responsiveness with performance
+    []
+  );
+
   // Subscribe to match updates
   useEffect(() => {
     if (!roomId || !user) {
@@ -886,7 +906,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
 
     const unsubscribe = MatchService.subscribeToMatch(roomId, (data) => {
       if (data) {
-        setMatchData(data);
+        debouncedSetMatchData(data);
         
         // Initialize game phase if needed
         if (!data.gameData.gamePhase) {
