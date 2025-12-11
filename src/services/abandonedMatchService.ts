@@ -393,12 +393,14 @@ export class AbandonedMatchService {
   /**
    * 🔥 NEW: Aggressively cleanup stale waiting rooms (45 second timeout)
    * Critical for 20+ concurrent player scalability
+   * Enhanced with HOST HEARTBEAT VALIDATION to prevent inactive player matching
    */
   static async cleanupStaleWaitingRooms(): Promise<void> {
     try {
       const now = Date.now();
       const waitingRoomCutoff = now - this.waitingRoomTimeout; // 45 seconds
       const matchedCutoff = now - this.matchedSessionTimeout; // 2 minutes
+      const heartbeatCutoff = now - 30000; // 30 seconds for heartbeat
       
       // Check gameSessions collection for stale waiting/matched sessions
       const sessionsQuery = query(
@@ -413,17 +415,30 @@ export class AbandonedMatchService {
         const data = docSnapshot.data();
         const createdAt = data.createdAt?.toMillis() || 0;
         const status = data.status;
+        const hostLastHeartbeat = data.hostData?.lastHeartbeat?.toMillis() || 0;
+        const hostIsConnected = data.hostData?.isConnected;
         
         let shouldCleanup = false;
         let reason: AbandonedMatch['reason'] = 'timeout';
         
+        // 🔥 CRITICAL: Check if host has stopped sending heartbeat (indicates offline/inactive)
+        if (hostLastHeartbeat > 0 && now - hostLastHeartbeat > 30000) {
+          shouldCleanup = true;
+          reason = 'player_disconnect';
+          console.log(`💔 Host in session ${docSnapshot.id} hasn't sent heartbeat in ${Math.round((now - hostLastHeartbeat) / 1000)}s - cleaning up`);
+        }
+        // Check if host explicitly marked as disconnected
+        else if (hostIsConnected === false) {
+          shouldCleanup = true;
+          reason = 'player_disconnect';
+          console.log(`💔 Host in session ${docSnapshot.id} marked as disconnected - cleaning up`);
+        }
         // Aggressive timeout for waiting rooms
-        if (status === 'waiting' && createdAt > 0 && now - createdAt > this.waitingRoomTimeout) {
+        else if (status === 'waiting' && createdAt > 0 && now - createdAt > this.waitingRoomTimeout) {
           shouldCleanup = true;
           reason = 'timeout';
           console.log(`⏰ Waiting room ${docSnapshot.id} timed out after 45s`);
         }
-        
         // Matched but not active (stuck in transition)
         else if (status === 'matched' && createdAt > 0 && now - createdAt > this.matchedSessionTimeout) {
           shouldCleanup = true;
@@ -442,7 +457,7 @@ export class AbandonedMatchService {
       }
       
       if (cleanedCount > 0) {
-        console.log(`🧹 Aggressively cleaned up ${cleanedCount} stale waiting/matched sessions`);
+        console.log(`🧹 Aggressively cleaned up ${cleanedCount} stale/inactive sessions`);
       }
       
     } catch (error) {

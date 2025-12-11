@@ -14,7 +14,7 @@ import { GameOverWrapper } from './GameOverWrapper';
 import { useGameAchievements } from '@/hooks/useGameAchievements';
 import { useMatchAchievements } from '@/hooks/useMatchAchievements';
 import { db } from '@/services/firebase';
-import { doc, updateDoc, Timestamp, arrayUnion } from 'firebase/firestore';
+import { doc, updateDoc, Timestamp, arrayUnion, deleteField } from 'firebase/firestore';
 import MatchAbandonmentNotification from '@/components/notifications/MatchAbandonmentNotification';
 import { useToast } from '@/context/ToastContext';
 import { useMatchBackground } from '@/hooks/useOptimizedBackground';
@@ -322,6 +322,28 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     // Update previous state
     previousHardHatStateRef.current = { current: currentHasHardHat, opponent: opponentHasHardHat };
   }, [matchData?.gameData.activeEffects, user?.uid, matchData?.hostData.playerId, matchData?.opponentData.playerId]);
+  
+  // Listen for Hard Hat usage notifications
+  useEffect(() => {
+    if (!matchData?.gameData?.abilityNotifications || !user?.uid) return;
+    
+    const notification = matchData.gameData.abilityNotifications[user.uid];
+    
+    if (notification?.abilityId === 'hard_hat_used') {
+      // Show the notification toast
+      setActiveAbilityToast('hard-hat-used');
+      
+      // Clear the notification from Firestore
+      if (roomId) {
+        const matchRef = doc(db, 'matches', roomId);
+        updateDoc(matchRef, {
+          [`gameData.abilityNotifications.${user.uid}`]: deleteField()
+        }).catch(error => {
+          console.error('Error clearing Hard Hat notification:', error);
+        });
+      }
+    }
+  }, [matchData?.gameData?.abilityNotifications, user?.uid, roomId]);
   
   // Turn announcement state
   const [showTurnAnnouncement, setShowTurnAnnouncement] = useState(false);

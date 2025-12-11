@@ -1627,6 +1627,36 @@ export class GameSessionService {
       return false;
     }
     
+    // 🔥 CRITICAL: Check if HOST is still online/connected
+    // This prevents matching with inactive players who left their session open
+    if (session.hostData) {
+      const hostLastHeartbeat = session.hostData.lastHeartbeat;
+      const hostIsConnected = session.hostData.isConnected;
+      
+      // Check heartbeat timestamp (must be < 30 seconds old)
+      if (hostLastHeartbeat) {
+        const heartbeatTime = hostLastHeartbeat instanceof Date 
+          ? hostLastHeartbeat.getTime() 
+          : (hostLastHeartbeat as any).toMillis?.() || 0;
+        const timeSinceHeartbeat = Date.now() - heartbeatTime;
+        
+        if (timeSinceHeartbeat > 30000) {
+          console.log(`❌ Rejected: Host offline (last heartbeat ${Math.round(timeSinceHeartbeat / 1000)}s ago)`);
+          return false;
+        }
+      } else if (session.sessionType !== 'friend') {
+        // For non-friend sessions, require heartbeat (friend sessions are more lenient)
+        console.log(`❌ Rejected: Host has no heartbeat data`);
+        return false;
+      }
+      
+      // Check connection status flag
+      if (hostIsConnected === false) {
+        console.log(`❌ Rejected: Host marked as disconnected`);
+        return false;
+      }
+    }
+    
     // Check if session is already full
     const currentParticipants = session.participants?.length || 0;
     const maxPlayers = session.gameConfiguration?.maxPlayers || 2;

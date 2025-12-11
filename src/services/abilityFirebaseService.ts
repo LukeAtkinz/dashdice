@@ -559,11 +559,22 @@ async function applyAbilityEffects(
               !(effect.abilityId === 'hard_hat' && effect.type === 'ability_block')
             );
             
-            // Show Hard Hat Used animation for target player
+            // Show Hard Hat Used animation and notification for both players
             await updateDoc(doc(db, 'matches', matchId), {
               [`gameData.activeEffects.${targetPlayerId}`]: remainingEffects,
               // Trigger Hard Hat Used animation
-              [`gameData.hardHatUsed.${targetPlayerId}`]: Timestamp.now()
+              [`gameData.hardHatUsed.${targetPlayerId}`]: Timestamp.now(),
+              // Trigger notification for both players
+              [`gameData.abilityNotifications.${targetPlayerId}`]: {
+                abilityId: 'hard_hat_used',
+                timestamp: Timestamp.now(),
+                blockedAbility: ability.name
+              },
+              [`gameData.abilityNotifications.${playerId}`]: {
+                abilityId: 'hard_hat_used',
+                timestamp: Timestamp.now(),
+                blockedAbility: ability.name
+              }
             });
             
             // Return empty effects - ability was blocked

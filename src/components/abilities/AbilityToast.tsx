@@ -29,6 +29,10 @@ const ABILITY_MESSAGES: { [key: string]: { title: string; description: string } 
     title: 'Hard Hat Activated',
     description: 'You are protected from attacks but gain less Aura'
   },
+  'hard-hat-used': {
+    title: 'Hard Hat Used',
+    description: 'Ability blocked by Hard Hat!'
+  },
   'pan-slap': {
     title: 'Pan Slap Activated',
     description: 'You ended your opponent\'s turn!'

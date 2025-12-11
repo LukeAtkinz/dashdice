@@ -160,6 +160,15 @@ export interface MatchData {
         [abilityId: string]: number;
       };
     };
+    
+    // Ability notifications (for abilities like Hard Hat that need to notify both players)
+    abilityNotifications?: {
+      [playerId: string]: {
+        abilityId: string;
+        timestamp: Timestamp;
+        blockedAbility?: string;
+      };
+    };
   };
   
   // Match metadata

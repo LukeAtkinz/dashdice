@@ -80,10 +80,24 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   const vitalRushTopVideoRef = useRef<HTMLVideoElement>(null);
   const vitalRushBottomVideoRef = useRef<HTMLVideoElement>(null);
   
-  // Check if Vital Rush is active in Firebase activeEffects
-  const vitalRushActive = user && matchData.gameData.activeEffects?.[user.uid]?.some(
-    (effect: any) => effect.abilityId === 'vital_rush'
-  );
+  // Check if Vital Rush is active in Firebase activeEffects (check ALL players, not just current user)
+  const vitalRushActive = (() => {
+    if (!matchData?.gameData?.activeEffects) return false;
+    
+    // Check all players' active effects for vital_rush
+    for (const playerId in matchData.gameData.activeEffects) {
+      const effects = matchData.gameData.activeEffects[playerId];
+      if (effects && Array.isArray(effects)) {
+        const hasVitalRush = effects.some(effect => 
+          effect?.abilityId === 'vital_rush'
+        );
+        if (hasVitalRush) {
+          return true;
+        }
+      }
+    }
+    return false;
+  })();
   
   // Check for Score Saw pulse effect (turn_score_pulse)
   const scoreSawPulseActive = user && matchData.gameData.activeEffects?.[user.uid]?.some(
