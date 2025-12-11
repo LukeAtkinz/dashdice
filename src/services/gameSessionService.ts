@@ -1627,6 +1627,10 @@ export class GameSessionService {
       return false;
     }
     
+    // 🔥 CRITICAL: Active match check happens earlier in validateSessionTypeAccess
+    // This prevents race conditions where player joins 2 games simultaneously
+    // Cannot use async/await here, validation must be done before calling this function
+    
     // 🔥 CRITICAL: Check if HOST is still online/connected
     // This prevents matching with inactive players who left their session open
     if (session.hostData) {

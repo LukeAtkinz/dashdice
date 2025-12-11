@@ -204,6 +204,55 @@ export class PlayerStateService {
   }
 
   /**
+   * 🔥 CRITICAL: Check if player is currently in an active match
+   * This prevents race conditions where a player gets matched into 2 games simultaneously
+   */
+  static async hasActiveMatch(playerId: string): Promise<{ hasMatch: boolean; matchId?: string; matchData?: any }> {
+    try {
+      // Check for active matches where player is host
+      const hostMatchQuery = query(
+        collection(db, 'matches'),
+        where('hostData.uid', '==', playerId),
+        where('gameData.gameStatus', 'in', ['waiting', 'playing', 'active'])
+      );
+      
+      const hostMatches = await getDocs(hostMatchQuery);
+      if (!hostMatches.empty) {
+        const matchDoc = hostMatches.docs[0];
+        return { 
+          hasMatch: true, 
+          matchId: matchDoc.id,
+          matchData: matchDoc.data()
+        };
+      }
+      
+      // Check for active matches where player is opponent
+      const opponentMatchQuery = query(
+        collection(db, 'matches'),
+        where('opponentData.uid', '==', playerId),
+        where('gameData.gameStatus', 'in', ['waiting', 'playing', 'active'])
+      );
+      
+      const opponentMatches = await getDocs(opponentMatchQuery);
+      if (!opponentMatches.empty) {
+        const matchDoc = opponentMatches.docs[0];
+        return { 
+          hasMatch: true, 
+          matchId: matchDoc.id,
+          matchData: matchDoc.data()
+        };
+      }
+      
+      return { hasMatch: false };
+      
+    } catch (error) {
+      console.error(`❌ Error checking active match for player ${playerId}:`, error);
+      // On error, assume no match to avoid blocking legitimate players
+      return { hasMatch: false };
+    }
+  }
+
+  /**
    * ⚠️ Validate if player can join specific session type
    */
   static async validateSessionTypeAccess(
@@ -211,6 +260,18 @@ export class PlayerStateService {
     targetSessionType: 'quick' | 'ranked' | 'friend' | 'tournament' | 'rematch'
   ): Promise<{ valid: boolean; reason?: string; currentState?: PlayerGameState | null }> {
     try {
+      // 🔥 CRITICAL: First check if player has an active match in Firestore
+      const activeMatchCheck = await this.hasActiveMatch(playerId);
+      if (activeMatchCheck.hasMatch) {
+        const matchStatus = activeMatchCheck.matchData?.gameData?.gameStatus || 'unknown';
+        console.log(`❌ Player ${playerId} already has active match ${activeMatchCheck.matchId} (status: ${matchStatus})`);
+        return {
+          valid: false,
+          reason: `You are already in an active game (${activeMatchCheck.matchId}). Please finish your current game before starting a new match.`,
+          currentState: null
+        };
+      }
+      
       const currentState = await this.getPlayerState(playerId);
       
       // If no current state, player is free to join anything
