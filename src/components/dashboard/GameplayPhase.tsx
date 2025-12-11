@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MatchData } from '@/types/match';
 import { SlotMachineDice } from './SlotMachineDice';
@@ -79,43 +79,56 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
   const [showVitalRushBottomDice, setShowVitalRushBottomDice] = useState(false);
   const vitalRushTopVideoRef = useRef<HTMLVideoElement>(null);
   const vitalRushBottomVideoRef = useRef<HTMLVideoElement>(null);
+  const vitalRushTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Check if Vital Rush is active in Firebase activeEffects (check ALL players, not just current user)
-  const vitalRushActive = (() => {
+  // 🚀 PERFORMANCE: Memoize Vital Rush detection to prevent constant re-checks
+  const vitalRushActive = useMemo(() => {
     if (!matchData?.gameData?.activeEffects) return false;
     
-    // Check all players' active effects for vital_rush
-    for (const playerId in matchData.gameData.activeEffects) {
-      const effects = matchData.gameData.activeEffects[playerId];
-      if (effects && Array.isArray(effects)) {
-        const hasVitalRush = effects.some(effect => 
-          effect?.abilityId === 'vital_rush'
-        );
-        if (hasVitalRush) {
-          return true;
+    try {
+      for (const playerId in matchData.gameData.activeEffects) {
+        const effects = matchData.gameData.activeEffects[playerId];
+        if (effects && Array.isArray(effects)) {
+          const hasVitalRush = effects.some(effect => 
+            effect?.abilityId === 'vital_rush'
+          );
+          if (hasVitalRush) return true;
         }
       }
+    } catch (err) {
+      console.error('💓 Error checking Vital Rush active effects:', err);
     }
     return false;
-  })();
+  }, [matchData?.gameData?.activeEffects]);
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (vitalRushTimeoutRef.current) {
+        clearTimeout(vitalRushTimeoutRef.current);
+      }
+    };
+  }, []);
   
   // Check for Score Saw pulse effect (turn_score_pulse)
   const scoreSawPulseActive = user && matchData.gameData.activeEffects?.[user.uid]?.some(
     (effect: any) => effect.abilityId === 'score_saw' && effect.effectType === 'turn_score_pulse'
   );
   
-  // Monitor Vital Rush activation from activeEffects and start videos
+  // 🚀 PERFORMANCE: Monitor Vital Rush activation with proper cleanup
   useEffect(() => {
     if (vitalRushActive && !showVitalRushTopDice && !showVitalRushBottomDice) {
-      console.log('💓 Vital Rush detected in activeEffects - starting video animations');
-      
-      // Show videos first, play after a small delay for mobile compatibility
+      console.log('💓 Vital Rush ACTIVATED');
       setShowVitalRushTopDice(true);
       setShowVitalRushBottomDice(true);
       
-      setTimeout(() => {
+      // Clear any existing timeout
+      if (vitalRushTimeoutRef.current) {
+        clearTimeout(vitalRushTimeoutRef.current);
+      }
+      
+      vitalRushTimeoutRef.current = setTimeout(() => {
         try {
-          // Top video playback with mobile safeguards
           if (vitalRushTopVideoRef.current) {
             const topVideo = vitalRushTopVideoRef.current;
             topVideo.muted = true;
@@ -123,23 +136,16 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             
             if (topVideo.readyState >= 2) {
               topVideo.currentTime = 0;
-              const playPromise = topVideo.play();
-              if (playPromise !== undefined) {
-                playPromise.catch(err => {
-                  console.warn('💓 Top video play failed (non-critical):', err);
-                  // Continue without video
-                });
-              }
-            } else {
-              console.warn('💓 Top video not ready, will auto-play when loaded');
+              topVideo.play().catch(err => {
+                console.warn('💓 Top video play failed:', err);
+              });
             }
           }
         } catch (err) {
-          console.error('💓 Top video error (recovered):', err);
+          console.error('💓 Top video error:', err);
         }
         
         try {
-          // Bottom video playback with mobile safeguards
           if (vitalRushBottomVideoRef.current) {
             const bottomVideo = vitalRushBottomVideoRef.current;
             bottomVideo.muted = true;
@@ -147,24 +153,25 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
             
             if (bottomVideo.readyState >= 2) {
               bottomVideo.currentTime = 0;
-              const playPromise = bottomVideo.play();
-              if (playPromise !== undefined) {
-                playPromise.catch(err => {
-                  console.warn('💓 Bottom video play failed (non-critical):', err);
-                  // Continue without video
-                });
-              }
-            } else {
-              console.warn('💓 Bottom video not ready, will auto-play when loaded');
+              bottomVideo.play().catch(err => {
+                console.warn('💓 Bottom video play failed:', err);
+              });
             }
           }
         } catch (err) {
-          console.error('💓 Bottom video error (recovered):', err);
+          console.error('💓 Bottom video error:', err);
         }
-      }, 100);
+      }, 50);
+      
     } else if (!vitalRushActive && (showVitalRushTopDice || showVitalRushBottomDice)) {
-      // Vital Rush ended - stop and hide videos safely
-      console.log('💓 Vital Rush ended - stopping video animations');
+      console.log('💓 Vital Rush DEACTIVATED');
+      
+      // Clear timeout
+      if (vitalRushTimeoutRef.current) {
+        clearTimeout(vitalRushTimeoutRef.current);
+        vitalRushTimeoutRef.current = null;
+      }
+      
       setShowVitalRushTopDice(false);
       setShowVitalRushBottomDice(false);
       
@@ -173,7 +180,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           vitalRushTopVideoRef.current.pause();
           vitalRushTopVideoRef.current.currentTime = 0;
         } catch (err) {
-          console.warn('💓 Top video cleanup error (non-critical):', err);
+          console.warn('💓 Top video cleanup error:', err);
         }
       }
       
@@ -182,7 +189,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
           vitalRushBottomVideoRef.current.pause();
           vitalRushBottomVideoRef.current.currentTime = 0;
         } catch (err) {
-          console.warn('💓 Bottom video cleanup error (non-critical):', err);
+          console.warn('💓 Bottom video cleanup error:', err);
         }
       }
     }
@@ -615,7 +622,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 loop
                 muted
                 playsInline
-                preload="metadata"
+                preload="none"
                 autoPlay
                 disablePictureInPicture
                 disableRemotePlayback
@@ -627,20 +634,15 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   objectFit: 'cover',
                   pointerEvents: 'none',
                   zIndex: 5,
-                  willChange: 'auto'
+                  transform: 'translateZ(0)',
+                  backfaceVisibility: 'hidden'
                 }}
                 onLoadedMetadata={(e) => {
-                  try {
-                    const video = e.currentTarget;
-                    video.muted = true;
-                    video.playsInline = true;
-                  } catch (err) {
-                    console.warn('💓 Top video metadata error (non-critical):', err);
-                  }
+                  e.currentTarget.muted = true;
+                  e.currentTarget.playsInline = true;
                 }}
-                onError={(e) => {
-                  console.error('💓 Vital Rush top video failed to load:', e);
-                  // Hide video on error to prevent crash
+                onError={() => {
+                  console.warn('💓 Vital Rush top video failed, hiding');
                   setShowVitalRushTopDice(false);
                 }}
               />
@@ -1061,7 +1063,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 loop
                 muted
                 playsInline
-                preload="metadata"
+                preload="none"
                 autoPlay
                 disablePictureInPicture
                 disableRemotePlayback
@@ -1073,20 +1075,15 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   objectFit: 'cover',
                   pointerEvents: 'none',
                   zIndex: 5,
-                  willChange: 'auto'
+                  transform: 'translateZ(0)',
+                  backfaceVisibility: 'hidden'
                 }}
                 onLoadedMetadata={(e) => {
-                  try {
-                    const video = e.currentTarget;
-                    video.muted = true;
-                    video.playsInline = true;
-                  } catch (err) {
-                    console.warn('💓 Bottom video metadata error (non-critical):', err);
-                  }
+                  e.currentTarget.muted = true;
+                  e.currentTarget.playsInline = true;
                 }}
-                onError={(e) => {
-                  console.error('💓 Vital Rush bottom video failed to load:', e);
-                  // Hide video on error to prevent crash
+                onError={() => {
+                  console.warn('💓 Vital Rush bottom video failed, hiding');
                   setShowVitalRushBottomDice(false);
                 }}
               />

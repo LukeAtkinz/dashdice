@@ -104,30 +104,42 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   const [luckTurnerFreezeFrame, setLuckTurnerFreezeFrame] = useState(false);
   const [luckTurnerWhiteBackground, setLuckTurnerWhiteBackground] = useState(false);
   const [luckTurnerHasPlayed, setLuckTurnerHasPlayed] = useState(false);
+  const luckTurnerFreezeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const luckTurnerWhiteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Check if Luck Turner ability is active for any player
+  // 🚀 PERFORMANCE: Memoize Luck Turner detection to prevent constant re-checks
   const isLuckTurnerActive = useMemo(() => {
-    if (!matchData?.gameData?.activeEffects) {
-      return false;
-    }
+    if (!matchData?.gameData?.activeEffects) return false;
     
-    // Check all players' active effects for luck_turner
-    for (const playerId in matchData.gameData.activeEffects) {
-      const effects = matchData.gameData.activeEffects[playerId];
-      if (effects && Array.isArray(effects)) {
-        const hasLuckTurner = effects.some(effect => {
-          return effect.abilityId === 'luck_turner' || effect.effectId?.includes('luck_turner');
-        });
-        if (hasLuckTurner) {
-          return true;
+    try {
+      for (const playerId in matchData.gameData.activeEffects) {
+        const effects = matchData.gameData.activeEffects[playerId];
+        if (effects && Array.isArray(effects)) {
+          const hasLuckTurner = effects.some(effect => 
+            effect?.abilityId === 'luck_turner' || effect?.effectId?.includes('luck_turner')
+          );
+          if (hasLuckTurner) return true;
         }
       }
+    } catch (err) {
+      console.error('🍀 Error checking Luck Turner active effects:', err);
     }
-    
     return false;
   }, [matchData?.gameData?.activeEffects]);
   
-  // Handle Luck Turner activation and video playback sequence
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (luckTurnerFreezeTimeoutRef.current) {
+        clearTimeout(luckTurnerFreezeTimeoutRef.current);
+      }
+      if (luckTurnerWhiteTimeoutRef.current) {
+        clearTimeout(luckTurnerWhiteTimeoutRef.current);
+      }
+    };
+  }, []);
+  
+  // 🚀 PERFORMANCE: Handle Luck Turner activation with proper cleanup
   useEffect(() => {
     if (isLuckTurnerActive && !luckTurnerHasPlayed) {
       console.log('🍀 Luck Turner activated - starting video sequence');
@@ -136,29 +148,49 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
     }
   }, [isLuckTurnerActive, luckTurnerHasPlayed]);
   
-  // Handle video end sequence: freeze frame → white background
+  // 🚀 PERFORMANCE: Handle video end sequence with timeout cleanup
   useEffect(() => {
     if (luckTurnerVideoEnded && !luckTurnerFreezeFrame) {
       console.log('🍀 Luck Turner video ended - starting freeze frame (0.2s)');
       setLuckTurnerFreezeFrame(true);
       
+      // Clear any existing timeouts
+      if (luckTurnerFreezeTimeoutRef.current) {
+        clearTimeout(luckTurnerFreezeTimeoutRef.current);
+      }
+      if (luckTurnerWhiteTimeoutRef.current) {
+        clearTimeout(luckTurnerWhiteTimeoutRef.current);
+      }
+      
       // After 0.2s freeze, wait 0.1s then show white background
-      setTimeout(() => {
+      luckTurnerFreezeTimeoutRef.current = setTimeout(() => {
         console.log('🍀 Freeze frame complete - transitioning to white background');
-        setLuckTurnerVideoPlaying(false); // Hide video
+        setLuckTurnerVideoPlaying(false);
         
-        setTimeout(() => {
+        luckTurnerWhiteTimeoutRef.current = setTimeout(() => {
           console.log('🍀 Showing white background');
           setLuckTurnerWhiteBackground(true);
-        }, 100); // 0.1s delay
-      }, 200); // 0.2s freeze
+        }, 100);
+      }, 200);
     }
   }, [luckTurnerVideoEnded, luckTurnerFreezeFrame]);
   
-  // Clean up Luck Turner effect after ability expires (1 roll)
+  // 🚀 PERFORMANCE: Clean up Luck Turner with timeout clearing
   useEffect(() => {
     if (!isLuckTurnerActive && luckTurnerHasPlayed) {
       console.log('🍀 Luck Turner expired - resetting to normal state');
+      
+      // Clear all timeouts
+      if (luckTurnerFreezeTimeoutRef.current) {
+        clearTimeout(luckTurnerFreezeTimeoutRef.current);
+        luckTurnerFreezeTimeoutRef.current = null;
+      }
+      if (luckTurnerWhiteTimeoutRef.current) {
+        clearTimeout(luckTurnerWhiteTimeoutRef.current);
+        luckTurnerWhiteTimeoutRef.current = null;
+      }
+      
+      // Reset all states
       setLuckTurnerVideoPlaying(false);
       setLuckTurnerVideoEnded(false);
       setLuckTurnerFreezeFrame(false);
@@ -172,14 +204,12 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
   const [showRedDice, setShowRedDice] = useState(false);
   const [panSlapPulsing, setPanSlapPulsing] = useState(false);
   const panSlapVideoRef = useRef<HTMLVideoElement>(null);
+  const panSlapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  useEffect(() => {
-    if (!matchData?.gameData?.activeEffects) {
-      return;
-    }
+  // 🚀 PERFORMANCE: Memoize Pan Slap detection to prevent constant re-checks
+  const panSlapFound = useMemo(() => {
+    if (!matchData?.gameData?.activeEffects) return false;
     
-    // Check all players' active effects for pan_slap
-    let panSlapFound = false;
     try {
       for (const playerId in matchData.gameData.activeEffects) {
         const effects = matchData.gameData.activeEffects[playerId];
@@ -187,86 +217,93 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
           const hasPanSlap = effects.some(effect => 
             effect?.abilityId === 'pan_slap' || effect?.effectId?.includes('pan_slap')
           );
-          if (hasPanSlap) {
-            panSlapFound = true;
-            console.log('🍳 PAN SLAP IS ACTIVE! Triggering video playback');
-            break;
-          }
+          if (hasPanSlap) return true;
         }
       }
     } catch (err) {
       console.error('🍳 Error checking Pan Slap active effects:', err);
-      return;
     }
+    return false;
+  }, [matchData?.gameData?.activeEffects]);
+  
+  useEffect(() => {
+    // Clear any pending timeouts on cleanup
+    return () => {
+      if (panSlapTimeoutRef.current) {
+        clearTimeout(panSlapTimeoutRef.current);
+      }
+    };
+  }, []);
     
+  // 🚀 PERFORMANCE: Separate effect for activation/deactivation to prevent loops
+  useEffect(() => {
     if (panSlapFound && !isPanSlapActive) {
-      // Pan Slap just activated - immediately play video
+      // Pan Slap just activated
+      console.log('🍳 PAN SLAP ACTIVATED');
       setIsPanSlapActive(true);
       setShowRedDice(true);
       
-      // Trigger video playback when activated (with comprehensive mobile safeguards)
-      setTimeout(() => {
+      // Clear any existing timeout
+      if (panSlapTimeoutRef.current) {
+        clearTimeout(panSlapTimeoutRef.current);
+      }
+      
+      // Delay video playback slightly to prevent frame drops
+      panSlapTimeoutRef.current = setTimeout(() => {
         try {
           if (panSlapVideoRef.current) {
             const video = panSlapVideoRef.current;
-            
-            // Mobile-safe video initialization
             video.muted = true;
             video.playsInline = true;
             
-            // Only play if video is ready
             if (video.readyState >= 2) {
-              console.log('🍳 Playing Pan Slap video via ref');
               video.currentTime = 0;
-              
-              const playPromise = video.play();
-              if (playPromise !== undefined) {
-                playPromise.catch((err) => {
-                  console.warn('🍳 Pan Slap video play failed (non-critical):', err);
-                  // Fallback: skip video, just show red dice
-                  setIsPanSlapActive(false);
-                  setShowRedDice(true);
-                  setPanSlapPulsing(true);
-                });
-              }
+              video.play().catch((err) => {
+                console.warn('🍳 Pan Slap video play failed, using fallback:', err);
+                setIsPanSlapActive(false);
+                setPanSlapPulsing(true);
+              });
             } else {
-              // Video not ready, fallback to red dice only
-              console.warn('🍳 Pan Slap video not ready, using fallback animation');
+              // Fallback: skip video
               setIsPanSlapActive(false);
-              setShowRedDice(true);
               setPanSlapPulsing(true);
             }
           } else {
             // No video ref, use fallback
-            console.warn('🍳 Pan Slap video ref not available, using fallback');
             setIsPanSlapActive(false);
-            setShowRedDice(true);
             setPanSlapPulsing(true);
           }
         } catch (err) {
-          console.error('🍳 Pan Slap video error (recovered):', err);
-          // Always fallback to safe state
+          console.error('🍳 Pan Slap video error:', err);
           setIsPanSlapActive(false);
-          setShowRedDice(true);
           setPanSlapPulsing(true);
         }
-      }, 100);
-    } else if (!panSlapFound && isPanSlapActive) {
-      // Pan Slap deactivated - reset states safely
+      }, 50); // Reduced from 100ms
+      
+    } else if (!panSlapFound && (isPanSlapActive || showRedDice || panSlapPulsing)) {
+      // Pan Slap deactivated - cleanup
+      console.log('🍳 PAN SLAP DEACTIVATED');
       setIsPanSlapActive(false);
       setShowRedDice(false);
       setPanSlapPulsing(false);
+      
+      // Clear timeout
+      if (panSlapTimeoutRef.current) {
+        clearTimeout(panSlapTimeoutRef.current);
+        panSlapTimeoutRef.current = null;
+      }
+      
+      // Cleanup video
       if (panSlapVideoRef.current) {
         try {
-          const video = panSlapVideoRef.current;
-          video.pause();
-          video.currentTime = 0;
+          panSlapVideoRef.current.pause();
+          panSlapVideoRef.current.currentTime = 0;
         } catch (err) {
-          console.warn('🍳 Pan Slap video cleanup error (non-critical):', err);
+          console.warn('🍳 Pan Slap cleanup error:', err);
         }
       }
     }
-  }, [matchData?.gameData?.activeEffects, isPanSlapActive]);
+  }, [panSlapFound, isPanSlapActive, showRedDice, panSlapPulsing]);
 
   // Determine if this dice number should glow and what color
   const getDiceNumberGlow = () => {
@@ -778,7 +815,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.2 }}
         >
           <video
             src="/Abilities/Animations/Luck Turner/Luck Turner Animation.webm"
@@ -786,7 +823,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             loop={false}
             muted
             playsInline
-            preload="metadata"
+            preload="none"
             disablePictureInPicture
             disableRemotePlayback
             className="w-full h-full object-cover"
@@ -794,28 +831,25 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               width: '100%',
               height: '100%',
               objectFit: 'cover',
-              transform: isTopDice ? 'none' : 'scaleY(-1)',
+              transform: isTopDice ? 'translateZ(0)' : 'translateZ(0) scaleY(-1)',
+              backfaceVisibility: 'hidden',
               borderRadius: '30px',
-              overflow: 'hidden',
-              willChange: 'auto'
+              overflow: 'hidden'
             }}
             onLoadedMetadata={(e) => {
-              const video = e.currentTarget;
-              video.muted = true;
-              if (video.paused && video.readyState >= 2) {
-                video.play().catch((err) => {
-                  console.error('🍀 Luck Turner autoplay failed:', err);
+              e.currentTarget.muted = true;
+              if (e.currentTarget.paused && e.currentTarget.readyState >= 2) {
+                e.currentTarget.play().catch((err) => {
+                  console.warn('🍀 Luck Turner autoplay failed:', err);
                   setLuckTurnerVideoEnded(true);
                 });
               }
             }}
             onEnded={() => {
-              console.log('🍀 Luck Turner video playback ended');
               setLuckTurnerVideoEnded(true);
             }}
-            onError={(e) => {
-              console.error('🍀 Luck Turner video error:', e);
-              // Fallback: skip to freeze frame immediately
+            onError={() => {
+              console.warn('🍀 Luck Turner video error, using fallback');
               setLuckTurnerVideoEnded(true);
             }}
           />
@@ -829,7 +863,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.2 }}
         >
           <video
             ref={panSlapVideoRef}
@@ -837,7 +871,7 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
             loop={false}
             muted
             playsInline
-            preload="metadata"
+            preload="none"
             disablePictureInPicture
             disableRemotePlayback
             className="w-full h-full"
@@ -847,31 +881,20 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               objectFit: 'cover',
               borderRadius: '30px',
               overflow: 'hidden',
-              willChange: 'auto'
+              transform: 'translateZ(0)',
+              backfaceVisibility: 'hidden'
             }}
             onLoadedMetadata={(e) => {
-              try {
-                const video = e.currentTarget;
-                video.muted = true;
-              } catch (err) {
-                console.warn('🍳 Pan Slap video metadata error (non-critical):', err);
-              }
+              e.currentTarget.muted = true;
             }}
-            onError={(e) => {
-              console.error('🍳 Pan Slap video failed to load:', e);
-              // Fallback: hide video and show red dice
+            onError={() => {
+              console.warn('🍳 Pan Slap video failed, using fallback');
               setIsPanSlapActive(false);
-              setShowRedDice(true);
               setPanSlapPulsing(true);
             }}
             onEnded={() => {
-              try {
-                console.log('🍳 Pan Slap video finished - starting dice pulse animation');
-                setIsPanSlapActive(false);
-                setPanSlapPulsing(true);
-              } catch (err) {
-                console.error('🍳 Pan Slap onEnded error (non-critical):', err);
-              }
+              setIsPanSlapActive(false);
+              setPanSlapPulsing(true);
             }}
           />
         </motion.div>
