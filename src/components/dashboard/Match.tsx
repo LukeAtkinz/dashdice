@@ -850,6 +850,24 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     return '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
   }, [matchData, user]);
 
+  // 🔄 SESSION RECOVERY: Store active match in localStorage for crash recovery
+  useEffect(() => {
+    if (roomId && matchData && matchData.gameData?.gamePhase !== 'gameOver') {
+      console.log('💾 Storing active match in localStorage:', roomId);
+      localStorage.setItem('activeMatchId', roomId);
+      localStorage.setItem('activeMatchTimestamp', Date.now().toString());
+    }
+  }, [roomId, matchData?.gameData?.gamePhase]);
+  
+  // Clear stored match when game over
+  useEffect(() => {
+    if (matchData?.gameData?.gamePhase === 'gameOver') {
+      console.log('🗑️ Clearing stored match from localStorage (game over)');
+      localStorage.removeItem('activeMatchId');
+      localStorage.removeItem('activeMatchTimestamp');
+    }
+  }, [matchData?.gameData?.gamePhase]);
+
   // Subscribe to match updates
   useEffect(() => {
     if (!roomId || !user) {

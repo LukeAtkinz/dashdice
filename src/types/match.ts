@@ -169,6 +169,22 @@ export interface MatchData {
         blockedAbility?: string;
       };
     };
+    
+    // 🔌 Reconnection Grace Period
+    isPaused?: boolean;
+    pauseReason?: 'player_disconnected' | 'network_issue' | 'manual';
+    pausedAt?: Timestamp;
+    pausedBy?: string; // Player ID who triggered pause (disconnected player)
+    reconnectionDeadline?: Timestamp; // When the reconnection window expires
+    
+    // ✅ Ready Check System
+    readyCheck?: {
+      isActive: boolean;
+      hostReady: boolean;
+      opponentReady: boolean;
+      startedAt: Timestamp;
+      expiresAt: Timestamp;
+    };
   };
   
   // Match metadata
