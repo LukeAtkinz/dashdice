@@ -20,6 +20,7 @@ import { MatchLifecycleService } from '@/services/matchLifecycleService';
 import { analyticsService } from '@/services/analyticsService';
 import { useWaitingRoomBackground } from '@/hooks/useOptimizedBackground';
 import { getBackgroundById } from '@/config/backgrounds';
+import { GameSessionService } from '@/services/gameSessionService';
 
 interface GameWaitingRoomProps {
   gameMode: string;
@@ -243,6 +244,38 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
   // Waiting room cleanup functionality
   const { leaveWaitingRoom } = useWaitingRoomCleanup(waitingRoomEntry?.id || roomId);
+
+  // 💓 Keep session heartbeat alive while in waiting room to prevent stale session matching
+  useEffect(() => {
+    const activeRoomId = waitingRoomEntry?.id || waitingRoomEntry?.sessionProxy || roomId;
+    if (!activeRoomId || !user?.uid || opponentJoined) {
+      return; // Only send heartbeats while waiting for opponent
+    }
+
+    console.log(`💓 Starting session heartbeat for room ${activeRoomId}`);
+    
+    // Send initial heartbeat
+    GameSessionService.updatePlayerHeartbeat(activeRoomId, user.uid).catch(err => {
+      console.warn('⚠️ Initial session heartbeat failed:', err);
+    });
+
+    // Send heartbeat every 10 seconds
+    const heartbeatInterval = setInterval(async () => {
+      try {
+        const success = await GameSessionService.updatePlayerHeartbeat(activeRoomId, user.uid);
+        if (!success) {
+          console.warn('⚠️ Session heartbeat update failed - session may not exist');
+        }
+      } catch (error) {
+        console.error('❌ Session heartbeat error:', error);
+      }
+    }, 10000); // 10 seconds - more frequent than the 30s threshold
+
+    return () => {
+      console.log(`💓 Stopping session heartbeat for room ${activeRoomId}`);
+      clearInterval(heartbeatInterval);
+    };
+  }, [waitingRoomEntry?.id, waitingRoomEntry?.sessionProxy, roomId, user?.uid, opponentJoined]);
 
   // Mobile scroll detection for button animation
   useEffect(() => {
