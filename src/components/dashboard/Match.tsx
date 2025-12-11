@@ -427,16 +427,16 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           gameModeExplainer = 'ATTACK TO 100';
         }
         
-        // Show game mode explainer first after 500ms
+        // Show "goes first" announcement first after 500ms
         setTimeout(() => {
-          setWinnerAnnouncementText(gameModeExplainer);
+          setWinnerAnnouncementText(`${winner} goes first`);
           setShowWinnerAnnouncement(true);
           setGameplayContentReady(false); // Start loading gameplay content
         }, 500);
         
-        // Morph to winner announcement after 1 second (1500ms total)
+        // Morph to game mode explainer after 1 second (1500ms total)
         setTimeout(() => {
-          setWinnerAnnouncementText(`${winner} goes first`);
+          setWinnerAnnouncementText(gameModeExplainer);
         }, 1500);
         
         // Mark gameplay content as ready after 2 seconds (gives time for components to mount)
@@ -2025,6 +2025,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                   auraValue={matchData.gameData.playerAura?.[currentPlayer.playerId] || 0}
                   size="extra-large"
                   className="flex items-center"
+                  hasHardHat={matchData.gameData.activeEffects?.[currentPlayer.playerId]?.some((effect: any) =>
+                    effect.abilityId === 'hard_hat' && effect.type === 'ability_block'
+                  ) || false}
                 />
               </div>
               

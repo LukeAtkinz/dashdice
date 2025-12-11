@@ -1372,6 +1372,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     auraValue={showAuraForgeAura ? auraDisplay : currentUserAura} 
                     size="medium"
                     className="flex items-center"
+                    hasHardHat={matchData.gameData.activeEffects?.[currentPlayer.playerId]?.some((effect: any) =>
+                      effect.abilityId === 'hard_hat' && effect.type === 'ability_block'
+                    ) || false}
                   />
                   
                   {/* 🔥 AURA FORGE AURA ANIMATION - STAGE 2 */}
@@ -1614,6 +1617,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                     auraValue={currentUserAura} 
                     size="medium"
                     className="flex items-center"
+                    hasHardHat={matchData.gameData.activeEffects?.[currentPlayer.playerId]?.some((effect: any) =>
+                      effect.abilityId === 'hard_hat' && effect.type === 'ability_block'
+                    ) || false}
                   />
                 </motion.div>
 

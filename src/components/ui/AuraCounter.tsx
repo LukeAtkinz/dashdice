@@ -7,13 +7,15 @@ interface AuraCounterProps {
   className?: string;
   size?: 'small' | 'medium' | 'large' | 'extra-large';
   showIcon?: boolean;
+  hasHardHat?: boolean;
 }
 
 export default function AuraCounter({ 
   auraValue, 
   className = '', 
   size = 'medium',
-  showIcon = true 
+  showIcon = true,
+  hasHardHat = false
 }: AuraCounterProps) {
   const [previousValue, setPreviousValue] = useState(auraValue);
   const [shouldPop, setShouldPop] = useState(false);
@@ -88,10 +90,13 @@ export default function AuraCounter({
       <AnimatePresence mode="wait">
         <motion.span 
           key={auraValue} // This ensures the component re-renders when value changes
-          className={`${config.textSize} font-bold text-white select-none`}
+          className={`${config.textSize} font-bold select-none`}
           style={{ 
             fontFamily: 'Audiowide',
-            textShadow: '0 0 8px rgba(139, 92, 246, 0.8), 0 0 16px rgba(139, 92, 246, 0.4)',
+            color: hasHardHat ? '#EF4444' : '#FFFFFF',
+            textShadow: hasHardHat 
+              ? '0 0 8px rgba(239, 68, 68, 0.8), 0 0 16px rgba(239, 68, 68, 0.4)'
+              : '0 0 8px rgba(139, 92, 246, 0.8), 0 0 16px rgba(139, 92, 246, 0.4)',
             WebkitFontSmoothing: 'antialiased'
           }}
           initial={{ 
@@ -101,11 +106,17 @@ export default function AuraCounter({
           animate={{
             scale: shouldPop ? [1, 1.3, 1] : 1,
             opacity: 1,
-            textShadow: auraValue > 0 ? [
-              '0 0 8px rgba(139, 92, 246, 0.8), 0 0 16px rgba(139, 92, 246, 0.4)',
-              '0 0 12px rgba(139, 92, 246, 1), 0 0 24px rgba(139, 92, 246, 0.6)',
-              '0 0 8px rgba(139, 92, 246, 0.8), 0 0 16px rgba(139, 92, 246, 0.4)'
-            ] : '0 0 4px rgba(139, 92, 246, 0.4)'
+            textShadow: hasHardHat 
+              ? (auraValue > 0 ? [
+                  '0 0 8px rgba(239, 68, 68, 0.8), 0 0 16px rgba(239, 68, 68, 0.4)',
+                  '0 0 12px rgba(239, 68, 68, 1), 0 0 24px rgba(239, 68, 68, 0.6)',
+                  '0 0 8px rgba(239, 68, 68, 0.8), 0 0 16px rgba(239, 68, 68, 0.4)'
+                ] : '0 0 4px rgba(239, 68, 68, 0.4)')
+              : (auraValue > 0 ? [
+                  '0 0 8px rgba(139, 92, 246, 0.8), 0 0 16px rgba(139, 92, 246, 0.4)',
+                  '0 0 12px rgba(139, 92, 246, 1), 0 0 24px rgba(139, 92, 246, 0.6)',
+                  '0 0 8px rgba(139, 92, 246, 0.8), 0 0 16px rgba(139, 92, 246, 0.4)'
+                ] : '0 0 4px rgba(139, 92, 246, 0.4)')
           }}
           exit={{ 
             scale: 0.8,

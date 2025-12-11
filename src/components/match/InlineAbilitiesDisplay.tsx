@@ -249,10 +249,15 @@ export default function InlineAbilitiesDisplay({
       isUsing,
       isPlayerTurn,
       timing: ability.timing,
-      usageCount: usageCounts[ability.id] || 0
+      usageCount: usageCounts[ability.id] || 0,
+      currentPlayerAura,
+      auraCost: ability.auraCost
     });
 
-    if (isUsing) return;
+    if (isUsing) {
+      console.log(`❌ ${ability.id} blocked: Another ability is being used`);
+      return;
+    }
     
     // Check timing constraints properly  
     const isOpponentTurnAbility = ability.timing === 'opponent_turn' || 
@@ -260,20 +265,38 @@ export default function InlineAbilitiesDisplay({
                                   (ability.timing as any).usableWhen?.some((constraint: any) => 
                                     String(constraint).toLowerCase().includes('opponent_turn')));
     
+    console.log(`🎯 ${ability.id} timing check:`, {
+      isOpponentTurnAbility,
+      isPlayerTurn,
+      shouldBlock: isOpponentTurnAbility && isPlayerTurn
+    });
+    
     if (isOpponentTurnAbility) {
       // Siphon, Pan Slap and other opponent_turn abilities should only work during opponent's turn
-      if (isPlayerTurn) return;
+      if (isPlayerTurn) {
+        console.log(`❌ ${ability.id} blocked: Opponent turn ability used on player turn`);
+        return;
+      }
     } else {
       // Normal abilities require player turn
-      if (!isPlayerTurn) return;
+      if (!isPlayerTurn) {
+        console.log(`❌ ${ability.id} blocked: Normal ability used on opponent turn`);
+        return;
+      }
     }
     
     const cooldown = cooldowns[ability.id] || 0;
-    if (cooldown > 0) return;
+    if (cooldown > 0) {
+      console.log(`❌ ${ability.id} blocked: On cooldown (${cooldown}s remaining)`);
+      return;
+    }
     
     const usageCount = usageCounts[ability.id] || 0;
     // Simple once per match limit
-    if (usageCount >= 1) return;
+    if (usageCount >= 1) {
+      console.log(`❌ ${ability.id} blocked: Already used this match (${usageCount} times)`);
+      return;
+    }
 
     // Check AURA affordability before attempting to use ability
     const canAfford = canUseAbilityInMatch(ability.id, currentPlayerAura);
@@ -281,6 +304,8 @@ export default function InlineAbilitiesDisplay({
       console.log(`❌ Cannot use ${ability.name}: ${canAfford.reason}`);
       return;
     }
+
+    console.log(`✅ ${ability.id} passed all checks, activating...`);
 
     // Trigger visual activation animation
     setActivatingAbility(ability.id);
