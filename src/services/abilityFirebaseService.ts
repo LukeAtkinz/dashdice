@@ -954,6 +954,11 @@ async function applyAbilityEffects(
         // STEP 3: Reset turn score to 0 (AFTER banking)
         'gameData.turnScore': 0,
         
+        // STEP 3.5: Reset all multipliers
+        'gameData.hasDoubleMultiplier': false,
+        'gameData.hasTripleMultiplier': false,
+        'gameData.hasQuadMultiplier': false,
+        
         // STEP 4: End opponent's turn and switch to caster
         'gameData.currentPlayer': playerId,
         'gameData.turnPhase': 'rolling',

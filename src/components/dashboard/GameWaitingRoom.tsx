@@ -798,7 +798,14 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     victoryBackgroundEquipped: userProfile.inventory?.victoryBackgroundEquipped || { id: 'wind-blade', name: 'Wind Blade', category: 'Videos', rarity: 'LEGENDARY' },
                     playerScore: startingScore, // Use proper starting score
                     turnActive: false, // Will be set by turn decider
-                    powerLoadout: hostPowerLoadout // Add power loadout for abilities
+                    powerLoadout: hostPowerLoadout, // Add power loadout for abilities
+                    matchStats: {
+                      banks: 0,
+                      doubles: 0,
+                      biggestTurnScore: 0,
+                      lastDiceSum: 0,
+                      totalAura: 0
+                    }
                   },
                   
                   opponentData: {
@@ -811,7 +818,14 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     victoryBackgroundEquipped: goBackendOpponentData?.victoryBackgroundEquipped || opponentProfile?.inventory?.victoryBackgroundEquipped || { id: 'wind-blade', name: 'Wind Blade', category: 'Videos', rarity: 'LEGENDARY' },
                     playerScore: startingScore, // Use proper starting score
                     turnActive: false, // Will be set by turn decider
-                    powerLoadout: opponentPowerLoadout // Add power loadout for abilities
+                    powerLoadout: opponentPowerLoadout, // Add power loadout for abilities
+                    matchStats: {
+                      banks: 0,
+                      doubles: 0,
+                      biggestTurnScore: 0,
+                      lastDiceSum: 0,
+                      totalAura: 0
+                    }
                   },
                   
                   gameData: {
@@ -2223,7 +2237,14 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           playerScore: getStartingScore(roomData.gameMode),
           roundScore: 0,
           // Include power loadout for abilities
-          powerLoadout: (roomData.hostData as any)?.powerLoadout || null
+          powerLoadout: (roomData.hostData as any)?.powerLoadout || null,
+          matchStats: {
+            banks: 0,
+            doubles: 0,
+            biggestTurnScore: 0,
+            lastDiceSum: 0,
+            totalAura: 0
+          }
         },
         
         // Initialize opponent data with game-specific fields
@@ -2260,7 +2281,14 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             playerScore: getStartingScore(roomData.gameMode),
             roundScore: 0,
             // Include power loadout for abilities
-            powerLoadout: (opponentData as any)?.powerLoadout || null
+            powerLoadout: (opponentData as any)?.powerLoadout || null,
+            matchStats: {
+              banks: 0,
+              doubles: 0,
+              biggestTurnScore: 0,
+              lastDiceSum: 0,
+              totalAura: 0
+            }
           };
         })(),
         
@@ -2430,7 +2458,14 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           authorizedPlayers: [user?.uid].filter(Boolean),
           hostData: {
             ...fallbackHostData,
-            playerScore: 0
+            playerScore: 0,
+            matchStats: {
+              banks: 0,
+              doubles: 0,
+              biggestTurnScore: 0,
+              lastDiceSum: 0,
+              totalAura: 0
+            }
           },
           opponentData: waitingRoomEntry?.opponentData ? {
             ...waitingRoomEntry.opponentData,
@@ -2447,7 +2482,14 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               category: 'Victory Screens', 
               rarity: 'Common' 
             },
-            playerScore: 0
+            playerScore: 0,
+            matchStats: {
+              banks: 0,
+              doubles: 0,
+              biggestTurnScore: 0,
+              lastDiceSum: 0,
+              totalAura: 0
+            }
           } : undefined,
           gameData: {
             type: 'dice',
