@@ -11,10 +11,14 @@ import { AbandonedMatchService } from './abandonedMatchService';
 import { DatabaseOptimizationService } from './databaseOptimizationService';
 import { CDNOptimizationService } from './cdnOptimizationService';
 import { MatchmakingLockService } from './matchmakingLockService';
+import { MatchmakingHealthMonitor } from './matchmakingHealthMonitor';
+import { MatchmakingErrorRecovery } from './matchmakingErrorRecovery';
+import { MatchmakingValidator } from './matchmakingValidator';
 
 /**
  * NEW UNIFIED MATCHMAKING SERVICE
  * This replaces the old matchmakingService.ts with the new architecture
+ * Enhanced with health monitoring and error recovery for 100% reliability
  */
 export class NewMatchmakingService {
   
@@ -35,12 +39,15 @@ export class NewMatchmakingService {
     // 🔒 Initialize matchmaking lock service (prevents duplicate requests)
     MatchmakingLockService.initialize();
     
+    // 🏥 Initialize health monitoring (auto-recovery)
+    MatchmakingHealthMonitor.initialize();
+    
     // 🧹 IMPORTANT: Run initial cleanup to remove any stagnant matches from previous sessions
     setTimeout(() => {
       this.performStartupCleanup();
     }, 5000); // Wait 5 seconds for services to fully initialize
     
-    console.log('✅ Unified Matchmaking System initialized with optimizations');
+    console.log('✅ Unified Matchmaking System initialized with health monitoring and error recovery');
   }
 
   /**
@@ -61,6 +68,25 @@ export class NewMatchmakingService {
     
     try {
       console.log(`🎯 NewMatchmakingService: Finding match for ${userId} - ${sessionType}/${gameMode}`);
+
+      // ✅ PRE-FLIGHT VALIDATION: Check everything before starting
+      const validation = await MatchmakingValidator.validateMatchmaking(userId, gameMode, sessionType);
+      if (!validation.valid) {
+        console.error(`❌ Matchmaking validation failed:`, validation.errors);
+        return {
+          success: false,
+          error: validation.errors.join('. ')
+        };
+      }
+      if (validation.warnings.length > 0) {
+        console.warn(`⚠️ Matchmaking warnings:`, validation.warnings);
+      }
+
+      // 🏥 Pre-flight health check
+      const health = MatchmakingHealthMonitor.getCurrentHealth();
+      if (health && health.systemHealth === 'critical') {
+        console.warn('⚠️ System health is critical, but proceeding with caution');
+      }
 
       // 🔒 CRITICAL: Acquire matchmaking lock to prevent duplicate concurrent requests
       const lockResult = MatchmakingLockService.acquireLock(userId, sessionType, gameMode);
@@ -172,9 +198,17 @@ export class NewMatchmakingService {
         console.log(`🔓 Lock released for ${userId} - Error recovery`);
       }
       
+      // 🔧 Attempt error recovery
+      const recovery = await MatchmakingErrorRecovery.handleMatchmakingError(
+        error,
+        userId,
+        gameMode,
+        sessionType
+      );
+      
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: recovery.message || (error instanceof Error ? error.message : 'Unknown error')
       };
     }
   }
@@ -377,8 +411,9 @@ export class NewMatchmakingService {
   /**
    * 🧹 Clean up ALL existing matches/rooms for a user to prevent duplicates
    * This should be called BEFORE starting any new match search
+   * PUBLIC for error recovery service access
    */
-  private static async cleanupUserMatches(userId: string): Promise<void> {
+  public static async cleanupUserMatches(userId: string): Promise<void> {
     try {
       console.log(`🧹 NewMatchmakingService: Cleaning up ALL existing matches for ${userId}`);
 
