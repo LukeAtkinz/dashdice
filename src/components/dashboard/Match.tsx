@@ -414,17 +414,35 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         setTurnAnnouncementShown(true);
         setShowTurnDeciderTransition(true); // Keep turn decider backgrounds visible
         
-        // Show winner announcement after 500ms
+        // Get game mode explainer text
+        const gameMode = matchData.gameMode?.toLowerCase() || 'classic';
+        let gameModeExplainer = 'FIRST TO 100'; // default
+        if (gameMode === 'quickfire') {
+          gameModeExplainer = 'FIRST TO 50';
+        } else if (gameMode === 'classic') {
+          gameModeExplainer = 'FIRST TO 100';
+        } else if (gameMode === 'zero-hour' || gameMode === 'zerohour') {
+          gameModeExplainer = 'RACE TO 0';
+        } else if (gameMode === 'last-line' || gameMode === 'lastline') {
+          gameModeExplainer = 'ATTACK TO 100';
+        }
+        
+        // Show game mode explainer first after 500ms
         setTimeout(() => {
-          setWinnerAnnouncementText(`${winner} goes first`);
+          setWinnerAnnouncementText(gameModeExplainer);
           setShowWinnerAnnouncement(true);
           setGameplayContentReady(false); // Start loading gameplay content
         }, 500);
         
-        // Mark gameplay content as ready after 1 second (gives time for components to mount)
+        // Morph to winner announcement after 1 second (1500ms total)
+        setTimeout(() => {
+          setWinnerAnnouncementText(`${winner} goes first`);
+        }, 1500);
+        
+        // Mark gameplay content as ready after 2 seconds (gives time for components to mount)
         setTimeout(() => {
           setGameplayContentReady(true);
-        }, 1500);
+        }, 2500);
         
         // Once content is ready, animate exit after longer delay for smoother transition
         setTimeout(() => {
@@ -434,7 +452,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
           setTimeout(() => {
             setShowTurnDeciderTransition(false);
           }, 1000); // Additional 1000ms for text fade (increased from 500ms)
-        }, 4000); // Increased from 2500ms to 4000ms for longer transition delay
+        }, 5000); // Increased from 4000ms to 5000ms for longer transition delay with new explainer text
       }
     }
   }, [matchData?.gameData?.gamePhase, matchData?.gameData?.turnDeciderDice, 
@@ -1540,7 +1558,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         </div>
         
         {/* Winner Announcement Overlay - Shows during transition */}
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {showWinnerAnnouncement && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -1558,9 +1576,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               }}
             >
               <motion.h1
-                initial={{ scale: 0.8, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.8, y: -20 }}
+                key={winnerAnnouncementText}
+                initial={{ scale: 0.8, y: 20, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={{ scale: 0.8, y: -20, opacity: 0 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
                 style={{
                   fontFamily: 'Audiowide',

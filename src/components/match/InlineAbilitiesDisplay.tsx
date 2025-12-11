@@ -502,6 +502,26 @@ export default function InlineAbilitiesDisplay({
         // 2. OR if it's the wrong turn for this ability type  
         // 3. OR if it's siphon and already active
         const shouldDisable = status.disabled || isUsing === ability.id || !canUseRightNow || siphonIsActive;
+        
+        // Check AURA affordability separately for border color
+        const canAfford = canUseAbilityInMatch(ability.id, currentPlayerAura);
+        const cannotAffordAura = !canAfford.canUse && canAfford.reason?.includes('AURA');
+        
+        // Determine if disabled due to timing (not affordability)
+        const isTimingDisabled = !canUseRightNow && !cannotAffordAura && !status.disabled;
+        
+        // Border color logic:
+        // Red: Disabled due to timing (wrong turn)
+        // Blue: Can be used right now
+        // Gray: On cooldown/used
+        // Normal category color: Cannot afford AURA
+        const getBorderColor = () => {
+          if (siphonIsActive) return '#FFD700'; // Gold for active siphon
+          if (isTimingDisabled) return '#EF4444'; // Red for timing disabled (same as AURA cost background)
+          if (status.disabled) return '#6B7280'; // Gray for cooldown/used
+          if (cannotAffordAura) return categoryColors.primary; // Normal category color for AURA issue
+          return '#3B82F6'; // Blue when can be used
+        };
 
         return (
           <motion.button
@@ -517,15 +537,13 @@ export default function InlineAbilitiesDisplay({
             }`}
             style={{
               background: 'transparent', // Transparent background as requested
-              borderColor: shouldDisable 
-                ? '#6B7280' 
-                : siphonIsActive 
-                  ? '#FFD700' // Gold border only when siphon is active
-                  : categoryColors.primary, // Normal border when available
+              borderColor: getBorderColor(),
               boxShadow: !shouldDisable ? 
                 siphonIsActive
                   ? '0 2px 15px #FFD70060, 0 0 20px #FFD70030' // Gold glow only when active
-                  : `0 2px 10px ${categoryColors.primary}40`
+                  : canUseRightNow && !cannotAffordAura
+                    ? '0 2px 10px #3B82F640' // Blue glow when usable
+                    : `0 2px 10px ${categoryColors.primary}40`
                 : 'none'
             }}
             initial={{ opacity: 0, scale: 0.8 }}

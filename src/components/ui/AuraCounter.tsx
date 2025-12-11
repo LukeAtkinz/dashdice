@@ -55,7 +55,7 @@ export default function AuraCounter({
 
   return (
     <motion.div 
-      className={`flex items-center ${config.gap} md:bg-black/70 md:rounded-lg md:px-4 md:py-2 ${className}`}
+      className={`flex items-center ${config.gap} md:bg-black md:rounded-lg md:px-4 md:py-2 ${className}`}
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}

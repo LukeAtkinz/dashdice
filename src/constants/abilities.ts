@@ -168,7 +168,7 @@ export const VITAL_RUSH: DashDiceAbility = {
   },
   
   timing: {
-    usableWhen: [TimingConstraint.MY_TURN_START, TimingConstraint.BEFORE_ROLL]
+    usableWhen: [TimingConstraint.BEFORE_ROLL]
   },
   
   effects: [
@@ -254,7 +254,7 @@ export const AURA_AXE: DashDiceAbility = {
   },
   
   timing: {
-    usableWhen: [TimingConstraint.MY_TURN_START, TimingConstraint.MY_TURN_END]
+    usableWhen: [TimingConstraint.MY_TURN_START, TimingConstraint.MY_TURN_END, TimingConstraint.BEFORE_ROLL, TimingConstraint.OPPONENT_TURN_START, TimingConstraint.OPPONENT_TURN_END]
   },
   
   effects: [
@@ -328,7 +328,7 @@ export const PAN_SLAP: DashDiceAbility = {
   },
   
   timing: {
-    usableWhen: [TimingConstraint.OPPONENT_TURN_END]
+    usableWhen: [TimingConstraint.OPPONENT_TURN_START, TimingConstraint.OPPONENT_TURN_END]
   },
   
   effects: [
@@ -425,7 +425,7 @@ export const SCORE_SAW: DashDiceAbility = {
   },
   
   timing: {
-    usableWhen: [TimingConstraint.OPPONENT_TURN_END]
+    usableWhen: [TimingConstraint.OPPONENT_TURN_START, TimingConstraint.OPPONENT_TURN_END]
   },
   
   effects: [
@@ -634,7 +634,7 @@ export const HARD_HAT: DashDiceAbility = {
   },
   
   timing: {
-    usableWhen: [TimingConstraint.OPPONENT_TURN_START, TimingConstraint.OPPONENT_TURN_END],
+    usableWhen: [TimingConstraint.MY_TURN_START, TimingConstraint.MY_TURN_END, TimingConstraint.BEFORE_ROLL, TimingConstraint.OPPONENT_TURN_START, TimingConstraint.OPPONENT_TURN_END],
     triggerEvents: ['opponent_ability_activation']
   },
   
@@ -847,7 +847,7 @@ export const AURA_FORGE: DashDiceAbility = {
   },
   
   timing: {
-    usableWhen: [TimingConstraint.MY_TURN_START, TimingConstraint.MY_TURN_END, TimingConstraint.BEFORE_ROLL]
+    usableWhen: [TimingConstraint.BEFORE_ROLL]
   },
   
   effects: [

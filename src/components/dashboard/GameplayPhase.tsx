@@ -243,6 +243,16 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
     
   }, [auraForgeCallback, currentPlayer, opponent, matchData.gameData.turnScore, matchData.gameMode, currentUserAura]);
 
+  // Handle Aura Forge cancellation
+  const handleAuraForgeCancel = useCallback(() => {
+    console.log('🔥 Aura Forge cancelled by user');
+    setIsAuraForgeActive(false);
+    setShowAuraForgeBottom(false);
+    setAuraForgeCallback(null);
+    setAuraForgeAmount(0);
+    setAuraForgePulseCount(0);
+  }, []);
+
   // Handle bank/save with animation
   const handleBankScore = () => {
     if (!canBank) return;
@@ -1092,7 +1102,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 {/* 🔨 AURA FORGE NUMBER SELECTORS - Desktop */}
                 {isAuraForgeActive ? (
                   <>
-                    {[1, 2, 3, 4].map((amount) => (
+                    {[1, 2, 3].map((amount) => (
                       <motion.button
                         key={amount}
                         onClick={() => handleAuraForgeSelect(amount)}
@@ -1133,6 +1143,41 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                         <span style={{ fontSize: '14px', opacity: 0.8 }}>-{amount * 5} pts</span>
                       </motion.button>
                     ))}
+                    {/* Cancel Button */}
+                    <motion.button
+                      onClick={handleAuraForgeCancel}
+                      className="px-10 py-6 rounded-xl text-3xl font-bold transition-all transform text-white"
+                      style={{ 
+                        fontFamily: "Audiowide",
+                        border: '3px solid #EF4444',
+                        background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.4), rgba(220, 38, 38, 0.4))',
+                        backdropFilter: 'blur(10px)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                      initial={{ scale: 0.8, opacity: 0, y: 20 }}
+                      animate={{ 
+                        scale: 1,
+                        opacity: 1,
+                        y: 0
+                      }}
+                      whileHover={{ 
+                        scale: 1.05,
+                        boxShadow: "0 8px 25px rgba(239, 68, 68, 0.5)"
+                      }}
+                      whileTap={{ 
+                        scale: 0.95
+                      }}
+                      transition={{ 
+                        duration: 0.3,
+                        delay: 0.15
+                      }}
+                    >
+                      <span style={{ fontSize: '36px', lineHeight: '1' }}>✕</span>
+                      <span style={{ fontSize: '14px', opacity: 0.9 }}>Cancel</span>
+                    </motion.button>
                   </>
                 ) : (
                   <>
@@ -1481,7 +1526,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 {/* 🔨 AURA FORGE NUMBER SELECTORS - Replace PLAY/SAVE when active */}
                 {isAuraForgeActive && (
                   <>
-                    {[1, 2, 3, 4].map((amount) => (
+                    {[1, 2, 3].map((amount) => (
                       <motion.button
                         key={amount}
                         onClick={() => handleAuraForgeSelect(amount)}
@@ -1518,6 +1563,37 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                         <span style={{ fontSize: '10px', opacity: 0.8 }}>-{amount * 5}pts</span>
                       </motion.button>
                     ))}
+                    {/* Cancel Button */}
+                    <motion.button
+                      onClick={handleAuraForgeCancel}
+                      className="text-2xl font-bold transition-all text-white active:scale-95"
+                      style={{ 
+                        width: '23%',
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        fontFamily: "Audiowide",
+                        border: '2px solid #EF4444',
+                        borderRadius: '12px',
+                        background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(220, 38, 38, 0.3))',
+                        backdropFilter: 'blur(8px)',
+                      }}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      whileTap={{ 
+                        scale: 0.9,
+                        boxShadow: "0 4px 20px rgba(239, 68, 68, 0.5)"
+                      }}
+                      transition={{ 
+                        duration: 0.3,
+                        delay: 0.15
+                      }}
+                    >
+                      <span style={{ fontSize: '30px', marginBottom: '2px', lineHeight: '1' }}>✕</span>
+                      <span style={{ fontSize: '10px', opacity: 0.9 }}>Cancel</span>
+                    </motion.button>
                   </>
                 )}
               </>
