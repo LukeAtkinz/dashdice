@@ -180,18 +180,23 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
     
     // Check all players' active effects for pan_slap
     let panSlapFound = false;
-    for (const playerId in matchData.gameData.activeEffects) {
-      const effects = matchData.gameData.activeEffects[playerId];
-      if (effects && Array.isArray(effects)) {
-        const hasPanSlap = effects.some(effect => 
-          effect.abilityId === 'pan_slap' || effect.effectId?.includes('pan_slap')
-        );
-        if (hasPanSlap) {
-          panSlapFound = true;
-          console.log('🍳 PAN SLAP IS ACTIVE! Triggering video playback');
-          break;
+    try {
+      for (const playerId in matchData.gameData.activeEffects) {
+        const effects = matchData.gameData.activeEffects[playerId];
+        if (effects && Array.isArray(effects)) {
+          const hasPanSlap = effects.some(effect => 
+            effect?.abilityId === 'pan_slap' || effect?.effectId?.includes('pan_slap')
+          );
+          if (hasPanSlap) {
+            panSlapFound = true;
+            console.log('🍳 PAN SLAP IS ACTIVE! Triggering video playback');
+            break;
+          }
         }
       }
+    } catch (err) {
+      console.error('🍳 Error checking Pan Slap active effects:', err);
+      return;
     }
     
     if (panSlapFound && !isPanSlapActive) {
@@ -199,32 +204,65 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
       setIsPanSlapActive(true);
       setShowRedDice(true);
       
-      // Trigger video playback when activated (with mobile safeguards)
+      // Trigger video playback when activated (with comprehensive mobile safeguards)
       setTimeout(() => {
-        if (panSlapVideoRef.current && panSlapVideoRef.current.readyState >= 2) {
-          console.log('🍳 Playing Pan Slap video via ref');
-          panSlapVideoRef.current.currentTime = 0;
-          panSlapVideoRef.current.muted = true;
-          panSlapVideoRef.current.play().catch((err) => {
-            console.error('🍳 Pan Slap video play failed:', err);
-            // Fallback: just show red dice without video
+        try {
+          if (panSlapVideoRef.current) {
+            const video = panSlapVideoRef.current;
+            
+            // Mobile-safe video initialization
+            video.muted = true;
+            video.playsInline = true;
+            
+            // Only play if video is ready
+            if (video.readyState >= 2) {
+              console.log('🍳 Playing Pan Slap video via ref');
+              video.currentTime = 0;
+              
+              const playPromise = video.play();
+              if (playPromise !== undefined) {
+                playPromise.catch((err) => {
+                  console.warn('🍳 Pan Slap video play failed (non-critical):', err);
+                  // Fallback: skip video, just show red dice
+                  setIsPanSlapActive(false);
+                  setShowRedDice(true);
+                  setPanSlapPulsing(true);
+                });
+              }
+            } else {
+              // Video not ready, fallback to red dice only
+              console.warn('🍳 Pan Slap video not ready, using fallback animation');
+              setIsPanSlapActive(false);
+              setShowRedDice(true);
+              setPanSlapPulsing(true);
+            }
+          } else {
+            // No video ref, use fallback
+            console.warn('🍳 Pan Slap video ref not available, using fallback');
             setIsPanSlapActive(false);
             setShowRedDice(true);
             setPanSlapPulsing(true);
-          });
+          }
+        } catch (err) {
+          console.error('🍳 Pan Slap video error (recovered):', err);
+          // Always fallback to safe state
+          setIsPanSlapActive(false);
+          setShowRedDice(true);
+          setPanSlapPulsing(true);
         }
       }, 100);
     } else if (!panSlapFound && isPanSlapActive) {
-      // Pan Slap deactivated - reset states
+      // Pan Slap deactivated - reset states safely
       setIsPanSlapActive(false);
       setShowRedDice(false);
       setPanSlapPulsing(false);
       if (panSlapVideoRef.current) {
         try {
-          panSlapVideoRef.current.pause();
-          panSlapVideoRef.current.currentTime = 0;
+          const video = panSlapVideoRef.current;
+          video.pause();
+          video.currentTime = 0;
         } catch (err) {
-          console.error('🍳 Pan Slap video cleanup error:', err);
+          console.warn('🍳 Pan Slap video cleanup error (non-critical):', err);
         }
       }
     }
@@ -812,20 +850,28 @@ export const SlotMachineDice: React.FC<SlotMachineDiceProps> = ({
               willChange: 'auto'
             }}
             onLoadedMetadata={(e) => {
-              const video = e.currentTarget;
-              video.muted = true;
-            }}
-            onEnded={() => {
-              console.log('🍳 Pan Slap video finished - starting dice pulse animation');
-              setIsPanSlapActive(false);
-              setPanSlapPulsing(true);
+              try {
+                const video = e.currentTarget;
+                video.muted = true;
+              } catch (err) {
+                console.warn('🍳 Pan Slap video metadata error (non-critical):', err);
+              }
             }}
             onError={(e) => {
               console.error('🍳 Pan Slap video failed to load:', e);
-              // Fallback: skip video, go straight to red dice
+              // Fallback: hide video and show red dice
               setIsPanSlapActive(false);
               setShowRedDice(true);
               setPanSlapPulsing(true);
+            }}
+            onEnded={() => {
+              try {
+                console.log('🍳 Pan Slap video finished - starting dice pulse animation');
+                setIsPanSlapActive(false);
+                setPanSlapPulsing(true);
+              } catch (err) {
+                console.error('🍳 Pan Slap onEnded error (non-critical):', err);
+              }
             }}
           />
         </motion.div>

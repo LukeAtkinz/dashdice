@@ -1826,26 +1826,57 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         opacity: 1
                       }}
                       onLoadedData={(e) => {
-                        const video = e.currentTarget;
-                        video.muted = true;
-                        video.play().catch(() => {});
+                        try {
+                          const video = e.currentTarget;
+                          video.muted = true;
+                          video.playsInline = true;
+                          const playPromise = video.play();
+                          if (playPromise !== undefined) {
+                            playPromise.catch((err) => {
+                              console.warn('🧢 Hard Hat Initial video play failed (non-critical):', err);
+                            });
+                          }
+                        } catch (err) {
+                          console.warn('🧢 Hard Hat Initial onLoadedData error (non-critical):', err);
+                        }
                       }}
                       onCanPlay={(e) => {
-                        const video = e.currentTarget;
-                        if (video.paused) video.play().catch(() => {});
+                        try {
+                          const video = e.currentTarget;
+                          video.muted = true;
+                          video.playsInline = true;
+                          if (video.paused) {
+                            const playPromise = video.play();
+                            if (playPromise !== undefined) {
+                              playPromise.catch(() => {});
+                            }
+                          }
+                        } catch (err) {
+                          console.warn('🧢 Hard Hat Initial onCanPlay error (non-critical):', err);
+                        }
                       }}
                       onTimeUpdate={(e) => {
-                        const video = e.target as HTMLVideoElement;
-                        // Show white border just before video ends (last 0.2s)
-                        if (video.duration - video.currentTime < 0.2 && !hardHatWhiteBorderCurrent) {
-                          setHardHatWhiteBorderCurrent(true);
+                        try {
+                          const video = e.target as HTMLVideoElement;
+                          // Show white border just before video ends (last 0.2s)
+                          if (video.duration - video.currentTime < 0.2 && !hardHatWhiteBorderCurrent) {
+                            setHardHatWhiteBorderCurrent(true);
+                          }
+                        } catch (err) {
+                          console.warn('🧢 Hard Hat Initial onTimeUpdate error (non-critical):', err);
                         }
                       }}
                       onEnded={() => {
-                        setShowHardHatInitialCurrent(false);
+                        try {
+                          setShowHardHatInitialCurrent(false);
+                        } catch (err) {
+                          console.warn('🧢 Hard Hat Initial onEnded error (non-critical):', err);
+                        }
                       }}
                       onError={(e) => {
-                        console.error('🧢 Hard Hat Initial video error:', e);
+                        console.error('🧢 Hard Hat Initial video failed to load:', e);
+                        // Hide animation on error
+                        setShowHardHatInitialCurrent(false);
                       }}
                     />
                   </div>
@@ -1874,20 +1905,47 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         opacity: 1
                       }}
                       onLoadedData={(e) => {
-                        const video = e.currentTarget;
-                        video.muted = true;
-                        video.play().catch(() => {});
+                        try {
+                          const video = e.currentTarget;
+                          video.muted = true;
+                          video.playsInline = true;
+                          const playPromise = video.play();
+                          if (playPromise !== undefined) {
+                            playPromise.catch((err) => {
+                              console.warn('🧢 Hard Hat Used video play failed (non-critical):', err);
+                            });
+                          }
+                        } catch (err) {
+                          console.warn('🧢 Hard Hat Used onLoadedData error (non-critical):', err);
+                        }
                       }}
                       onCanPlay={(e) => {
-                        const video = e.currentTarget;
-                        if (video.paused) video.play().catch(() => {});
+                        try {
+                          const video = e.currentTarget;
+                          video.muted = true;
+                          video.playsInline = true;
+                          if (video.paused) {
+                            const playPromise = video.play();
+                            if (playPromise !== undefined) {
+                              playPromise.catch(() => {});
+                            }
+                          }
+                        } catch (err) {
+                          console.warn('🧢 Hard Hat Used onCanPlay error (non-critical):', err);
+                        }
                       }}
                       onEnded={() => {
-                        setShowHardHatUsedCurrent(false);
-                        setHardHatWhiteBorderCurrent(false);
+                        try {
+                          setShowHardHatUsedCurrent(false);
+                          setHardHatWhiteBorderCurrent(false);
+                        } catch (err) {
+                          console.warn('🧢 Hard Hat Used onEnded error (non-critical):', err);
+                        }
                       }}
                       onError={(e) => {
-                        console.error('🧢 Hard Hat Used video error:', e);
+                        console.error('🧢 Hard Hat Used video failed to load:', e);
+                        // Hide animation on error
+                        setShowHardHatUsedCurrent(false);
                       }}
                     />
                   </div>
@@ -2228,20 +2286,47 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         opacity: 1
                       }}
                       onLoadedData={(e) => {
-                        const video = e.currentTarget;
-                        video.muted = true;
-                        video.play().catch(() => {});
+                        try {
+                          const video = e.currentTarget;
+                          video.muted = true;
+                          video.playsInline = true;
+                          const playPromise = video.play();
+                          if (playPromise !== undefined) {
+                            playPromise.catch((err) => {
+                              console.warn('🧢 Hard Hat Used (opponent) video play failed (non-critical):', err);
+                            });
+                          }
+                        } catch (err) {
+                          console.warn('🧢 Hard Hat Used (opponent) onLoadedData error (non-critical):', err);
+                        }
                       }}
                       onCanPlay={(e) => {
-                        const video = e.currentTarget;
-                        if (video.paused) video.play().catch(() => {});
+                        try {
+                          const video = e.currentTarget;
+                          video.muted = true;
+                          video.playsInline = true;
+                          if (video.paused) {
+                            const playPromise = video.play();
+                            if (playPromise !== undefined) {
+                              playPromise.catch(() => {});
+                            }
+                          }
+                        } catch (err) {
+                          console.warn('🧢 Hard Hat Used (opponent) onCanPlay error (non-critical):', err);
+                        }
                       }}
                       onEnded={() => {
-                        setShowHardHatUsedOpponent(false);
-                        setHardHatWhiteBorderOpponent(false);
+                        try {
+                          setShowHardHatUsedOpponent(false);
+                          setHardHatWhiteBorderOpponent(false);
+                        } catch (err) {
+                          console.warn('🧢 Hard Hat Used (opponent) onEnded error (non-critical):', err);
+                        }
                       }}
                       onError={(e) => {
-                        console.error('🧢 Hard Hat Used (opponent) video error:', e);
+                        console.error('🧢 Hard Hat Used (opponent) video failed to load:', e);
+                        // Hide animation on error
+                        setShowHardHatUsedOpponent(false);
                       }}
                     />
                   </div>
@@ -2346,12 +2431,12 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                 </span>
               </div>
               
-              {/* Desktop Chat Box - Below Opponent Card */}
-              {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
+              {/* Desktop Chat Box - Below Opponent Card - DISABLED */}
+              {/* {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
                 <div className="hidden md:block mt-3 ml-auto" style={{ width: '100%', maxWidth: '500px' }}>
                   <MatchChatFeed matchId={matchData.id} className="desktop-player-chat" />
                 </div>
-              )}
+              )} */}
                 </div>
               )}
             </AnimatePresence>
@@ -2711,8 +2796,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               </motion.div>
                   </div>
                 
-                  {/* Mobile Match Chat - Below player cards */}
-                  {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
+                  {/* Mobile Match Chat - Below player cards - DISABLED */}
+                  {/* {matchData.gameData.gamePhase === 'gameplay' && matchData.id && !matchData.hostData.playerId.includes('bot_') && !matchData.opponentData?.playerId?.includes('bot_') && (
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -2721,7 +2806,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                     >
                       <MatchChatFeed matchId={matchData.id} />
                     </motion.div>
-                  )}
+                  )} */}
                 </motion.div>
               )}
             </AnimatePresence>

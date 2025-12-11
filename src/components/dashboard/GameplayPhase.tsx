@@ -100,39 +100,75 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
       setShowVitalRushBottomDice(true);
       
       setTimeout(() => {
-        if (vitalRushTopVideoRef.current && vitalRushTopVideoRef.current.readyState >= 2) {
-          vitalRushTopVideoRef.current.currentTime = 0;
-          vitalRushTopVideoRef.current.play().catch(err => {
-            console.error('Top video play failed:', err);
-          });
+        try {
+          // Top video playback with mobile safeguards
+          if (vitalRushTopVideoRef.current) {
+            const topVideo = vitalRushTopVideoRef.current;
+            topVideo.muted = true;
+            topVideo.playsInline = true;
+            
+            if (topVideo.readyState >= 2) {
+              topVideo.currentTime = 0;
+              const playPromise = topVideo.play();
+              if (playPromise !== undefined) {
+                playPromise.catch(err => {
+                  console.warn('💓 Top video play failed (non-critical):', err);
+                  // Continue without video
+                });
+              }
+            } else {
+              console.warn('💓 Top video not ready, will auto-play when loaded');
+            }
+          }
+        } catch (err) {
+          console.error('💓 Top video error (recovered):', err);
         }
         
-        if (vitalRushBottomVideoRef.current && vitalRushBottomVideoRef.current.readyState >= 2) {
-          vitalRushBottomVideoRef.current.currentTime = 0;
-          vitalRushBottomVideoRef.current.play().catch(err => {
-            console.error('Bottom video play failed:', err);
-          });
+        try {
+          // Bottom video playback with mobile safeguards
+          if (vitalRushBottomVideoRef.current) {
+            const bottomVideo = vitalRushBottomVideoRef.current;
+            bottomVideo.muted = true;
+            bottomVideo.playsInline = true;
+            
+            if (bottomVideo.readyState >= 2) {
+              bottomVideo.currentTime = 0;
+              const playPromise = bottomVideo.play();
+              if (playPromise !== undefined) {
+                playPromise.catch(err => {
+                  console.warn('💓 Bottom video play failed (non-critical):', err);
+                  // Continue without video
+                });
+              }
+            } else {
+              console.warn('💓 Bottom video not ready, will auto-play when loaded');
+            }
+          }
+        } catch (err) {
+          console.error('💓 Bottom video error (recovered):', err);
         }
       }, 100);
     } else if (!vitalRushActive && (showVitalRushTopDice || showVitalRushBottomDice)) {
-      // Vital Rush ended - stop and hide videos
+      // Vital Rush ended - stop and hide videos safely
       console.log('💓 Vital Rush ended - stopping video animations');
       setShowVitalRushTopDice(false);
       setShowVitalRushBottomDice(false);
+      
       if (vitalRushTopVideoRef.current) {
         try {
           vitalRushTopVideoRef.current.pause();
           vitalRushTopVideoRef.current.currentTime = 0;
         } catch (err) {
-          console.error('Top video cleanup error:', err);
+          console.warn('💓 Top video cleanup error (non-critical):', err);
         }
       }
+      
       if (vitalRushBottomVideoRef.current) {
         try {
           vitalRushBottomVideoRef.current.pause();
           vitalRushBottomVideoRef.current.currentTime = 0;
         } catch (err) {
-          console.error('Bottom video cleanup error:', err);
+          console.warn('💓 Bottom video cleanup error (non-critical):', err);
         }
       }
     }
@@ -566,6 +602,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 muted
                 playsInline
                 preload="metadata"
+                autoPlay
+                disablePictureInPicture
+                disableRemotePlayback
                 style={{
                   position: 'absolute',
                   inset: 0,
@@ -577,11 +616,17 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   willChange: 'auto'
                 }}
                 onLoadedMetadata={(e) => {
-                  const video = e.currentTarget;
-                  video.muted = true;
+                  try {
+                    const video = e.currentTarget;
+                    video.muted = true;
+                    video.playsInline = true;
+                  } catch (err) {
+                    console.warn('💓 Top video metadata error (non-critical):', err);
+                  }
                 }}
                 onError={(e) => {
-                  console.error('💓 Vital Rush top video error:', e);
+                  console.error('💓 Vital Rush top video failed to load:', e);
+                  // Hide video on error to prevent crash
                   setShowVitalRushTopDice(false);
                 }}
               />
@@ -1003,6 +1048,9 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                 muted
                 playsInline
                 preload="metadata"
+                autoPlay
+                disablePictureInPicture
+                disableRemotePlayback
                 style={{
                   position: 'absolute',
                   inset: 0,
@@ -1014,11 +1062,17 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
                   willChange: 'auto'
                 }}
                 onLoadedMetadata={(e) => {
-                  const video = e.currentTarget;
-                  video.muted = true;
+                  try {
+                    const video = e.currentTarget;
+                    video.muted = true;
+                    video.playsInline = true;
+                  } catch (err) {
+                    console.warn('💓 Bottom video metadata error (non-critical):', err);
+                  }
                 }}
                 onError={(e) => {
-                  console.error('💓 Vital Rush bottom video error:', e);
+                  console.error('💓 Vital Rush bottom video failed to load:', e);
+                  // Hide video on error to prevent crash
                   setShowVitalRushBottomDice(false);
                 }}
               />

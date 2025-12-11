@@ -598,7 +598,7 @@ export class MatchService {
         'gameData.diceTwo': 0, // Will be revealed when dice2 phase starts
       });
       
-      // 🎰 Wait for Dice 1 animation (1200ms) then reveal Dice 2
+      // 🎰 Wait for Dice 1 animation (800ms) then reveal Dice 2
       setTimeout(async () => {
         // 🍳 Check if Pan Slap activated during dice1 animation
         const currentSnapshot = await getDoc(matchRef);
@@ -619,7 +619,7 @@ export class MatchService {
           'gameData.diceTwo': dice2 // Provide dice2 value for animation
         });
         
-        // 🎰 Wait for Dice 2 animation (1200ms) then process game rules
+        // 🎰 Wait for Dice 2 animation (800ms) then process game rules
         setTimeout(async () => {
           // 🍳 Final check before processing game rules
           const finalSnapshot = await getDoc(matchRef);
@@ -635,9 +635,27 @@ export class MatchService {
             }
           }
           await this.processGameRules(matchId, dice1, dice2, isHost);
-        }, 1200); // Wait for dice2 animation to complete (1200ms)
+        }, 800); // Wait for dice2 animation to complete (800ms)
         
-      }, 1200); // Wait for dice1 animation to complete (1200ms)
+      }, 800); // Wait for dice1 animation to complete (800ms)
+      
+      // 🛡️ SECURITY: Force stop rolling after maximum timeout (2 seconds total)
+      // Prevents indefinite rolling on poor connections
+      setTimeout(async () => {
+        try {
+          const securityCheck = await getDoc(matchRef);
+          if (securityCheck.exists()) {
+            const securityData = securityCheck.data() as MatchData;
+            // Only force stop if still rolling (prevents overriding completed rolls)
+            if (securityData.gameData?.isRolling) {
+              console.warn('⚠️ SECURITY: Force stopping dice roll after timeout');
+              await this.processGameRules(matchId, dice1, dice2, isHost);
+            }
+          }
+        } catch (securityError) {
+          console.error('❌ Security timeout error:', securityError);
+        }
+      }, 2000); // Maximum 2 seconds for entire roll sequence
       
     } catch (error) {
       console.error('❌ Error rolling dice:', error);
