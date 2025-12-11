@@ -658,6 +658,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   playerStats: opponentProfile?.stats || {},
                   displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped || getBackgroundById('relax'),
                   matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped || getBackgroundById('relax'),
+                  turnDeciderBackgroundEquipped: opponentProfile?.inventory?.turnDeciderBackgroundEquipped || { id: 'crazy-cough', name: 'Crazy Cough', category: 'Videos', rarity: 'COMMON' },
+                  victoryBackgroundEquipped: opponentProfile?.inventory?.victoryBackgroundEquipped || { id: 'wind-blade', name: 'Wind Blade', category: 'Videos', rarity: 'LEGENDARY' },
                 };
                 setGoBackendOpponentData(opponentDisplayData);
                 // Stored Go backend opponent data
@@ -694,6 +696,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     playerStats: goBackendOpponentData?.playerStats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
                     displayBackgroundEquipped: goBackendOpponentData?.displayBackgroundEquipped || getBackgroundById('relax'),
                     matchBackgroundEquipped: goBackendOpponentData?.matchBackgroundEquipped || getBackgroundById('relax'),
+                    turnDeciderBackgroundEquipped: goBackendOpponentData?.turnDeciderBackgroundEquipped || { id: 'crazy-cough', name: 'Crazy Cough', category: 'Videos', rarity: 'COMMON' },
+                    victoryBackgroundEquipped: goBackendOpponentData?.victoryBackgroundEquipped || { id: 'wind-blade', name: 'Wind Blade', category: 'Videos', rarity: 'LEGENDARY' },
                   };
                   setGoBackendOpponentData(fallbackOpponentData);
                 }
@@ -803,8 +807,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     playerStats: goBackendOpponentData?.playerStats || opponentProfile?.stats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
                     displayBackgroundEquipped: goBackendOpponentData?.displayBackgroundEquipped || opponentProfile?.inventory?.displayBackgroundEquipped || getBackgroundById('relax'),
                     matchBackgroundEquipped: goBackendOpponentData?.matchBackgroundEquipped || opponentProfile?.inventory?.matchBackgroundEquipped || getBackgroundById('relax'),
-                    turnDeciderBackgroundEquipped: opponentProfile?.inventory?.turnDeciderBackgroundEquipped || { id: 'crazy-cough', name: 'Crazy Cough', category: 'Videos', rarity: 'COMMON' },
-                    victoryBackgroundEquipped: opponentProfile?.inventory?.victoryBackgroundEquipped || { id: 'wind-blade', name: 'Wind Blade', category: 'Videos', rarity: 'LEGENDARY' },
+                    turnDeciderBackgroundEquipped: goBackendOpponentData?.turnDeciderBackgroundEquipped || opponentProfile?.inventory?.turnDeciderBackgroundEquipped || { id: 'crazy-cough', name: 'Crazy Cough', category: 'Videos', rarity: 'COMMON' },
+                    victoryBackgroundEquipped: goBackendOpponentData?.victoryBackgroundEquipped || opponentProfile?.inventory?.victoryBackgroundEquipped || { id: 'wind-blade', name: 'Wind Blade', category: 'Videos', rarity: 'LEGENDARY' },
                     playerScore: startingScore, // Use proper starting score
                     turnActive: false, // Will be set by turn decider
                     powerLoadout: opponentPowerLoadout // Add power loadout for abilities

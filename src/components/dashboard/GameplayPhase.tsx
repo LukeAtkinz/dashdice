@@ -1229,7 +1229,7 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
 
         {/* Aura Forge Bottom Animation - Desktop */}
         {showAuraForgeBottom && (
-          <div className="hidden md:block absolute inset-0 pointer-events-none z-40">
+          <div className="hidden md:block fixed bottom-0 left-0 right-0 pointer-events-none z-40" style={{ height: '100vh' }}>
             <video
               src="/Abilities/Animations/Aura Forge/Aura Forge Bottom.webm"
               autoPlay
@@ -1306,17 +1306,10 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               <>
                 {/* AURA Counter - LEFT SIDE */}
                 <motion.div
-                  className="hidden md:flex items-center justify-center text-white"
+                  className="flex md:items-center md:justify-center items-center justify-center text-white md:bg-black/70 md:rounded-lg"
                   style={{ 
                     width: '28%',
                     height: '100%',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    border: 'none',
-                    borderRadius: '8px',
-                    background: 'rgba(0, 0, 0, 0.7)',
-                    backdropFilter: 'none',
                   }}
                   initial={{ opacity: 0, x: -50, scale: 0.9 }}
                   animate={{ 
@@ -1532,17 +1525,10 @@ export const GameplayPhase: React.FC<GameplayPhaseProps> = ({
               <>
                 {/* AURA Counter - LEFT SIDE (always visible) */}
                 <motion.div
-                  className="hidden md:flex items-center justify-center text-white"
+                  className="flex md:items-center md:justify-center items-center justify-center text-white md:bg-black/70 md:rounded-lg"
                   style={{ 
                     width: '28%',
                     height: '100%',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    border: 'none',
-                    borderRadius: '8px',
-                    background: 'rgba(0, 0, 0, 0.7)',
-                    backdropFilter: 'none',
                   }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
