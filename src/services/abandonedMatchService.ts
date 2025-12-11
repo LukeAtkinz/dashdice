@@ -29,6 +29,10 @@ export class AbandonedMatchService {
   private static cleanupInterval: NodeJS.Timeout | null = null;
   private static inactivityThreshold = 300000; // 5 minutes
   private static timeoutThreshold = 600000; // 10 minutes max match duration (was 30 minutes)
+  
+  // 🔥 Enhanced thresholds for 20+ player scalability
+  private static waitingRoomTimeout = 45000; // 45 seconds for waiting rooms (was higher)
+  private static matchedSessionTimeout = 120000; // 2 minutes for matched but not active sessions
 
   /**
    * Initialize abandoned match cleanup service
@@ -38,12 +42,13 @@ export class AbandonedMatchService {
       clearInterval(this.cleanupInterval);
     }
 
-    // Run cleanup every 1 minute (was 2 minutes) - more aggressive to prevent stagnant matches
+    // 🔥 Run cleanup every 30 seconds (was 60 seconds) - more aggressive to prevent stagnant matches
     this.cleanupInterval = setInterval(async () => {
       await this.cleanupInactiveMatches();
-    }, 60000);
+      await this.cleanupStaleWaitingRooms(); // New: Aggressive waiting room cleanup
+    }, 30000);
 
-    console.log('🗑️ Abandoned match cleanup service initialized');
+    console.log('🗑️ Abandoned match cleanup service initialized (30s intervals with aggressive waiting room cleanup)');
   }
 
   /**
@@ -382,6 +387,66 @@ export class AbandonedMatchService {
         cleaned: 0,
         errors: [error instanceof Error ? error.message : 'Unknown error']
       };
+    }
+  }
+
+  /**
+   * 🔥 NEW: Aggressively cleanup stale waiting rooms (45 second timeout)
+   * Critical for 20+ concurrent player scalability
+   */
+  static async cleanupStaleWaitingRooms(): Promise<void> {
+    try {
+      const now = Date.now();
+      const waitingRoomCutoff = now - this.waitingRoomTimeout; // 45 seconds
+      const matchedCutoff = now - this.matchedSessionTimeout; // 2 minutes
+      
+      // Check gameSessions collection for stale waiting/matched sessions
+      const sessionsQuery = query(
+        collection(db, 'gameSessions'),
+        where('status', 'in', ['waiting', 'matched'])
+      );
+      
+      const sessionsSnapshot = await getDocs(sessionsQuery);
+      let cleanedCount = 0;
+      
+      for (const docSnapshot of sessionsSnapshot.docs) {
+        const data = docSnapshot.data();
+        const createdAt = data.createdAt?.toMillis() || 0;
+        const status = data.status;
+        
+        let shouldCleanup = false;
+        let reason: AbandonedMatch['reason'] = 'timeout';
+        
+        // Aggressive timeout for waiting rooms
+        if (status === 'waiting' && createdAt > 0 && now - createdAt > this.waitingRoomTimeout) {
+          shouldCleanup = true;
+          reason = 'timeout';
+          console.log(`⏰ Waiting room ${docSnapshot.id} timed out after 45s`);
+        }
+        
+        // Matched but not active (stuck in transition)
+        else if (status === 'matched' && createdAt > 0 && now - createdAt > this.matchedSessionTimeout) {
+          shouldCleanup = true;
+          reason = 'timeout';
+          console.log(`⏰ Matched session ${docSnapshot.id} stuck for >2min, cleaning up`);
+        }
+        
+        if (shouldCleanup) {
+          try {
+            await this.abandonMatch(docSnapshot.id, reason, 'gameSessions');
+            cleanedCount++;
+          } catch (error) {
+            console.error(`Failed to cleanup stale session ${docSnapshot.id}:`, error);
+          }
+        }
+      }
+      
+      if (cleanedCount > 0) {
+        console.log(`🧹 Aggressively cleaned up ${cleanedCount} stale waiting/matched sessions`);
+      }
+      
+    } catch (error) {
+      console.error('Error in aggressive waiting room cleanup:', error);
     }
   }
 

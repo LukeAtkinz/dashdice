@@ -6,6 +6,7 @@ import { RematchService } from './rematchService';
 import { GameInvitationService } from './gameInvitationService';
 import { MatchmakingDeduplicationService } from './matchmakingDeduplicationService';
 import { BotMatchingService } from './botMatchingService';
+import { WaitingRoomTimeoutService } from './waitingRoomTimeoutService';
 import { collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -242,6 +243,9 @@ export class MatchmakingOrchestrator {
     if (atomicResult.success && atomicResult.session) {
       console.log(`✅ ATOMIC: Successfully joined session ${atomicResult.session.id}`);
       
+      // 🔥 Clear waiting room timeout since we joined successfully
+      WaitingRoomTimeoutService.clearTimeout(atomicResult.session.id);
+      
       // Convert GameSession to MatchmakingResult format
       return {
         success: true,
@@ -266,8 +270,17 @@ export class MatchmakingOrchestrator {
       }
     );
     
-    // 🤖 Setup bot fallback with 7-second timeout for quick matches
-    console.log('🤖 Setting up bot fallback timer (7 seconds)');
+    // 🔥 Start 45-second hard timeout for waiting room
+    WaitingRoomTimeoutService.startTimeout(
+      sessionId,
+      request.hostData.playerId,
+      request.gameMode,
+      'quick'
+    );
+    console.log(`⏲️ Started 45s timeout for waiting room ${sessionId}`);
+    
+    // 🤖 Setup bot fallback with 120-second timeout for quick matches
+    console.log('🤖 Setting up bot fallback timer (120 seconds)');
     try {
       BotMatchingService.setupBotFallback(
         sessionId,
@@ -316,6 +329,9 @@ export class MatchmakingOrchestrator {
     if (atomicResult.success && atomicResult.session) {
       console.log(`✅ ATOMIC: Successfully joined ranked session ${atomicResult.session.id}`);
       
+      // 🔥 Clear waiting room timeout since we joined successfully
+      WaitingRoomTimeoutService.clearTimeout(atomicResult.session.id);
+      
       return {
         success: true,
         sessionId: atomicResult.session.id,
@@ -339,8 +355,17 @@ export class MatchmakingOrchestrator {
       }
     );
     
-    // 🤖 Setup bot fallback with 7-second timeout for ranked matches
-    console.log('🤖 Setting up bot fallback timer for ranked match (7 seconds)');
+    // 🔥 Start 45-second hard timeout for waiting room
+    WaitingRoomTimeoutService.startTimeout(
+      sessionId,
+      request.hostData.playerId,
+      request.gameMode,
+      'ranked'
+    );
+    console.log(`⏲️ Started 45s timeout for ranked waiting room ${sessionId}`);
+    
+    // 🤖 Setup bot fallback with 120-second timeout for ranked matches
+    console.log('🤖 Setting up bot fallback timer for ranked match (120 seconds)');
     try {
       BotMatchingService.setupBotFallback(
         sessionId,

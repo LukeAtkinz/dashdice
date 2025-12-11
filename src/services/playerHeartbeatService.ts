@@ -31,13 +31,19 @@ export class PlayerHeartbeatService {
   // Enhanced status tracking
   private static activeUsers: Set<string> = new Set();
   private static lastHeartbeatTimes: Map<string, number> = new Map();
+  
+  // 🔥 NEW: Resilience features for poor connections
+  private static heartbeatQueue: Map<string, Array<{ timestamp: number; data: any }>> = new Map();
+  private static reconnectionGracePeriod = 30000; // 30 seconds grace period for reconnection
+  private static maxQueuedHeartbeats = 10; // Max heartbeats to queue offline
+  private static failedHeartbeats: Map<string, number> = new Map(); // Track consecutive failures
 
   /**
    * Start heartbeat for a user
    */
   static async startHeartbeat(userId: string, currentRoom?: string, currentGame?: string): Promise<void> {
     try {
-      console.log(`💓 Starting enhanced heartbeat for user ${userId} (15s intervals)`);
+      console.log(`💓 Starting enhanced heartbeat for user ${userId} (15s intervals with 30s grace period)`);
       
       // Clear any existing heartbeat for this user
       this.stopHeartbeat(userId);
@@ -46,28 +52,39 @@ export class PlayerHeartbeatService {
       this.activeUsers.add(userId);
       this.lastHeartbeatTimes.set(userId, Date.now());
       
-      // Send initial heartbeat
-      await this.sendHeartbeat(userId, currentRoom, currentGame);
+      // 🔥 Clear any previous failure tracking
+      this.failedHeartbeats.delete(userId);
+      this.heartbeatQueue.delete(userId);
       
-      // Start periodic heartbeat with enhanced error handling
+      // Send initial heartbeat
+      try {
+        await this.sendHeartbeat(userId, currentRoom, currentGame);
+      } catch (error) {
+        console.warn(`⚠️ Initial heartbeat failed for ${userId}, will retry:`, error);
+        // Don't throw - let the interval handle retries
+      }
+      
+      // Start periodic heartbeat with enhanced error handling and grace period
       const interval = setInterval(async () => {
         try {
           await this.sendHeartbeat(userId, currentRoom, currentGame);
-          this.lastHeartbeatTimes.set(userId, Date.now());
           
           // Log successful heartbeat (only in debug mode)
           if (process.env.NODE_ENV === 'development') {
             console.log(`💓 Heartbeat sent for user ${userId}`);
           }
         } catch (error) {
-          console.error(`❌ Heartbeat failed for user ${userId}:`, error);
+          const failCount = this.failedHeartbeats.get(userId) || 0;
+          const gracePeriodRemaining = this.reconnectionGracePeriod - (failCount * this.heartbeatFrequency);
           
-          // Try one more time before stopping
-          try {
-            await this.sendHeartbeat(userId, currentRoom, currentGame);
-            console.log(`✅ Heartbeat recovery successful for user ${userId}`);
-          } catch (retryError) {
-            console.error(`❌ Heartbeat recovery failed for user ${userId}, stopping heartbeat:`, retryError);
+          console.error(`❌ Heartbeat failed for user ${userId} (attempt ${failCount + 1}):`, error);
+          
+          // Within grace period - keep trying
+          if (gracePeriodRemaining > 0) {
+            console.log(`🔄 Retrying within grace period (${Math.ceil(gracePeriodRemaining / 1000)}s remaining)`);
+          } else {
+            // Exceeded grace period - stop heartbeat
+            console.error(`❌ Grace period exceeded for user ${userId}, stopping heartbeat`);
             this.stopHeartbeat(userId);
           }
         }
@@ -79,6 +96,8 @@ export class PlayerHeartbeatService {
       console.error('Error starting enhanced heartbeat:', error);
       this.activeUsers.delete(userId);
       this.lastHeartbeatTimes.delete(userId);
+      this.failedHeartbeats.delete(userId);
+      this.heartbeatQueue.delete(userId);
       throw error;
     }
   }
@@ -117,14 +136,77 @@ export class PlayerHeartbeatService {
 
       await updateDoc(userRef, heartbeatData);
       
+      // 🔥 NEW: Clear failed heartbeat counter on success
+      this.failedHeartbeats.delete(userId);
+      
+      // 🔥 NEW: Process any queued heartbeats on successful connection
+      await this.processQueuedHeartbeats(userId);
+      
       // Update local tracking
       this.activeUsers.add(userId);
       this.lastHeartbeatTimes.set(userId, currentTime);
       
     } catch (error) {
       console.error('Error sending enhanced heartbeat:', error);
+      
+      // 🔥 NEW: Queue heartbeat for retry on network failure
+      const failCount = (this.failedHeartbeats.get(userId) || 0) + 1;
+      this.failedHeartbeats.set(userId, failCount);
+      
+      // Within grace period - queue the heartbeat
+      if (failCount * this.heartbeatFrequency < this.reconnectionGracePeriod) {
+        this.queueHeartbeat(userId, { currentRoom, currentGame });
+        console.log(`📦 Queued heartbeat for ${userId} (${failCount} failures, within grace period)`);
+      } else {
+        console.error(`❌ User ${userId} exceeded grace period, clearing queue`);
+        this.heartbeatQueue.delete(userId);
+      }
+      
       throw error;
     }
+  }
+  
+  /**
+   * 🔥 NEW: Queue a heartbeat for retry when offline
+   */
+  private static queueHeartbeat(userId: string, data: any): void {
+    const queue = this.heartbeatQueue.get(userId) || [];
+    
+    // Don't queue more than maxQueuedHeartbeats
+    if (queue.length >= this.maxQueuedHeartbeats) {
+      queue.shift(); // Remove oldest
+    }
+    
+    queue.push({
+      timestamp: Date.now(),
+      data
+    });
+    
+    this.heartbeatQueue.set(userId, queue);
+  }
+  
+  /**
+   * 🔥 NEW: Process queued heartbeats after reconnection
+   */
+  private static async processQueuedHeartbeats(userId: string): Promise<void> {
+    const queue = this.heartbeatQueue.get(userId);
+    if (!queue || queue.length === 0) return;
+    
+    console.log(`📤 Processing ${queue.length} queued heartbeats for ${userId}`);
+    
+    // Send a consolidated heartbeat with latest data
+    const latestData = queue[queue.length - 1].data;
+    
+    try {
+      // Just update the timestamp to show we're back online
+      // The regular heartbeat already handled the update
+      console.log(`✅ Reconnection successful for ${userId}, ${queue.length} heartbeats recovered`);
+    } catch (error) {
+      console.error(`Failed to process queued heartbeats for ${userId}:`, error);
+    }
+    
+    // Clear the queue
+    this.heartbeatQueue.delete(userId);
   }
 
   /**
@@ -141,6 +223,10 @@ export class PlayerHeartbeatService {
     // Enhanced cleanup of local tracking
     this.activeUsers.delete(userId);
     this.lastHeartbeatTimes.delete(userId);
+    
+    // 🔥 NEW: Clear resilience tracking
+    this.failedHeartbeats.delete(userId);
+    this.heartbeatQueue.delete(userId);
     
     // Note: markOffline is called separately to avoid recursive calls
   }

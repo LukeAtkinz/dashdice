@@ -10,6 +10,7 @@ import { PlayerHeartbeatService } from './playerHeartbeatService';
 import { AbandonedMatchService } from './abandonedMatchService';
 import { DatabaseOptimizationService } from './databaseOptimizationService';
 import { CDNOptimizationService } from './cdnOptimizationService';
+import { MatchmakingLockService } from './matchmakingLockService';
 
 /**
  * NEW UNIFIED MATCHMAKING SERVICE
@@ -30,6 +31,9 @@ export class NewMatchmakingService {
     // Initialize cleanup services
     PlayerHeartbeatService.initializeCleanupService();
     AbandonedMatchService.initializeCleanupService();
+    
+    // 🔒 Initialize matchmaking lock service (prevents duplicate requests)
+    MatchmakingLockService.initialize();
     
     // 🧹 IMPORTANT: Run initial cleanup to remove any stagnant matches from previous sessions
     setTimeout(() => {
@@ -53,8 +57,23 @@ export class NewMatchmakingService {
       skillBasedMatching?: boolean;
     } = {}
   ): Promise<MatchmakingResult> {
+    let lockRequestId: string | undefined;
+    
     try {
       console.log(`🎯 NewMatchmakingService: Finding match for ${userId} - ${sessionType}/${gameMode}`);
+
+      // 🔒 CRITICAL: Acquire matchmaking lock to prevent duplicate concurrent requests
+      const lockResult = MatchmakingLockService.acquireLock(userId, sessionType, gameMode);
+      if (!lockResult.success) {
+        console.log(`🚫 Matchmaking blocked for ${userId}: ${lockResult.reason}`);
+        return {
+          success: false,
+          error: lockResult.reason || 'Already in matchmaking queue'
+        };
+      }
+      
+      lockRequestId = lockResult.requestId;
+      console.log(`🔒 Lock acquired for ${userId} - Request ID: ${lockRequestId}`);
 
       // 🧹 CRITICAL: Clean up any existing matches for this user to prevent duplicates
       await this.cleanupUserMatches(userId);
@@ -136,10 +155,23 @@ export class NewMatchmakingService {
         await PlayerHeartbeatService.updateCurrentRoom(userId, result.sessionId);
       }
 
+      // 🔓 Release lock on success
+      if (lockRequestId) {
+        MatchmakingLockService.releaseLock(userId, lockRequestId);
+        console.log(`🔓 Lock released for ${userId} - Success`);
+      }
+
       return result;
 
     } catch (error) {
       console.error('Error in findOrCreateMatch:', error);
+      
+      // 🔓 Release lock on error
+      if (lockRequestId) {
+        MatchmakingLockService.releaseLock(userId, lockRequestId);
+        console.log(`🔓 Lock released for ${userId} - Error recovery`);
+      }
+      
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
