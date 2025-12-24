@@ -2,6 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
+
+// Dynamically import react-pdf to avoid SSR issues
+const Document = dynamic(
+  () => import('react-pdf').then((mod) => mod.Document),
+  { ssr: false }
+);
+const Page = dynamic(
+  () => import('react-pdf').then((mod) => mod.Page),
+  { ssr: false }
+);
 
 export default function InvestorsPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -9,6 +20,32 @@ export default function InvestorsPage() {
   const [error, setError] = useState('');
   const [showPrototypeForm, setShowPrototypeForm] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showScheduler, setShowScheduler] = useState(false);
+  const [numPages, setNumPages] = useState<number>(0);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  
+  // Slides to exclude (0-indexed)
+  const excludedSlides = [0, 9, 10, 14, 15, 18, 19, 22]; // 1, 10, 11, 15, 16, 19, 20, 23 in 1-indexed
+  const [filteredSlideCount, setFilteredSlideCount] = useState(0);
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    firm: '',
+    email: '',
+    referral: '',
+    notes: ''
+  });
+  const [formSubmitting, setFormSubmitting] = useState(false);
+  const [formSuccess, setFormSuccess] = useState(false);
+  const [formError, setFormError] = useState('');
+  
+  // Configure PDF.js worker on client side
+  useEffect(() => {
+    import('react-pdf').then((pdfjs) => {
+      pdfjs.pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.pdfjs.version}/build/pdf.worker.min.mjs`;
+    });
+  }, []);
   
   // Simple password protection
   const INVESTOR_PASSWORD = 'dashdice2025'; // Change this to your secure password
@@ -33,7 +70,26 @@ export default function InvestorsPage() {
     }
   };
   
-  const totalSlides = 12;
+  const totalSlides = filteredSlideCount || 12;
+  
+  // Map display index to actual PDF page number
+  const getActualPageNumber = (displayIndex: number) => {
+    const excludedSlidesWithLast = numPages > 0 ? [...excludedSlides, numPages - 1] : excludedSlides;
+    let actualPage = 0;
+    let displayCount = 0;
+    
+    for (let i = 0; i < numPages; i++) {
+      if (!excludedSlidesWithLast.includes(i)) {
+        if (displayCount === displayIndex) {
+          actualPage = i;
+          break;
+        }
+        displayCount++;
+      }
+    }
+    
+    return actualPage + 1; // Convert to 1-indexed for PDF
+  };
   
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % totalSlides);
@@ -41,6 +97,57 @@ export default function InvestorsPage() {
   
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
+  };
+  
+  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    setNumPages(numPages);
+    // Calculate filtered slides (excluding specified slides and last slide)
+    const excludedSlidesWithLast = [...excludedSlides, numPages - 1];
+    const filtered = numPages - excludedSlidesWithLast.length;
+    setFilteredSlideCount(filtered);
+    setPdfError(null);
+  };
+  
+  const onDocumentLoadError = (error: Error) => {
+    console.error('Error loading PDF:', error);
+    setPdfError('Failed to load pitch deck. Please refresh the page.');
+  };
+  
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormSubmitting(true);
+    setFormError('');
+    
+    try {
+      const response = await fetch('/api/send-prototype-request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setFormSuccess(true);
+        // Reset form
+        setFormData({
+          name: '',
+          firm: '',
+          email: '',
+          referral: '',
+          notes: ''
+        });
+      } else {
+        setFormError(data.error || 'Failed to submit request');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setFormError('Failed to submit request. Please try again.');
+    } finally {
+      setFormSubmitting(false);
+    }
   };
   
   if (!isAuthenticated) {
@@ -96,26 +203,32 @@ export default function InvestorsPage() {
         <header className="mb-20 border-b border-gray-200 pb-12">
           <h1 className="text-5xl font-bold text-gray-900 mb-4">DashDice</h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl">
-            [One sentence positioning statement goes here]
+            DashDice is a next-generation, skill-based PvP mobile game built for India-first scale and global competitive play—combining deep strategy, transparent mechanics, and an AI-driven LiveOps engine designed for long-term mastery and retention.
           </p>
           
           <div className="flex flex-wrap gap-4">
             <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/investor-pitch.pdf"
+              download="DashDice-Investor-Pitch.pdf"
               className="inline-flex items-center px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
             >
               Download Pitch Deck
             </a>
             <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="mailto:play@dashdice.gg"
+              className="inline-flex items-center px-6 py-3 border-2 border-gray-900 text-gray-900 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Email
+            </a>
+            <button
+              onClick={() => setShowScheduler(true)}
               className="inline-flex items-center px-6 py-3 border-2 border-gray-900 text-gray-900 font-medium rounded-lg hover:bg-gray-50 transition-colors"
             >
               Book a Call
-            </a>
+            </button>
           </div>
         </header>
         
@@ -167,34 +280,62 @@ export default function InvestorsPage() {
           
           {/* Carousel */}
           <div className="relative mb-6">
-            <div className="bg-gray-100 rounded-lg aspect-[16/9] flex items-center justify-center border border-gray-200 overflow-hidden">
-              <div className="text-center">
-                <div className="text-6xl font-bold text-gray-400 mb-2">{currentSlide + 1}</div>
-                <p className="text-gray-600 font-medium">Slide {currentSlide + 1} of {totalSlides}</p>
-                <p className="text-sm text-gray-500">Key Deck Slide Placeholder</p>
+            <div className="flex items-center gap-4">
+              {/* Left Navigation Button */}
+              <button
+                onClick={prevSlide}
+                className="bg-black hover:bg-gray-800 p-3 rounded-full shadow-lg transition-colors flex-shrink-0"
+                aria-label="Previous slide"
+              >
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              
+              {/* Carousel Container */}
+              <div className="flex-1 bg-gray-100 aspect-[16/9] flex items-center justify-center overflow-hidden" style={{ borderRadius: '6px' }}>
+                {pdfError ? (
+                  <div className="text-center p-8">
+                    <p className="text-red-600 mb-2">{pdfError}</p>
+                    <p className="text-sm text-gray-500">Slide {currentSlide + 1} of {totalSlides}</p>
+                  </div>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center p-2">
+                    <Document
+                      file="/investor-pitch.pdf"
+                      onLoadSuccess={onDocumentLoadSuccess}
+                      onLoadError={onDocumentLoadError}
+                      loading={
+                        <div className="text-center">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                          <p className="text-gray-600">Loading pitch deck...</p>
+                        </div>
+                      }
+                    >
+                      <Page
+                        pageNumber={getActualPageNumber(currentSlide)}
+                        renderTextLayer={false}
+                        renderAnnotationLayer={false}
+                        width={typeof window !== 'undefined' ? Math.min(window.innerWidth - 120, 900) : 900}
+                        scale={0.85}
+                        className="mx-auto"
+                      />
+                    </Document>
+                  </div>
+                )}
               </div>
+              
+              {/* Right Navigation Button */}
+              <button
+                onClick={nextSlide}
+                className="bg-black hover:bg-gray-800 p-3 rounded-full shadow-lg transition-colors flex-shrink-0"
+                aria-label="Next slide"
+              >
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
-            
-            {/* Navigation */}
-            <button
-              onClick={prevSlide}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition-colors"
-              aria-label="Previous slide"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            
-            <button
-              onClick={nextSlide}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition-colors"
-              aria-label="Next slide"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
             
             {/* Indicators */}
             <div className="flex justify-center gap-2 mt-4">
@@ -214,7 +355,7 @@ export default function InvestorsPage() {
           {/* PDF Links */}
           <div className="flex flex-wrap gap-4 mb-4">
             <a
-              href="#"
+              href="/investor-pitch.pdf"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
@@ -222,18 +363,13 @@ export default function InvestorsPage() {
               View Full Deck (PDF)
             </a>
             <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/investor-pitch.pdf"
+              download="DashDice-Investor-Pitch.pdf"
               className="inline-flex items-center px-6 py-3 border-2 border-gray-900 text-gray-900 font-medium rounded-lg hover:bg-gray-50 transition-colors"
             >
               Download Full Deck (PDF)
             </a>
           </div>
-          
-          <p className="text-sm text-gray-500">
-            Carousel shows selected key slides; full deck available as PDF.
-          </p>
         </section>
         
         {/* 5. Prototype Access */}
@@ -252,17 +388,43 @@ export default function InvestorsPage() {
             >
               Request Prototype Access
             </button>
+          ) : formSuccess ? (
+            <div className="bg-green-50 rounded-lg p-6 border border-green-200 max-w-2xl">
+              <div className="flex items-start">
+                <svg className="w-6 h-6 text-green-600 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <h3 className="text-lg font-semibold text-green-900 mb-2">Request Submitted!</h3>
+                  <p className="text-green-700">
+                    Thank you for your interest. We'll review your request and get back to you shortly at {formData.email || 'your email'}.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setShowPrototypeForm(false);
+                      setFormSuccess(false);
+                    }}
+                    className="mt-4 text-sm text-green-700 hover:text-green-800 font-medium"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : (
             <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 max-w-2xl">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Request Access</h3>
-              <form className="space-y-4">
+              <form onSubmit={handleFormSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Name *
                   </label>
                   <input
                     type="text"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 placeholder:text-gray-600"
                     placeholder="Your name"
                   />
                 </div>
@@ -273,7 +435,10 @@ export default function InvestorsPage() {
                   </label>
                   <input
                     type="text"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    required
+                    value={formData.firm}
+                    onChange={(e) => setFormData({ ...formData, firm: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 placeholder:text-gray-600"
                     placeholder="Investment firm or organization"
                   />
                 </div>
@@ -284,19 +449,11 @@ export default function InvestorsPage() {
                   </label>
                   <input
                     type="email"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 placeholder:text-gray-600"
                     placeholder="your.email@firm.com"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    How did you hear about DashDice? (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    placeholder="Referral, network, etc."
                   />
                 </div>
                 
@@ -306,22 +463,33 @@ export default function InvestorsPage() {
                   </label>
                   <textarea
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 placeholder:text-gray-600"
                     placeholder="Any specific questions or areas of interest..."
                   />
                 </div>
                 
+                {formError && (
+                  <div className="text-red-600 text-sm">{formError}</div>
+                )}
+                
                 <div className="flex gap-3">
                   <button
                     type="submit"
-                    className="px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
+                    disabled={formSubmitting}
+                    className="px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Submit Request
+                    {formSubmitting ? 'Submitting...' : 'Submit Request'}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowPrototypeForm(false)}
-                    className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                    onClick={() => {
+                      setShowPrototypeForm(false);
+                      setFormError('');
+                    }}
+                    disabled={formSubmitting}
+                    className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>
@@ -387,24 +555,29 @@ export default function InvestorsPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
-                name: '[Advisor Name]',
-                credential: 'Former VP Product at [Major Gaming Company]',
-                advises: 'Product strategy and game design'
+                name: 'William',
+                credential: 'Strategy & Game Mechanics Advisor',
+                advises: 'Senior competitive game strategist guiding core systems, balance, and long-term gameplay depth.'
               },
               {
-                name: '[Advisor Name]',
-                credential: 'Ex-Head of Growth at [Tech Unicorn]',
-                advises: 'User acquisition and viral growth'
+                name: 'John',
+                credential: 'Technical Architecture Advisor',
+                advises: 'Senior backend engineer at Autodesk, advising on scalable infrastructure, AI systems, and platform architecture.'
               },
               {
-                name: '[Advisor Name]',
-                credential: 'Former CTO at [Gaming Studio]',
-                advises: 'Technical architecture and scalability'
+                name: 'Mark',
+                credential: 'Business & Operations Advisor',
+                advises: 'Founder and CEO of a large automotive manufacturing supplier, advising on operational discipline, budgeting, and scaling.'
               },
               {
-                name: '[Advisor Name]',
-                credential: 'Investment Partner at [VC Firm]',
-                advises: 'Fundraising and investor relations'
+                name: 'Venkatram',
+                credential: 'Financial & India Market Advisor',
+                advises: 'Senior product leader at VISA, advising on India market strategy, payments, monetisation, and cross-border execution.'
+              },
+              {
+                name: 'Nick',
+                credential: 'Art & Creative Direction Advisor',
+                advises: 'Founder of a Montreal-based design studio, with credits on high-profile Amazon gaming productions, guiding visual identity and creative quality.'
               }
             ].map((advisor, idx) => (
               <div
@@ -413,16 +586,14 @@ export default function InvestorsPage() {
               >
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">{advisor.name}</h3>
                 <p className="text-sm text-gray-600 mb-2">{advisor.credential}</p>
-                <p className="text-sm text-gray-500">
-                  <span className="font-medium">Advises on:</span> {advisor.advises}
-                </p>
+                <p className="text-sm text-gray-500">{advisor.advises}</p>
               </div>
             ))}
           </div>
         </section>
         
         {/* 8. LOIs / Signals */}
-        <section className="mb-20">
+        <section className="mb-20" style={{ display: 'none' }}>
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Credibility Signals</h2>
           
           <div className="bg-gray-50 rounded-lg p-8 border border-gray-200">
@@ -458,9 +629,7 @@ export default function InvestorsPage() {
           
           <div className="flex flex-wrap gap-4">
             <a
-              href="mailto:contact@dashdice.com"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="mailto:play@dashdice.gg"
               className="inline-flex items-center px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -468,17 +637,15 @@ export default function InvestorsPage() {
               </svg>
               Email
             </a>
-            <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => setShowScheduler(true)}
               className="inline-flex items-center px-6 py-3 border-2 border-gray-900 text-gray-900 font-medium rounded-lg hover:bg-gray-50 transition-colors"
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               Book a Call
-            </a>
+            </button>
           </div>
         </section>
         
@@ -490,6 +657,29 @@ export default function InvestorsPage() {
         </footer>
         
       </div>
+
+      {/* Scheduler Modal */}
+      {showScheduler && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg w-full h-full max-w-full max-h-full overflow-hidden relative">
+            <button
+              onClick={() => setShowScheduler(false)}
+              className="absolute top-4 right-4 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
+              aria-label="Close scheduler"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <iframe 
+              src="https://dashdice.pipedrive.com/scheduler/4xk05YHK/investment-discussion" 
+              title="Pipedrive Scheduler" 
+              className="w-full h-full border-0"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
