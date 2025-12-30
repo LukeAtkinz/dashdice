@@ -236,15 +236,16 @@ export default function InvestorsPage() {
         <section className="mb-20">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Founder Introduction (2 mins)</h2>
           
-          <div className="rounded-lg aspect-video mb-4 overflow-hidden border border-gray-200">
-            <video 
-              width="100%" 
-              height="100%" 
-              controls 
-              className="w-full h-full bg-black"
+          <div className="rounded-lg aspect-video mb-4 overflow-hidden border border-gray-200 bg-black">
+            <video
+              width="100%"
+              height="100%"
+              controls
+              preload="metadata"
+              className="w-full h-full"
               controlsList="nodownload"
+              src="/Investor%20Video.mp4"
             >
-              <source src="/Investor Video.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </div>
