@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-// Initialize Resend with API key from environment variables
-// Get your API key from https://resend.com/api-keys
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(request: NextRequest) {
   try {
+    // Initialize Resend with API key from environment variables
+    // Get your API key from https://resend.com/api-keys
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    
     const body = await request.json();
     const { name, firm, email, referral } = body;
 
