@@ -234,18 +234,19 @@ export default function InvestorsPage() {
         
         {/* 2. Founder Introduction Video */}
         <section className="mb-20">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Founder Introduction (3 mins)</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">Founder Introduction (2 mins)</h2>
           
-          <div className="bg-gray-100 rounded-lg aspect-video mb-4 flex items-center justify-center border border-gray-200">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-300 flex items-center justify-center">
-                <svg className="w-8 h-8 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                </svg>
-              </div>
-              <p className="text-gray-600 font-medium">Video Player Placeholder</p>
-              <p className="text-sm text-gray-500">Founder Introduction Video</p>
-            </div>
+          <div className="rounded-lg aspect-video mb-4 overflow-hidden border border-gray-200">
+            <video 
+              width="100%" 
+              height="100%" 
+              controls 
+              className="w-full h-full bg-black"
+              controlsList="nodownload"
+            >
+              <source src="/Investor Video.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
           </div>
           
           <p className="text-gray-600 leading-relaxed max-w-3xl">
