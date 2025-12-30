@@ -234,7 +234,10 @@ export default function InvestorsPage() {
         
         {/* 2. Founder Introduction Video */}
         <section className="mb-20">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Founder Introduction (2 mins)</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">Founder Introduction (2 mins)</h2>
+          <p className="text-gray-600 leading-relaxed max-w-3xl mb-4">
+            A short introduction to DashDice, the thesis, and what we're building.
+          </p>
           
           <div className="rounded-lg aspect-video mb-4 overflow-hidden border border-gray-200 bg-black">
             <video
@@ -249,15 +252,14 @@ export default function InvestorsPage() {
               Your browser does not support the video tag.
             </video>
           </div>
-          
-          <p className="text-gray-600 leading-relaxed max-w-3xl">
-            A short introduction to DashDice, the thesis, and what we're building.
-          </p>
         </section>
         
         {/* 3. Gameplay Video */}
         <section className="mb-20">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Prototype Gameplay (1–2 mins)</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">Prototype Gameplay (1–2 mins)</h2>
+          <p className="text-gray-600 leading-relaxed max-w-3xl mb-4">
+            Short raw gameplay from the current prototype build.
+          </p>
           
           <div className="bg-gray-100 rounded-lg aspect-video mb-4 flex items-center justify-center border border-gray-200">
             <div className="text-center">
@@ -270,10 +272,6 @@ export default function InvestorsPage() {
               <p className="text-sm text-gray-500">Gameplay Video</p>
             </div>
           </div>
-          
-          <p className="text-gray-600 leading-relaxed max-w-3xl">
-            Short raw gameplay from the current prototype build.
-          </p>
         </section>
         
         {/* 4. Pitch Deck Carousel */}
