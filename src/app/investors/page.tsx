@@ -239,16 +239,15 @@ export default function InvestorsPage() {
             A short introduction to DashDice, the thesis, and what we're building.
           </p>
           
-          <div className="rounded-lg aspect-video mb-4 overflow-hidden border border-gray-200 bg-black">
+          <div className="rounded-lg aspect-video mb-4 border border-gray-200 bg-black overflow-hidden">
             <video
-              width="100%"
-              height="100%"
               controls
               preload="metadata"
               className="w-full h-full"
               controlsList="nodownload"
-              src="/Investor%20Video.mp4"
+              style={{ display: 'block' }}
             >
+              <source src="/Investor Video.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </div>
@@ -261,16 +260,17 @@ export default function InvestorsPage() {
             Short raw gameplay from the current prototype build.
           </p>
           
-          <div className="bg-gray-100 rounded-lg aspect-video mb-4 flex items-center justify-center border border-gray-200">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-300 flex items-center justify-center">
-                <svg className="w-8 h-8 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                </svg>
-              </div>
-              <p className="text-gray-600 font-medium">Video Player Placeholder</p>
-              <p className="text-sm text-gray-500">Gameplay Video</p>
-            </div>
+          <div className="rounded-lg aspect-video mb-4 border border-gray-200 bg-black overflow-hidden">
+            <video
+              controls
+              preload="metadata"
+              className="w-full h-full"
+              controlsList="nodownload"
+              style={{ display: 'block' }}
+            >
+              <source src="/Gameplay Video.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
           </div>
         </section>
         
@@ -500,7 +500,7 @@ export default function InvestorsPage() {
         </section>
         
         {/* 6. Key Documents */}
-        <section className="mb-20">
+        <section className="mb-20" style={{ display: 'none' }}>
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Key Documents</h2>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -652,7 +652,7 @@ export default function InvestorsPage() {
         {/* 10. Footer Meta */}
         <footer className="border-t border-gray-200 pt-8">
           <p className="text-sm text-gray-500">
-            Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            Last updated: January 4, 2026
           </p>
         </footer>
         
