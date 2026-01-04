@@ -239,13 +239,13 @@ export default function InvestorsPage() {
             A short introduction to DashDice, the thesis, and what we're building.
           </p>
           
-          <div className="rounded-lg aspect-video mb-4 border border-gray-200 bg-black overflow-hidden">
+          <div className="rounded-lg overflow-hidden border border-gray-200 bg-black">
             <video
               controls
-              preload="metadata"
-              className="w-full h-full"
-              controlsList="nodownload"
-              style={{ display: 'block' }}
+              playsInline
+              preload="auto"
+              className="w-full"
+              style={{ maxHeight: '600px', display: 'block' }}
             >
               <source src="/Investor Video.mp4" type="video/mp4" />
               Your browser does not support the video tag.
@@ -260,13 +260,13 @@ export default function InvestorsPage() {
             Short raw gameplay from the current prototype build.
           </p>
           
-          <div className="rounded-lg aspect-video mb-4 border border-gray-200 bg-black overflow-hidden">
+          <div className="rounded-lg overflow-hidden border border-gray-200 bg-black">
             <video
               controls
-              preload="metadata"
-              className="w-full h-full"
-              controlsList="nodownload"
-              style={{ display: 'block' }}
+              playsInline
+              preload="auto"
+              className="w-full"
+              style={{ maxHeight: '600px', display: 'block' }}
             >
               <source src="/Gameplay Video.mp4" type="video/mp4" />
               Your browser does not support the video tag.
