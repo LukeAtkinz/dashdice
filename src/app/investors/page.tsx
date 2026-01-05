@@ -48,7 +48,7 @@ export default function InvestorsPage() {
   }, []);
   
   // Simple password protection
-  const INVESTOR_PASSWORD = 'dashdice2025'; // Change this to your secure password
+  const INVESTOR_PASSWORD = 'Dashdice2026'; // Change this to your secure password
   
   useEffect(() => {
     // Check if already authenticated in session
@@ -239,16 +239,25 @@ export default function InvestorsPage() {
             A short introduction to DashDice, the thesis, and what we're building.
           </p>
           
-          <div className="rounded-lg overflow-hidden border border-gray-200 bg-black">
+          <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-900">
             <video
               controls
               playsInline
-              preload="auto"
+              controlsList="nodownload"
+              preload="metadata"
               className="w-full"
-              style={{ maxHeight: '600px', display: 'block' }}
+              style={{ maxHeight: '600px', display: 'block', backgroundColor: '#000' }}
+              onLoadStart={() => console.log('Video loading started')}
+              onLoadedMetadata={() => console.log('Video metadata loaded')}
+              onCanPlay={() => console.log('Video can play')}
+              onError={(e) => {
+                console.error('Video load error:', e);
+                const target = e.target as HTMLVideoElement;
+                console.error('Video error code:', target.error?.code, target.error?.message);
+              }}
             >
-              <source src="/Investor Video.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
+              <source src="/investor-video.mp4" type="video/mp4" />
+              <p className="text-white p-4">Your browser does not support the video tag. Please use a modern browser to view this video.</p>
             </video>
           </div>
         </section>

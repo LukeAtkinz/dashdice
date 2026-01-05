@@ -39,9 +39,10 @@ export async function POST(request: NextRequest) {
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     // Send email using Resend
-    // Using dashdice.gg domain - make sure it's verified in Resend dashboard
+    // Using onboarding@resend.dev for testing (works with free tier)
+    // For production with verified domain, change to: noreply@dashdice.gg
     const data = await resend.emails.send({
-      from: 'DashDice Investor Portal <noreply@dashdice.gg>',
+      from: 'DashDice Investor Portal <onboarding@resend.dev>',
       to: ['play@dashdice.gg'],
       subject: '🎲 New Prototype Access Request',
       html: `
