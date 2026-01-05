@@ -35,7 +35,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">DashDice</h1>
-          <p className="text-gray-600 mb-8">Game Access</p>
+          <p className="text-gray-600 mb-8">Prototype Access</p>
           
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
             <div>
@@ -61,7 +61,7 @@ export default function DashboardPage() {
               type="submit"
               className="w-full bg-gray-900 text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
             >
-              Access Game
+              Access Prototype
             </button>
           </form>
           
