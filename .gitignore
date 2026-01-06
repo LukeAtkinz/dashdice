@@ -46,6 +46,9 @@ Reference/
 *.rar
 *.7z
 
+# Large video files (use external hosting or Git LFS)
+public/Investor Page/Gameplay Video.mp4
+
 # Documentation files (keep in git but exclude from deployment)
 # *.md files will be excluded by .vercelignore only
 

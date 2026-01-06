@@ -208,7 +208,7 @@ export default function InvestorsPage() {
           
           <div className="flex flex-wrap gap-4">
             <a
-              href="/investor-pitch.pdf"
+              href="/Investor%20Page/investor-pitch.pdf"
               download="DashDice-Investor-Pitch.pdf"
               className="inline-flex items-center px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
             >
@@ -256,7 +256,7 @@ export default function InvestorsPage() {
                 console.error('Video error code:', target.error?.code, target.error?.message);
               }}
             >
-              <source src="/investor-video.mp4" type="video/mp4" />
+              <source src="/Investor%20Page/investor-video.mp4" type="video/mp4" />
               <p className="text-white p-4">Your browser does not support the video tag. Please use a modern browser to view this video.</p>
             </video>
           </div>
@@ -264,7 +264,7 @@ export default function InvestorsPage() {
         
         {/* 3. Gameplay Video */}
         <section className="mb-20">
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">Prototype Gameplay (1–2 mins)</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">Prototype gamplay titlle (2 mins)</h2>
           <p className="text-gray-600 leading-relaxed max-w-3xl mb-4">
             Short raw gameplay from the current prototype build.
           </p>
@@ -277,7 +277,7 @@ export default function InvestorsPage() {
               className="w-full"
               style={{ maxHeight: '600px', display: 'block' }}
             >
-              <source src="/Gameplay Video.mp4" type="video/mp4" />
+              <source src="/Investor%20Page/Gameplay%20Video.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </div>
@@ -311,7 +311,7 @@ export default function InvestorsPage() {
                 ) : (
                   <div className="w-full h-full flex items-center justify-center p-2">
                     <Document
-                      file="/investor-pitch.pdf"
+                      file="/Investor%20Page/investor-pitch.pdf"
                       onLoadSuccess={onDocumentLoadSuccess}
                       onLoadError={onDocumentLoadError}
                       loading={
@@ -364,7 +364,7 @@ export default function InvestorsPage() {
           {/* PDF Links */}
           <div className="flex flex-wrap gap-4 mb-4">
             <a
-              href="/investor-pitch.pdf"
+              href="/Investor%20Page/investor-pitch.pdf"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
@@ -372,7 +372,7 @@ export default function InvestorsPage() {
               View Full Deck (PDF)
             </a>
             <a
-              href="/investor-pitch.pdf"
+              href="/Investor%20Page/investor-pitch.pdf"
               download="DashDice-Investor-Pitch.pdf"
               className="inline-flex items-center px-6 py-3 border-2 border-gray-900 text-gray-900 font-medium rounded-lg hover:bg-gray-50 transition-colors"
             >
