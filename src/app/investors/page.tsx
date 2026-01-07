@@ -239,7 +239,7 @@ export default function InvestorsPage() {
             A short introduction to DashDice, the thesis, and what we're building.
           </p>
           
-          <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-900">
+          <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-900" style={{ aspectRatio: '16/9', minHeight: '400px' }}>
             <video
               controls
               playsInline
@@ -247,7 +247,7 @@ export default function InvestorsPage() {
               preload="metadata"
               poster="/Investor Page/Thumbnail Investor Video.png"
               className="w-full investor-video"
-              style={{ maxHeight: '600px', display: 'block', backgroundColor: '#000', objectFit: 'contain' }}
+              style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#000' }}
               onLoadStart={() => console.log('Video loading started')}
               onLoadedMetadata={() => console.log('Video metadata loaded')}
               onCanPlay={() => console.log('Video can play')}
@@ -267,14 +267,14 @@ export default function InvestorsPage() {
         <section className="mb-20">
           <h2 className="text-3xl font-bold text-gray-900 mb-3">Prototype Gameplay (2 mins)</h2>
           
-          <div className="rounded-lg overflow-hidden border border-gray-200 bg-black">
+          <div className="rounded-lg overflow-hidden border border-gray-200 bg-black" style={{ aspectRatio: '16/9', minHeight: '400px' }}>
             <video
               controls
               playsInline
               controlsList=""
               preload="metadata"
               className="w-full investor-video"
-              style={{ maxHeight: '600px', display: 'block', objectFit: 'contain' }}
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             >
               <source src="/Investor Page/Gameplay Video.mp4" type="video/mp4" />
               Your browser does not support the video tag.
