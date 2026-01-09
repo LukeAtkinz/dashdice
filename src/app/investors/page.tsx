@@ -134,7 +134,7 @@ export default function InvestorsPage() {
         <header className="mb-20 border-b border-gray-200 pb-12">
           <h1 className="text-5xl font-bold text-gray-900 mb-4">DashDice</h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl">
-            DashDice is a next-generation, skill-based PvP mobile game built for India-first scale and global competitive play—combining deep strategy, transparent mechanics, and an AI-driven LiveOps engine designed for long-term mastery and retention.
+            DashDice is a next-generation, F2P skill-based PvP mobile game built for India-first scale and global competitive play combining deep strategy, transparent mechanics, and an driven LiveOps engine designed for long-term mastery and retention.
           </p>
           
           <div className="flex flex-wrap gap-4">
@@ -591,7 +591,7 @@ export default function InvestorsPage() {
         {/* 10. Footer Meta */}
         <footer className="border-t border-gray-200 pt-8">
           <p className="text-sm text-gray-500">
-            Last updated: January 4, 2026
+            Last updated: January 9, 2026
           </p>
         </footer>
         
