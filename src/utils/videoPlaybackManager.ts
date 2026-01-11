@@ -30,7 +30,10 @@ class VideoPlaybackManager {
    * Call this on ANY user interaction that should grant autoplay permission
    */
   triggerPlayback() {
-    console.log('🎬 VideoPlaybackManager: User interaction detected, triggering playback for', this.callbacks.size, 'videos');
+    const DEBUG_LOGS = (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_DEBUG_LOGS === '1');
+    if (DEBUG_LOGS) {
+      console.log('🎬 VideoPlaybackManager: User interaction detected, triggering playback for', this.callbacks.size, 'videos');
+    }
     this.userInteracted = true;
     
     this.callbacks.forEach(callback => {

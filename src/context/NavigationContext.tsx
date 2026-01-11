@@ -44,15 +44,18 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
   const [previousSection, setPreviousSection] = useState<DashboardSection | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
+  const DEBUG_LOGS = process.env.NEXT_PUBLIC_DEBUG_LOGS === '1';
 
   const setCurrentSection = (section: DashboardSection, params: SectionParams = {}) => {
-    console.log('🧭 NavigationContext: setCurrentSection called:', {
+    if (DEBUG_LOGS) {
+      console.log('🧭 NavigationContext: setCurrentSection called:', {
       from: currentSection,
       to: section,
       params,
       isTransitioning,
       timestamp: new Date().toISOString()
-    });
+      });
+    }
     
     // Allow navigation if:
     // 1. Different sections
@@ -63,24 +66,30 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
     const shouldAllowNavigation = (isDifferentSection || isDifferentParams) && !isTransitioning;
     
     if (shouldAllowNavigation) {
-      console.log('🧭 NavigationContext: Navigation approved - changing section');
+      if (DEBUG_LOGS) {
+        console.log('🧭 NavigationContext: Navigation approved - changing section');
+      }
       setPreviousSection(currentSection);
       setCurrentSectionState(section);
       setSectionParams(params);
-      console.log('🧭 NavigationContext: Navigation completed:', {
-        newSection: section,
-        newParams: params,
-        previousSection: currentSection
-      });
+      if (DEBUG_LOGS) {
+        console.log('🧭 NavigationContext: Navigation completed:', {
+          newSection: section,
+          newParams: params,
+          previousSection: currentSection
+        });
+      }
     } else {
-      console.log('🧭 NavigationContext: Navigation blocked:', {
-        reason: isTransitioning ? 'Already transitioning' : 'Same section and params',
-        currentSection,
-        targetSection: section,
-        currentParams: sectionParams,
-        targetParams: params,
-        isTransitioning
-      });
+      if (DEBUG_LOGS) {
+        console.log('🧭 NavigationContext: Navigation blocked:', {
+          reason: isTransitioning ? 'Already transitioning' : 'Same section and params',
+          currentSection,
+          targetSection: section,
+          currentParams: sectionParams,
+          targetParams: params,
+          isTransitioning
+        });
+      }
     }
   };
 

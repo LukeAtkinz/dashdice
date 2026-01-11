@@ -48,6 +48,8 @@ interface WaitingRoomEntry {
     playerId: string;
     displayBackgroundEquipped: any;
     matchBackgroundEquipped: any;
+    turnDeciderBackgroundEquipped?: any;
+    victoryBackgroundEquipped?: any;
     playerStats: {
       bestStreak: number;
       currentStreak: number;
@@ -60,6 +62,8 @@ interface WaitingRoomEntry {
     playerId: string;
     displayBackgroundEquipped: any;
     matchBackgroundEquipped: any;
+    turnDeciderBackgroundEquipped?: any;
+    victoryBackgroundEquipped?: any;
     playerStats: {
       bestStreak: number;
       currentStreak: number;
@@ -90,14 +94,37 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 }) => {
   const { user } = useAuth();
   const { DisplayBackgroundEquip, MatchBackgroundEquip, TurnDeciderBackgroundEquip, VictoryBackgroundEquip } = useBackground();
+  const DEBUG_LOGS = process.env.NEXT_PUBLIC_DEBUG_LOGS === '1';
+  const debugLog = (...args: any[]) => {
+    if (DEBUG_LOGS) {
+      console.log(...args);
+    }
+  };
+  const debugWarn = (...args: any[]) => {
+    if (DEBUG_LOGS) {
+      console.warn(...args);
+    }
+  };
+  const defaultTurnDeciderBg = getBackgroundById('crazy-cough') || {
+    id: 'crazy-cough',
+    name: 'Crazy Cough',
+    category: 'Turn Deciders',
+    rarity: 'Common'
+  };
+  const defaultVictoryBg = getBackgroundById('wind-blade') || {
+    id: 'wind-blade',
+    name: 'Wind Blade',
+    category: 'Victory Screens',
+    rarity: 'Common'
+  };
   
   // Remove performance-impacting logs
-  // console.log('🎮 GameWaitingRoom: Received gameMode:', gameMode);
+  // debugLog('🎮 GameWaitingRoom: Received gameMode:', gameMode);
   
   // Add logging to see what backgrounds we're getting from context
   useEffect(() => {
     // Remove performance-impacting logs
-    // console.log('GameWaitingRoom: Background context updated', {
+    // debugLog('GameWaitingRoom: Background context updated', {
     //   DisplayBackgroundEquip,
     //   MatchBackgroundEquip,
     //   DisplayBackgroundType: DisplayBackgroundEquip?.type,
@@ -155,7 +182,6 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   // Turn Decider backgrounds for split-screen layout
   const [topVideo, setTopVideo] = useState<string>('');
   const [bottomVideo, setBottomVideo] = useState<string>('');
-  const videoInitialized = React.useRef(false);
   
   const turnDeciderBackgrounds = useMemo(() => {
     const { getTurnDeciderBackgrounds, resolveBackgroundPath } = require('@/config/backgrounds');
@@ -166,29 +192,35 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     }).filter((path: string) => path);
   }, []);
   
+  // Keep bottom video in sync with the player's equipped Turn Decider background
   useEffect(() => {
-    if (!videoInitialized.current) {
-      const { resolveBackgroundPath } = require('@/config/backgrounds');
-      
-      // Bottom video: User's Turn Decider background
-      if (TurnDeciderBackgroundEquip) {
-        const resolved = resolveBackgroundPath(TurnDeciderBackgroundEquip.id, 'waiting-room');
-        setBottomVideo(resolved?.path || '');
-      }
-      
-      // Top video: Opponent's Turn Decider background (or random until opponent joins)
-      if (opponentData?.turnDeciderBackgroundEquipped) {
-        const resolved = resolveBackgroundPath(opponentData.turnDeciderBackgroundEquipped.id || opponentData.turnDeciderBackgroundEquipped, 'waiting-room');
-        setTopVideo(resolved?.path || '');
-      } else if (turnDeciderBackgrounds.length > 0) {
-        // Random Turn Decider background until opponent joins
-        const randomBg = turnDeciderBackgrounds[Math.floor(Math.random() * turnDeciderBackgrounds.length)];
-        setTopVideo(randomBg);
-      }
-      
-      videoInitialized.current = true;
+    const { resolveBackgroundPath } = require('@/config/backgrounds');
+    if (TurnDeciderBackgroundEquip) {
+      const resolved = resolveBackgroundPath(TurnDeciderBackgroundEquip.id, 'waiting-room');
+      setBottomVideo(resolved?.path || '');
+    } else {
+      const resolved = resolveBackgroundPath(defaultTurnDeciderBg.id, 'waiting-room');
+      const fallback = resolved?.path || turnDeciderBackgrounds[0] || '';
+      setBottomVideo(fallback);
     }
-  }, [TurnDeciderBackgroundEquip, opponentData, turnDeciderBackgrounds]);
+  }, [TurnDeciderBackgroundEquip, turnDeciderBackgrounds, defaultTurnDeciderBg]);
+
+  // Keep top video in sync with opponent data (or fallback while waiting)
+  useEffect(() => {
+    const { resolveBackgroundPath } = require('@/config/backgrounds');
+    if (opponentData?.turnDeciderBackgroundEquipped) {
+      const resolved = resolveBackgroundPath(opponentData.turnDeciderBackgroundEquipped.id || opponentData.turnDeciderBackgroundEquipped, 'waiting-room');
+      if (resolved?.path) {
+        setTopVideo(resolved.path);
+        return;
+      }
+    }
+    // If no opponent background yet, show a random option to avoid a blank screen
+    if (turnDeciderBackgrounds.length > 0) {
+      const randomBg = turnDeciderBackgrounds[Math.floor(Math.random() * turnDeciderBackgrounds.length)];
+      setTopVideo(randomBg);
+    }
+  }, [opponentData?.turnDeciderBackgroundEquipped, turnDeciderBackgrounds]);
   
   // Update top video when opponent joins with their Turn Decider background
   useEffect(() => {
@@ -203,7 +235,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   
   // Handle transition completion
   const handleTransitionComplete = () => {
-    console.log('🎬 GameWaitingRoom: Transition completed, navigating to match...');
+    debugLog('🎬 GameWaitingRoom: Transition completed, navigating to match...');
     setShowMatchTransition(false);
     setTransitionMatchData(null);
     moveToMatchesAndNavigate();
@@ -212,10 +244,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   // Emergency escape from transition (fallback safety)
   useEffect(() => {
     if (showMatchTransition) {
-      console.log('🎬 GameWaitingRoom: Match transition started');
+      debugLog('🎬 GameWaitingRoom: Match transition started');
       // Safety timeout to ensure transition doesn't get stuck
       const safetyTimeout = setTimeout(() => {
-        console.log('⚠️ GameWaitingRoom: Transition safety timeout - forcing completion');
+        debugLog('⚠️ GameWaitingRoom: Transition safety timeout - forcing completion');
         handleTransitionComplete();
       }, 8000); // 8 seconds max
 
@@ -335,7 +367,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     
     // Only log on actual changes, not every render
     if (process.env.NODE_ENV === 'development') {
-      console.log('🎯 GameWaitingRoom: Game mode resolved:', {
+      debugLog('🎯 GameWaitingRoom: Game mode resolved:', {
         propGameMode: gameMode,
         waitingRoomGameMode: waitingRoomEntry?.gameMode,
         resolvedGameMode: actualGameMode,
@@ -352,20 +384,22 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   const getUserData = async () => {
     try {
       // Remove performance-impacting logs
-      // console.log('🔍 GameWaitingRoom: Fetching user profile for UID:', user!.uid);
+      // debugLog('🔍 GameWaitingRoom: Fetching user profile for UID:', user!.uid);
       const userProfile = await UserService.getUserProfile(user!.uid);
       // Remove performance-impacting logs
-      // console.log('📊 GameWaitingRoom: User profile fetched:', userProfile);
+      // debugLog('📊 GameWaitingRoom: User profile fetched:', userProfile);
       
       if (userProfile) {
         const userData = {
           displayName: userProfile.displayName || user?.email?.split('@')[0] || 'Anonymous',
           stats: userProfile.stats,
           displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped || null,
-          matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped || null
+          matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped || null,
+          turnDeciderBackgroundEquipped: userProfile.inventory?.turnDeciderBackgroundEquipped || TurnDeciderBackgroundEquip || defaultTurnDeciderBg,
+          victoryBackgroundEquipped: userProfile.inventory?.victoryBackgroundEquipped || VictoryBackgroundEquip || defaultVictoryBg
         };
         // Remove performance-impacting logs
-        // console.log('✅ GameWaitingRoom: Processed user data:', userData);
+        // debugLog('✅ GameWaitingRoom: Processed user data:', userData);
         return userData;
       }
     } catch (error) {
@@ -383,11 +417,11 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       },
       displayBackgroundEquipped: DisplayBackgroundEquip,
       matchBackgroundEquipped: MatchBackgroundEquip,
-      turnDeciderBackgroundEquipped: TurnDeciderBackgroundEquip,
-      victoryBackgroundEquipped: VictoryBackgroundEquip
+      turnDeciderBackgroundEquipped: TurnDeciderBackgroundEquip || defaultTurnDeciderBg,
+      victoryBackgroundEquipped: VictoryBackgroundEquip || defaultVictoryBg
     };
     // Remove performance-impacting logs
-    // console.log('⚠️ GameWaitingRoom: Using fallback data:', fallbackData);
+    // debugLog('⚠️ GameWaitingRoom: Using fallback data:', fallbackData);
     return fallbackData;
   };
 
@@ -410,7 +444,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   // Function to verify opponent display assets are fully loaded
   const checkOpponentDisplayReady = (opponentData: any) => {
     if (!opponentData) {
-      console.log('🔍 Display Check: No opponent data available');
+      debugLog('🔍 Display Check: No opponent data available');
       setOpponentDisplayReady(false);
       setOpponentDisplayLoading(false);
       return false;
@@ -419,13 +453,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     // Skip loading check on mobile for faster UX
     const isMobile = window.innerWidth < 768;
     if (isMobile) {
-      console.log('📱 Display Check: Mobile detected - skipping background loading check for faster UX');
+      debugLog('📱 Display Check: Mobile detected - skipping background loading check for faster UX');
       setOpponentDisplayReady(true);
       setOpponentDisplayLoading(false);
       return true;
     }
 
-    console.log('🔍 Display Check: Starting opponent display readiness check', {
+    debugLog('🔍 Display Check: Starting opponent display readiness check', {
       opponentName: opponentData.playerDisplayName,
       hasDisplayBackground: !!opponentData.displayBackgroundEquipped,
       hasMatchBackground: !!opponentData.matchBackgroundEquipped
@@ -438,7 +472,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     const background = opponentData.matchBackgroundEquipped || opponentData.displayBackgroundEquipped;
     
     if (!opponentBgPath) {
-      console.log('✅ Display Check: No background to load, opponent ready');
+      debugLog('✅ Display Check: No background to load, opponent ready');
       setOpponentDisplayReady(true);
       setOpponentDisplayLoading(false);
       return true;
@@ -446,13 +480,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
     // Check if it's a video or image
     if (opponentBgIsVideo) {
-      console.log('🎥 Display Check: Checking video background readiness');
+      debugLog('🎥 Display Check: Checking video background readiness');
       const video = document.createElement('video');
       video.preload = 'metadata';
       video.muted = true;
       
       const handleVideoReady = () => {
-        console.log('✅ Display Check: Video background loaded successfully');
+        debugLog('✅ Display Check: Video background loaded successfully');
         setOpponentDisplayReady(true);
         setOpponentDisplayLoading(false);
         video.removeEventListener('loadeddata', handleVideoReady);
@@ -460,7 +494,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       };
       
       const handleVideoError = () => {
-        console.log('⚠️ Display Check: Video background failed to load, proceeding anyway');
+        debugLog('⚠️ Display Check: Video background failed to load, proceeding anyway');
         setOpponentDisplayReady(true);
         setOpponentDisplayLoading(false);
         video.removeEventListener('loadeddata', handleVideoReady);
@@ -474,18 +508,18 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       // Timeout fallback after 2 seconds (reduced from 5)
       setTimeout(() => {
         if (!opponentDisplayReady) {
-          console.log('⏰ Display Check: Video loading timeout, proceeding anyway');
+          debugLog('⏰ Display Check: Video loading timeout, proceeding anyway');
           setOpponentDisplayReady(true);
           setOpponentDisplayLoading(false);
         }
       }, 2000);
       
     } else {
-      console.log('🖼️ Display Check: Checking image background readiness');
+      debugLog('🖼️ Display Check: Checking image background readiness');
       const img = new Image();
       
       const handleImageReady = () => {
-        console.log('✅ Display Check: Image background loaded successfully');
+        debugLog('✅ Display Check: Image background loaded successfully');
         setOpponentDisplayReady(true);
         setOpponentDisplayLoading(false);
         img.removeEventListener('load', handleImageReady);
@@ -493,7 +527,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       };
       
       const handleImageError = () => {
-        console.log('⚠️ Display Check: Image background failed to load, proceeding anyway');
+        debugLog('⚠️ Display Check: Image background failed to load, proceeding anyway');
         setOpponentDisplayReady(true);
         setOpponentDisplayLoading(false);
         img.removeEventListener('load', handleImageReady);
@@ -507,7 +541,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       // Timeout fallback after 2 seconds (reduced from 5)
       setTimeout(() => {
         if (!opponentDisplayReady) {
-          console.log('⏰ Display Check: Image loading timeout, proceeding anyway');
+          debugLog('⏰ Display Check: Image loading timeout, proceeding anyway');
           setOpponentDisplayReady(true);
           setOpponentDisplayLoading(false);
         }
@@ -608,11 +642,11 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         const ourMatch = allMatches.find((match: any) => match.matchId === roomId) as any;
         
         if (ourMatch) {
-          console.log(`🔍 GameWaitingRoom: Found our match with status: ${ourMatch.status}`, ourMatch);
+          debugLog(`🔍 GameWaitingRoom: Found our match with status: ${ourMatch.status}`, ourMatch);
           
           // Check if match is ready (has 2 players) OR already in progress
           if ((ourMatch.status === 'ready' || ourMatch.status === 'in_progress') && ourMatch.players?.length >= 2) {
-            console.log('🎉 GameWaitingRoom: Go backend match is ready!', ourMatch);
+            debugLog('🎉 GameWaitingRoom: Go backend match is ready!', ourMatch);
             
             // 🤖 Cancel bot countdown since match is already ready
             cancelBotCountdown();
@@ -641,7 +675,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   try {
                     opponentProfile = await UserService.getBotAsUserProfile(opponentPlayerId);
                   } catch (botError) {
-                    console.warn('⚠️ Failed to fetch bot profile:', botError);
+                    debugWarn('⚠️ Failed to fetch bot profile:', botError);
                   }
                 }
               }
@@ -679,7 +713,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 
                 // Continue with Firebase match creation...
               } else {
-                console.warn('⚠️ GameWaitingRoom: Missing data for Firebase match creation:', {
+                debugWarn('⚠️ GameWaitingRoom: Missing data for Firebase match creation:', {
                   opponentProfile: !!opponentProfile,
                   bridgeData: !!bridgeData,
                   userProfile: !!userProfile,
@@ -743,7 +777,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 // Using proper game mode settings
                 
                 // 🔮 Load power loadouts for both players
-                console.log('🔮 Loading power loadouts for Go backend match...');
+                debugLog('🔮 Loading power loadouts for Go backend match...');
                 let hostPowerLoadout: PowerLoadout | null = null;
                 let opponentPowerLoadout: PowerLoadout | null = null;
                 
@@ -756,23 +790,23 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   
                   // Load host power loadout
                   hostPowerLoadout = await UserService.getPowerLoadoutForGameMode(user!.uid, gameModeKey);
-                  console.log('🔮 Host power loadout loaded:', hostPowerLoadout);
+                  debugLog('🔮 Host power loadout loaded:', hostPowerLoadout);
                   
                   // 🔍 ENHANCED DEBUG: Check for siphon specifically
                   if (hostPowerLoadout && Object.values(hostPowerLoadout).includes('siphon')) {
-                    console.log('🧛 MATCH CREATION SIPHON DEBUG: Siphon found in host loadout!', {
+                    debugLog('🧛 MATCH CREATION SIPHON DEBUG: Siphon found in host loadout!', {
                       gameModeKey,
                       hostPowerLoadout,
                       siphonCategory: Object.entries(hostPowerLoadout).find(([_, abilityId]) => abilityId === 'siphon')?.[0]
                     });
                   } else {
-                    console.log('❌ MATCH CREATION SIPHON DEBUG: Siphon NOT in host loadout', { gameModeKey, hostPowerLoadout });
+                    debugLog('❌ MATCH CREATION SIPHON DEBUG: Siphon NOT in host loadout', { gameModeKey, hostPowerLoadout });
                   }
                   
                   // Load opponent power loadout (only for real users, not bots)
                   if (opponentPlayerId && !opponentPlayerId.includes('bot')) {
                     opponentPowerLoadout = await UserService.getPowerLoadoutForGameMode(opponentPlayerId, gameModeKey);
-                    console.log('🔮 Opponent power loadout loaded:', opponentPowerLoadout);
+                    debugLog('🔮 Opponent power loadout loaded:', opponentPowerLoadout);
                   }
                 } catch (error) {
                   console.error('❌ Error loading power loadouts:', error);
@@ -880,7 +914,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     }
                   };
                   setWaitingRoomEntry(updatedWaitingRoom);
-                  console.log('🎮 GameWaitingRoom: Updated waiting room with opponent data');
+                  debugLog('🎮 GameWaitingRoom: Updated waiting room with opponent data');
                 }
               }
             } catch (error) {
@@ -894,21 +928,21 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             return;
           } else if (ourMatch && ourMatch.status === 'waiting') {
             // Match still waiting for second player
-            console.log(`⏳ GameWaitingRoom: Match still waiting for opponent (${ourMatch.players?.length || 0}/2 players)`);
+            debugLog(`⏳ GameWaitingRoom: Match still waiting for opponent (${ourMatch.players?.length || 0}/2 players)`);
           }
         } else {
           // Match not found in any status - might have been deleted/abandoned
-          console.warn(`⚠️ GameWaitingRoom: Match ${roomId} not found in Go backend`);
+          debugWarn(`⚠️ GameWaitingRoom: Match ${roomId} not found in Go backend`);
         }
       } catch (error) {
-        console.warn('⚠️ GameWaitingRoom: Go backend polling error:', error);
+        debugWarn('⚠️ GameWaitingRoom: Go backend polling error:', error);
         // Don't clear interval on error, keep polling
       }
     }, 2000); // Poll every 2 seconds
 
     // Cleanup polling on unmount
     return () => {
-      console.log('🛑 GameWaitingRoom: Stopping Go backend polling');
+      debugLog('🛑 GameWaitingRoom: Stopping Go backend polling');
       clearInterval(pollInterval);
     };
   }, [roomId, gameMode, setCurrentSection]);
@@ -918,7 +952,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     const opponentData = getOpponentData();
     
     if (opponentData && !opponentDisplayReady && !opponentDisplayLoading) {
-      console.log('🔍 New opponent data detected, checking display readiness');
+      debugLog('🔍 New opponent data detected, checking display readiness');
       checkOpponentDisplayReady(opponentData);
     } else if (!opponentData) {
       // Reset states when opponent leaves
@@ -934,10 +968,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     const shouldBeReady = opponentData && opponentDisplayReady && !vsCountdown;
     
     if (shouldBeReady && !readyToStartCountdown) {
-      console.log('✅ All conditions met, ready to start countdown');
+      debugLog('✅ All conditions met, ready to start countdown');
       setReadyToStartCountdown(true);
     } else if (!shouldBeReady && readyToStartCountdown) {
-      console.log('⏸️ Conditions no longer met, not ready for countdown');
+      debugLog('⏸️ Conditions no longer met, not ready for countdown');
       setReadyToStartCountdown(false);
     }
   }, [opponentDisplayReady, vsCountdown, waitingRoomEntry?.opponentData, goBackendOpponentData, readyToStartCountdown]);
@@ -945,7 +979,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   // Start countdown automatically when ready
   useEffect(() => {
     if (readyToStartCountdown && vsCountdown === null) {
-      console.log('🚀 Auto-starting countdown now that opponent display is ready');
+      debugLog('🚀 Auto-starting countdown now that opponent display is ready');
       startVsCountdown();
     }
   }, [readyToStartCountdown, vsCountdown]);
@@ -963,11 +997,11 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         }
 
         // STEP 0: Clean up any existing matches for this user to prevent conflicts
-        console.log('🧹 Cleaning up existing matches before creating new one...');
+        debugLog('🧹 Cleaning up existing matches before creating new one...');
         try {
           const cleanedCount = await MatchLifecycleService.cleanupUserMatches(user.uid, 'new_match_created');
           if (cleanedCount > 0) {
-            console.log(`✅ Cleaned up ${cleanedCount} existing matches for user`);
+            debugLog(`✅ Cleaned up ${cleanedCount} existing matches for user`);
           }
         } catch (cleanupError) {
           console.error('⚠️ Error during match cleanup (continuing anyway):', cleanupError);
@@ -976,7 +1010,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
         // STEP 1: Handle optimistic rooms first
         if (isOptimistic && roomId && OptimisticMatchmakingService.isOptimisticRoom(roomId)) {
-          console.log('✨ GameWaitingRoom: Loading optimistic room data for:', roomId);
+          debugLog('✨ GameWaitingRoom: Loading optimistic room data for:', roomId);
           
           const optimisticRoom = OptimisticMatchmakingService.getOptimisticRoom(roomId);
           
@@ -999,7 +1033,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             // Optimistic room loaded successfully
             return; // Don't proceed with normal room loading
           } else {
-            console.warn('⚠️ GameWaitingRoom: Optimistic room data not found, falling back to normal loading');
+            debugWarn('⚠️ GameWaitingRoom: Optimistic room data not found, falling back to normal loading');
           }
         }
 
@@ -1017,12 +1051,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
         // If roomId is provided, listen to that specific room
         if (roomId) {
-          console.log('🎯 GameWaitingRoom: Using existing room ID:', roomId);
+          debugLog('🎯 GameWaitingRoom: Using existing room ID:', roomId);
           
           // STEP 3: Bridge Entry System - Check for immediate room data availability
           const bridgeRoomData = OptimisticMatchmakingService.getBridgeRoomData(roomId);
           if (bridgeRoomData) {
-            console.log('🌉 GameWaitingRoom: Using bridge room data for immediate access');
+            debugLog('🌉 GameWaitingRoom: Using bridge room data for immediate access');
             
             // Set room data immediately from bridge to prevent race conditions
             setWaitingRoomEntry(bridgeRoomData as WaitingRoomEntry);
@@ -1040,13 +1074,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             
             // Check for opponent
             if (bridgeRoomData.opponentData && !opponentJoined) {
-              console.log('🎯 GameWaitingRoom: Opponent detected in bridge data');
+              debugLog('🎯 GameWaitingRoom: Opponent detected in bridge data');
               setOpponentJoined(true);
               
               // 🤖 Check if opponent is a bot
               const isBot = bridgeRoomData.opponentData.playerId?.startsWith('bot_');
               if (isBot) {
-                console.log('🤖 Bot opponent detected in bridge data:', bridgeRoomData.opponentData.playerDisplayName);
+                debugLog('🤖 Bot opponent detected in bridge data:', bridgeRoomData.opponentData.playerDisplayName);
                 setBotOpponent(bridgeRoomData.opponentData);
                 setBotFallbackActive(false);
                 setBotCountdown(null);
@@ -1056,7 +1090,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               
               // Only auto-start countdown for non-friend invitations
               if (!bridgeRoomData.friendInvitation && vsCountdown === null) {
-                console.log('🚀 GameWaitingRoom: Starting countdown for matched players');
+                debugLog('🚀 GameWaitingRoom: Starting countdown for matched players');
                 startVsCountdownWhenReady();
               }
             }
@@ -1068,7 +1102,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             (doc) => {
               if (doc.exists()) {
                 const data = doc.data() as WaitingRoomEntry;
-                console.log('🔄 GameWaitingRoom: Received room update for existing room', data);
+                debugLog('🔄 GameWaitingRoom: Received room update for existing room', data);
                 setWaitingRoomEntry({ ...data, id: doc.id });
                 setError(''); // Clear any previous errors
                 
@@ -1088,29 +1122,29 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 // Check if opponent joined - improved detection for initial load
                 if (data.opponentData) {
                   if (!opponentJoined) {
-                    console.log('🎯 GameWaitingRoom: Opponent detected, updating state');
+                    debugLog('🎯 GameWaitingRoom: Opponent detected, updating state');
                     setOpponentJoined(true);
                   }
                   
                   // Only auto-start countdown for non-friend invitations
                   if (!data.friendInvitation && vsCountdown === null) {
-                    console.log('🚀 GameWaitingRoom: Starting countdown for matched players');
+                    debugLog('🚀 GameWaitingRoom: Starting countdown for matched players');
                     startVsCountdownWhenReady();
                   }
                 } else {
                   // Reset opponent joined state if opponent is no longer present
                   if (opponentJoined) {
-                    console.log('⚠️ GameWaitingRoom: Opponent no longer present, resetting state');
+                    debugLog('⚠️ GameWaitingRoom: Opponent no longer present, resetting state');
                     setOpponentJoined(false);
                   }
                 }
               } else {
-                console.log('🔄 GameWaitingRoom: Room no longer exists in waitingroom (likely moved to matches or in gameSessions)');
+                debugLog('🔄 GameWaitingRoom: Room no longer exists in waitingroom (likely moved to matches or in gameSessions)');
                 
                 // STEP 3: Bridge Entry System - Check if room data still exists in bridge before showing error
                 const bridgeRoomData = OptimisticMatchmakingService.getBridgeRoomData(roomId);
                 if (bridgeRoomData) {
-                  console.log('🌉 GameWaitingRoom: Room not in waitingroom but found in bridge, using bridge data');
+                  debugLog('🌉 GameWaitingRoom: Room not in waitingroom but found in bridge, using bridge data');
                   
                   // Use bridge data since the room might be in gameSessions instead of waitingroom
                   setWaitingRoomEntry(bridgeRoomData as WaitingRoomEntry);
@@ -1122,12 +1156,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 }
                 
                 // For friend invitations, immediately check if room was moved to matches
-                console.log('🔍 GameWaitingRoom: Room not found, checking for existing matches...');
+                debugLog('🔍 GameWaitingRoom: Room not found, checking for existing matches...');
                 
                 // Check if this room was moved to matches collection
                 const checkForExistingMatch = async () => {
                   try {
-                    console.log('🔍 DEBUG: Starting match search for roomId:', roomId);
+                    debugLog('🔍 DEBUG: Starting match search for roomId:', roomId);
                     
                     // Check for match by originalRoomId
                     const matchQuery = query(
@@ -1136,7 +1170,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     );
                     const matchSnapshot = await getDocs(matchQuery);
                     
-                    console.log('🔍 DEBUG: originalRoomId query results:', {
+                    debugLog('🔍 DEBUG: originalRoomId query results:', {
                       roomId,
                       matchCount: matchSnapshot.docs.length,
                       matches: matchSnapshot.docs.map(doc => ({
@@ -1151,7 +1185,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                       const existingMatch = matchSnapshot.docs[0];
                       const matchData = existingMatch.data();
                       
-                      console.log('✅ GameWaitingRoom: Found existing match by originalRoomId, starting countdown...');
+                      debugLog('✅ GameWaitingRoom: Found existing match by originalRoomId, starting countdown...');
                       // Store match data for navigation after countdown
                       setPendingMatchData({
                         gameMode: matchData.gameMode || gameMode,
@@ -1163,14 +1197,14 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     }
                     
                     // If no match found by originalRoomId, check by player ID
-                    console.log('🔍 DEBUG: No match found by originalRoomId, checking by player ID...');
+                    debugLog('🔍 DEBUG: No match found by originalRoomId, checking by player ID...');
                     const [hostMatches, opponentMatches] = await Promise.all([
                       getDocs(query(collection(db, 'matches'), where('hostData.playerId', '==', user.uid))),
                       getDocs(query(collection(db, 'matches'), where('opponentData.playerId', '==', user.uid)))
                     ]);
                     
                     const allUserMatches = [...hostMatches.docs, ...opponentMatches.docs];
-                    console.log('🔍 DEBUG: Player ID query results:', {
+                    debugLog('🔍 DEBUG: Player ID query results:', {
                       userUid: user.uid,
                       hostMatches: hostMatches.docs.length,
                       opponentMatches: opponentMatches.docs.length,
@@ -1194,7 +1228,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     
                     if (recentMatch) {
                       const matchData = recentMatch.data();
-                      console.log('✅ GameWaitingRoom: Found recent match by player ID, starting countdown...');
+                      debugLog('✅ GameWaitingRoom: Found recent match by player ID, starting countdown...');
                       // Store match data for navigation after countdown
                       setPendingMatchData({
                         gameMode: matchData.gameMode || gameMode,
@@ -1206,12 +1240,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     }
                     
                     // If no matches found, implement enhanced error prevention
-                    console.log('❌ GameWaitingRoom: No existing matches found for room');
+                    debugLog('❌ GameWaitingRoom: No existing matches found for room');
                     
                     // STEP 3: Enhanced Error Prevention - Final check before showing error
                     const finalBridgeCheck = OptimisticMatchmakingService.getBridgeRoomData(roomId);
                     if (finalBridgeCheck) {
-                      console.log('🌉 GameWaitingRoom: Final bridge check found room data, using it');
+                      debugLog('🌉 GameWaitingRoom: Final bridge check found room data, using it');
                       setWaitingRoomEntry(finalBridgeCheck as WaitingRoomEntry);
                       setError(''); // Clear any previous errors
                       return;
@@ -1221,13 +1255,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     if (OptimisticMatchmakingService.isOptimisticRoom(roomId)) {
                       const optimisticRoom = OptimisticMatchmakingService.getOptimisticRoom(roomId);
                       if (optimisticRoom && (optimisticRoom.status === 'creating' || optimisticRoom.status === 'searching')) {
-                        console.log('🔄 GameWaitingRoom: Optimistic room still creating, waiting...');
+                        debugLog('🔄 GameWaitingRoom: Optimistic room still creating, waiting...');
                         setError(''); // Clear errors
                         setSearchingText('Still creating room...');
                         
                         // Wait longer for room creation
                         setTimeout(() => {
-                          console.log('🔄 GameWaitingRoom: Retrying after optimistic room creation delay');
+                          debugLog('🔄 GameWaitingRoom: Retrying after optimistic room creation delay');
                         }, 2000);
                         return;
                       }
@@ -1253,13 +1287,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               // STEP 3: Bridge Entry System - Check bridge before showing connection error
               const bridgeRoomData = OptimisticMatchmakingService.getBridgeRoomData(roomId);
               if (bridgeRoomData) {
-                console.log('🌉 GameWaitingRoom: Connection error but bridge data available, using it');
+                debugLog('🌉 GameWaitingRoom: Connection error but bridge data available, using it');
                 setWaitingRoomEntry(bridgeRoomData as WaitingRoomEntry);
                 setError(''); // Clear any previous errors
                 
                 // Try to reconnect after using bridge data
                 setTimeout(() => {
-                  console.log('🔄 GameWaitingRoom: Attempting to reconnect after bridge fallback');
+                  debugLog('🔄 GameWaitingRoom: Attempting to reconnect after bridge fallback');
                 }, 1000);
                 return;
               }
@@ -1289,13 +1323,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           
           // Check if current user is already the host of this room
           if (existingGame.hostData?.playerId === user.uid) {
-            console.log('GameWaitingRoom: Current user is already host of this room, just listening for updates');
+            debugLog('GameWaitingRoom: Current user is already host of this room, just listening for updates');
             
             // Set up listener for the room we're hosting
             const unsubscribe = onSnapshot(doc(db, 'waitingroom', existingGameDoc.id), (doc) => {
               if (doc.exists()) {
                 const data = doc.data() as WaitingRoomEntry;
-                console.log('GameWaitingRoom: Received room update as host', data);
+                debugLog('GameWaitingRoom: Received room update as host', data);
                 setWaitingRoomEntry({ ...data, id: doc.id });
                 
                 // Update ready state for current user
@@ -1315,12 +1349,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   // 🤖 Check if opponent is a bot
                   const isBot = data.opponentData.playerId?.startsWith('bot_');
                   if (isBot) {
-                    console.log('🤖 Bot opponent joined:', data.opponentData.playerDisplayName);
+                    debugLog('🤖 Bot opponent joined:', data.opponentData.playerDisplayName);
                     setBotOpponent(data.opponentData);
                     setBotFallbackActive(false);
                     setBotCountdown(null);
                   } else {
-                    console.log('👤 Real player joined:', data.opponentData.playerDisplayName);
+                    debugLog('👤 Real player joined:', data.opponentData.playerDisplayName);
                     cancelBotCountdown();
                   }
                   
@@ -1336,7 +1370,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             return () => unsubscribe();
           } else {
             // Different user is host - join as opponent
-            console.log('GameWaitingRoom: Joining existing room as opponent');
+            debugLog('GameWaitingRoom: Joining existing room as opponent');
             
             const opponentData = {
               playerDisplayName: userData.displayName,
@@ -1384,7 +1418,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         } else {
           // No existing game found - create new one
           // Remove performance-impacting logs
-          // console.log('GameWaitingRoom: Creating new waiting room entry', {
+          // debugLog('GameWaitingRoom: Creating new waiting room entry', {
           //   DisplayBackgroundEquip,
           //   MatchBackgroundEquip,
           //   DisplayBackgroundType: DisplayBackgroundEquip?.type,
@@ -1403,12 +1437,14 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               playerId: user.uid,
               displayBackgroundEquipped: userData.displayBackgroundEquipped || null,
               matchBackgroundEquipped: userData.matchBackgroundEquipped || null,
+              turnDeciderBackgroundEquipped: userData.turnDeciderBackgroundEquipped || defaultTurnDeciderBg,
+              victoryBackgroundEquipped: userData.victoryBackgroundEquipped || defaultVictoryBg,
               playerStats: userData.stats
             }
           };
 
           // Remove performance-impacting logs
-          // console.log('GameWaitingRoom: Final entry to be saved', entry);
+          // debugLog('GameWaitingRoom: Final entry to be saved', entry);
 
           const docRef = await addDoc(collection(db, 'waitingroom'), entry);
           const gameId = docRef.id;
@@ -1427,7 +1463,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             if (doc.exists()) {
               const data = doc.data() as WaitingRoomEntry;
               // Remove performance-impacting logs
-              // console.log('GameWaitingRoom: Received waiting room data from Firebase', {
+              // debugLog('GameWaitingRoom: Received waiting room data from Firebase', {
               //   data,
               //   hostData: data.hostData,
               //   matchBackgroundEquipped: data.hostData?.matchBackgroundEquipped
@@ -1452,7 +1488,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 // 🤖 Check if opponent is a bot
                 const isBot = data.opponentData.playerId?.startsWith('bot_');
                 if (isBot) {
-                  console.log('🤖 Bot opponent joined:', data.opponentData.playerDisplayName);
+                  debugLog('🤖 Bot opponent joined:', data.opponentData.playerDisplayName);
                   setBotOpponent(data.opponentData);
                   setBotFallbackActive(false);
                   setBotCountdown(null);
@@ -1460,7 +1496,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                   // Track bot match found
                   analyticsService.trackMatchFound(gameMode, 'bot', Date.now() - new Date().getTime());
                 } else {
-                  console.log('👤 Real player joined:', data.opponentData.playerDisplayName);
+                  debugLog('👤 Real player joined:', data.opponentData.playerDisplayName);
                   cancelBotCountdown();
                   
                   // Track human match found
@@ -1518,7 +1554,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         if (matchDoc.exists()) {
           const matchData = matchDoc.data();
           if (matchData.status === 'active') {
-            console.log('🎮 Game has started - enabling abandonment detection');
+            debugLog('🎮 Game has started - enabling abandonment detection');
             setGameHasStarted(true);
           }
         }
@@ -1537,7 +1573,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         if (doc.exists()) {
           const matchData = doc.data();
           if (matchData.status === 'active' && !gameHasStarted) {
-            console.log('🎮 Game has started - enabling abandonment detection');
+            debugLog('🎮 Game has started - enabling abandonment detection');
             setGameHasStarted(true);
           }
         }
@@ -1626,33 +1662,33 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     const opponentData = getOpponentData();
     
     if (!opponentData) {
-      console.log('🔍 Cannot start countdown: No opponent data available');
+      debugLog('🔍 Cannot start countdown: No opponent data available');
       return;
     }
 
     if (vsCountdown !== null) {
-      console.log('🔍 Cannot start countdown: Countdown already in progress');
+      debugLog('🔍 Cannot start countdown: Countdown already in progress');
       return;
     }
 
     if (opponentDisplayLoading) {
-      console.log('🔍 Cannot start countdown: Opponent display still loading, will start when ready');
+      debugLog('🔍 Cannot start countdown: Opponent display still loading, will start when ready');
       return;
     }
 
     if (!opponentDisplayReady) {
-      console.log('🔍 Starting opponent display check before countdown');
+      debugLog('🔍 Starting opponent display check before countdown');
       checkOpponentDisplayReady(opponentData);
       return;
     }
 
-    console.log('✅ All checks passed, starting countdown now');
+    debugLog('✅ All checks passed, starting countdown now');
     startVsCountdown();
   };
 
   // Function to start 5-second countdown for VS section
   const startVsCountdown = () => {
-    console.log('🕐 Starting VS countdown...');
+    debugLog('🕐 Starting VS countdown...');
     
     // Clear any existing timer to prevent multiple countdowns
     if (vsCountdownTimer) {
@@ -1666,7 +1702,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         if (prev === null || prev <= 1) {
           clearInterval(timer);
           setVsCountdownTimer(null);
-          console.log('🏁 Countdown finished! Starting match...');
+          debugLog('🏁 Countdown finished! Starting match...');
           
           // Wait 1 second after showing "GO!" then navigate directly to match
           setTimeout(() => {
@@ -1684,7 +1720,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   // � Function to cancel bot countdown when real player joins
   const cancelBotCountdown = () => {
     if (botCountdownTimer) {
-      console.log('🚫 Real player joined! Canceling bot countdown.');
+      debugLog('🚫 Real player joined! Canceling bot countdown.');
       clearInterval(botCountdownTimer);
       clearTimeout(botCountdownTimer); // Handle both interval and timeout
       setBotCountdownTimer(null);
@@ -1695,7 +1731,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
   // �🔍 Function to start real player waiting period before allowing bots
   const startRealPlayerWaitingPeriod = (sessionId: string) => {
-    console.log('⏳ Starting real player waiting period (3 seconds) before considering bots...');
+    debugLog('⏳ Starting real player waiting period (3 seconds) before considering bots...');
     
     // Clear any existing timer
     if (botCountdownTimer) {
@@ -1705,7 +1741,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     
     // Set a 3-second waiting period for real players
     const realPlayerWaitTimer = setTimeout(() => {
-      console.log('⏳ Real player waiting period finished. Checking if opponent joined...');
+      debugLog('⏳ Real player waiting period finished. Checking if opponent joined...');
       
       // Only start bot countdown if no real opponent has joined
       const currentWaitingRoom = waitingRoomEntry;
@@ -1713,10 +1749,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                              !currentWaitingRoom.opponentData.playerId.startsWith('bot_');
       
       if (!hasRealOpponent) {
-        console.log('🤖 No real players joined in 3 seconds. Starting bot fallback...');
+        debugLog('🤖 No real players joined in 3 seconds. Starting bot fallback...');
         startBotCountdown(sessionId);
       } else {
-        console.log('✅ Real player joined! Canceling bot fallback.');
+        debugLog('✅ Real player joined! Canceling bot fallback.');
       }
     }, 3000); // 3 seconds for real players
     
@@ -1726,7 +1762,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
   // 🤖 Function to start bot fallback countdown (immediate)
   const startBotCountdown = (sessionId: string) => {
-    console.log('🤖 Starting bot fallback countdown (immediate)...');
+    debugLog('🤖 Starting bot fallback countdown (immediate)...');
     
     // Clear any existing timer to prevent multiple countdowns
     if (botCountdownTimer) {
@@ -1742,7 +1778,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         if (prev === null || prev <= 1) {
           clearInterval(timer);
           setBotCountdownTimer(null);
-          console.log('🤖 Bot countdown finished! Attempting bot match...');
+          debugLog('🤖 Bot countdown finished! Attempting bot match...');
           
           // Trigger bot matching
           setTimeout(() => {
@@ -1761,15 +1797,15 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   // 🤖 Function to attempt bot matching
   const attemptBotMatch = async (sessionId: string) => {
     try {
-      console.log('🤖 Attempting to add bot to session:', sessionId);
-      console.log('🔐 Current user auth state:', user ? 'Authenticated' : 'Not authenticated');
+      debugLog('🤖 Attempting to add bot to session:', sessionId);
+      debugLog('🔐 Current user auth state:', user ? 'Authenticated' : 'Not authenticated');
       
       // CRITICAL: Check if a real player has already joined
       // Don't add bots if real players are available or already connected
       const currentWaitingRoom = waitingRoomEntry;
       if (currentWaitingRoom?.opponentData?.playerId && 
           !currentWaitingRoom.opponentData.playerId.startsWith('bot_')) {
-        console.log('🚫 Real player already joined! Canceling bot addition.');
+        debugLog('🚫 Real player already joined! Canceling bot addition.');
         setBotFallbackActive(false);
         return;
       }
@@ -1795,7 +1831,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         );
         
         if (otherWaitingPlayers.length > 0) {
-          console.log('🚫 Other real players are waiting! Canceling bot addition to prioritize real player matching.');
+          debugLog('🚫 Other real players are waiting! Canceling bot addition to prioritize real player matching.');
           setBotFallbackActive(false);
           return;
         }
@@ -1805,13 +1841,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       
       // Determine if this is a Go backend match or Firebase match
       const isGoBackendMatchType = sessionId.startsWith('match_') || sessionId.startsWith('match-');
-      console.log('🔍 Match type detected:', isGoBackendMatchType ? 'Go Backend' : 'Firebase');
+      debugLog('🔍 Match type detected:', isGoBackendMatchType ? 'Go Backend' : 'Firebase');
       
       if (isGoBackendMatchType) {
         // Handle Go backend match - get actual game mode from bridge data
         const bridgeData = OptimisticMatchmakingService.getBridgeRoomData(sessionId);
         const gameMode = bridgeData?.gameMode || 'classic'; // Use actual game mode from bridge data
-        console.log('🎯 Using game mode from Go backend:', gameMode);
+        debugLog('🎯 Using game mode from Go backend:', gameMode);
         
         const sessionType = 'quick' as 'quick' | 'ranked';
         
@@ -1823,19 +1859,19 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           excludeBotIds: []
         };
         
-        console.log('🔍 Finding suitable bot for Go backend match...');
+        debugLog('🔍 Finding suitable bot for Go backend match...');
         let botResult = await BotMatchingService.findSuitableBot(criteria);
         
         // If no bots found for specific game mode, try with 'classic' as fallback
         if (!botResult.success && gameMode !== 'classic') {
-          console.log('🔄 No bots found for', gameMode, '- trying with classic mode as fallback');
+          debugLog('🔄 No bots found for', gameMode, '- trying with classic mode as fallback');
           const fallbackCriteria = { ...criteria, gameMode: 'classic' };
           botResult = await BotMatchingService.findSuitableBot(fallbackCriteria);
         }
         
         // If still no bots found, try to get any available bot (emergency fallback)
         if (!botResult.success) {
-          console.log('🚨 Emergency fallback: Getting any available bot...');
+          debugLog('🚨 Emergency fallback: Getting any available bot...');
           try {
             const { collection, query, where, getDocs, limit } = await import('firebase/firestore');
             const { db } = await import('@/services/firebase');
@@ -1855,7 +1891,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 bot: { ...botData, uid: snapshot.docs[0].id } as any,
                 matchingReason: 'emergency fallback'
               };
-              console.log('🎯 Emergency bot selected:', botData.displayName);
+              debugLog('🎯 Emergency bot selected:', botData.displayName);
             }
           } catch (error) {
             console.error('❌ Emergency bot selection failed:', error);
@@ -1863,13 +1899,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         }
         
         if (botResult.success && botResult.bot) {
-          console.log('🎯 Selected bot for Go backend:', botResult.bot.displayName);
+          debugLog('🎯 Selected bot for Go backend:', botResult.bot.displayName);
           
           try {
             // Actually add the bot to the Go backend match
-            console.log('🔗 About to call BotMatchingService.addBotToSession for Go backend');
+            debugLog('🔗 About to call BotMatchingService.addBotToSession for Go backend');
             await BotMatchingService.addBotToSession(sessionId, botResult.bot);
-            console.log('✅ Successfully added bot to Go backend match');
+            debugLog('✅ Successfully added bot to Go backend match');
             
             // Set bot opponent data for UI display
             const botOpponentData = {
@@ -1885,7 +1921,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               }
             };
             
-            console.log('🤖 Setting bot opponent data in UI:', botOpponentData);
+            debugLog('🤖 Setting bot opponent data in UI:', botOpponentData);
             setGoBackendOpponentData(botOpponentData);
             setBotOpponent(botResult.bot);
           } catch (addBotError) {
@@ -1977,7 +2013,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     try {
       // Use pending match data if available (from countdown sequence)
       if (pendingMatchData) {
-        console.log('🎮 GameWaitingRoom: Using pending match data for navigation');
+        debugLog('🎮 GameWaitingRoom: Using pending match data for navigation');
         // Track game start analytics
         analyticsService.trackGameStart(pendingMatchData.gameMode, 'pending_match');
         setCurrentSection('match', { ...pendingMatchData, topVideo, bottomVideo });
@@ -1990,8 +2026,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       await new Promise(resolve => setTimeout(resolve, delay));
       
       // Remove performance-impacting logs
-      // console.log('🎮 GameWaitingRoom: moveToMatchesAndNavigate called!');
-      console.log('🔍 DEBUG: ENTRY POINT - moveToMatchesAndNavigate:', {
+      // debugLog('🎮 GameWaitingRoom: moveToMatchesAndNavigate called!');
+      debugLog('🔍 DEBUG: ENTRY POINT - moveToMatchesAndNavigate:', {
         timestamp: new Date().toISOString(),
         delay: `${delay.toFixed(0)}ms`,
         waitingRoomEntry: waitingRoomEntry?.id,
@@ -2006,7 +2042,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       // SECURITY CHECK: Ensure user is part of this room
       if (!user?.uid) {
         console.error('❌ SECURITY: No authenticated user found');
-        console.log('🔙 SECURITY: Redirecting to dashboard due to no auth');
+        debugLog('🔙 SECURITY: Redirecting to dashboard due to no auth');
         onBack();
         return;
       }
@@ -2016,25 +2052,25 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       
       if (!roomIdToUse) {
         console.error('❌ GameWaitingRoom: No room ID available (neither waitingRoomEntry.id nor roomId prop)!');
-        console.log('🔍 DEBUG: Missing room ID data:', {
+        debugLog('🔍 DEBUG: Missing room ID data:', {
           waitingRoomEntry,
           roomId,
           waitingRoomEntryId: waitingRoomEntry?.id
         });
-        console.log('🔙 ERROR: Redirecting to dashboard due to missing room ID');
+        debugLog('🔙 ERROR: Redirecting to dashboard due to missing room ID');
         onBack();
         return;
       }
 
-      console.log('🎮 GameWaitingRoom: Using room ID:', roomIdToUse);
-      console.log('🔍 DEBUG: Room validation passed, proceeding with match creation');
+      debugLog('🎮 GameWaitingRoom: Using room ID:', roomIdToUse);
+      debugLog('🔍 DEBUG: Room validation passed, proceeding with match creation');
 
       // SECURITY CHECK: Verify user is authorized for this room
       if (waitingRoomEntry) {
         const isHost = waitingRoomEntry.hostData?.playerId === user.uid;
         const isOpponent = waitingRoomEntry.opponentData?.playerId === user.uid;
         
-        console.log('🔍 SECURITY CHECK: User authorization:', {
+        debugLog('🔍 SECURITY CHECK: User authorization:', {
           userUid: user.uid,
           hostPlayerId: waitingRoomEntry.hostData?.playerId,
           opponentPlayerId: waitingRoomEntry.opponentData?.playerId,
@@ -2045,7 +2081,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         
         if (!isHost && !isOpponent) {
           console.error('❌ SECURITY: User not authorized for this room');
-          console.log('🔙 SECURITY: Redirecting unauthorized user to dashboard');
+          debugLog('🔙 SECURITY: Redirecting unauthorized user to dashboard');
           setError('Unauthorized access to game room');
           setTimeout(() => onBack(), 2000);
           return;
@@ -2054,7 +2090,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
       // OPTIMIZED: Check if room was already moved to matches collection with parallel queries
       try {
-        console.log('🔍 DEBUG: Checking for existing match...');
+        debugLog('🔍 DEBUG: Checking for existing match...');
         
         // Use Promise.all for parallel queries instead of sequential
         const [originalRoomMatches, hostMatches, opponentMatches] = await Promise.all([
@@ -2068,7 +2104,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           const existingMatch = originalRoomMatches.docs[0];
           const matchData = existingMatch.data();
           
-          console.log('🎮 GameWaitingRoom: Found existing match by originalRoomId, navigating...');
+          debugLog('🎮 GameWaitingRoom: Found existing match by originalRoomId, navigating...');
           setCurrentSection('match', {
             gameMode: matchData.gameMode || gameMode,
             matchId: existingMatch.id,
@@ -2102,7 +2138,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             return;
           }
           
-          console.log('� GameWaitingRoom: Found recent active match, navigating...');
+          debugLog('� GameWaitingRoom: Found recent active match, navigating...');
           setCurrentSection('match', {
             gameMode: matchData.gameMode || gameMode,
             matchId: activeMatch.id,
@@ -2111,22 +2147,22 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           return;
         }
         
-        console.log('🔍 DEBUG: No existing match found, proceeding with creation');
+        debugLog('🔍 DEBUG: No existing match found, proceeding with creation');
       } catch (error) {
-        console.log('🎮 GameWaitingRoom: Could not check for existing match, proceeding with creation...', error);
+        debugLog('🎮 GameWaitingRoom: Could not check for existing match, proceeding with creation...', error);
       }
 
       // Get room data - either from waitingRoomEntry or fetch from database
       let roomData = waitingRoomEntry;
       
-      console.log('🔍 DEBUG: Getting room data:', {
+      debugLog('🔍 DEBUG: Getting room data:', {
         hasWaitingRoomEntry: !!waitingRoomEntry,
         waitingRoomEntryId: waitingRoomEntry?.id,
         roomIdToUse
       });
       
       if (!roomData) {
-        console.log('🎮 GameWaitingRoom: waitingRoomEntry is null, fetching from database...');
+        debugLog('🎮 GameWaitingRoom: waitingRoomEntry is null, fetching from database...');
         try {
           // Use correct Firestore v9 syntax for getting a document
           const roomDocRef = doc(db, 'waitingroom', roomIdToUse);
@@ -2134,8 +2170,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           
           if (roomDocSnap.exists()) {
             roomData = { ...roomDocSnap.data(), id: roomDocSnap.id } as WaitingRoomEntry;
-            console.log('🎮 GameWaitingRoom: Room data fetched from database:', roomData);
-            console.log('🔍 DEBUG: Fetched room data details:', {
+            debugLog('🎮 GameWaitingRoom: Room data fetched from database:', roomData);
+            debugLog('🔍 DEBUG: Fetched room data details:', {
               id: roomData.id,
               gameMode: roomData.gameMode,
               hostPlayerId: roomData.hostData?.playerId,
@@ -2146,7 +2182,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             const isHostInFetchedRoom = roomData.hostData?.playerId === user.uid;
             const isOpponentInFetchedRoom = roomData.opponentData?.playerId === user.uid;
             
-            console.log('🔍 SECURITY CHECK: Fetched room authorization:', {
+            debugLog('🔍 SECURITY CHECK: Fetched room authorization:', {
               userUid: user.uid,
               hostPlayerId: roomData.hostData?.playerId,
               opponentPlayerId: roomData.opponentData?.playerId,
@@ -2157,29 +2193,29 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             
             if (!isHostInFetchedRoom && !isOpponentInFetchedRoom) {
               console.error('❌ SECURITY: User not authorized for fetched room');
-              console.log('🔙 SECURITY: Redirecting unauthorized user');
+              debugLog('🔙 SECURITY: Redirecting unauthorized user');
               setError('Unauthorized access to game room');
               setTimeout(() => onBack(), 2000);
               return;
             }
           } else {
             // Room not found - we already checked matches above, so just redirect
-            console.log('🎮 GameWaitingRoom: Room not found in waitingroom and no active matches found');
+            debugLog('🎮 GameWaitingRoom: Room not found in waitingroom and no active matches found');
             setError('Game room no longer exists');
             setTimeout(() => onBack(), 2000);
             return;
           }
         } catch (error) {
           console.error('❌ GameWaitingRoom: Error fetching room data:', error);
-          console.log('🔙 ERROR: Database error, redirecting to dashboard');
+          debugLog('🔙 ERROR: Database error, redirecting to dashboard');
           setError('Failed to access game room');
           setTimeout(() => onBack(), 2000);
           return;
         }
       }
 
-      console.log('🎮 GameWaitingRoom: Creating match document...');
-      console.log('🔍 DEBUG: Match creation starting with room data:', {
+      debugLog('🎮 GameWaitingRoom: Creating match document...');
+      debugLog('🔍 DEBUG: Match creation starting with room data:', {
         roomDataId: roomData.id,
         gameMode: roomData.gameMode,
         gameType: roomData.gameType,
@@ -2238,6 +2274,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         // Initialize host data with game-specific fields
         hostData: {
           ...roomData.hostData,
+          turnDeciderBackgroundEquipped: roomData.hostData?.turnDeciderBackgroundEquipped || defaultTurnDeciderBg,
+          victoryBackgroundEquipped: roomData.hostData?.victoryBackgroundEquipped || defaultVictoryBg,
           turnActive: false, // Will be set by turn decider
           playerScore: getStartingScore(roomData.gameMode),
           roundScore: 0,
@@ -2255,7 +2293,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         // Initialize opponent data with game-specific fields
         opponentData: (() => {
           const opponentData = getOpponentData();
-          console.log('🔍 DEBUG: Retrieved opponent data for match creation:', {
+          debugLog('🔍 DEBUG: Retrieved opponent data for match creation:', {
             opponentData,
             hasOpponentData: !!opponentData,
             opponentPlayerId: opponentData?.playerId,
@@ -2331,19 +2369,19 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
       // Don't pre-assign turns when using turnDecider phase
       // The turns will be assigned after the turn decider choice is made
-      console.log('🎮 GameWaitingRoom: Starting in turnDecider phase, turns will be assigned after choice');
-      console.log('🔍 DEBUG: Final match data before creation:', {
+      debugLog('🎮 GameWaitingRoom: Starting in turnDecider phase, turns will be assigned after choice');
+      debugLog('🔍 DEBUG: Final match data before creation:', {
         matchData,
         authorizedPlayers: matchData.authorizedPlayers,
         gameMode: matchData.gameMode,
         status: matchData.status
       });
 
-      console.log('🎮 GameWaitingRoom: Match data prepared:', matchData);
+      debugLog('🎮 GameWaitingRoom: Match data prepared:', matchData);
 
       const matchDocRef = await addDoc(collection(db, 'matches'), matchData);
-      console.log('✅ GameWaitingRoom: Match document created with ID:', matchDocRef.id);
-      console.log('🔍 DEBUG: Match created successfully:', {
+      debugLog('✅ GameWaitingRoom: Match document created with ID:', matchDocRef.id);
+      debugLog('🔍 DEBUG: Match created successfully:', {
         matchId: matchDocRef.id,
         originalRoomId: roomIdToUse,
         authorizedPlayers: matchData.authorizedPlayers,
@@ -2353,23 +2391,23 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       // Remove from waiting room (only if we have the room data)
       try {
         await deleteDoc(doc(db, 'waitingroom', roomIdToUse));
-        console.log('✅ GameWaitingRoom: Waiting room document deleted');
-        console.log('🔍 DEBUG: Cleanup completed:', {
+        debugLog('✅ GameWaitingRoom: Waiting room document deleted');
+        debugLog('🔍 DEBUG: Cleanup completed:', {
           deletedRoomId: roomIdToUse,
           timestamp: new Date().toISOString()
         });
       } catch (error) {
-        console.log('🎮 GameWaitingRoom: Could not delete waiting room (might already be deleted):', error);
+        debugLog('🎮 GameWaitingRoom: Could not delete waiting room (might already be deleted):', error);
       }
       
       // Navigate to Match component with match ID
-      console.log('🎮 GameWaitingRoom: Calling setCurrentSection with match data...');
-      console.log('🎮 GameWaitingRoom: setCurrentSection function:', typeof setCurrentSection);
-      console.log('🎮 GameWaitingRoom: Navigation params:', {
+      debugLog('🎮 GameWaitingRoom: Calling setCurrentSection with match data...');
+      debugLog('🎮 GameWaitingRoom: setCurrentSection function:', typeof setCurrentSection);
+      debugLog('🎮 GameWaitingRoom: Navigation params:', {
         gameMode: roomData.gameMode,
         matchId: matchDocRef.id
       });
-      console.log('🔍 DEBUG: FINAL NAVIGATION CALL:', {
+      debugLog('🔍 DEBUG: FINAL NAVIGATION CALL:', {
         component: 'GameWaitingRoom',
         function: 'setCurrentSection',
         section: 'match',
@@ -2391,13 +2429,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         topVideo,
         bottomVideo
       });
-      console.log('✅ GameWaitingRoom: Navigation called successfully!');
-      console.log('🔍 DEBUG: Navigation completed - should now be in match section');
-      console.log('🔍 DEBUG: Match document ID passed to navigation:', matchDocRef.id);
+      debugLog('✅ GameWaitingRoom: Navigation called successfully!');
+      debugLog('🔍 DEBUG: Navigation completed - should now be in match section');
+      debugLog('🔍 DEBUG: Match document ID passed to navigation:', matchDocRef.id);
       
     } catch (err) {
       console.error('❌ GameWaitingRoom: Error moving to matches:', err);
-      console.log('🔍 DEBUG: CRITICAL ERROR in moveToMatchesAndNavigate:', {
+      debugLog('🔍 DEBUG: CRITICAL ERROR in moveToMatchesAndNavigate:', {
         error: err,
         errorMessage: (err as Error)?.message,
         errorStack: (err as Error)?.stack,
@@ -2411,8 +2449,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       // If match creation failed, try to navigate users back to dashboard with error
       // But first, try a simple navigation to match section in case it's just a Firebase write issue
       try {
-        console.log('🔄 GameWaitingRoom: Attempting fallback navigation to match...');
-        console.log('🔍 DEBUG: Starting fallback recovery process');
+        debugLog('🔄 GameWaitingRoom: Attempting fallback navigation to match...');
+        debugLog('🔍 DEBUG: Starting fallback recovery process');
         
         // Try to find existing match in case it was created but navigation failed
         const existingMatchQuery = await getDocs(query(collection(db, 'matches')));
@@ -2422,8 +2460,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         });
         
         if (userMatch) {
-          console.log('🎯 GameWaitingRoom: Found existing match, navigating...');
-          console.log('🔍 DEBUG: Fallback found existing match:', {
+          debugLog('🎯 GameWaitingRoom: Found existing match, navigating...');
+          debugLog('🔍 DEBUG: Fallback found existing match:', {
             matchId: userMatch.id,
             gameMode: userMatch.data().gameMode
           });
@@ -2438,8 +2476,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         }
         
         // If no existing match found, create a minimal test match for navigation
-        console.log('🧪 GameWaitingRoom: Creating minimal fallback match...');
-        console.log('🔍 DEBUG: No existing match found, creating fallback');
+        debugLog('🧪 GameWaitingRoom: Creating minimal fallback match...');
+        debugLog('🔍 DEBUG: No existing match found, creating fallback');
         
         // Use waitingRoomEntry or fallback data
         const fallbackGameMode = waitingRoomEntry?.gameMode || gameMode || 'classic';
@@ -2448,6 +2486,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           playerId: user?.uid || 'unknown',
           displayBackgroundEquipped: null,
           matchBackgroundEquipped: null,
+          turnDeciderBackgroundEquipped: defaultTurnDeciderBg,
+          victoryBackgroundEquipped: defaultVictoryBg,
           playerStats: {
             bestStreak: 0,
             currentStreak: 0,
@@ -2463,6 +2503,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           authorizedPlayers: [user?.uid].filter(Boolean),
           hostData: {
             ...fallbackHostData,
+            turnDeciderBackgroundEquipped: (fallbackHostData as any).turnDeciderBackgroundEquipped || defaultTurnDeciderBg,
+            victoryBackgroundEquipped: (fallbackHostData as any).victoryBackgroundEquipped || defaultVictoryBg,
             playerScore: 0,
             matchStats: {
               banks: 0,
@@ -2510,10 +2552,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           }
         };
         
-        console.log('🔍 DEBUG: Creating fallback match with data:', fallbackMatchData);
+        debugLog('🔍 DEBUG: Creating fallback match with data:', fallbackMatchData);
         
         const fallbackMatch = await addDoc(collection(db, 'matches'), fallbackMatchData);
-        console.log('🔍 DEBUG: Fallback match created:', fallbackMatch.id);
+        debugLog('🔍 DEBUG: Fallback match created:', fallbackMatch.id);
         
         setCurrentSection('match', {
           gameMode: fallbackGameMode,
@@ -2521,23 +2563,23 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           topVideo,
           bottomVideo
         });
-        console.log('✅ GameWaitingRoom: Fallback match created successfully!');
+        debugLog('✅ GameWaitingRoom: Fallback match created successfully!');
         
       } catch (fallbackErr) {
         console.error('❌ GameWaitingRoom: Fallback navigation also failed:', fallbackErr);
-        console.log('🔍 DEBUG: FALLBACK FAILED:', {
+        debugLog('🔍 DEBUG: FALLBACK FAILED:', {
           fallbackError: fallbackErr,
           fallbackErrorMessage: (fallbackErr as Error)?.message,
           timestamp: new Date().toISOString()
         });
         
         // Only now return to dashboard if everything failed
-        console.log('🔙 GameWaitingRoom: All navigation attempts failed, returning to dashboard');
-        console.log('🔍 DEBUG: FINAL FALLBACK - returning to dashboard');
+        debugLog('🔙 GameWaitingRoom: All navigation attempts failed, returning to dashboard');
+        debugLog('🔍 DEBUG: FINAL FALLBACK - returning to dashboard');
         
         setError('Failed to start match - returning to dashboard');
         setTimeout(() => {
-          console.log('🔙 GameWaitingRoom: Executing onBack() after timeout');
+          debugLog('🔙 GameWaitingRoom: Executing onBack() after timeout');
           onBack();
         }, 2000);
       }
@@ -2547,13 +2589,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   // Handle leaving the game
   const handleLeave = async () => {
     if (isLeaving) {
-      console.log('⏸️ GameWaitingRoom: Already leaving, ignoring additional leave request');
+      debugLog('⏸️ GameWaitingRoom: Already leaving, ignoring additional leave request');
       return; // Prevent multiple leave attempts
     }
     
     try {
       setIsLeaving(true);
-      console.log('🚪 GameWaitingRoom: Leaving game', {
+      debugLog('🚪 GameWaitingRoom: Leaving game', {
         waitingRoomId: waitingRoomEntry?.id,
         roomId: roomId,
         userId: user?.uid
@@ -2563,23 +2605,23 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         // Use the enhanced leave session method that cleans up both documents
         const sessionId = roomId || waitingRoomEntry?.id;
         if (sessionId) {
-          console.log('🧹 GameWaitingRoom: Using NewMatchmakingService to leave session:', sessionId);
+          debugLog('🧹 GameWaitingRoom: Using NewMatchmakingService to leave session:', sessionId);
           await NewMatchmakingService.leaveSession(user.uid, sessionId);
         } else {
-          console.log('⚠️ GameWaitingRoom: No session ID found, cleaning up waiting room only');
+          debugLog('⚠️ GameWaitingRoom: No session ID found, cleaning up waiting room only');
           // Fallback to manual cleanup if no session ID
           if (waitingRoomEntry?.id) {
             await deleteDoc(doc(db, 'waitingroom', waitingRoomEntry.id));
-            console.log('✅ GameWaitingRoom: Waiting room document deleted successfully');
+            debugLog('✅ GameWaitingRoom: Waiting room document deleted successfully');
           }
         }
       } else {
-        console.log('⚠️ GameWaitingRoom: No user ID available for leave cleanup');
+        debugLog('⚠️ GameWaitingRoom: No user ID available for leave cleanup');
       }
     } catch (err) {
       console.error('❌ GameWaitingRoom: Error leaving game:', err);
     } finally {
-      console.log('🔙 GameWaitingRoom: Calling onBack to return to dashboard');
+      debugLog('🔙 GameWaitingRoom: Calling onBack to return to dashboard');
       onBack();
     }
   };
@@ -2589,11 +2631,11 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     if (!user?.uid || !waitingRoomEntry) return;
     
     try {
-      console.log('🏆 Claiming victory due to opponent abandonment');
+      debugLog('🏆 Claiming victory due to opponent abandonment');
       
       // Update current user's stats (win)
       await UserService.updateMatchWin(user.uid);
-      console.log('✅ Updated claiming player stats with victory');
+      debugLog('✅ Updated claiming player stats with victory');
       
       // Update opponent's stats (loss) if we have their ID
       const opponentId = waitingRoomEntry.hostData?.playerId === user.uid 
@@ -2602,13 +2644,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         
       if (opponentId) {
         await UserService.updateMatchLoss(opponentId);
-        console.log('✅ Updated opponent stats with loss');
+        debugLog('✅ Updated opponent stats with loss');
       }
       
       // Clean up waiting room
       if (waitingRoomEntry.id) {
         await deleteDoc(doc(db, 'waitingroom', waitingRoomEntry.id));
-        console.log('✅ Cleaned up waiting room');
+        debugLog('✅ Cleaned up waiting room');
       }
       
       setShowAbandonmentNotification(false);
@@ -2620,7 +2662,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
   // Handle waiting for opponent to return
   const handleWaitForOpponent = () => {
-    console.log('⏰ Continuing to wait for opponent');
+    debugLog('⏰ Continuing to wait for opponent');
     setShowAbandonmentNotification(false);
     // Reset the abandonment detection timer
     setOpponentLastSeen(new Date());
@@ -2699,11 +2741,11 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         </video>
       );
     } else if (background.type === 'image' && background.file) {
-      console.log('GameWaitingRoom: Using CSS background for image:', background.file);
+      debugLog('GameWaitingRoom: Using CSS background for image:', background.file);
       return null; // CSS background will handle image
     }
     
-    console.log('GameWaitingRoom: Invalid background format, using default');
+    debugLog('GameWaitingRoom: Invalid background format, using default');
     return null;
   };
 
@@ -2717,7 +2759,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     
     // Handle legacy string format (just in case)
     if (typeof background === 'string') {
-      console.log('GameWaitingRoom: Legacy string background, returning default');
+      debugLog('GameWaitingRoom: Legacy string background, returning default');
       return { background: '#332A63' };
     }
     
@@ -2729,12 +2771,12 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         const style = { 
           background: `url('${background.file}') center/cover no-repeat` 
         };
-        console.log('GameWaitingRoom: Image background - returning style:', style);
+        debugLog('GameWaitingRoom: Image background - returning style:', style);
         return style;
       }
     }
     
-    console.log('GameWaitingRoom: Invalid background format - returning default style');
+    debugLog('GameWaitingRoom: Invalid background format - returning default style');
     return { background: '#332A63' };
   };
 
@@ -3357,3 +3399,4 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     </>
   );
 };
+

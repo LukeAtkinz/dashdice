@@ -33,6 +33,7 @@ interface MatchProps {
 }
 
 export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
+  const DEBUG_LOGS = process.env.NEXT_PUBLIC_DEBUG_LOGS === '1';
   // Remove performance-impacting debug logs
   // console.log('🎮 Match: Component rendered with props:', { gameMode, roomId });
   // console.log('🔍 DEBUG: Match component entry point:', {
@@ -196,7 +197,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     
     import('@/utils/videoPlaybackManager').then(({ videoPlaybackManager }) => {
       const unregister = videoPlaybackManager.registerCallback(() => {
-        console.log('🎬 Match: Received playback trigger from manager');
+        if (DEBUG_LOGS) {
+          console.log('🎬 Match: Received playback trigger from manager');
+        }
         setUserInteracted(true);
         
         // Also play videos immediately
@@ -817,19 +820,23 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       ? matchData.opponentData?.turnDeciderBackgroundEquipped 
       : matchData.hostData.turnDeciderBackgroundEquipped;
     
-    console.log('🎬 Turn Decider TOP video resolution:', {
+    if (DEBUG_LOGS) {
+      console.log('🎬 Turn Decider TOP video resolution:', {
       isHost,
       opponentDeciderBg,
       opponentData: matchData.opponentData,
       hostData: matchData.hostData,
       fullMatchData: matchData
-    });
-    console.log('🎬 TOP - opponentData keys:', Object.keys(matchData.opponentData || {}));
-    console.log('🎬 TOP - hostData keys:', Object.keys(matchData.hostData || {}));
+      });
+      console.log('🎬 TOP - opponentData keys:', Object.keys(matchData.opponentData || {}));
+      console.log('🎬 TOP - hostData keys:', Object.keys(matchData.hostData || {}));
+    }
     
     if (opponentDeciderBg && typeof opponentDeciderBg === 'object' && 'id' in opponentDeciderBg) {
       const resolved = resolveBackgroundPath(opponentDeciderBg.id, 'waiting-room');
-      console.log('🎬 TOP resolved path:', resolved);
+      if (DEBUG_LOGS) {
+        console.log('🎬 TOP resolved path:', resolved);
+      }
       return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
     }
     return '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
@@ -844,7 +851,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       ? matchData.hostData.turnDeciderBackgroundEquipped 
       : matchData.opponentData?.turnDeciderBackgroundEquipped;
     
-    console.log('🎬 Turn Decider BOTTOM video resolution:', {
+    if (DEBUG_LOGS) {
+      console.log('🎬 Turn Decider BOTTOM video resolution:', {
       isHost,
       currentUserDeciderBg,
       hostTurnDecider: matchData.hostData.turnDeciderBackgroundEquipped,
@@ -852,11 +860,14 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       hostDataFull: matchData.hostData,
       opponentDataFull: matchData.opponentData
     });
-    console.log('🎬 BOTTOM - Current user data keys:', Object.keys(isHost ? matchData.hostData : (matchData.opponentData || {})));
+      console.log('🎬 BOTTOM - Current user data keys:', Object.keys(isHost ? matchData.hostData : (matchData.opponentData || {})));
+    }
     
     if (currentUserDeciderBg && typeof currentUserDeciderBg === 'object' && 'id' in currentUserDeciderBg) {
       const resolved = resolveBackgroundPath(currentUserDeciderBg.id, 'waiting-room');
-      console.log('🎬 BOTTOM resolved path:', resolved);
+      if (DEBUG_LOGS) {
+        console.log('🎬 BOTTOM resolved path:', resolved);
+      }
       return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
     }
     return '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
@@ -865,7 +876,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   // 🔄 SESSION RECOVERY: Store active match in localStorage for crash recovery
   useEffect(() => {
     if (roomId && matchData && matchData.gameData?.gamePhase !== 'gameOver') {
-      console.log('💾 Storing active match in localStorage:', roomId);
+      if (DEBUG_LOGS) {
+        console.log('💾 Storing active match in localStorage:', roomId);
+      }
       localStorage.setItem('activeMatchId', roomId);
       localStorage.setItem('activeMatchTimestamp', Date.now().toString());
     }
@@ -874,7 +887,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   // Clear stored match when game over
   useEffect(() => {
     if (matchData?.gameData?.gamePhase === 'gameOver') {
-      console.log('🗑️ Clearing stored match from localStorage (game over)');
+      if (DEBUG_LOGS) {
+        console.log('🗑️ Clearing stored match from localStorage (game over)');
+      }
       localStorage.removeItem('activeMatchId');
       localStorage.removeItem('activeMatchTimestamp');
     }

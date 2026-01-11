@@ -113,7 +113,10 @@ export class MatchService {
    * Checks both matches and gameSessions collections for compatibility
    */
   static subscribeToMatch(matchId: string, callback: (data: MatchData | null) => void) {
-    console.log('🔍 MatchService: Starting subscription for match ID:', matchId);
+    const DEBUG_LOGS = process.env.NEXT_PUBLIC_DEBUG_LOGS === '1';
+    if (DEBUG_LOGS) {
+      console.log('🔍 MatchService: Starting subscription for match ID:', matchId);
+    }
     
     // Add a retry mechanism for race conditions during match creation
     let retryCount = 0;
@@ -126,15 +129,19 @@ export class MatchService {
       
       const unsubscribe = onSnapshot(matchRef, (snapshot) => {
         if (snapshot.exists()) {
-          console.log('✅ MatchService: Found match document:', matchId);
+          if (DEBUG_LOGS) {
+            console.log('✅ MatchService: Found match document:', matchId);
+          }
           const data = { id: snapshot.id, ...snapshot.data() } as MatchData;
           
           // Debug logging for turnDecider
-          console.log('🎯 MatchService gameData:', {
-            turnDecider: data.gameData?.turnDecider,
-            gamePhase: data.gameData?.gamePhase,
-            hasGameData: !!data.gameData
-          });
+          if (DEBUG_LOGS) {
+            console.log('🎯 MatchService gameData:', {
+              turnDecider: data.gameData?.turnDecider,
+              gamePhase: data.gameData?.gamePhase,
+              hasGameData: !!data.gameData
+            });
+          }
           
           // Validate required fields before passing data
           if (data.gameData && data.hostData && data.opponentData) {
@@ -144,12 +151,16 @@ export class MatchService {
             callback(null);
           }
         } else {
-          console.log('❌ MatchService: Match document not found:', matchId);
+          if (DEBUG_LOGS) {
+            console.log('❌ MatchService: Match document not found:', matchId);
+          }
           
           // If document doesn't exist and we haven't exhausted retries, try again
           if (retryCount < maxRetries) {
             retryCount++;
-            console.log(`🔄 MatchService: Retrying subscription (${retryCount}/${maxRetries}) in ${retryDelay}ms...`);
+            if (DEBUG_LOGS) {
+              console.log(`🔄 MatchService: Retrying subscription (${retryCount}/${maxRetries}) in ${retryDelay}ms...`);
+            }
             
             // Unsubscribe current listener before retrying
             unsubscribe();
@@ -161,7 +172,9 @@ export class MatchService {
           }
           
           // Match not found in legacy collection - try gameSessions
-          console.log('🔍 Match not found in matches collection, checking gameSessions...');
+          if (DEBUG_LOGS) {
+            console.log('🔍 Match not found in matches collection, checking gameSessions...');
+          }
           this.checkGameSession(matchId, callback);
         }
       }, (error) => {
@@ -170,7 +183,9 @@ export class MatchService {
         // If error and we haven't exhausted retries, try again
         if (retryCount < maxRetries) {
           retryCount++;
-          console.log(`🔄 MatchService: Retrying after error (${retryCount}/${maxRetries}) in ${retryDelay}ms...`);
+          if (DEBUG_LOGS) {
+            console.log(`🔄 MatchService: Retrying after error (${retryCount}/${maxRetries}) in ${retryDelay}ms...`);
+          }
           
           setTimeout(() => {
             attemptSubscription();
