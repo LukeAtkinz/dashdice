@@ -6,6 +6,7 @@ import { RematchService } from './rematchService';
 import { GameInvitationService } from './gameInvitationService';
 import { MatchmakingDeduplicationService } from './matchmakingDeduplicationService';
 import { BotMatchingService } from './botMatchingService';
+import { CasualBotMatchmakingService } from './casualBotMatchmakingService';
 import { WaitingRoomTimeoutService } from './waitingRoomTimeoutService';
 import { collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase';
@@ -229,78 +230,58 @@ export class MatchmakingOrchestrator {
 
   /**
    * Handle quick match (casual) matchmaking
+   * 
+   * 🎯 CASUAL GAMES: NO MATCHMAKING - INSTANT BOT ASSIGNMENT ONLY
+   * 
+   * This method completely bypasses traditional matchmaking for casual games.
+   * Instead of searching for players or waiting for timeouts, it:
+   * 1. Creates a session
+   * 2. Instantly assigns a bot
+   * 3. Marks session as matched
+   * 4. Returns ready-to-play match
+   * 
+   * The UI (waiting room, turn decider, match screens) stays identical - users don't notice any difference.
+   * Backend just eliminates all the unpredictable player-matching complexity.
    */
   private static async handleQuickMatch(request: MatchmakingRequest): Promise<MatchmakingResult> {
-    console.log('⚡ Processing quick match request');
+    console.log('🤖 Processing quick match request (CASUAL - INSTANT BOT ONLY)');
+    console.log('⚠️ NO MATCHMAKING - Direct bot assignment with zero search/wait');
     
-    // 🔒 ATOMIC: Try to find and join a session atomically to prevent race conditions
-    const atomicResult = await GameSessionService.findAndJoinSession(
-      'quick',
-      request.gameMode,
-      request.hostData
-    );
-    
-    if (atomicResult.success && atomicResult.session) {
-      console.log(`✅ ATOMIC: Successfully joined session ${atomicResult.session.id}`);
+    try {
+      // 🆕 CASUAL GAMES: Use instant bot matchmaking service
+      // This creates session + adds bot + marks as matched immediately
+      // NO searching for players, NO waiting timers, NO race conditions
+      const casualMatch = await CasualBotMatchmakingService.createInstantBotMatch(
+        request.gameMode,
+        request.hostData
+      );
       
-      // 🔥 Clear waiting room timeout since we joined successfully
-      WaitingRoomTimeoutService.clearTimeout(atomicResult.session.id);
+      if (!casualMatch.success) {
+        console.error('❌ Failed to create instant bot match:', casualMatch.error);
+        return {
+          success: false,
+          error: casualMatch.error || 'Failed to create match. Please try again.'
+        };
+      }
       
-      // Convert GameSession to MatchmakingResult format
+      console.log(`✅ Casual bot match created instantly: ${casualMatch.sessionId}`);
+      console.log('🎮 Match ready to play - no waiting required');
+      
       return {
         success: true,
-        sessionId: atomicResult.session.id,
-        roomId: atomicResult.session.id, // For compatibility
-        hasOpponent: true,
-        isNewRoom: false // Joined existing session
+        sessionId: casualMatch.sessionId,
+        roomId: casualMatch.sessionId, // For compatibility
+        isNewRoom: true,
+        hasOpponent: true // Always true - bot assigned immediately
+      };
+      
+    } catch (error) {
+      console.error('❌ Fatal error in casual bot matchmaking:', error);
+      return {
+        success: false,
+        error: 'Failed to create match. Please try again.'
       };
     }
-    
-    console.log(`🔍 ATOMIC: No available sessions found (${atomicResult.error}), creating new session`);
-    
-    // Create new session
-    console.log('🆕 Creating new session as no suitable sessions found');
-    const sessionId = await GameSessionService.createSession(
-      'quick',
-      request.gameMode,
-      request.hostData,
-      {
-        maxPlayers: 2,
-        expirationTime: 20 // 20 minutes
-      }
-    );
-    
-    // 🔥 Start 45-second hard timeout for waiting room
-    WaitingRoomTimeoutService.startTimeout(
-      sessionId,
-      request.hostData.playerId,
-      request.gameMode,
-      'quick'
-    );
-    console.log(`⏲️ Started 45s timeout for waiting room ${sessionId}`);
-    
-    // 🤖 Setup bot fallback with 120-second timeout for quick matches
-    console.log('🤖 Setting up bot fallback timer (120 seconds)');
-    try {
-      BotMatchingService.setupBotFallback(
-        sessionId,
-        request.hostData.playerId,
-        request.gameMode,
-        'quick'
-      );
-      console.log(`✅ Bot fallback configured for session ${sessionId}`);
-    } catch (error) {
-      console.warn('⚠️ Failed to setup bot fallback:', error);
-      // Continue without bot fallback if service fails
-    }
-    
-    return {
-      success: true,
-      sessionId,
-      roomId: sessionId, // For compatibility
-      isNewRoom: true,
-      hasOpponent: false
-    };
   }
 
   /**
@@ -580,7 +561,7 @@ export class MatchmakingOrchestrator {
     if (activeSnapshot.docs.length > 0) {
       // Clean up old sessions that are more than 5 minutes old
       const now = new Date();
-      const cleanedSessions = [];
+      const cleanedSessions: string[] = [];
       
       for (const sessionDoc of activeSnapshot.docs) {
         const sessionData = sessionDoc.data();
