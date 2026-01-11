@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { UserService } from '@/services/userService';
+import type { UserProfile, PowerLoadout } from '@/services/userService';
 import { useNavigation } from '@/context/NavigationContext';
 import { useWaitingRoomCleanup } from '@/hooks/useWaitingRoomCleanup';
 import { db } from '@/services/firebase';
@@ -629,29 +630,16 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
               
               // Get opponent player data (second player in Go backend match)
               const opponentPlayerId = ourMatch.players.find((p: string) => p !== user!.uid);
-              let opponentProfile = null;
+              let opponentProfile: UserProfile | null = null;
               
               if (opponentPlayerId) {
                 // First try to get as a regular user
                 opponentProfile = await UserService.getUserProfile(opponentPlayerId);
                 
-                // If not found, it might be a bot - try the bots collection
+                // If not found, it might be a bot - use helper to convert bot to UserProfile
                 if (!opponentProfile && opponentPlayerId.includes('bot')) {
                   try {
-                    const { doc, getDoc } = await import('firebase/firestore');
-                    const { db } = await import('@/services/firebase');
-                    const botDoc = await getDoc(doc(db, 'bots', opponentPlayerId));
-                    
-                    if (botDoc.exists()) {
-                      const botData = botDoc.data();
-                      opponentProfile = {
-                        uid: opponentPlayerId,
-                        displayName: botData.displayName,
-                        stats: botData.stats,
-                        inventory: botData.inventory
-                      };
-                      // Found bot opponent profile
-                    }
+                    opponentProfile = await UserService.getBotAsUserProfile(opponentPlayerId);
                   } catch (botError) {
                     console.warn('⚠️ Failed to fetch bot profile:', botError);
                   }
@@ -756,8 +744,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                 
                 // 🔮 Load power loadouts for both players
                 console.log('🔮 Loading power loadouts for Go backend match...');
-                let hostPowerLoadout = null;
-                let opponentPowerLoadout = null;
+                let hostPowerLoadout: PowerLoadout | null = null;
+                let opponentPowerLoadout: PowerLoadout | null = null;
                 
                 try {
                   // Map gameMode to the correct key format for UserPowerLoadouts
@@ -886,7 +874,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
                     opponentData: {
                       playerId: opponentPlayerId,
                       playerDisplayName: opponentProfile?.displayName || 'Player 2',
-                      playerStats: opponentProfile?.stats || {},
+                      playerStats: opponentProfile?.stats || { gamesPlayed: 0, matchWins: 0, bestStreak: 0, currentStreak: 0 },
                       displayBackgroundEquipped: opponentProfile?.inventory?.displayBackgroundEquipped || getBackgroundById('relax'),
                       matchBackgroundEquipped: opponentProfile?.inventory?.matchBackgroundEquipped || getBackgroundById('relax'),
                     }

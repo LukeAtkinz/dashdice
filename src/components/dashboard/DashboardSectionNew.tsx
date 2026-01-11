@@ -318,11 +318,88 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
           playerStats: userProfile.stats
         };
 
-        // STEP 2: Go Backend ONLY (no fallback for debugging)
-        console.log('🚀 Attempting Go backend match creation (NO FALLBACK)...');
-        
         // Determine game type
         const gameType = action === 'ranked' ? 'ranked' : 'quick';
+        
+        // 🤖 CASUAL GAMES: Use instant bot matchmaking (NO MATCHMAKING)
+        if (gameType === 'quick' && !isSocialLeague) {
+          console.log('🤖 CASUAL GAME: Creating instant bot match (NO MATCHMAKING)...');
+          
+          // Import the casual bot service
+          const { CasualBotMatchmakingService } = await import('@/services/casualBotMatchmakingService');
+          const { NewMatchmakingService } = await import('@/services/newMatchmakingService');
+          
+          // Prepare session player data
+          const hostSessionData = {
+            playerId: user.uid,
+            playerDisplayName: userProfile.displayName || userProfile.email?.split('@')[0] || 'Anonymous',
+            playerStats: {
+              bestStreak: userProfile.stats?.bestStreak || 0,
+              currentStreak: userProfile.stats?.currentStreak || 0,
+              gamesPlayed: userProfile.stats?.gamesPlayed || 0,
+              matchWins: userProfile.stats?.matchWins || 0
+            },
+            displayBackgroundEquipped: userProfile.inventory?.displayBackgroundEquipped || null,
+            matchBackgroundEquipped: userProfile.inventory?.matchBackgroundEquipped || null,
+            turnDeciderBackgroundEquipped: userProfile.inventory?.turnDeciderBackgroundEquipped || null,
+            victoryBackgroundEquipped: userProfile.inventory?.victoryBackgroundEquipped || null,
+            ready: false
+          };
+          
+          // Create instant bot match (NO MATCHMAKING)
+          const casualMatch = await CasualBotMatchmakingService.createInstantBotMatch(
+            gameMode,
+            hostSessionData
+          );
+          
+          if (casualMatch.success && casualMatch.sessionId) {
+            console.log('✅ Instant bot match created:', casualMatch.sessionId);
+
+            try {
+              // Fetch session data and cache bridge entry for the waiting room
+              const { doc, getDoc } = await import('firebase/firestore');
+              const { db } = await import('@/services/firebase');
+              const sessionDoc = await getDoc(doc(db, 'gameSessions', casualMatch.sessionId));
+              const sessionData = sessionDoc.exists() ? (sessionDoc.data() as any) : null;
+
+              const bridgeRoomData = {
+                id: casualMatch.sessionId,
+                gameMode,
+                gameType: 'quick',
+                hostData: hostSessionData,
+                opponentData: sessionData?.opponentData || null,
+                playersRequired: sessionData?.opponentData ? 0 : 1,
+                createdAt: sessionData?.createdAt || new Date(),
+                status: sessionData?.status || 'matched',
+                isGoBackendRoom: false
+              };
+
+              const { OptimisticMatchmakingService } = await import('@/services/optimisticMatchmakingService');
+              OptimisticMatchmakingService.setBridgeRoomData(casualMatch.sessionId, bridgeRoomData);
+              console.log('🌉 Bridge cached for bot match:', bridgeRoomData);
+            } catch (bridgeErr) {
+              console.warn('⚠️ Failed to cache bridge data for bot match:', bridgeErr);
+            }
+
+            setCurrentSection('waiting-room', {
+              gameMode,
+              actionType: 'live',
+              gameType: 'quick',
+              roomId: casualMatch.sessionId,
+              isOptimistic: false,
+              isSocialLeague: false
+            });
+            return;
+          } else {
+            console.error('❌ Casual bot match failed:', casualMatch.error);
+            alert(`Failed to create match: ${casualMatch.error || 'Unknown error'}`);
+            setIsExiting(false);
+            return;
+          }
+        }
+        
+        // RANKED/SOCIAL LEAGUE: Use Go Backend (PvP matchmaking)
+        console.log('🏆 RANKED/SOCIAL LEAGUE: Using Go backend for PvP matchmaking...');
         
         const matchResult = await GoBackendAdapter.findOrCreateMatch(
           gameMode,
