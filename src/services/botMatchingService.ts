@@ -3,7 +3,7 @@ import { collection, query, where, getDocs, doc, getDoc, limit, orderBy } from '
 import { BotProfile, BotMatchingCriteria, BotMatchingResult, SkillLevel } from '../types/bot';
 import { SessionPlayerData } from './gameSessionService';
 import { BotAutomationService } from './botAutomationService';
-import { resolveBackgroundPath } from '../config/backgrounds';
+import { resolveBackgroundPath, getTurnDeciderBackgrounds, getVictoryBackgrounds } from '../config/backgrounds';
 
 /**
  * Bot Matching Service
@@ -230,29 +230,18 @@ export class BotMatchingService {
    * 🎬 Get random turn decider background for bots
    */
   private static getRandomTurnDeciderBackground() {
-    const turnDeciderBgIds = [
-      'crazy-cough',
-      'lead-the-way',
-      'awaken'
-    ];
-    
-    const randomId = turnDeciderBgIds[Math.floor(Math.random() * turnDeciderBgIds.length)];
-    return { id: randomId, name: randomId };
+    const pool = getTurnDeciderBackgrounds();
+    const random = pool[Math.floor(Math.random() * pool.length)];
+    return random || { id: 'crazy-cough', name: 'Crazy Cough', category: 'Videos', rarity: 'RARE' };
   }
 
   /**
    * 🏆 Get random victory background for bots
    */
   private static getRandomVictoryBackground() {
-    const victoryBgIds = [
-      'warrior-victory',
-      'on-track',
-      'relax',
-      'long-road-ahead'
-    ];
-    
-    const randomId = victoryBgIds[Math.floor(Math.random() * victoryBgIds.length)];
-    return { id: randomId, name: randomId };
+    const pool = getVictoryBackgrounds();
+    const random = pool[Math.floor(Math.random() * pool.length)];
+    return random || { id: 'wind-blade', name: 'Wind Blade', category: 'Videos', rarity: 'LEGENDARY' };
   }
   
   /**

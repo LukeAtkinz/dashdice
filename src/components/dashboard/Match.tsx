@@ -22,7 +22,7 @@ import { useMatchBackground } from '@/hooks/useOptimizedBackground';
 import { MatchChatFeed } from '@/components/match/MatchChatFeed';
 import { MatchVoiceButton } from '@/components/match/MatchVoiceButton';
 import { useMatchChat } from '@/context/MatchChatContext';
-import { getBackgroundById, resolveBackgroundPath } from '@/config/backgrounds';
+import { getBackgroundById, resolveBackgroundPath, migrateLegacyBackground } from '@/config/backgrounds';
 import { useBackground } from '@/context/BackgroundContext';
 import AuraCounter from '@/components/ui/AuraCounter';
 import { AbilityToast } from '@/components/abilities/AbilityToast';
@@ -836,8 +836,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     
     // Support both object {id} and string id
     const bgId = opponentDeciderBg
-      ? (typeof opponentDeciderBg === 'object' && 'id' in opponentDeciderBg
-          ? (opponentDeciderBg as any).id
+      ? (typeof opponentDeciderBg === 'object'
+          ? ('id' in opponentDeciderBg
+              ? (opponentDeciderBg as any).id
+              : migrateLegacyBackground(opponentDeciderBg))
           : typeof opponentDeciderBg === 'string'
             ? opponentDeciderBg
             : undefined)
@@ -875,8 +877,10 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
     
     // Support both object {id} and string id
     const bgId = currentUserDeciderBg
-      ? (typeof currentUserDeciderBg === 'object' && 'id' in currentUserDeciderBg
-          ? (currentUserDeciderBg as any).id
+      ? (typeof currentUserDeciderBg === 'object'
+          ? ('id' in currentUserDeciderBg
+              ? (currentUserDeciderBg as any).id
+              : migrateLegacyBackground(currentUserDeciderBg))
           : typeof currentUserDeciderBg === 'string'
             ? currentUserDeciderBg
             : undefined)

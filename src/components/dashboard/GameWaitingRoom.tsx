@@ -198,9 +198,9 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   
   // Keep bottom video in sync with the player's equipped Turn Decider background
   useEffect(() => {
-    const { resolveBackgroundPath } = require('@/config/backgrounds');
+    const { resolveBackgroundPath, migrateLegacyBackground } = require('@/config/backgrounds');
     const equipped = waitingRoomEntry?.hostData?.turnDeciderBackgroundEquipped || TurnDeciderBackgroundEquip || defaultTurnDeciderBg;
-    const id = equipped?.id || equipped;
+    const id = equipped?.id || (equipped?.name ? migrateLegacyBackground(equipped) : equipped);
     const resolved = id ? resolveBackgroundPath(id, 'waiting-room') : undefined;
     const fallbackResolved = resolveBackgroundPath(defaultTurnDeciderBg.id, 'waiting-room');
     const fallback = resolved?.path || fallbackResolved?.path || turnDeciderBackgrounds[0] || '';
@@ -209,9 +209,11 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
 
   // Keep top video in sync with opponent data (or fallback while waiting)
   useEffect(() => {
-    const { resolveBackgroundPath } = require('@/config/backgrounds');
+    const { resolveBackgroundPath, migrateLegacyBackground } = require('@/config/backgrounds');
     if (opponentData?.turnDeciderBackgroundEquipped) {
-      const resolved = resolveBackgroundPath(opponentData.turnDeciderBackgroundEquipped.id || opponentData.turnDeciderBackgroundEquipped, 'waiting-room');
+      const raw = opponentData.turnDeciderBackgroundEquipped;
+      const id = raw?.id || (raw?.name ? migrateLegacyBackground(raw) : raw);
+      const resolved = resolveBackgroundPath(id, 'waiting-room');
       if (resolved?.path) {
         setTopVideo(resolved.path);
         return;
@@ -227,8 +229,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   // Update top video when opponent joins with their Turn Decider background
   useEffect(() => {
     if (opponentData?.turnDeciderBackgroundEquipped) {
-      const { resolveBackgroundPath } = require('@/config/backgrounds');
-      const resolved = resolveBackgroundPath(opponentData.turnDeciderBackgroundEquipped.id || opponentData.turnDeciderBackgroundEquipped, 'waiting-room');
+      const { resolveBackgroundPath, migrateLegacyBackground } = require('@/config/backgrounds');
+      const raw = opponentData.turnDeciderBackgroundEquipped;
+      const id = raw?.id || (raw?.name ? migrateLegacyBackground(raw) : raw);
+      const resolved = resolveBackgroundPath(id, 'waiting-room');
       if (resolved?.path) {
         setTopVideo(resolved.path);
       }

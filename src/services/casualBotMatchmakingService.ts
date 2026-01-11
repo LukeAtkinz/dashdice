@@ -3,7 +3,7 @@ import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { GameSessionService, SessionPlayerData } from './gameSessionService';
 import { BotMatchingService } from './botMatchingService';
 import { BotProfile } from '../types/bot';
-import { resolveBackgroundPath, getBackgroundById } from '../config/backgrounds';
+import { resolveBackgroundPath, getBackgroundById, getTurnDeciderBackgrounds } from '../config/backgrounds';
 
 /**
  * Casual Bot Matchmaking Service
@@ -168,6 +168,10 @@ export class CasualBotMatchmakingService {
       category: 'Images',
       rarity: 'COMMON'
     };
+
+    // Choose a random Turn Decider background for bot variety
+    const turnDeciderPool = getTurnDeciderBackgrounds();
+    const randomTurnDecider = turnDeciderPool[Math.floor(Math.random() * turnDeciderPool.length)] || getBackgroundById('crazy-cough') || defaultBackground;
     
     const fallbackBot: BotProfile = {
       uid: randomBotId,
@@ -230,7 +234,7 @@ export class CasualBotMatchmakingService {
       inventory: {
         displayBackgroundEquipped: defaultBackground,
         matchBackgroundEquipped: defaultBackground,
-        turnDeciderBackgroundEquipped: defaultBackground,
+        turnDeciderBackgroundEquipped: randomTurnDecider,
         victoryBackgroundEquipped: defaultBackground,
         items: []
       },
