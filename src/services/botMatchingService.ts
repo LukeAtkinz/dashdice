@@ -753,6 +753,13 @@ export class BotMatchingService {
         // Update waiting room with bot opponent data
         console.log(`🤖 Adding bot ${bot.displayName} to waiting room ${sessionId}`);
         
+        // Ensure bot has randomized backgrounds before persisting
+        const { getTurnDeciderBackgrounds, getVictoryBackgrounds } = await import('@/config/backgrounds');
+        const turnDeciderPool = getTurnDeciderBackgrounds();
+        const victoryPool = getVictoryBackgrounds();
+        const randomTurnDecider = turnDeciderPool[Math.floor(Math.random() * turnDeciderPool.length)] || { id: 'crazy-cough', name: 'Crazy Cough', category: 'Videos', rarity: 'RARE' };
+        const randomVictory = victoryPool[Math.floor(Math.random() * victoryPool.length)] || { id: 'wind-blade', name: 'Wind Blade', category: 'Videos', rarity: 'LEGENDARY' };
+        
         const { updateDoc } = await import('firebase/firestore');
         await updateDoc(doc(db, 'waitingroom', sessionId), {
           opponentData: {
@@ -760,8 +767,8 @@ export class BotMatchingService {
             playerId: bot.uid,
             displayBackgroundEquipped: bot.inventory?.displayBackgroundEquipped || null,
             matchBackgroundEquipped: bot.inventory?.matchBackgroundEquipped || null,
-            turnDeciderBackgroundEquipped: bot.inventory?.turnDeciderBackgroundEquipped || null,
-            victoryBackgroundEquipped: bot.inventory?.victoryBackgroundEquipped || null,
+            turnDeciderBackgroundEquipped: randomTurnDecider,
+            victoryBackgroundEquipped: randomVictory,
             playerStats: {
               bestStreak: bot.stats.bestStreak,
               currentStreak: bot.stats.currentStreak,
@@ -771,12 +778,19 @@ export class BotMatchingService {
           }
         });
         
-        console.log(`✅ Bot ${bot.displayName} added to waiting room ${sessionId}`);
+        console.log(`✅ Bot ${bot.displayName} added to waiting room ${sessionId} with random turn decider (${randomTurnDecider.id}) and victory (${randomVictory.id}) backgrounds`);
         return;
       }
       
       // If not in waiting room, try game sessions
       const { GameSessionService } = await import('./gameSessionService');
+      const { getTurnDeciderBackgrounds, getVictoryBackgrounds } = await import('@/config/backgrounds');
+      
+      // Randomize bot backgrounds for game sessions too
+      const turnDeciderPool = getTurnDeciderBackgrounds();
+      const victoryPool = getVictoryBackgrounds();
+      const randomTurnDecider = turnDeciderPool[Math.floor(Math.random() * turnDeciderPool.length)] || { id: 'crazy-cough', name: 'Crazy Cough', category: 'Videos', rarity: 'RARE' };
+      const randomVictory = victoryPool[Math.floor(Math.random() * victoryPool.length)] || { id: 'wind-blade', name: 'Wind Blade', category: 'Videos', rarity: 'LEGENDARY' };
       
       // Create bot player data for game sessions
       const botPlayerData: SessionPlayerData = {
@@ -790,8 +804,8 @@ export class BotMatchingService {
         },
         displayBackgroundEquipped: bot.inventory?.displayBackgroundEquipped || null,
         matchBackgroundEquipped: bot.inventory?.matchBackgroundEquipped || null,
-        turnDeciderBackgroundEquipped: bot.inventory?.turnDeciderBackgroundEquipped || null,
-        victoryBackgroundEquipped: bot.inventory?.victoryBackgroundEquipped || null,
+        turnDeciderBackgroundEquipped: randomTurnDecider,
+        victoryBackgroundEquipped: randomVictory,
         ready: true,
         joinedAt: new Date(),
         isConnected: true,
@@ -804,7 +818,7 @@ export class BotMatchingService {
         throw new Error(`Failed to add bot to Firebase session`);
       }
       
-      console.log(`✅ Bot ${bot.displayName} added to Firebase session ${sessionId}`);
+      console.log(`✅ Bot ${bot.displayName} added to Firebase session ${sessionId} with random turn decider (${randomTurnDecider.id}) and victory (${randomVictory.id}) backgrounds`);
       
     } catch (error) {
       console.error(`❌ Error adding bot to Firebase session:`, error);

@@ -7,7 +7,7 @@ import { GameModeSelector } from '@/components/ui/GameModeSelector';
 import { useAuth } from '@/context/AuthContext';
 import { useBackground } from '@/context/BackgroundContext';
 import { useToast } from '@/context/ToastContext';
-import { resolveBackgroundPath } from '@/config/backgrounds';
+import { resolveBackgroundPath, migrateLegacyBackground, getVictoryBackgrounds } from '@/config/backgrounds';
 
 interface MatchSummaryScreenProps {
   matchData: MatchData;
@@ -87,6 +87,7 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
   }, [winner]);
   
   // Get winner's victory background - use Firebase data first, then match data
+  // For bots, randomize from vault; for players, use their Firebase selection
   const victoryVideo = (() => {
     console.log('🎬 Victory Background Resolution START:', {
       winnerVictoryBg,
@@ -101,26 +102,43 @@ export const MatchSummaryScreen: React.FC<MatchSummaryScreenProps> = ({
     console.log('🎬 Host data keys:', Object.keys(matchData.hostData || {}));
     console.log('🎬 Opponent data keys:', Object.keys(matchData.opponentData || {}));
     
-    // Priority 1: Use fetched Firebase data
-    const bgSource = winnerVictoryBg || winnerData?.victoryBackgroundEquipped;
+    // Check if winner is a bot
+    const winnerIsBot = winner?.includes('bot_');
     
-    console.log('🎬 bgSource:', bgSource);
-    
-    if (bgSource) {
-      // Handle both string ID and object with id property
-      const bgId = typeof bgSource === 'string' 
-        ? bgSource 
-        : (bgSource.id || bgSource.backgroundId || bgSource.name);
+    if (winnerIsBot) {
+      // For bots: randomize from vault
+      console.log('🎬 Winner is a bot, selecting random victory background from vault');
+      const victoryPool = getVictoryBackgrounds();
+      const randomVictory = victoryPool[Math.floor(Math.random() * victoryPool.length)];
+      if (randomVictory) {
+        const resolved = resolveBackgroundPath(randomVictory.id, 'victory-screen');
+        console.log('🎬 ✅ Using random bot victory background:', resolved?.path);
+        return resolved?.path || '/backgrounds/Game Backgrounds/Victory Screens/Best Quality/Wind Blade.mp4';
+      }
+    } else {
+      // For players: use Firebase selection
+      const bgSource = winnerVictoryBg || winnerData?.victoryBackgroundEquipped;
       
-      console.log('🎬 Extracted background ID:', bgId);
+      console.log('🎬 bgSource for player:', bgSource);
       
-      if (bgId) {
-        const resolved = resolveBackgroundPath(bgId, 'victory-screen');
-        console.log('🎬 Resolved background:', resolved);
+      if (bgSource) {
+        // Handle both string ID and object with id property, migrate legacy formats
+        const bgId = typeof bgSource === 'string' 
+          ? bgSource 
+          : ('id' in bgSource
+              ? bgSource.id
+              : migrateLegacyBackground(bgSource));
         
-        if (resolved?.path) {
-          console.log('🎬 ✅ Using winner\'s victory background:', resolved.path);
-          return resolved.path;
+        console.log('🎬 Extracted background ID:', bgId);
+        
+        if (bgId) {
+          const resolved = resolveBackgroundPath(bgId, 'victory-screen');
+          console.log('🎬 Resolved background:', resolved);
+          
+          if (resolved?.path) {
+            console.log('🎬 ✅ Using player\'s victory background:', resolved.path);
+            return resolved.path;
+          }
         }
       }
     }
