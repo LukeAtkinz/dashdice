@@ -21,6 +21,7 @@ import { MatchLifecycleService } from '@/services/matchLifecycleService';
 import { analyticsService } from '@/services/analyticsService';
 import { useWaitingRoomBackground } from '@/hooks/useOptimizedBackground';
 import { getBackgroundById } from '@/config/backgrounds';
+import { AbilitiesService } from '@/services/abilitiesService';
 
 interface GameWaitingRoomProps {
   gameMode: string;
@@ -48,6 +49,7 @@ interface WaitingRoomEntry {
     playerId: string;
     displayBackgroundEquipped: any;
     matchBackgroundEquipped: any;
+    powerLoadout?: any;
     turnDeciderBackgroundEquipped?: any;
     victoryBackgroundEquipped?: any;
     playerStats: {
@@ -62,6 +64,7 @@ interface WaitingRoomEntry {
     playerId: string;
     displayBackgroundEquipped: any;
     matchBackgroundEquipped: any;
+    powerLoadout?: any;
     turnDeciderBackgroundEquipped?: any;
     victoryBackgroundEquipped?: any;
     playerStats: {
@@ -76,6 +79,7 @@ interface WaitingRoomEntry {
     settings: any;
     turnDecider: number;
     turnScore: number;
+    powerLoadout?: any;
     diceOne: number;
     diceTwo: number;
     roundObjective: number;
@@ -405,7 +409,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
     } catch (error) {
       console.error('❌ GameWaitingRoom: Error fetching user profile:', error);
     }
-    
+
     // Fallback to context data
     const fallbackData = {
       displayName: user?.email?.split('@')[0] || 'Anonymous',
@@ -418,7 +422,8 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
       displayBackgroundEquipped: DisplayBackgroundEquip,
       matchBackgroundEquipped: MatchBackgroundEquip,
       turnDeciderBackgroundEquipped: TurnDeciderBackgroundEquip || defaultTurnDeciderBg,
-      victoryBackgroundEquipped: VictoryBackgroundEquip || defaultVictoryBg
+      victoryBackgroundEquipped: VictoryBackgroundEquip || defaultVictoryBg,
+      powerLoadout: null
     };
     // Remove performance-impacting logs
     // debugLog('⚠️ GameWaitingRoom: Using fallback data:', fallbackData);
@@ -1423,8 +1428,20 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           //   MatchBackgroundEquip,
           //   DisplayBackgroundType: DisplayBackgroundEquip?.type,
           //   MatchBackgroundType: MatchBackgroundEquip?.type
-          // });
-          
+
+          // Load host power loadout for this game mode so abilities flow into the match
+          let hostPowerLoadout: any = null;
+          try {
+            let gameModeKey: any = gameMode;
+            if (gameMode === 'quickfire') {
+              gameModeKey = 'quick-fire';
+            }
+            hostPowerLoadout = await UserService.getPowerLoadoutForGameMode(user!.uid, gameModeKey);
+          } catch (e) {
+            console.error('❌ Failed to load host power loadout:', e);
+          }
+
+          // Compose new waiting room entry
           const entry: WaitingRoomEntry = {
             createdAt: serverTimestamp(),
             gameMode: gameMode,
@@ -1434,9 +1451,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             playersRequired: 0, // Set to 0 as requested
             hostData: {
               playerDisplayName: userData.displayName,
-              playerId: user.uid,
+              playerId: user!.uid,
               displayBackgroundEquipped: userData.displayBackgroundEquipped || null,
               matchBackgroundEquipped: userData.matchBackgroundEquipped || null,
+              powerLoadout: hostPowerLoadout || null,
               turnDeciderBackgroundEquipped: userData.turnDeciderBackgroundEquipped || defaultTurnDeciderBg,
               victoryBackgroundEquipped: userData.victoryBackgroundEquipped || defaultVictoryBg,
               playerStats: userData.stats
@@ -2253,6 +2271,23 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
         }
       };
 
+      // Ensure power loadouts are present for both players before creating match
+      let resolvedHostPowerLoadout: any = (roomData.hostData as any)?.powerLoadout || null;
+      let resolvedOpponentPowerLoadout: any = (getOpponentData() as any)?.powerLoadout || null;
+      try {
+        let modeKey: any = roomData.gameMode;
+        if (roomData.gameMode === 'quickfire') modeKey = 'quick-fire';
+        if (!resolvedHostPowerLoadout && roomData.hostData?.playerId) {
+          resolvedHostPowerLoadout = await UserService.getPowerLoadoutForGameMode(roomData.hostData.playerId, modeKey);
+        }
+        const opp = getOpponentData();
+        if (!resolvedOpponentPowerLoadout && opp?.playerId && !String(opp.playerId).startsWith('bot_')) {
+          resolvedOpponentPowerLoadout = await UserService.getPowerLoadoutForGameMode(opp.playerId, modeKey);
+        }
+      } catch (e) {
+        console.error('❌ Failed to resolve power loadouts for match creation:', e);
+      }
+
       // Create enhanced match document with proper match data structure
       const matchData = {
         createdAt: serverTimestamp(),
@@ -2280,7 +2315,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
           playerScore: getStartingScore(roomData.gameMode),
           roundScore: 0,
           // Include power loadout for abilities
-          powerLoadout: (roomData.hostData as any)?.powerLoadout || null,
+          powerLoadout: resolvedHostPowerLoadout || null,
           matchStats: {
             banks: 0,
             doubles: 0,
@@ -2324,7 +2359,7 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             playerScore: getStartingScore(roomData.gameMode),
             roundScore: 0,
             // Include power loadout for abilities
-            powerLoadout: (opponentData as any)?.powerLoadout || null,
+            powerLoadout: resolvedOpponentPowerLoadout || null,
             matchStats: {
               banks: 0,
               doubles: 0,
@@ -2356,10 +2391,10 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
             const loadouts: Record<string, any> = {};
             const opponentData = getOpponentData();
             if (roomData.hostData?.playerId) {
-              loadouts[roomData.hostData.playerId] = (roomData.hostData as any)?.powerLoadout || null;
+              loadouts[roomData.hostData.playerId] = resolvedHostPowerLoadout || null;
             }
             if (opponentData?.playerId) {
-              loadouts[opponentData.playerId] = (opponentData as any)?.powerLoadout || null;
+              loadouts[opponentData.playerId] = resolvedOpponentPowerLoadout || null;
             }
             return loadouts;
           })()
