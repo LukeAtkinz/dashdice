@@ -94,7 +94,8 @@ export class GoBackendAdapter {
       
       // Check for matches in ACTIVE states only (not 'ready' which means matched but not started)
       const statuses = ['active', 'in_progress'];
-      let activeMatch = null;
+      type BackendMatch = { id: string; players?: string[]; game_mode?: string; matchId?: string };
+      let activeMatch: BackendMatch | null = null;
       
       for (const status of statuses) {
         const response = await this.apiClient.listMatches({ 
@@ -104,9 +105,12 @@ export class GoBackendAdapter {
 
         if (response.data?.matches) {
           // Look for a match containing this user
-          activeMatch = response.data.matches.find((match: any) => 
-            match.players && match.players.includes(userId)
-          );
+          const found = (response.data.matches as any[]).find((match) =>
+            match?.players && (match.players as string[]).includes(userId)
+          ) as BackendMatch | undefined;
+          if (found) {
+            activeMatch = found;
+          }
           
           if (activeMatch) {
             console.log(`🎯 Found user in match with status: ${status}`, activeMatch);
@@ -116,11 +120,12 @@ export class GoBackendAdapter {
       }
       
       if (activeMatch) {
+        const resolvedMatchId = (activeMatch as any).matchId ?? activeMatch.id;
         return {
           inMatch: true,
           gameMode: (activeMatch as any).game_mode || 'unknown',
-          currentGame: (activeMatch as any).matchId || activeMatch.id,
-          matchId: (activeMatch as any).matchId || activeMatch.id
+          currentGame: resolvedMatchId,
+          matchId: resolvedMatchId
         };
       }
 
@@ -192,7 +197,7 @@ export class GoBackendAdapter {
       console.log('🔍 Raw match response from API:', matchResponse);
 
       // Handle different Go backend response formats with type flexibility
-      let matchId = null;
+      let matchId: string | null = null;
       if (matchResponse.success) {
         console.log('✅ Match response has success flag');
         // Use any type to access flexible response properties
@@ -227,7 +232,7 @@ export class GoBackendAdapter {
         console.log(`✅ Go backend match created with ID: ${matchId}`);
         
         // 🔮 CRITICAL: Fetch user's power loadout for this game mode
-        let userPowerLoadout = null;
+        let userPowerLoadout: import('./userService').PowerLoadout | null = null;
         try {
           const { UserService } = await import('./userService');
           
