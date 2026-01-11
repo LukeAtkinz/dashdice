@@ -812,7 +812,9 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   // Get turn decider backgrounds from player data
   // TOP = Opponent's background, BOTTOM = Current user's background
   const topVideo = useMemo(() => {
-    if (!matchData || !user) return '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
+    const defaultResolved = resolveBackgroundPath('crazy-cough', 'waiting-room');
+    const defaultPath = defaultResolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
+    if (!matchData || !user) return defaultPath;
     
     // Get opponent's data (opposite of current user)
     const isHost = matchData.hostData.playerId === user.uid;
@@ -832,18 +834,26 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       console.log('🎬 TOP - hostData keys:', Object.keys(matchData.hostData || {}));
     }
     
-    if (opponentDeciderBg && typeof opponentDeciderBg === 'object' && 'id' in opponentDeciderBg) {
-      const resolved = resolveBackgroundPath(opponentDeciderBg.id, 'waiting-room');
-      if (DEBUG_LOGS) {
-        console.log('🎬 TOP resolved path:', resolved);
-      }
-      return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
+    // Support both object {id} and string id
+    const bgId = opponentDeciderBg
+      ? (typeof opponentDeciderBg === 'object' && 'id' in opponentDeciderBg
+          ? (opponentDeciderBg as any).id
+          : typeof opponentDeciderBg === 'string'
+            ? opponentDeciderBg
+            : undefined)
+      : undefined;
+
+    const resolved = bgId ? resolveBackgroundPath(bgId, 'waiting-room') : undefined;
+    if (DEBUG_LOGS) {
+      console.log('🎬 TOP resolved path:', resolved);
     }
-    return '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
+    return resolved?.path || defaultPath;
   }, [matchData, user]);
 
   const bottomVideo = useMemo(() => {
-    if (!matchData || !user) return '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
+    const defaultResolved = resolveBackgroundPath('crazy-cough', 'waiting-room');
+    const defaultPath = defaultResolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
+    if (!matchData || !user) return defaultPath;
     
     // Get current user's data
     const isHost = matchData.hostData.playerId === user.uid;
@@ -863,14 +873,20 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       console.log('🎬 BOTTOM - Current user data keys:', Object.keys(isHost ? matchData.hostData : (matchData.opponentData || {})));
     }
     
-    if (currentUserDeciderBg && typeof currentUserDeciderBg === 'object' && 'id' in currentUserDeciderBg) {
-      const resolved = resolveBackgroundPath(currentUserDeciderBg.id, 'waiting-room');
-      if (DEBUG_LOGS) {
-        console.log('🎬 BOTTOM resolved path:', resolved);
-      }
-      return resolved?.path || '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
+    // Support both object {id} and string id
+    const bgId = currentUserDeciderBg
+      ? (typeof currentUserDeciderBg === 'object' && 'id' in currentUserDeciderBg
+          ? (currentUserDeciderBg as any).id
+          : typeof currentUserDeciderBg === 'string'
+            ? currentUserDeciderBg
+            : undefined)
+      : undefined;
+
+    const resolved = bgId ? resolveBackgroundPath(bgId, 'waiting-room') : undefined;
+    if (DEBUG_LOGS) {
+      console.log('🎬 BOTTOM resolved path:', resolved);
     }
-    return '/backgrounds/Game Backgrounds/Turn Decider/Best Quality/Crazy Cough.mp4';
+    return resolved?.path || defaultPath;
   }, [matchData, user]);
 
   // 🔄 SESSION RECOVERY: Store active match in localStorage for crash recovery

@@ -199,15 +199,13 @@ export const GameWaitingRoom: React.FC<GameWaitingRoomProps> = ({
   // Keep bottom video in sync with the player's equipped Turn Decider background
   useEffect(() => {
     const { resolveBackgroundPath } = require('@/config/backgrounds');
-    if (TurnDeciderBackgroundEquip) {
-      const resolved = resolveBackgroundPath(TurnDeciderBackgroundEquip.id, 'waiting-room');
-      setBottomVideo(resolved?.path || '');
-    } else {
-      const resolved = resolveBackgroundPath(defaultTurnDeciderBg.id, 'waiting-room');
-      const fallback = resolved?.path || turnDeciderBackgrounds[0] || '';
-      setBottomVideo(fallback);
-    }
-  }, [TurnDeciderBackgroundEquip, turnDeciderBackgrounds, defaultTurnDeciderBg]);
+    const equipped = waitingRoomEntry?.hostData?.turnDeciderBackgroundEquipped || TurnDeciderBackgroundEquip || defaultTurnDeciderBg;
+    const id = equipped?.id || equipped;
+    const resolved = id ? resolveBackgroundPath(id, 'waiting-room') : undefined;
+    const fallbackResolved = resolveBackgroundPath(defaultTurnDeciderBg.id, 'waiting-room');
+    const fallback = resolved?.path || fallbackResolved?.path || turnDeciderBackgrounds[0] || '';
+    setBottomVideo(fallback);
+  }, [waitingRoomEntry?.hostData?.turnDeciderBackgroundEquipped, TurnDeciderBackgroundEquip, turnDeciderBackgrounds, defaultTurnDeciderBg]);
 
   // Keep top video in sync with opponent data (or fallback while waiting)
   useEffect(() => {
