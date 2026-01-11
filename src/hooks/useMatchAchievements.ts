@@ -14,6 +14,7 @@ interface BatchedMetrics {
  */
 export const useMatchAchievements = () => {
   const { user } = useAuth();
+  const DEBUG_LOGS = process.env.NEXT_PUBLIC_DEBUG_LOGS === '1';
   const batchedMetrics = useRef<BatchedMetrics>({});
   const matchStartTime = useRef<number>(Date.now());
 
@@ -34,7 +35,9 @@ export const useMatchAchievements = () => {
     batchMetric('total_dice_rolled', 1);
     batchMetric(`dice_${numberToWord(diceValue)}s_rolled`, 1);
     
-    console.log(`🎲 Achievement tracking: Batched dice roll ${diceValue} (no DB write)`);
+    if (DEBUG_LOGS) {
+      console.log(`🎲 Achievement tracking: Batched dice roll ${diceValue} (no DB write)`);
+    }
   }, [batchMetric]);
 
   // Record turn completion (no database write - just batch)
@@ -58,12 +61,16 @@ export const useMatchAchievements = () => {
     const metricKeys = Object.keys(metrics);
     
     if (metricKeys.length === 0) {
-      console.log('📊 No batched metrics to flush');
+      if (DEBUG_LOGS) {
+        console.log('📊 No batched metrics to flush');
+      }
       return;
     }
 
     try {
-      console.log(`📊 Flushing ${metricKeys.length} batched metrics:`, metrics);
+      if (DEBUG_LOGS) {
+        console.log(`📊 Flushing ${metricKeys.length} batched metrics:`, metrics);
+      }
       
       // Convert to MetricUpdate format
       const updates: MetricUpdate[] = metricKeys.map(metric => ({
@@ -78,7 +85,9 @@ export const useMatchAchievements = () => {
         await achievementService.updateMultipleMetrics(user.uid, updates);
       }
       
-      console.log('✅ Successfully flushed all batched achievements');
+      if (DEBUG_LOGS) {
+        console.log('✅ Successfully flushed all batched achievements');
+      }
       
       // Clear the batch
       batchedMetrics.current = {};
@@ -96,7 +105,9 @@ export const useMatchAchievements = () => {
     wasCloseGame?: boolean;
   }) => {
     try {
-      console.log('🏁 Recording match end with comprehensive achievement tracking');
+      if (DEBUG_LOGS) {
+        console.log('🏁 Recording match end with comprehensive achievement tracking');
+      }
       
       // Track game end in analytics
       const gameMode = matchData?.gameMode || 'classic';
@@ -111,10 +122,14 @@ export const useMatchAchievements = () => {
         batchMetric('games_won', 1);
         batchMetric('matches_won', 1);
         batchMetric('match_wins', 1); // Fix: Use same metric name as achievement definition
-        console.log('🏆 Match won - recording win metrics');
+        if (DEBUG_LOGS) {
+          console.log('🏆 Match won - recording win metrics');
+        }
       } else {
         batchMetric('games_lost', 1);
-        console.log('💔 Match lost - recording loss metrics');
+        if (DEBUG_LOGS) {
+          console.log('💔 Match lost - recording loss metrics');
+        }
       }
 
       // Duration-based metrics
@@ -127,7 +142,9 @@ export const useMatchAchievements = () => {
           batchMetric('quick_wins', 1);
         }
         
-        console.log(`⏱️ Match duration: ${durationMinutes} minutes`);
+        if (DEBUG_LOGS) {
+          console.log(`⏱️ Match duration: ${durationMinutes} minutes`);
+        }
       }
 
       // Score-based achievements
@@ -149,7 +166,9 @@ export const useMatchAchievements = () => {
           batchMetric('win_by_one_point', 1);
         }
         
-        console.log(`📊 Score difference: ${scoreDifference}`);
+        if (DEBUG_LOGS) {
+          console.log(`📊 Score difference: ${scoreDifference}`);
+        }
       }
 
       // Game mode specific metrics
@@ -180,7 +199,9 @@ export const useMatchAchievements = () => {
   const resetBatch = useCallback(() => {
     batchedMetrics.current = {};
     matchStartTime.current = Date.now();
-    console.log('🎮 Achievement batch reset for new match');
+    if (DEBUG_LOGS) {
+      console.log('🎮 Achievement batch reset for new match');
+    }
   }, []);
 
   // Get current batched metrics (for debugging)

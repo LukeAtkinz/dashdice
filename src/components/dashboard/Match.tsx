@@ -2222,7 +2222,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                           textShadow: "0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.5)"
                         }}
                       >
-                        {turnAnnouncementData.isCurrentPlayerFirst ? "YOU GO FIRST!" : `${turnAnnouncementData.winner.toUpperCase()} GOES FIRST!`}
+                        {(turnAnnouncementData?.isCurrentPlayerFirst) ? "YOU GO FIRST!" : `${(turnAnnouncementData?.winner ?? 'PLAYER').toUpperCase()} GOES FIRST!`}
                       </motion.h2>
                       <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
@@ -2929,7 +2929,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
                         textShadow: "0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.5)"
                       }}
                     >
-                      {turnAnnouncementData.isCurrentPlayerFirst ? "YOU GO FIRST!" : `${turnAnnouncementData.winner.toUpperCase()} GOES FIRST!`}
+                      {(turnAnnouncementData?.isCurrentPlayerFirst) ? "YOU GO FIRST!" : `${(turnAnnouncementData?.winner ?? 'PLAYER').toUpperCase()} GOES FIRST!`}
                     </motion.h2>
                     <motion.p
                       initial={{ opacity: 0 }}
@@ -2995,11 +2995,6 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
       {/* Turn Decider Phase - Rendered outside match-container so it's visible */}
       {matchData.gameData.gamePhase === 'turnDecider' && (
         <>
-          {console.log('🎯 Match.tsx: Rendering TurnDeciderPhase', {
-            gamePhase: matchData.gameData.gamePhase,
-            topVideo,
-            bottomVideo
-          })}
           <TurnDeciderPhase
             key={`turnDecider-${topVideo}-${bottomVideo}`}
             matchData={matchData}

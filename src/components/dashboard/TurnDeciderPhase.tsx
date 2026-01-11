@@ -86,25 +86,6 @@ export const TurnDeciderPhase: React.FC<TurnDeciderPhaseProps> = ({
   const isInTurnDeciderPhase = matchData.gameData.gamePhase === 'turnDecider';
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Debug logging
-  console.log('🎲 TurnDeciderPhase Render:', {
-    isMyTurnToDecide,
-    hasChoice,
-    isInTurnDeciderPhase,
-    isProcessing,
-    shouldShowButtons: !hasChoice && isMyTurnToDecide && isInTurnDeciderPhase,
-    gamePhase: matchData.gameData.gamePhase,
-    turnDecider: matchData.gameData.turnDecider,
-    isHost,
-    turnDeciderChoice: matchData.gameData.turnDeciderChoice,
-    calculationDetail: {
-      isHost,
-      turnDecider: matchData.gameData.turnDecider,
-      hostShouldDecide: isHost && matchData.gameData.turnDecider === 1,
-      opponentShouldDecide: !isHost && matchData.gameData.turnDecider === 2,
-      finalResult: (isHost && matchData.gameData.turnDecider === 1) || (!isHost && matchData.gameData.turnDecider === 2)
-    }
-  });
   const [showDiceNumber, setShowDiceNumber] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [transitionPhase, setTransitionPhase] = useState<'choosing' | 'choice-returning' | 'transitioning' | 'rolling' | 'result-display' | 'winner-announcement' | 'transitioning-to-match'>('choosing');

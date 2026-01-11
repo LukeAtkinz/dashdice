@@ -193,30 +193,39 @@ export class BotAutomationService {
    */
   private static async handleMatchUpdate(matchData: MatchData): Promise<void> {
     try {
-      console.log(`🔍 Bot automation checking match ${matchData.id}:`, {
-        status: matchData.status,
-        gamePhase: matchData.gameData?.gamePhase,
-        hostId: matchData.hostData?.playerId,
-        opponentId: matchData.opponentData?.playerId,
-        hostTurnActive: matchData.hostData?.turnActive,
-        opponentTurnActive: matchData.opponentData?.turnActive
-      });
+      const DEBUG_LOGS = process.env.NEXT_PUBLIC_DEBUG_LOGS === '1';
+      if (DEBUG_LOGS) {
+        console.log(`🔍 Bot automation checking match ${matchData.id}:`, {
+          status: matchData.status,
+          gamePhase: matchData.gameData?.gamePhase,
+          hostId: matchData.hostData?.playerId,
+          opponentId: matchData.opponentData?.playerId,
+          hostTurnActive: matchData.hostData?.turnActive,
+          opponentTurnActive: matchData.opponentData?.turnActive
+        });
+      }
 
       // Only process active matches in gameplay or turnDecider phase
       if (matchData.status !== 'active' || 
           !['gameplay', 'turnDecider'].includes(matchData.gameData.gamePhase)) {
-        console.log(`🚫 Skipping match ${matchData.id} - status: ${matchData.status}, phase: ${matchData.gameData?.gamePhase}`);
+        if (DEBUG_LOGS) {
+          console.log(`🚫 Skipping match ${matchData.id} - status: ${matchData.status}, phase: ${matchData.gameData?.gamePhase}`);
+        }
         return;
       }
 
       // Check if it's a bot's turn
       const activeBot = this.getActiveBotPlayer(matchData);
       if (!activeBot) {
-        console.log(`🚫 No active bot found in match ${matchData.id}`);
+        if (DEBUG_LOGS) {
+          console.log(`🚫 No active bot found in match ${matchData.id}`);
+        }
         return; // No bot is active
       }
 
-      console.log(`🤖 Bot ${activeBot.playerDisplayName} is active in match ${matchData.id}`);
+      if (DEBUG_LOGS) {
+        console.log(`🤖 Bot ${activeBot.playerDisplayName} is active in match ${matchData.id}`);
+      }
 
       // Handle different game phases
       if (matchData.gameData.gamePhase === 'turnDecider') {
