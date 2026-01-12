@@ -1458,6 +1458,8 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
   const isHost = matchData.hostData.playerId === user.uid;
   const currentPlayer = isHost ? matchData.hostData : matchData.opponentData;
   const opponent = isHost ? matchData.opponentData : matchData.hostData;
+  // Keep a single flag to drive turn decider layer visibility with opacity instead of display toggles
+  const showTurnDeciderLayer = matchData.gameData.gamePhase === 'turnDecider' || showTurnDeciderTransition;
 
   return (
     <div suppressHydrationWarning>
@@ -1470,13 +1472,18 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         background: '#000000',
         zIndex: 1
       }}>
-        {/* PERSISTENT TURN DECIDER VIDEOS - Always mounted, visibility controlled by CSS */}
-        <div style={{ 
-          position: 'absolute',
-          inset: 0,
-          display: (matchData.gameData.gamePhase === 'turnDecider' || showTurnDeciderTransition) ? 'block' : 'none',
-          zIndex: (matchData.gameData.gamePhase === 'turnDecider' || showTurnDeciderTransition) ? 1000 : 1
-        }}>
+        {/* PERSISTENT TURN DECIDER VIDEOS - Always mounted, crossfade instead of toggling display */}
+        <motion.div 
+          initial={false}
+          animate={{ opacity: showTurnDeciderLayer ? 1 : 0 }}
+          transition={{ duration: 0.35, ease: 'easeOut' }}
+          style={{ 
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: showTurnDeciderLayer ? 'auto' : 'none',
+            zIndex: showTurnDeciderLayer ? 1000 : 1
+          }}
+        >
           {(() => {
             return (
               <>
@@ -1650,7 +1657,7 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
               </>
             );
           })()}
-        </div>
+        </motion.div>
         
         {/* Winner Announcement Overlay - Shows during transition */}
         <AnimatePresence mode="wait">
@@ -1841,8 +1848,15 @@ export const Match: React.FC<MatchProps> = ({ gameMode, roomId }) => {
         initial={{ opacity: 0, x: 100 }}
         animate={matchData.gameData.gamePhase === 'gameOver' || matchData.gameData.gamePhase === 'turnDecider' || showTurnDeciderTransition ? { opacity: 0, x: 100 } : { opacity: 1, x: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className={`w-full h-screen match-container ${matchData.gameData.gamePhase === 'gameOver' || matchData.gameData.gamePhase === 'turnDecider' || showTurnDeciderTransition ? 'hidden' : 'flex'} flex-col items-center justify-start md:justify-center px-2 pt-8 md:pt-12`}
-        style={{ position: 'relative', left: 0, top: 0, transform: 'none', zIndex: 10, pointerEvents: 'auto', display: matchData.gameData.gamePhase === 'turnDecider' || showTurnDeciderTransition ? 'none' : undefined }}
+        className="w-full h-screen match-container flex flex-col items-center justify-start md:justify-center px-2 pt-8 md:pt-12"
+        style={{ 
+          position: 'relative', 
+          left: 0, 
+          top: 0, 
+          transform: 'none', 
+          zIndex: 10, 
+          pointerEvents: matchData.gameData.gamePhase === 'turnDecider' || showTurnDeciderTransition ? 'none' : 'auto'
+        }}
       >
         {/* Game Arena */}
         <div className="w-[90vw] mx-auto flex items-center justify-center" style={{ position: 'relative' }}>
