@@ -163,6 +163,29 @@ export default function InvestorsPage() {
           </div>
         </header>
         
+        {/* 1.5. Early Validation */}
+        <section className="mb-20">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">Early Validation</h2>
+          
+          <p className="text-gray-700 leading-relaxed max-w-3xl mb-6">
+            DashDice is currently a playable prototype. We have conducted structured, anonymous playtests across five countries, including supervised sessions with teenage players in Spain, with all participants aware their feedback would be used for product validation.
+          </p>
+          
+          {/* Metrics Strip */}
+          <div className="mb-6 p-4 rounded-lg" style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)', border: '1px solid rgba(0, 0, 0, 0.1)' }}>
+            <p className="text-gray-800 font-medium" style={{ fontSize: '15px', letterSpacing: '0.5px' }}>
+              <span>Fun: 7.3 / 10</span>
+              <span style={{ margin: '0 24px' }}>Fairness: 7.3 / 10</span>
+              <span>Uniqueness: 7.0 / 10</span>
+            </p>
+          </div>
+          
+          {/* Insight Takeaway */}
+          <p className="text-gray-700 leading-relaxed max-w-3xl">
+            These scores remained consistent as testing expanded geographically, reinforcing confidence in DashDice's differentiated, skill-based PvP core. Onboarding clarity has been identified as the primary execution unlock.
+          </p>
+        </section>
+        
         {/* 2. Founder Introduction Video */}
         <section className="mb-20">
           <h2 className="text-3xl font-bold text-gray-900 mb-3">Founder Introduction (2 mins)</h2>
