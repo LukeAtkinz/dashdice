@@ -489,34 +489,39 @@ const GuestDashboardContent: React.FC = () => {
                   </Link>
                 </div>
 
-                {/* RANKED Button - Redirect to donation page */}
-                <button
-                  onClick={() => {
-                    console.log('🎯 Guest RANKED Button clicked - Redirecting to donation page!');
-                    window.location.href = '/helpus';
-                  }}
-                  className="hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer flex"
-                  style={{
-                    display: "flex",
-                    width: "180px",
-                    height: "48px",
-                    padding: "8px 16px",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: "8px",
-                    borderRadius: "18px",
-                    background: "linear-gradient(135deg, #8B5CF6 0%, #A855F7 50%, #9333EA 100%)",
-                    border: "none",
-                    boxShadow: "0 4px 15px rgba(139, 92, 246, 0.4)"
-                  }}
-                >
-                  <div style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <img src="/Design Elements/Player Profiles/Ranked.webp" alt="Ranked" className="w-8 h-8" />
-                  </div>
-                  <span style={{ color: "#FFF", fontFamily: "Audiowide", fontSize: "22px", fontWeight: 400, lineHeight: "22px" }}>
-                    RANKED
-                  </span>
-                </button>
+                {/* RANKED Button - Disabled for guests, link to '#' */}
+                <Link href="#">
+                  <button
+                    onClick={(e) => {
+                      // Prevent any navigation/action
+                      e.preventDefault();
+                    }}
+                    className="transition-all duration-300 cursor-not-allowed flex"
+                    style={{
+                      display: "flex",
+                      width: "180px",
+                      height: "48px",
+                      padding: "8px 16px",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      gap: "8px",
+                      borderRadius: "18px",
+                      background: "linear-gradient(135deg, #8B5CF6 0%, #A855F7 50%, #9333EA 100%)",
+                      border: "none",
+                      boxShadow: "0 4px 15px rgba(139, 92, 246, 0.4)",
+                      opacity: 0.7
+                    }}
+                    disabled
+                    aria-disabled="true"
+                  >
+                    <div style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <img src="/Design Elements/Player Profiles/Ranked.webp" alt="Ranked" className="w-8 h-8" />
+                    </div>
+                    <span style={{ color: "#FFF", fontFamily: "Audiowide", fontSize: "22px", fontWeight: 400, lineHeight: "22px" }}>
+                      RANKED
+                    </span>
+                  </button>
+                </Link>
               </div>
             </div>
 
