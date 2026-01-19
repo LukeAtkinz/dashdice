@@ -21,9 +21,8 @@ export default function InvestorsPage() {
   const [numPages, setNumPages] = useState<number>(0);
   const [pdfError, setPdfError] = useState<string | null>(null);
   
-  // Slides to exclude (0-indexed)
-  const excludedSlides = [0, 9, 10, 14, 15, 18, 19, 22]; // 1, 10, 11, 15, 16, 19, 20, 23 in 1-indexed
-  const [filteredSlideCount, setFilteredSlideCount] = useState(0);
+  // Total slides to display (pages 1-9)
+  const TOTAL_SLIDES = 9;
   
   // Form state
   const [formData, setFormData] = useState({
@@ -44,25 +43,11 @@ export default function InvestorsPage() {
     });
   }, []);
   
-  const totalSlides = filteredSlideCount || 12;
+  const totalSlides = TOTAL_SLIDES;
   
-  // Map display index to actual PDF page number
+  // Map display index to actual PDF page number (pages 1-9 in order)
   const getActualPageNumber = (displayIndex: number) => {
-    const excludedSlidesWithLast = numPages > 0 ? [...excludedSlides, numPages - 1] : excludedSlides;
-    let actualPage = 0;
-    let displayCount = 0;
-    
-    for (let i = 0; i < numPages; i++) {
-      if (!excludedSlidesWithLast.includes(i)) {
-        if (displayCount === displayIndex) {
-          actualPage = i;
-          break;
-        }
-        displayCount++;
-      }
-    }
-    
-    return actualPage + 1; // Convert to 1-indexed for PDF
+    return displayIndex + 1; // Display pages 1 through 9
   };
   
   const nextSlide = () => {
@@ -75,10 +60,6 @@ export default function InvestorsPage() {
   
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
-    // Calculate filtered slides (excluding specified slides and last slide)
-    const excludedSlidesWithLast = [...excludedSlides, numPages - 1];
-    const filtered = numPages - excludedSlidesWithLast.length;
-    setFilteredSlideCount(filtered);
     setPdfError(null);
   };
   
@@ -172,12 +153,10 @@ export default function InvestorsPage() {
           </p>
           
           {/* Metrics Strip */}
-          <div className="mb-6 p-4 rounded-lg" style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)', border: '1px solid rgba(0, 0, 0, 0.1)' }}>
-            <p className="text-gray-800 font-medium" style={{ fontSize: '15px', letterSpacing: '0.5px' }}>
-              <span>Fun: 7.3 / 10</span>
-              <span style={{ margin: '0 24px' }}>Fairness: 7.3 / 10</span>
-              <span>Uniqueness: 7.0 / 10</span>
-            </p>
+          <div className="mb-6 p-4 rounded-lg flex flex-col md:flex-row md:justify-around items-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)', border: '1px solid rgba(0, 0, 0, 0.1)' }}>
+            <span className="text-gray-800 font-medium md:flex-1 text-center" style={{ fontSize: '15px', letterSpacing: '0.5px' }}>Fun: 7.3 / 10</span>
+            <span className="text-gray-800 font-medium md:flex-1 text-center" style={{ fontSize: '15px', letterSpacing: '0.5px' }}>Fairness: 7.3 / 10</span>
+            <span className="text-gray-800 font-medium md:flex-1 text-center" style={{ fontSize: '15px', letterSpacing: '0.5px' }}>Uniqueness: 7.0 / 10</span>
           </div>
           
           {/* Insight Takeaway */}
@@ -188,12 +167,15 @@ export default function InvestorsPage() {
         
         {/* 2. Founder Introduction Video */}
         <section className="mb-20">
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">Founder Introduction (2 mins)</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">
+            Founder Introduction
+            <span className="block md:inline md:ml-2">(2 mins)</span>
+          </h2>
           <p className="text-gray-600 leading-relaxed max-w-3xl mb-4">
             A short introduction to DashDice, the thesis, and what we're building.
           </p>
           
-          <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-900" style={{ aspectRatio: '16/9', minHeight: '400px' }}>
+          <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-900" style={{ aspectRatio: '16/9', minHeight: '300px', maxWidth: '90vw', margin: '0 auto' }}>
             <video
               controls
               playsInline
@@ -201,7 +183,7 @@ export default function InvestorsPage() {
               preload="metadata"
               poster="/Investor Page/Thumbnail Investor Video.png"
               className="w-full investor-video"
-              style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#000' }}
+              style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#000', display: 'block' }}
               onLoadStart={() => console.log('Video loading started')}
               onLoadedMetadata={() => console.log('Video metadata loaded')}
               onCanPlay={() => console.log('Video can play')}
@@ -219,16 +201,19 @@ export default function InvestorsPage() {
         
         {/* 3. Gameplay Video */}
         <section className="mb-20">
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">Prototype Gameplay (2 mins)</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">
+            Prototype Gameplay
+            <span className="block md:inline md:ml-2">(2 mins)</span>
+          </h2>
           
-          <div className="rounded-lg overflow-hidden border border-gray-200 bg-black" style={{ aspectRatio: '16/9', minHeight: '400px' }}>
+          <div className="rounded-lg overflow-hidden border border-gray-200 bg-black" style={{ aspectRatio: '16/9', minHeight: '300px', maxWidth: '90vw', margin: '0 auto' }}>
             <video
               controls
               playsInline
               controlsList=""
               preload="metadata"
               className="w-full investor-video"
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
             >
               <source src="/Investor Page/Gameplay Video.mp4" type="video/mp4" />
               Your browser does not support the video tag.
@@ -301,7 +286,7 @@ export default function InvestorsPage() {
             
             {/* Indicators */}
             <div className="flex justify-center gap-2 mt-4">
-              {Array.from({ length: totalSlides }).map((_, idx) => (
+              {numPages > 0 && Array.from({ length: totalSlides }).map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => setCurrentSlide(idx)}
@@ -614,7 +599,7 @@ export default function InvestorsPage() {
         {/* 10. Footer Meta */}
         <footer className="border-t border-gray-200 pt-8">
           <p className="text-sm text-gray-500">
-            Last updated: January 9, 2026
+            Last updated: January 19, 2026
           </p>
         </footer>
         
