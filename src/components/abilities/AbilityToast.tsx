@@ -52,14 +52,20 @@ export const AbilityToast: React.FC<AbilityToastProps> = ({ abilityName, onCompl
   const normalizedName = abilityName?.replace(/_/g, '-');
   const message = normalizedName ? ABILITY_MESSAGES[normalizedName] : null;
 
+  // Use a ref to store the callback to avoid dependency issues
+  const onCompleteRef = React.useRef(onComplete);
   React.useEffect(() => {
-    if (abilityName && onComplete) {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  React.useEffect(() => {
+    if (abilityName) {
       const timer = setTimeout(() => {
-        onComplete();
-      }, 2000);
+        onCompleteRef.current?.();
+      }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [abilityName, onComplete]);
+  }, [abilityName]);
 
   return (
     <AnimatePresence>
