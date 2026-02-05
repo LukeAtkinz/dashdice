@@ -15,7 +15,6 @@ const Page = dynamic(
 );
 
 export default function InvestorsPage() {
-  const [showPrototypeForm, setShowPrototypeForm] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showScheduler, setShowScheduler] = useState(false);
   const [numPages, setNumPages] = useState<number>(0);
@@ -24,17 +23,6 @@ export default function InvestorsPage() {
   // Total slides to display (pages 1-9)
   const TOTAL_SLIDES = 9;
   
-  // Form state
-  const [formData, setFormData] = useState({
-    name: '',
-    firm: '',
-    email: '',
-    referral: '',
-    notes: ''
-  });
-  const [formSubmitting, setFormSubmitting] = useState(false);
-  const [formSuccess, setFormSuccess] = useState(false);
-  const [formError, setFormError] = useState('');
   
   // Configure PDF.js worker on client side
   useEffect(() => {
@@ -68,42 +56,6 @@ export default function InvestorsPage() {
     setPdfError('Failed to load pitch deck. Please refresh the page.');
   };
   
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormSubmitting(true);
-    setFormError('');
-    
-    try {
-      const response = await fetch('/api/send-prototype-request', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        setFormSuccess(true);
-        // Reset form
-        setFormData({
-          name: '',
-          firm: '',
-          email: '',
-          referral: '',
-          notes: ''
-        });
-      } else {
-        setFormError(data.error || 'Failed to submit request');
-      }
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      setFormError('Failed to submit request. Please try again.');
-    } finally {
-      setFormSubmitting(false);
-    }
-  };
   
   return (
     <div className="min-h-screen bg-white">
@@ -324,126 +276,18 @@ export default function InvestorsPage() {
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Prototype Access</h2>
           
           <p className="text-gray-700 leading-relaxed mb-6 max-w-3xl">
-            Prototype access is available on request. We provide demo accounts for qualified investors 
-            to experience the gameplay, mechanics, and core features firsthand.
+            The DashDice prototype is available to explore right now. Jump in to experience the gameplay,
+            mechanics, and core features firsthand.
           </p>
           
-          {!showPrototypeForm ? (
-            <button
-              onClick={() => setShowPrototypeForm(true)}
-              className="px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
-            >
-              Request Prototype Access
-            </button>
-          ) : formSuccess ? (
-            <div className="bg-green-50 rounded-lg p-6 border border-green-200 max-w-2xl">
-              <div className="flex items-start">
-                <svg className="w-6 h-6 text-green-600 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <div>
-                  <h3 className="text-lg font-semibold text-green-900 mb-2">Request Submitted!</h3>
-                  <p className="text-green-700">
-                    Thank you for your interest. We'll review your request and get back to you shortly at {formData.email || 'your email'}.
-                  </p>
-                  <button
-                    onClick={() => {
-                      setShowPrototypeForm(false);
-                      setFormSuccess(false);
-                    }}
-                    className="mt-4 text-sm text-green-700 hover:text-green-800 font-medium"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 max-w-2xl">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Request Access</h3>
-              <form onSubmit={handleFormSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 placeholder:text-gray-600"
-                    placeholder="Your name"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Firm *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.firm}
-                    onChange={(e) => setFormData({ ...formData, firm: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 placeholder:text-gray-600"
-                    placeholder="Investment firm or organization"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 placeholder:text-gray-600"
-                    placeholder="your.email@firm.com"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Notes (Optional)
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 placeholder:text-gray-600"
-                    placeholder="Any specific questions or areas of interest..."
-                  />
-                </div>
-                
-                {formError && (
-                  <div className="text-red-600 text-sm">{formError}</div>
-                )}
-                
-                <div className="flex gap-3">
-                  <button
-                    type="submit"
-                    disabled={formSubmitting}
-                    className="px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {formSubmitting ? 'Submitting...' : 'Submit Request'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowPrototypeForm(false);
-                      setFormError('');
-                    }}
-                    disabled={formSubmitting}
-                    className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
+          <a
+            href="https://www.dashdice.gg/dashboard"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            Access Prototype
+          </a>
         </section>
         
         {/* 6. Key Documents */}
